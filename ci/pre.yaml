@@ -1,0 +1,21 @@
+- hosts: all
+  tasks:
+    - name: install nghttp2 build deps
+      package:
+        name: libxml2-devel
+        state: present
+      become: true
+
+    - name: install nghttp2 with ASIO
+      shell: |
+        CI_PARALLEL_JOBS=$(awk -vcpu=$(getconf _NPROCESSORS_ONLN) 'BEGIN{printf "%.0f", cpu*1.3+1}')
+        cd {{ ansible_user_dir }}/{{ zuul | json_query('projects."cesnet-gerrit-public/github/nghttp2/nghttp2".src_dir') }}
+        autoreconf -i
+        automake
+        autoconf
+        ./configure \
+          --prefix={{ ansible_user_dir }}/target \
+          --enable-asio-lib \
+          --enable-app
+        make -j$CI_PARALLEL_JOBS
+        make -j$CI_PARALLEL_JOBS install
