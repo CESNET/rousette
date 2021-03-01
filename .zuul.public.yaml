@@ -1,0 +1,10 @@
+- project:
+    check:
+      jobs:
+        - f33-gcc-cover:
+            requires: CzechLight-deps-f33-gcc
+            required-projects: &projects
+              - CzechLight/dependencies
+              - name: github/nghttp2/nghttp2
+                override-checkout: v1.43.0
+            pre-run: ci/pre.yaml
