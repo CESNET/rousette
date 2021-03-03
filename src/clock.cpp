@@ -30,7 +30,7 @@ class Client {
         std::lock_guard lock{mtx};
         if (state != HasEvents) throw std::logic_error{std::to_string(__LINE__)};
         while (!queue.empty()) {
-            auto num = std::min(queue.front().size(), len);
+            auto num = std::min(queue.front().size(), len - written);
             std::copy_n(queue.front().begin(), num, destination + written);
             written += num;
             if (num < queue.front().size()) {
