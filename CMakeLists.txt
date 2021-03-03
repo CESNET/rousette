@@ -70,12 +70,28 @@ find_package(PkgConfig)
 pkg_check_modules(nghttp2 REQUIRED IMPORTED_TARGET libnghttp2_asio>=1.41.0 libnghttp2)
 find_package(Boost REQUIRED COMPONENTS system thread)
 
+pkg_check_modules(SYSREPO REQUIRED sysrepo-cpp>=1.4.103 IMPORTED_TARGET sysrepo)
+pkg_check_modules(LIBYANG REQUIRED libyang-cpp>=1.0.215 IMPORTED_TARGET libyang)
+
 add_library(rousette-http STATIC
     src/http/EventStream.cpp
 )
 target_link_libraries(rousette-http PRIVATE spdlog::spdlog PkgConfig::nghttp2 ssl crypto)
 
+add_library(rousette-sysrepo STATIC
+	src/sr/AllEvents.cpp
+)
+target_link_libraries(rousette-sysrepo PRIVATE spdlog::spdlog PkgConfig::SYSREPO PkgConfig::LIBYANG)
+
 add_executable(clock-demo src/clock.cpp)
 target_link_libraries(clock-demo rousette-http spdlog::spdlog PkgConfig::nghttp2 Boost::system Threads::Threads)
 
-install(TARGETS clock-demo RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/)
+add_executable(watch-operational-ds
+    src/events.cpp
+)
+target_link_libraries(watch-operational-ds PRIVATE rousette-sysrepo PkgConfig::SYSREPO spdlog::spdlog)
+
+install(TARGETS
+    clock-demo
+    watch-operational-ds
+    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/)
