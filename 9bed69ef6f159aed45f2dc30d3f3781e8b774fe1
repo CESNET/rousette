@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8b16b502_a39b6658",
+        "filename": "src/events.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2021-03-04T12:56:58Z",
+      "side": 1,
+      "message": "I am a little confused by this... I think this assignment shouldn\u0027t be both in this function and also on line 113.\nWhat if you removed this function and put the contents inside the caller? I think that would be simpler. Like this:\n\n const auto mod \u003d attr-\u003eannotation-\u003emodule-\u003ename;\n const auto nextAttr \u003d attr-\u003enext;\n\n if (mod \u003d\u003d \"sysrepo\"sv \u0026\u0026 attr-\u003ename \u003d\u003d \"operation\"sv \u0026\u0026 attr-\u003evalue_str \u003d\u003d \"none\"sv) {\n     lyd_free_attr(session-\u003eget_context()-\u003eswig_ctx(), elem, attr, 0);\n } else if (mod \u003d\u003d \"ietf-origin\"sv \u0026\u0026 attr-\u003ename \u003d\u003d \"origin\"sv \u0026\u0026 attr-\u003evalue_str \u003d\u003d \"ietf-origin:unknown\"sv) {\n     lyd_free_attr(session-\u003eget_context()-\u003eswig_ctx(), elem, attr, 0);\n }\n attr \u003d nextAttr;\n\nIf none of the if branches are true, then it\u0027s just attr \u003d attr-\u003enext;\nIt gets even shorter if the branches are merged",
+      "range": {
+        "startLine": 24,
+        "startChar": 0,
+        "endLine": 24,
+        "endChar": 20
+      },
+      "revId": "9bed69ef6f159aed45f2dc30d3f3781e8b774fe1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "59946283_880ddfb2",
+        "filename": "src/events.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 111,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2021-03-04T12:56:58Z",
+      "side": 1,
+      "message": "These if branches have the same statements inside them, so I think they should be merged. The conditions can be refactored to a functions (and then just use ||)",
+      "range": {
+        "startLine": 108,
+        "startChar": 28,
+        "endLine": 111,
+        "endChar": 72
+      },
+      "revId": "9bed69ef6f159aed45f2dc30d3f3781e8b774fe1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "66b4a22d_01aca0d0",
+        "filename": "src/events.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2021-03-04T12:56:58Z",
+      "side": 1,
+      "message": "I know that std::ignore can be used like this. Another way is [[maybe_unused]], which I don\u0027t like anymore.\n\nThe C++ Core Guidelines recommends unnamed parameters.\nhttps://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#f9-unused-parameters-should-be-unnamed",
+      "range": {
+        "startLine": 133,
+        "startChar": 0,
+        "endLine": 134,
+        "endChar": 23
+      },
+      "revId": "9bed69ef6f159aed45f2dc30d3f3781e8b774fe1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
