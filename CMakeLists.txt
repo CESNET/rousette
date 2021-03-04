@@ -62,12 +62,20 @@ if(WITH_DOCS)
         )
 endif()
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 find_package(spdlog REQUIRED)
 find_package(PkgConfig)
-pkg_check_modules(nghttp2 REQUIRED IMPORTED_TARGET libnghttp2_asio>=1.41.0)
+pkg_check_modules(nghttp2 REQUIRED IMPORTED_TARGET libnghttp2_asio>=1.41.0 libnghttp2)
 find_package(Boost REQUIRED COMPONENTS system thread)
 
+add_library(rousette-http STATIC
+    src/http/EventStream.cpp
+)
+target_link_libraries(rousette-http PRIVATE spdlog::spdlog PkgConfig::nghttp2 ssl crypto)
+
 add_executable(clock-demo src/clock.cpp)
-target_link_libraries(clock-demo spdlog::spdlog PkgConfig::nghttp2 Boost::system ssl crypto Threads::Threads)
+target_link_libraries(clock-demo rousette-http spdlog::spdlog PkgConfig::nghttp2 Boost::system Threads::Threads)
 
 install(TARGETS clock-demo RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/)
