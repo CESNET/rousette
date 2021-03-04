@@ -117,7 +117,7 @@ int AllEvents::onChange(std::shared_ptr<sysrepo::Session> session, const std::st
         };
         auto json = copy->print_mem(LYD_JSON, 0);
         spdlog::info("JSON: {}", json);
-        change(json);
+        change(module, json);
     }
 
     return SR_ERR_OK;
