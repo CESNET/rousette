@@ -109,6 +109,7 @@ int AllEvents::onChange(std::shared_ptr<sysrepo::Session> session, const std::st
                     }
                     break;
                 case WithAttributes::None:
+                    // This is actively misleading; we're stripping out even bits such as "removed".
                     lyd_free_attr(session->get_context()->swig_ctx(), elem, elem->attr, 1);
                     break;
                 }
@@ -117,7 +118,8 @@ int AllEvents::onChange(std::shared_ptr<sysrepo::Session> session, const std::st
         };
         auto json = copy->print_mem(LYD_JSON, 0);
         spdlog::info("JSON: {}", json);
-        change(json);
+        spdlog::warn("FULL JSON: {}", session->get_data(('/' + module + ":*").c_str())->print_mem(LYD_JSON, 0));
+        change(module, json);
     }
 
     return SR_ERR_OK;
