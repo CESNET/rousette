@@ -79,9 +79,14 @@ add_library(rousette-http STATIC
 target_link_libraries(rousette-http PRIVATE spdlog::spdlog PkgConfig::nghttp2 ssl crypto)
 
 add_library(rousette-sysrepo STATIC
-	src/sr/AllEvents.cpp
+    src/sr/AllEvents.cpp
 )
 target_link_libraries(rousette-sysrepo PRIVATE spdlog::spdlog PkgConfig::SYSREPO PkgConfig::LIBYANG)
+
+add_library(rousette-restconf STATIC
+    src/restconf/Server.cpp
+)
+target_link_libraries(rousette-restconf PRIVATE rousette-http spdlog::spdlog PkgConfig::SYSREPO PkgConfig::nghttp2 Boost::system Threads::Threads)
 
 add_executable(clock-demo src/clock.cpp)
 target_link_libraries(clock-demo rousette-http spdlog::spdlog PkgConfig::nghttp2 Boost::system Threads::Threads)
@@ -91,7 +96,11 @@ add_executable(watch-operational-ds
 )
 target_link_libraries(watch-operational-ds PRIVATE rousette-sysrepo PkgConfig::SYSREPO spdlog::spdlog)
 
+add_executable(rousette src/restconf/main.cpp)
+target_link_libraries(rousette PRIVATE rousette-restconf rousette-sysrepo spdlog::spdlog PkgConfig::SYSREPO)
+
 install(TARGETS
-    clock-demo
-    watch-operational-ds
+    # clock-demo
+    # watch-operational-ds
+    rousette
     RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/)

@@ -25,7 +25,7 @@ public:
         RemoveEmptyOperationAndOrigin, ///< Remove sysrepo:operation=none and ietf-origin:unknown
         None, ///< Remove all attributes
     };
-    using Signal = boost::signals2::signal<void(const std::string& json)>;
+    using Signal = boost::signals2::signal<void(const std::string& module, const std::string& json)>;
     AllEvents(std::shared_ptr<sysrepo::Session> session, const WithAttributes attrBehavior);
 
     Signal change;
