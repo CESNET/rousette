@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c8f9f694_ab2ba934",
+        "filename": "src/events.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2021-03-04T16:17:58Z",
+      "side": 1,
+      "message": "I disagree, I think this is a pretty standard pattern with an \"erase\" function which returns the \"next thing\" upon deletion (cf. e.g. https://en.cppreference.com/w/cpp/container/vector/erase). But you\u0027re right that it makes sense to not hide that modification of \"next attr\" behind a reference, so I\u0027ve made that a return value, and I also like the suggestion of moving the attr checks into another function.",
+      "parentUuid": "8b16b502_a39b6658",
+      "range": {
+        "startLine": 24,
+        "startChar": 0,
+        "endLine": 24,
+        "endChar": 20
+      },
+      "revId": "9bed69ef6f159aed45f2dc30d3f3781e8b774fe1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "59946283_880ddfb2",
@@ -47,6 +71,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "1b3b0cea_cfe0bda9",
+        "filename": "src/events.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 111,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2021-03-04T16:17:58Z",
+      "side": 1,
+      "message": "Done (in a different way)",
+      "parentUuid": "59946283_880ddfb2",
+      "range": {
+        "startLine": 108,
+        "startChar": 28,
+        "endLine": 111,
+        "endChar": 72
+      },
+      "revId": "9bed69ef6f159aed45f2dc30d3f3781e8b774fe1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "66b4a22d_01aca0d0",
@@ -60,6 +108,30 @@
       "writtenOn": "2021-03-04T12:56:58Z",
       "side": 1,
       "message": "I know that std::ignore can be used like this. Another way is [[maybe_unused]], which I don\u0027t like anymore.\n\nThe C++ Core Guidelines recommends unnamed parameters.\nhttps://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#f9-unused-parameters-should-be-unnamed",
+      "range": {
+        "startLine": 133,
+        "startChar": 0,
+        "endLine": 134,
+        "endChar": 23
+      },
+      "revId": "9bed69ef6f159aed45f2dc30d3f3781e8b774fe1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0b1835c2_6204a22a",
+        "filename": "src/events.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2021-03-04T16:17:58Z",
+      "side": 1,
+      "message": "this is a demo-level code, it will be changed later on to use docopt. Used [[maybe_unused]] for now.",
+      "parentUuid": "66b4a22d_01aca0d0",
       "range": {
         "startLine": 133,
         "startChar": 0,
