@@ -15,12 +15,23 @@
 
 using namespace nghttp2::asio_http2;
 
+namespace {
+std::string peerName(const server::request &req)
+{
+    std::string peer = boost::lexical_cast<std::string>(req.remote_endpoint());
+    if (auto forwarded = req.header().find("forwarded"); forwarded != req.header().end()) {
+        peer += '(' + forwarded->second.value + ')';
+    }
+    return peer;
+}
+}
+
 namespace rousette::http {
 
 /** @short After constructing, make sure to call activate() immediately. */
 EventStream::EventStream(const server::request& req, const server::response& res)
     : res{res}
-    , peer{boost::lexical_cast<std::string>(req.remote_endpoint())}
+    , peer{peerName(req)}
 {
     spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
 }
