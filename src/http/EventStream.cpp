@@ -9,6 +9,7 @@
 #include <nghttp2/asio_http2_server.h>
 #include <nghttp2/nghttp2.h>
 #include <numeric>
+#include <regex>
 #include <spdlog/spdlog.h>
 #include "http/EventStream.h"
 
@@ -83,13 +84,24 @@ ssize_t EventStream::process(uint8_t* destination, std::size_t len, uint32_t* da
 
 void EventStream::enqueue(const std::string& what)
 {
+    std::string buf;
+    buf.reserve(what.size());
+    const std::regex newline{"\n"};
+    for (auto it = std::sregex_token_iterator{what.begin(), what.end(), newline, -1};
+            it != std::sregex_token_iterator{}; ++it) {
+        buf += "data: ";
+        buf += *it;
+        buf += '\n';
+    }
+    buf += '\n';
+
     {
         std::lock_guard lock{mtx};
         auto len = std::accumulate(queue.begin(), queue.end(), 0, [](const auto a, const auto b){
                 return a + b.size();
                 });
         spdlog::trace("{}: new event, ∑ queue size = {}", peer, len);
-        queue.push_back("data: " + what + "\n\n");
+        queue.push_back(buf);
     }
     state = HasEvents;
     res.resume();
