@@ -22,6 +22,30 @@
       },
       "revId": "099e3327070c2d5711bc99518e6e8ae3d089fbd9",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f06414c9_242c294f",
+        "filename": "src/restconf/Server.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2021-03-05T11:26:38Z",
+      "side": 1,
+      "message": "Yes, I need to make sure that users of this class won\u0027t attempt to instantiate its default dtor from this context. The reason is the std::unique_ptr\u003cnghttp2::asio_http2::server::http2\u003e (and perhaps the other one as well); this thing encapsulates the nghttp2\u0027s bits inside as an implementation detail, and the user of the Server class might not know the definition of these embedded classes at all. When the default dtor gets created, that results in an error. When the dtor is moved to the .cpp file where all the includes are available, it works.",
+      "parentUuid": "2a8c7af9_4bc88026",
+      "range": {
+        "startLine": 30,
+        "startChar": 0,
+        "endLine": 30,
+        "endChar": 14
+      },
+      "revId": "099e3327070c2d5711bc99518e6e8ae3d089fbd9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
