@@ -81,6 +81,7 @@ target_link_libraries(rousette-http PRIVATE spdlog::spdlog PkgConfig::nghttp2 ss
 
 add_library(rousette-sysrepo STATIC
     src/sr/AllEvents.cpp
+    src/sr/OpticalEvents.cpp
 )
 target_link_libraries(rousette-sysrepo PRIVATE spdlog::spdlog PkgConfig::SYSREPO PkgConfig::LIBYANG)
 
