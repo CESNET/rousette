@@ -8,8 +8,19 @@
 #include <nghttp2/asio_http2_server.h>
 #include <spdlog/spdlog.h>
 #include <sysrepo-cpp/Session.hpp>
+#include "http/utils.hpp"
 #include "restconf/Server.h"
-#include "sr/AllEvents.h"
+#include "sr/OpticalEvents.h"
+
+namespace {
+constexpr auto notifPrefix = R"json({"ietf-restconf:notification":{"ietf-yang-push:push-update":{"datastore-contents":)json";
+constexpr auto notifSuffix = R"json(}}})json";
+
+auto as_restconf_push_update(const std::string& content)
+{
+    return notifPrefix + content + notifSuffix;
+}
+}
 
 namespace rousette::restconf {
 
@@ -17,23 +28,15 @@ Server::~Server() = default;
 
 Server::Server(std::shared_ptr<sysrepo::Connection> conn)
     : server{std::make_unique<nghttp2::asio_http2::server::http2>()}
-    , srEvents{std::make_unique<sr::AllEvents>(std::make_shared<sysrepo::Session>(conn), sr::AllEvents::WithAttributes::None)}
+    , dwdmEvents{std::make_unique<sr::OpticalEvents>(std::make_shared<sysrepo::Session>(conn))}
 {
-    srEvents->change.connect([this](const std::string& module, const std::string& diff) {
-            if (module == "czechlight-roadm-device" || module == "czechlight-coherent-add-rop" || module == "czechlight-inline-amp") {
-                opticsChange(diff);
-            }
-            anyChange(diff);
-    });
-
-    server->handle("/telemetry/all", [this](const auto& req, const auto& res) {
-        auto client = std::make_shared<http::EventStream>(req, res);
-        client->activate(anyChange);
+    dwdmEvents->change.connect([this](const std::string& content) {
+        opticsChange(as_restconf_push_update(content));
     });
 
     server->handle("/telemetry/optics", [this](const auto& req, const auto& res) {
         auto client = std::make_shared<http::EventStream>(req, res);
-        client->activate(opticsChange);
+        client->activate(opticsChange, as_restconf_push_update(dwdmEvents->currentData()));
     });
 }
 
