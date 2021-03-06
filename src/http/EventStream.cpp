@@ -5,33 +5,22 @@
  *
 */
 
-#include <boost/lexical_cast.hpp>
 #include <nghttp2/asio_http2_server.h>
 #include <nghttp2/nghttp2.h>
 #include <numeric>
 #include <regex>
 #include <spdlog/spdlog.h>
 #include "http/EventStream.h"
+#include "http/utils.hpp"
 
 using namespace nghttp2::asio_http2;
-
-namespace {
-std::string peerName(const server::request &req)
-{
-    std::string peer = boost::lexical_cast<std::string>(req.remote_endpoint());
-    if (auto forwarded = req.header().find("forwarded"); forwarded != req.header().end()) {
-        peer += '(' + forwarded->second.value + ')';
-    }
-    return peer;
-}
-}
 
 namespace rousette::http {
 
 /** @short After constructing, make sure to call activate() immediately. */
 EventStream::EventStream(const server::request& req, const server::response& res)
     : res{res}
-    , peer{peerName(req)}
+    , peer{peer_from_request(req)}
 {
     spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
 }

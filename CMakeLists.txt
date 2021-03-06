@@ -75,6 +75,7 @@ pkg_check_modules(LIBYANG REQUIRED libyang-cpp>=1.0.215 IMPORTED_TARGET libyang)
 
 add_library(rousette-http STATIC
     src/http/EventStream.cpp
+    src/http/utils.cpp
 )
 target_link_libraries(rousette-http PRIVATE spdlog::spdlog PkgConfig::nghttp2 ssl crypto)
 
