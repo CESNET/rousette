@@ -33,6 +33,23 @@ Server::Server(std::shared_ptr<sysrepo::Connection> conn)
         auto client = std::make_shared<http::EventStream>(req, res);
         client->activate(opticsChange);
     });
+
+    server->handle("/restconf/data/czechlight-roadm-device:spectrum-scan",
+        [conn](const auto& req, const auto& res) {
+            spdlog::info("{}: {} {}", http::peer_from_request(req), req.method(), req.uri().raw_path);
+            auto sess = std::make_shared<sysrepo::Session>(conn);
+            sess->session_switch_ds(SR_DS_OPERATIONAL);
+            sess->set_user("nobody"); // FIXME
+            auto data = sess->get_data("/czechlight-roadm-device:spectrum-scan");
+
+            if (data) {
+                res.write_head(200, {{"content-type", {"application/yang-data+json", false}}});
+                res.end(data->print_mem(LYD_JSON, 0));
+            } else {
+                res.write_head(500, {{"content-type", {"text/plain", false}}});
+                res.end("internal error");
+            }
+        });
 }
 
 void Server::listen_and_serve(const std::string& address, const std::string& port)
