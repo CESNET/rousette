@@ -18,7 +18,7 @@ class Connection;
 
 namespace rousette {
 namespace sr {
-class AllEvents;
+class OpticalEvents;
 }
 
 /** @short RESTCONF protocol */
@@ -31,9 +31,9 @@ public:
     void listen_and_serve(const std::string& address, const std::string& port);
 private:
     std::unique_ptr<nghttp2::asio_http2::server::http2> server;
-    std::unique_ptr<sr::AllEvents> srEvents;
+    std::unique_ptr<sr::OpticalEvents> dwdmEvents;
     using JsonDiffSignal = boost::signals2::signal<void(const std::string& json)>;
-    JsonDiffSignal anyChange, opticsChange;
+    JsonDiffSignal opticsChange;
 };
 }
 }
