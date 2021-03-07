@@ -29,7 +29,7 @@ public:
     using Signal = boost::signals2::signal<void(const std::string& message)>;
 
     EventStream(const nghttp2::asio_http2::server::request& req, const nghttp2::asio_http2::server::response& res);
-    void activate(Signal& signal);
+    void activate(Signal& signal, const std::optional<std::string>& initialEvent = std::nullopt);
 private:
     const nghttp2::asio_http2::server::response& res;
     enum State {

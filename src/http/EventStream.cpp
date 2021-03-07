@@ -30,12 +30,8 @@ EventStream::EventStream(const server::request& req, const server::response& res
 This cannot be a part of the constructor because of enable_shared_from_this<> semantics. When in constructor,
 shared_from_this() throws bad_weak_ptr, so we need a two-phase construction.
 */
-void EventStream::activate(Signal& signal)
+void EventStream::activate(Signal& signal, const std::optional<std::string>& initialEvent)
 {
-    subscription = signal.connect([this](const auto& msg) {
-        enqueue(msg);
-    });
-
     auto client = shared_from_this();
     res.write_head(200, {{"content-type", {"text/event-stream", false}}});
 
@@ -46,6 +42,14 @@ void EventStream::activate(Signal& signal)
 
     res.end([client](uint8_t* destination, std::size_t len, uint32_t* data_flags) {
         return client->process(destination, len, data_flags);
+    });
+
+    if (initialEvent) {
+        enqueue(*initialEvent);
+    }
+
+    subscription = signal.connect([this](const auto& msg) {
+        enqueue(msg);
     });
 }
 
