@@ -15,7 +15,7 @@ int main(int argc [[maybe_unused]], char* argv [[maybe_unused]] [])
 
     auto conn = std::make_shared<sysrepo::Connection>();
     auto server = rousette::restconf::Server{conn};
-    server.listen_and_serve("::", "10080");
+    server.listen_and_serve("::1", "10080");
 
     return 0;
 }
