@@ -77,29 +77,29 @@ add_library(rousette-http STATIC
     src/http/EventStream.cpp
     src/http/utils.cpp
 )
-target_link_libraries(rousette-http PRIVATE spdlog::spdlog PkgConfig::nghttp2 ssl crypto)
+target_link_libraries(rousette-http PUBLIC spdlog::spdlog PkgConfig::nghttp2 ssl crypto)
 
 add_library(rousette-sysrepo STATIC
     src/sr/AllEvents.cpp
     src/sr/OpticalEvents.cpp
 )
-target_link_libraries(rousette-sysrepo PRIVATE spdlog::spdlog PkgConfig::SYSREPO PkgConfig::LIBYANG)
+target_link_libraries(rousette-sysrepo PUBLIC spdlog::spdlog PkgConfig::SYSREPO PkgConfig::LIBYANG)
 
 add_library(rousette-restconf STATIC
     src/restconf/Server.cpp
 )
-target_link_libraries(rousette-restconf PRIVATE rousette-http spdlog::spdlog PkgConfig::SYSREPO PkgConfig::nghttp2 Boost::system Threads::Threads)
+target_link_libraries(rousette-restconf PUBLIC rousette-http rousette-sysrepo Boost::system Threads::Threads)
 
 add_executable(clock-demo src/clock.cpp)
-target_link_libraries(clock-demo rousette-http spdlog::spdlog PkgConfig::nghttp2 Boost::system Threads::Threads)
+target_link_libraries(clock-demo rousette-http Boost::system Threads::Threads)
 
 add_executable(watch-operational-ds
     src/events.cpp
 )
-target_link_libraries(watch-operational-ds PRIVATE rousette-sysrepo PkgConfig::SYSREPO spdlog::spdlog)
+target_link_libraries(watch-operational-ds PUBLIC rousette-sysrepo)
 
 add_executable(rousette src/restconf/main.cpp)
-target_link_libraries(rousette PRIVATE rousette-restconf rousette-sysrepo spdlog::spdlog PkgConfig::SYSREPO)
+target_link_libraries(rousette PUBLIC rousette-restconf)
 
 install(TARGETS
     # clock-demo
