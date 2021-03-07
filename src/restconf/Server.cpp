@@ -110,7 +110,7 @@ Server::Server(std::shared_ptr<sysrepo::Connection> conn)
 
             auto sess = std::make_shared<sysrepo::Session>(conn);
             sess->session_switch_ds(SR_DS_OPERATIONAL);
-            sess->set_user("nobody"); // FIXME
+            sess->set_user("yangnobody"); // FIXME
             auto data = sess->get_data(('/' + *path).c_str());
 
             if (!data) {
