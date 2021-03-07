@@ -72,6 +72,7 @@ find_package(Boost REQUIRED COMPONENTS system thread)
 
 pkg_check_modules(SYSREPO REQUIRED sysrepo-cpp>=1.4.103 IMPORTED_TARGET sysrepo)
 pkg_check_modules(LIBYANG REQUIRED libyang-cpp>=1.0.215 IMPORTED_TARGET libyang)
+pkg_check_modules(SYSTEMD REQUIRED IMPORTED_TARGET libsystemd)
 
 add_library(rousette-http STATIC
     src/http/EventStream.cpp
@@ -99,7 +100,7 @@ add_executable(watch-operational-ds
 target_link_libraries(watch-operational-ds PUBLIC rousette-sysrepo)
 
 add_executable(rousette src/restconf/main.cpp)
-target_link_libraries(rousette PUBLIC rousette-restconf)
+target_link_libraries(rousette PUBLIC rousette-restconf PkgConfig::SYSTEMD)
 
 install(TARGETS
     # clock-demo
