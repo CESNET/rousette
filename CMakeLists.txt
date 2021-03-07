@@ -107,3 +107,31 @@ install(TARGETS
     # watch-operational-ds
     rousette
     RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/)
+
+include(CTest)
+if(BUILD_TESTING)
+    find_package(trompeloeil 33 REQUIRED)
+    find_package(doctest 2.3.1 REQUIRED)
+
+    add_library(DoctestIntegration STATIC
+        tests/doctest_integration.cpp
+        tests/trompeloeil_doctest.h
+        )
+
+    target_include_directories(DoctestIntegration PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/tests/ ${CMAKE_CURRENT_SOURCE_DIR}/src/)
+    target_link_libraries(DoctestIntegration doctest::doctest trompeloeil spdlog::spdlog)
+    target_compile_definitions(DoctestIntegration PUBLIC DOCTEST_CONFIG_SUPER_FAST_ASSERTS)
+
+    function(rousette_test fname)
+        add_executable(test_${fname} tests/${fname}.cpp)
+        target_link_libraries(test_${fname} DoctestIntegration)
+        if(NOT CMAKE_CROSSCOMPILING)
+            add_test(test_${fname} test_${fname})
+        endif()
+        target_include_directories(test_${fname} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+        set_tests_properties(test_${fname} PROPERTIES TIMEOUT 60)
+    endfunction()
+
+    rousette_test(http-server)
+    target_link_libraries(test_http-server rousette-restconf)
+endif()
