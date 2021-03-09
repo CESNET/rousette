@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7f4ca115_aef9e3e4",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2021-03-09T13:48:03Z",
+      "side": 1,
+      "message": "I had to change this to \"rousette\" so that output of default journalctl still holds the binary name. If this is missing, it\u0027s only available via the \"name of unit\" field which is not shown by default.",
+      "range": {
+        "startLine": 61,
+        "startChar": 55,
+        "endLine": 61,
+        "endChar": 57
+      },
+      "revId": "ddb31b226a13cf3456419f6893c089e860398c8a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
