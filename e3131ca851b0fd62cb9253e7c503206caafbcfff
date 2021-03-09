@@ -22,6 +22,30 @@
       },
       "revId": "e3131ca851b0fd62cb9253e7c503206caafbcfff",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c2a12313_25f0ca57",
+        "filename": "src/sr/OpticalEvents.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2021-03-09T13:40:08Z",
+      "side": 1,
+      "message": "renamed to currentData()",
+      "parentUuid": "d939e819_60292aca",
+      "range": {
+        "startLine": 64,
+        "startChar": 27,
+        "endLine": 64,
+        "endChar": 38
+      },
+      "revId": "e3131ca851b0fd62cb9253e7c503206caafbcfff",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
