@@ -12,17 +12,25 @@
 #include <sysrepo-cpp/Session.hpp>
 #include "http/utils.hpp"
 #include "restconf/Server.h"
+#include "restconf/utils.h"
 #include "sr/OpticalEvents.h"
 
 using namespace std::literals;
 
+using nghttp2::asio_http2::server::request;
+using nghttp2::asio_http2::server::response;
+
+namespace rousette::restconf {
+
 namespace {
-constexpr auto notifPrefix = R"json({"ietf-restconf:notification":{"ietf-yang-push:push-update":{"datastore-contents":)json";
+constexpr auto notifPrefix = R"json({"ietf-restconf:notification":{"eventTime":")json";
+constexpr auto notifMid = R"json(","ietf-yang-push:push-update":{"datastore-contents":)json";
 constexpr auto notifSuffix = R"json(}}})json";
 
-auto as_restconf_push_update(const std::string& content)
+template <typename T>
+auto as_restconf_push_update(const std::string& content, const T& time)
 {
-    return notifPrefix + content + notifSuffix;
+    return notifPrefix + yangDateTime<typename T::clock, std::chrono::nanoseconds>(time) + notifMid + content + notifSuffix;
 }
 
 constexpr auto restconfRoot = "/restconf/";
@@ -46,11 +54,6 @@ const std::initializer_list<std::string> allowedPrefixes {
 };
 }
 }
-
-using nghttp2::asio_http2::server::request;
-using nghttp2::asio_http2::server::response;
-
-namespace rousette::restconf {
 
 std::optional<std::string> as_subtree_path(const std::string& path)
 {
@@ -90,12 +93,12 @@ Server::Server(std::shared_ptr<sysrepo::Connection> conn)
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(std::make_shared<sysrepo::Session>(conn))}
 {
     dwdmEvents->change.connect([this](const std::string& content) {
-        opticsChange(as_restconf_push_update(content));
+        opticsChange(as_restconf_push_update(content, std::chrono::system_clock::now()));
     });
 
     server->handle("/telemetry/optics", [this](const auto& req, const auto& res) {
         auto client = std::make_shared<http::EventStream>(req, res);
-        client->activate(opticsChange, as_restconf_push_update(dwdmEvents->currentData()));
+        client->activate(opticsChange, as_restconf_push_update(dwdmEvents->currentData(), std::chrono::system_clock::now()));
     });
 
     server->handle(restconfRoot,

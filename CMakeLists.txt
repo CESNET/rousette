@@ -88,6 +88,7 @@ target_link_libraries(rousette-sysrepo PUBLIC spdlog::spdlog PkgConfig::SYSREPO 
 
 add_library(rousette-restconf STATIC
     src/restconf/Server.cpp
+    src/restconf/utils.cpp
 )
 target_link_libraries(rousette-restconf PUBLIC rousette-http rousette-sysrepo Boost::system Threads::Threads)
 
