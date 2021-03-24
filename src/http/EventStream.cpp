@@ -33,7 +33,10 @@ shared_from_this() throws bad_weak_ptr, so we need a two-phase construction.
 void EventStream::activate(Signal& signal, const std::optional<std::string>& initialEvent)
 {
     auto client = shared_from_this();
-    res.write_head(200, {{"content-type", {"text/event-stream", false}}});
+    res.write_head(200, {
+        {"content-type", {"text/event-stream", false}},
+        {"access-control-allow-origin", {"*", false}},
+    });
 
     res.on_close([client](const auto ec) {
         spdlog::debug("{}: closed ({})", client->peer, nghttp2_http2_strerror(ec));

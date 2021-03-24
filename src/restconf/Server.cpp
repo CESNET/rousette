@@ -131,7 +131,10 @@ Server::Server(std::shared_ptr<sysrepo::Connection> conn)
                 return;
             }
 
-            res.write_head(200, {{"content-type", {"application/yang-data+json", false}}});
+            res.write_head(200, {
+                {"content-type", {"application/yang-data+json", false}},
+                {"access-control-allow-origin", {"*", false}},
+            });
             res.end(data->print_mem(LYD_JSON, 0));
         });
 }
