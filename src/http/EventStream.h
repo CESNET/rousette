@@ -35,11 +35,12 @@ private:
     enum State {
         HasEvents,
         WaitingForEvents,
+        Closed,
     };
-    std::atomic<State> state = WaitingForEvents;
 
+    State state = WaitingForEvents;
     std::list<std::string> queue;
-    mutable std::mutex mtx;
+    mutable std::mutex mtx; // for `state` and `queue`
     boost::signals2::scoped_connection subscription;
     const std::string peer;
 
