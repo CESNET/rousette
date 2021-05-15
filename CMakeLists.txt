@@ -70,8 +70,8 @@ find_package(PkgConfig)
 pkg_check_modules(nghttp2 REQUIRED IMPORTED_TARGET libnghttp2_asio>=1.41.0 libnghttp2)
 find_package(Boost REQUIRED COMPONENTS system thread)
 
-pkg_check_modules(SYSREPO REQUIRED sysrepo-cpp>=1.4.103 IMPORTED_TARGET sysrepo)
-pkg_check_modules(LIBYANG REQUIRED libyang-cpp>=1.0.215 IMPORTED_TARGET libyang)
+pkg_check_modules(SYSREPO REQUIRED sysrepo-cpp>=1.4.135 IMPORTED_TARGET sysrepo)
+pkg_check_modules(LIBYANG REQUIRED libyang-cpp>=1.0.233 IMPORTED_TARGET libyang)
 pkg_check_modules(SYSTEMD REQUIRED IMPORTED_TARGET libsystemd)
 
 add_library(rousette-http STATIC
