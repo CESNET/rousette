@@ -10,6 +10,7 @@
 #include <boost/signals2.hpp>
 #include <list>
 #include <memory>
+#include <optional>
 #include <spdlog/spdlog.h>
 
 namespace nghttp2::asio_http2::server {
