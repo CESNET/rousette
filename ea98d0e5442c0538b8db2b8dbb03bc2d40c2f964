@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "fcb8aee6_c29e7358",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2021-05-18T11:12:45Z",
+      "side": 1,
+      "message": "For the CI failure, see https://gerrit.cesnet.cz/c/CzechLight/velia/+/4223 . TL;DR: it\u0027s benign.",
+      "revId": "ea98d0e5442c0538b8db2b8dbb03bc2d40c2f964",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
