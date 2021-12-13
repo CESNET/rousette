@@ -8,11 +8,7 @@
 #include <boost/signals2.hpp>
 #include <memory>
 #include <mutex>
-
-namespace sysrepo {
-class Session;
-class Subscribe;
-}
+#include <sysrepo-cpp/Connection.hpp>
 
 /** @short Communication with sysrepo */
 namespace rousette::sr {
@@ -21,17 +17,17 @@ namespace rousette::sr {
 class OpticalEvents {
 public:
     using Signal = boost::signals2::signal<void(const std::string& json)>;
-    OpticalEvents(std::shared_ptr<sysrepo::Session> session);
+    OpticalEvents(sysrepo::Session session);
 
     Signal change;
 
     std::string currentData() const;
 
 private:
-    int onChange(std::shared_ptr<sysrepo::Session> session, const std::string& module);
+    sysrepo::ErrorCode onChange(sysrepo::Session session, const std::string& module);
 
-    std::shared_ptr<sysrepo::Subscribe> sub;
     mutable std::mutex mtx;
+    std::optional<sysrepo::Subscription> sub;
     std::string lastData;
 };
 }

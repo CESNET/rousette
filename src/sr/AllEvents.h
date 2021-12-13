@@ -7,11 +7,8 @@
 
 #include <boost/signals2.hpp>
 #include <memory>
-
-namespace sysrepo {
-class Session;
-class Subscribe;
-}
+#include <optional>
+#include <sysrepo-cpp/Connection.hpp>
 
 /** @short Communication with sysrepo */
 namespace rousette::sr {
@@ -26,14 +23,14 @@ public:
         None, ///< Remove all attributes
     };
     using Signal = boost::signals2::signal<void(const std::string& module, const std::string& json)>;
-    AllEvents(std::shared_ptr<sysrepo::Session> session, const WithAttributes attrBehavior);
+    AllEvents(sysrepo::Session session, const WithAttributes attrBehavior);
 
     Signal change;
 
 private:
-    int onChange(std::shared_ptr<sysrepo::Session> session, const std::string& module);
+    sysrepo::ErrorCode onChange(sysrepo::Session session, const std::string& module);
 
-    std::shared_ptr<sysrepo::Subscribe> sub;
+    std::optional<sysrepo::Subscription> sub;
     WithAttributes attrBehavior;
 };
 }
