@@ -9,7 +9,6 @@
 #include <nghttp2/asio_http2_server.h>
 #include <regex>
 #include <spdlog/spdlog.h>
-#include <sysrepo-cpp/Session.hpp>
 #include "http/utils.hpp"
 #include "restconf/Server.h"
 #include "restconf/utils.h"
@@ -88,9 +87,9 @@ void rejectResponse(const request& req, const response& res, const int code, con
 
 Server::~Server() = default;
 
-Server::Server(std::shared_ptr<sysrepo::Connection> conn)
+Server::Server(sysrepo::Connection conn)
     : server{std::make_unique<nghttp2::asio_http2::server::http2>()}
-    , dwdmEvents{std::make_unique<sr::OpticalEvents>(std::make_shared<sysrepo::Session>(conn))}
+    , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
     dwdmEvents->change.connect([this](const std::string& content) {
         opticsChange(as_restconf_push_update(content, std::chrono::system_clock::now()));
@@ -102,7 +101,7 @@ Server::Server(std::shared_ptr<sysrepo::Connection> conn)
     });
 
     server->handle(restconfRoot,
-        [conn](const auto& req, const auto& res) {
+        [conn](const auto& req, const auto& res) mutable {
             const auto& peer = http::peer_from_request(req);
             spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
 
@@ -122,9 +121,9 @@ Server::Server(std::shared_ptr<sysrepo::Connection> conn)
                 return;
             }
 
-            auto sess = std::make_shared<sysrepo::Session>(conn);
-            sess->session_switch_ds(SR_DS_OPERATIONAL);
-            auto data = sess->get_data(('/' + *path).c_str());
+            auto sess = conn.sessionStart();
+            sess.switchDatastore(sysrepo::Datastore::Operational);
+            auto data = sess.getData(('/' + *path).c_str());
 
             if (!data) {
                 rejectResponse(req, res, 404, "no data from sysrepo");
@@ -135,7 +134,7 @@ Server::Server(std::shared_ptr<sysrepo::Connection> conn)
                 {"content-type", {"application/yang-data+json", false}},
                 {"access-control-allow-origin", {"*", false}},
             });
-            res.end(data->print_mem(LYD_JSON, 0));
+            res.end(std::string{*data->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings)});
         });
 }
 

@@ -1,6 +1,6 @@
 project(rousette LANGUAGES CXX)
 cmake_minimum_required(VERSION 3.12)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -70,8 +70,8 @@ find_package(PkgConfig)
 pkg_check_modules(nghttp2 REQUIRED IMPORTED_TARGET libnghttp2_asio>=1.41.0 libnghttp2)
 find_package(Boost REQUIRED COMPONENTS system thread)
 
-pkg_check_modules(SYSREPO REQUIRED sysrepo-cpp>=1.4.135 IMPORTED_TARGET sysrepo)
-pkg_check_modules(LIBYANG REQUIRED libyang-cpp>=1.0.233 IMPORTED_TARGET libyang)
+pkg_check_modules(SYSREPO-CPP REQUIRED sysrepo-cpp>=alpha IMPORTED_TARGET)
+pkg_check_modules(LIBYANG-CPP REQUIRED libyang-cpp>=alpha IMPORTED_TARGET)
 pkg_check_modules(SYSTEMD REQUIRED IMPORTED_TARGET libsystemd)
 
 add_library(rousette-http STATIC
@@ -84,7 +84,7 @@ add_library(rousette-sysrepo STATIC
     src/sr/AllEvents.cpp
     src/sr/OpticalEvents.cpp
 )
-target_link_libraries(rousette-sysrepo PUBLIC spdlog::spdlog PkgConfig::SYSREPO PkgConfig::LIBYANG)
+target_link_libraries(rousette-sysrepo PUBLIC spdlog::spdlog PkgConfig::SYSREPO-CPP PkgConfig::LIBYANG-CPP)
 
 add_library(rousette-restconf STATIC
     src/restconf/Server.cpp
@@ -120,7 +120,7 @@ if(BUILD_TESTING)
         )
 
     target_include_directories(DoctestIntegration PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/tests/ ${CMAKE_CURRENT_SOURCE_DIR}/src/)
-    target_link_libraries(DoctestIntegration doctest::doctest trompeloeil spdlog::spdlog)
+    target_link_libraries(DoctestIntegration doctest::doctest spdlog::spdlog)
     target_compile_definitions(DoctestIntegration PUBLIC DOCTEST_CONFIG_SUPER_FAST_ASSERTS)
 
     function(rousette_test fname)
