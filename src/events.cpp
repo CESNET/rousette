@@ -17,7 +17,7 @@ int main(int argc [[maybe_unused]], char* argv [[maybe_unused]] [])
 {
     spdlog::set_level(spdlog::level::trace);
 
-    auto sess = std::make_shared<sysrepo::Session>(std::make_shared<sysrepo::Connection>());
+    auto sess = sysrepo::Connection{}.sessionStart();
     auto e = AllEvents{
         sess,
         /* AllEvents::WithAttributes::All, */

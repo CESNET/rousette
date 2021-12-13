@@ -63,7 +63,7 @@ int main(int argc [[maybe_unused]], char* argv [[maybe_unused]] [])
     }
     spdlog::set_level(spdlog::level::trace);
 
-    auto conn = std::make_shared<sysrepo::Connection>();
+    auto conn = sysrepo::Connection{};
     auto server = rousette::restconf::Server{conn};
     server.listen_and_serve("::1", "10080");
 
