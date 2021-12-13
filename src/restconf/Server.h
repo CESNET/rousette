@@ -6,14 +6,11 @@
 */
 
 #pragma once
+#include <sysrepo-cpp/Connection.hpp>
 #include "http/EventStream.h"
 
 namespace nghttp2::asio_http2::server {
 class http2;
-}
-
-namespace sysrepo {
-class Connection;
 }
 
 namespace rousette {
@@ -31,7 +28,7 @@ bool allow_anonymous_read_for(const std::string& path);
 /** @short A RESTCONF-ish server */
 class Server {
 public:
-    explicit Server(std::shared_ptr<sysrepo::Connection> conn);
+    explicit Server(sysrepo::Connection conn);
     ~Server();
     void listen_and_serve(const std::string& address, const std::string& port);
 private:
