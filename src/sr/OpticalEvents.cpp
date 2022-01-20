@@ -36,6 +36,7 @@ OpticalEvents::OpticalEvents(std::shared_ptr<sysrepo::Session> session)
                         return onChange(sess, name);
                     }, nullptr, 0, SR_SUBSCR_CTX_REUSE | SR_SUBSCR_DONE_ONLY | SR_SUBSCR_PASSIVE);
             spdlog::debug("Listening for module {}", mod);
+            std::unique_lock lock{mtx};
             lastData = dumpDataFrom(session, mod);
             return;
         } catch (sysrepo::sysrepo_exception& e) {
@@ -52,6 +53,7 @@ OpticalEvents::OpticalEvents(std::shared_ptr<sysrepo::Session> session)
 int OpticalEvents::onChange(std::shared_ptr<sysrepo::Session> session, const std::string& module)
 {
     assert(session->session_get_ds() == SR_DS_OPERATIONAL);
+    std::unique_lock lock{mtx};
     lastData = dumpDataFrom(session, module);
     spdlog::debug("change: {} bytes", lastData.size());
 
@@ -63,6 +65,7 @@ int OpticalEvents::onChange(std::shared_ptr<sysrepo::Session> session, const std
 
 std::string OpticalEvents::currentData() const
 {
+    std::unique_lock lock{mtx};
     return lastData;
 }
 }

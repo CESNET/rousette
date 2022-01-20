@@ -7,6 +7,7 @@
 
 #include <boost/signals2.hpp>
 #include <memory>
+#include <mutex>
 
 namespace sysrepo {
 class Session;
@@ -30,6 +31,7 @@ private:
     int onChange(std::shared_ptr<sysrepo::Session> session, const std::string& module);
 
     std::shared_ptr<sysrepo::Subscribe> sub;
+    mutable std::mutex mtx;
     std::string lastData;
 };
 }
