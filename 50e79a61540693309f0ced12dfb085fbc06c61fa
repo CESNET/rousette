@@ -1,0 +1,8 @@
+Verified+1: Zuul CI <cesnet-zuul+public@gerrit.cesnet.cz>
+Verified+1: CzechLight CI <cesnet-zuul+czechlight@gerrit.cesnet.cz>
+Code-Review+2: Václav Kubernát <kubernat@cesnet.cz>
+Submitted-by: Jan Kundrát <jan.kundrat@cesnet.cz>
+Submitted-at: Thu, 20 Jan 2022 23:42:02 +0100
+Reviewed-on: https://gerrit.cesnet.cz/c/CzechLight/rousette/+/5461
+Project: CzechLight/rousette
+Branch: refs/heads/master
