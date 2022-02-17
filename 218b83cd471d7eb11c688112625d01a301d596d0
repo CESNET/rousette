@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "6d5de078_0dbff496",
+        "filename": "src/sr/AllEvents.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-02-17T16:39:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4b1aba14_b63c03ff",
+      "range": {
+        "startLine": 65,
+        "startChar": 0,
+        "endLine": 67,
+        "endChar": 89
+      },
+      "revId": "218b83cd471d7eb11c688112625d01a301d596d0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "a686200c_8cacbebe",
@@ -47,6 +71,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c0f91d77_7d0f82be",
+        "filename": "src/sr/AllEvents.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-02-17T16:39:32Z",
+      "side": 1,
+      "message": "ok",
+      "parentUuid": "a686200c_8cacbebe",
+      "range": {
+        "startLine": 79,
+        "startChar": 0,
+        "endLine": 83,
+        "endChar": 27
+      },
+      "revId": "218b83cd471d7eb11c688112625d01a301d596d0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c3d92ae0_85b9e5f5",
@@ -60,6 +108,30 @@
       "writtenOn": "2022-02-15T19:12:41Z",
       "side": 1,
       "message": "please port this one as well so that it\u0027s \"uncommentable\" :)",
+      "range": {
+        "startLine": 100,
+        "startChar": 0,
+        "endLine": 102,
+        "endChar": 99
+      },
+      "revId": "218b83cd471d7eb11c688112625d01a301d596d0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "85af565b_b5092ac1",
+        "filename": "src/sr/AllEvents.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-02-17T16:39:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c3d92ae0_85b9e5f5",
       "range": {
         "startLine": 100,
         "startChar": 0,
