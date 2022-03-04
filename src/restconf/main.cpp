@@ -7,6 +7,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <csignal>
 #include <inttypes.h>
 #include <spdlog/sinks/systemd_sink.h>
 #include <spdlog/sinks/ansicolor_sink.h>
@@ -15,6 +16,7 @@
 #include <unistd.h>
 #include <spdlog/spdlog.h>
 #include <sysrepo-cpp/Session.hpp>
+#include <sysrepo-cpp/utils/utils.hpp>
 #include "restconf/Server.h"
 
 namespace {
@@ -62,10 +64,14 @@ int main(int argc [[maybe_unused]], char* argv [[maybe_unused]] [])
         spdlog::set_default_logger(logger);
     }
     spdlog::set_level(spdlog::level::trace);
+    sysrepo::setLogLevelStderr(sysrepo::LogLevel::Information);
 
     auto conn = sysrepo::Connection{};
     auto server = rousette::restconf::Server{conn};
     server.listen_and_serve("::1", "10080");
-
+    signal(SIGTERM, [](int) {});
+    signal(SIGINT, [](int) {});
+    pause();
+    server.stop();
     return 0;
 }

@@ -90,6 +90,7 @@ Server::~Server() = default;
 Server::Server(sysrepo::Connection conn)
     : server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
+    , m_nacmSub(conn.sessionStart().initNacm())
 {
     dwdmEvents->change.connect([this](const std::string& content) {
         opticsChange(as_restconf_push_update(content, std::chrono::system_clock::now()));
@@ -116,25 +117,24 @@ Server::Server(sysrepo::Connection conn)
                 return;
             }
 
-            if (!allow_anonymous_read_for(*path)) {
-                rejectResponse(req, res, 400, "module not allowed");
-                return;
-            }
-
             auto sess = conn.sessionStart();
-            sess.switchDatastore(sysrepo::Datastore::Operational);
+            sess.setNacmUser("anon");
+            sess.switchDatastore(sysrepo::Datastore::Running);
             auto data = sess.getData(('/' + *path).c_str());
-
-            if (!data) {
-                rejectResponse(req, res, 404, "no data from sysrepo");
-                return;
-            }
 
             res.write_head(200, {
                 {"content-type", {"application/yang-data+json", false}},
                 {"access-control-allow-origin", {"*", false}},
             });
-            res.end(std::string{*data->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings)});
+
+            if (!data) {
+                spdlog::debug("Returning empty data for '/{}'", *path);
+                res.end("{}");
+                return;
+            }
+            auto resData = std::string{*data->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings)};
+            spdlog::debug("Returning data for '/{}': {}", *path, resData);
+            res.end(resData);
         });
 }
 
@@ -142,8 +142,14 @@ void Server::listen_and_serve(const std::string& address, const std::string& por
 {
     spdlog::debug("Listening at {} {}", address, port);
     boost::system::error_code ec;
-    if (server->listen_and_serve(ec, address, port)) {
+    if (server->listen_and_serve(ec, address, port, /* asynchronous = */ true)) {
         throw std::runtime_error{"Server error: " + ec.message()};
     }
+}
+
+void Server::stop()
+{
+    server->stop();
+    server->join();
 }
 }
