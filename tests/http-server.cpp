@@ -5,8 +5,12 @@
  *
 */
 
+#include <nghttp2/asio_http2_client.h>
+#include <iostream>
+#include <sstream>
 #include "trompeloeil_doctest.h"
 #include "restconf/Server.h"
+#include "UniqueResource.hpp"
 
 namespace std {
 std::ostream& operator<<(std::ostream& s, const std::optional<std::string>& x) {
@@ -67,4 +71,79 @@ TEST_CASE("allowed paths for anonymous read") {
         CAPTURE(path);
         REQUIRE(!rousette::restconf::allow_anonymous_read_for(path));
     }
+}
+
+std::string retrieveData(auto xpath)
+{
+    using namespace std::string_literals;
+    namespace ng_client = nghttp2::asio_http2::client;
+
+    boost::asio::io_service io_service;
+    ng_client::session client(io_service, "::1", "10080");
+
+    std::ostringstream oss;
+
+    client.on_connect([&client, &xpath, &oss](auto) {
+        boost::system::error_code ec;
+
+        auto req = client.submit(ec, "GET", "http://[::1]:10080/restconf/data"s + xpath);
+        req->on_response([&oss](const ng_client::response& res) {
+            res.on_data([&oss](const uint8_t* data, std::size_t len) {
+                oss.write(reinterpret_cast<const char*>(data), len);
+            });
+        });
+        req->on_close([&client](auto) {
+            client.shutdown();
+        });
+    });
+
+    client.on_error([](const boost::system::error_code& ec) {
+        std::cerr << "error: " << ec.message() << std::endl;
+    });
+
+    io_service.run();
+
+    return oss.str();
+}
+
+TEST_CASE("NACM") {
+    spdlog::set_level(spdlog::level::trace);
+
+    auto srConn = sysrepo::Connection{};
+    auto server = rousette::restconf::Server{srConn};
+    auto serverListener = make_unique_resource([&server] {
+        server.listen_and_serve("::1", "10080");
+    }, [&server] {
+        server.stop();
+    });
+
+
+    std::string xpath;
+    std::string expected;
+
+    DOCTEST_SUBCASE("/example-nacm:*")
+    {
+        xpath = "/example-nacm:*";
+        expected = R"({
+  "example-nacm:allowAllLeaf": "public"
+}
+)";
+    }
+
+    DOCTEST_SUBCASE("/example-nacm:allowAllLeaf")
+    {
+        xpath = "/example-nacm:allowAllLeaf";
+        expected = R"({
+  "example-nacm:allowAllLeaf": "public"
+}
+)";
+    }
+
+    DOCTEST_SUBCASE("/example-nacm:denyAllLeaf")
+    {
+        xpath = "/example-nacm:denyAllLeaf";
+        expected = R"({})";
+    }
+
+    REQUIRE(retrieveData(xpath) == expected);
 }
