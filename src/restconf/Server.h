@@ -23,15 +23,15 @@ namespace restconf {
 
 std::optional<std::string> as_subtree_path(const std::string& path);
 
-bool allow_anonymous_read_for(const std::string& path);
-
 /** @short A RESTCONF-ish server */
 class Server {
 public:
     explicit Server(sysrepo::Connection conn);
     ~Server();
     void listen_and_serve(const std::string& address, const std::string& port);
+    void stop();
 private:
+    sysrepo::Subscription m_nacmSub;
     std::unique_ptr<nghttp2::asio_http2::server::http2> server;
     std::unique_ptr<sr::OpticalEvents> dwdmEvents;
     using JsonDiffSignal = boost::signals2::signal<void(const std::string& json)>;

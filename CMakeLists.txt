@@ -113,6 +113,8 @@ include(CTest)
 if(BUILD_TESTING)
     find_package(trompeloeil 33 REQUIRED)
     find_package(doctest 2.3.1 REQUIRED)
+    find_program(SYSREPOCTL sysrepoctl)
+    find_program(SYSREPOCFG sysrepocfg)
 
     add_library(DoctestIntegration STATIC
         tests/doctest_integration.cpp
@@ -131,8 +133,37 @@ if(BUILD_TESTING)
         endif()
         target_include_directories(test_${fname} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
         set_tests_properties(test_${fname} PROPERTIES TIMEOUT 60)
+
+        set(test_name_init sysrepo:prep:${fname})
+        set(test_name_cleanup sysrepo:clean:${fname})
+        set(fixture_name sysrepo:env:${fname})
+
+        # How to do this:
+        # Check ARGN for name of fixture
+        # then take the args for manage module from variable "fixture{fixture_name}"
+        # and then add set env vars for sysrepo
+        # set them ALSO for the init/cleanup tests
+        if(ARGC GREATER 1)
+            set(wanted_fixture ${ARGV1})
+            add_test(NAME ${test_name_init} COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/sysrepoctl-manage-module.sh ${SYSREPOCTL} ${SYSREPOCFG} prepare ${${wanted_fixture}})
+            set_tests_properties(${test_name_init} PROPERTIES FIXTURES_SETUP ${fixture_name})
+            add_test(NAME ${test_name_cleanup} COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/sysrepoctl-manage-module.sh ${SYSREPOCTL} ${SYSREPOCFG} uninstall ${${wanted_fixture}})
+            set_tests_properties(${test_name_cleanup} PROPERTIES FIXTURES_CLEANUP ${fixture_name})
+
+            set_tests_properties(test_${fname} PROPERTIES FIXTURES_REQUIRED ${fixture_name})
+            set_property(TEST test_${fname} ${test_name_init} ${test_name_cleanup} APPEND PROPERTY ENVIRONMENT
+            "SYSREPO_REPOSITORY_PATH=${CMAKE_CURRENT_BINARY_DIR}/test_repositories/test_${fname}"
+            "SYSREPO_SHM_PREFIX=cla_sysrepo_test_${fname}"
+            )
+
+        endif()
+
     endfunction()
 
-    rousette_test(http-server)
+    set(fixture_nacm
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/example-nacm.yang
+        JSON ${CMAKE_CURRENT_SOURCE_DIR}/tests/example-nacm.json)
+
+    rousette_test(http-server fixture_nacm)
     target_link_libraries(test_http-server rousette-restconf)
 endif()
