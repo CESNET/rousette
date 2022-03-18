@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2de205bf_cfe5575a",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 119,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-18T11:24:15Z",
+      "side": 0,
+      "message": "That method (and all the tests) should be removed as well",
+      "revId": "64e2ac33b15abef1de8521c5b7ef1b7666bcfa96",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3579cbe7_b427ca7e",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 120,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-18T11:24:15Z",
+      "side": 0,
+      "message": "Note to myself: before this is merged, we need to ensure that:\n\n- the \"anonymous user\" actually exists in the system,\n- there\u0027s documentation which explains how to set this up,\n- we ship NACM configuration for CzechLight which sets up proper ACLs for this user (i.e., deny all writes, allow just some reads)\n\n@Vasek, it will help me a lot if you propose how to best implement this.",
+      "revId": "64e2ac33b15abef1de8521c5b7ef1b7666bcfa96",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}

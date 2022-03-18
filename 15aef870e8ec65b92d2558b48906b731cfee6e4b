@@ -16,6 +16,138 @@
       "message": "recheck",
       "revId": "15aef870e8ec65b92d2558b48906b731cfee6e4b",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "94270a21_44d566cf",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 4
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-18T11:24:15Z",
+      "side": 1,
+      "message": "please use spaces, not tabs here",
+      "range": {
+        "startLine": 164,
+        "startChar": 1,
+        "endLine": 165,
+        "endChar": 58
+      },
+      "revId": "15aef870e8ec65b92d2558b48906b731cfee6e4b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "97398bbd_47ad9cf3",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 121,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-18T11:24:15Z",
+      "side": 1,
+      "message": "I think that there should be a CMake variable for this at least. However, I think that we agreed that the user should be always provided in (some) HTTP header, shouldn\u0027t it? What is \"the industry standard\" for this header when the actual authentication is delegated to the reverse proxy? I recall looking at some draft, but I cannot find it today (perhaps it was a draft about TLS client cert DN mapping?).\n\nAnyway, it looks that the \"industry standard\" is the Remote-User HTTP header, so perhaps it makes sense to use that. However, this means that anyone able to open connections at localhost will also be able to spoof user credentials, which is not great. A perfect fix for this, IMHO, is to somehow limit access to the RESTCONF server\u0027s listening socket. I have no idea if this is feasible with systemd units (\"let unit A listen on socket X, and only allow unit B connect there\"); can you please take a look? I know that the HTTPX library supports Unix sockets, but I have no clue if the ASIO C++ part can do that as well. Can you please check that?",
+      "range": {
+        "startLine": 121,
+        "startChar": 30,
+        "endLine": 121,
+        "endChar": 34
+      },
+      "revId": "15aef870e8ec65b92d2558b48906b731cfee6e4b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f5e5424f_e09dcf6e",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-18T11:24:15Z",
+      "side": 1,
+      "message": "The previous version sent out a 404. What should happen (as defined in the standard) when:\n- there are data, but the server cannot return any of them due to NACM rules?\n- the request hits a non-existing path?",
+      "range": {
+        "startLine": 130,
+        "startChar": 0,
+        "endLine": 134,
+        "endChar": 13
+      },
+      "revId": "15aef870e8ec65b92d2558b48906b731cfee6e4b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f71891dd_d82dbe68",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 145,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-18T11:24:15Z",
+      "side": 1,
+      "message": "nice handling of the anonymous bool trap",
+      "range": {
+        "startLine": 145,
+        "startChar": 52,
+        "endLine": 145,
+        "endChar": 77
+      },
+      "revId": "15aef870e8ec65b92d2558b48906b731cfee6e4b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5c2ce185_b632cfae",
+        "filename": "src/restconf/Server.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-18T11:24:15Z",
+      "side": 1,
+      "message": "Please move this one up a little bit; I\u0027m worried what will happen in the (rather unlikely) case that this server starts shutting down, the NACM subscription gets disconnected, someone pushes an NACM change which gets handled via Netopeer2, and then the HTTP server (which is still up) handles a write which is now supposed to be rejected by the updated set of NACM rules. Yes, this is unlikely, but it\u0027s still a race IMHO.",
+      "revId": "15aef870e8ec65b92d2558b48906b731cfee6e4b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e51a8dd2_bf8aafc3",
+        "filename": "tests/http-server.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-18T11:24:15Z",
+      "side": 1,
+      "message": "please use a const variable somewhere in the test for all of these port numbers",
+      "range": {
+        "startLine": 82,
+        "startChar": 50,
+        "endLine": 82,
+        "endChar": 55
+      },
+      "revId": "15aef870e8ec65b92d2558b48906b731cfee6e4b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
