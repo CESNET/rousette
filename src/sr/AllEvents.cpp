@@ -13,16 +13,14 @@
 #include <sysrepo.h>
 #include "sr/AllEvents.h"
 
-using namespace std::literals;
-
 namespace {
 bool isEmptyOperationAndOrigin(const libyang::Meta& meta)
 {
     const auto mod = meta.module().name();
-    if (mod == "sysrepo"sv && meta.name() == "operation"sv && meta.valueStr() == "none"sv) {
+    if (mod == "sysrepo" && meta.name() == "operation" && meta.valueStr() == "none") {
         return true;
     }
-    if (mod == "ietf-origin"sv && meta.name() == "origin"sv && meta.valueStr() == "ietf-origin:unknown"sv) {
+    if (mod == "ietf-origin" && meta.name() == "origin" && meta.valueStr() == "ietf-origin:unknown") {
         return true;
     }
     return false;
@@ -37,15 +35,15 @@ AllEvents::AllEvents(sysrepo::Session session, const WithAttributes attrBehavior
 {
     session.switchDatastore(sysrepo::Datastore::Operational);
     for (const auto& mod : session.getContext().modules()) {
-        if (mod.name() == "sysrepo"sv) {
+        if (mod.name() == "sysrepo") {
             // this one is magic, subscriptions would cause a SR_ERR_INTERNAL
             continue;
         }
         try {
-            sysrepo::ModuleChangeCb cb = [this](const auto sess, auto, std::string_view name, auto, auto, auto) {
+            sysrepo::ModuleChangeCb cb = [this](const auto sess, auto, auto name, auto, auto, auto) {
                 return onChange(sess, std::string{name});
             };
-            sub = session.onModuleChange(mod.name().data(), cb, nullptr, 0, sysrepo::SubscribeOptions::DoneOnly | sysrepo::SubscribeOptions::Passive);
+            sub = session.onModuleChange(std::string{mod.name()}, cb, std::nullopt, 0, sysrepo::SubscribeOptions::DoneOnly | sysrepo::SubscribeOptions::Passive);
             spdlog::debug("Listening for module {}", mod.name());
         } catch (sysrepo::ErrorWithCode& e) {
             if (e.code() == sysrepo::ErrorCode::NotFound) {
@@ -62,7 +60,7 @@ sysrepo::ErrorCode AllEvents::onChange(sysrepo::Session session, const std::stri
     assert(session.activeDatastore() == sysrepo::Datastore::Operational);
     spdlog::trace("change: {}", module);
 
-    auto changes = session.getChanges(("/" + module + ":*//.").c_str());
+    auto changes = session.getChanges("/" + module + ":*//.");
 
     // FIXME: the list of changes is not complete, see https://github.com/sysrepo/sysrepo/issues/2352
 
@@ -112,10 +110,10 @@ sysrepo::ErrorCode AllEvents::onChange(sysrepo::Session session, const std::stri
                 break;
             }
         };
-        auto json = std::string{*copy.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings)};
+        auto json = *copy.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings);
         spdlog::info("JSON: {}", json);
         spdlog::warn("FULL JSON: {}",
-                std::string{*session.getData(('/' + module + ":*").c_str())->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings)});
+                *session.getData('/' + module + ":*")->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings));
         change(module, json);
     }
 
