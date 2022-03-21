@@ -123,7 +123,7 @@ Server::Server(sysrepo::Connection conn)
 
             auto sess = conn.sessionStart();
             sess.switchDatastore(sysrepo::Datastore::Operational);
-            auto data = sess.getData(('/' + *path).c_str());
+            auto data = sess.getData('/' + *path);
 
             if (!data) {
                 rejectResponse(req, res, 404, "no data from sysrepo");
@@ -134,7 +134,7 @@ Server::Server(sysrepo::Connection conn)
                 {"content-type", {"application/yang-data+json", false}},
                 {"access-control-allow-origin", {"*", false}},
             });
-            res.end(std::string{*data->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings)});
+            res.end(*data->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings));
         });
 }
 

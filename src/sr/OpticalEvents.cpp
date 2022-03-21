@@ -12,12 +12,10 @@
 #include <sysrepo.h>
 #include "sr/OpticalEvents.h"
 
-using namespace std::literals;
-
 namespace {
 std::string dumpDataFrom(sysrepo::Session session, const std::string& module)
 {
-    return std::string{*session.getData(('/' + module + ":*").c_str())->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings)};
+    return *session.getData('/' + module + ":*")->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings);
 }
 }
 
@@ -32,10 +30,10 @@ OpticalEvents::OpticalEvents(sysrepo::Session session)
     // just pick a first module to listen for.
     for (const auto& mod : {"czechlight-roadm-device", "czechlight-coherent-add-drop", "czechlight-inline-amp"}) {
         try {
-            sysrepo::ModuleChangeCb cb = [this](const auto sess, auto, std::string_view name, auto, auto, auto) {
+            sysrepo::ModuleChangeCb cb = [this](const auto sess, auto, auto name, auto, auto, auto) {
                 return onChange(sess, std::string{name});
             };
-            sub = session.onModuleChange(mod, cb, nullptr, 0, sysrepo::SubscribeOptions::DoneOnly | sysrepo::SubscribeOptions::Passive);
+            sub = session.onModuleChange(mod, cb, std::nullopt, 0, sysrepo::SubscribeOptions::DoneOnly | sysrepo::SubscribeOptions::Passive);
             spdlog::debug("Listening for module {}", mod);
             std::unique_lock lock{mtx};
             lastData = dumpDataFrom(session, mod);
