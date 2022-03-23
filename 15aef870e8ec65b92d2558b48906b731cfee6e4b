@@ -41,6 +41,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "42168557_225c207d",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 4
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-03-23T12:16:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "94270a21_44d566cf",
+      "range": {
+        "startLine": 164,
+        "startChar": 1,
+        "endLine": 165,
+        "endChar": 58
+      },
+      "revId": "15aef870e8ec65b92d2558b48906b731cfee6e4b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "97398bbd_47ad9cf3",
@@ -77,6 +101,30 @@
       "writtenOn": "2022-03-18T11:24:15Z",
       "side": 1,
       "message": "The previous version sent out a 404. What should happen (as defined in the standard) when:\n- there are data, but the server cannot return any of them due to NACM rules?\n- the request hits a non-existing path?",
+      "range": {
+        "startLine": 130,
+        "startChar": 0,
+        "endLine": 134,
+        "endChar": 13
+      },
+      "revId": "15aef870e8ec65b92d2558b48906b731cfee6e4b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6cd34b5a_7724eee8",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-03-23T12:16:18Z",
+      "side": 1,
+      "message": "\u003ethere are data, but the server cannot return any of them due to NACM rules?\n\nThe server MUST NOT return any data resources for which the user does\nnot have read privileges.  If the user is not authorized to read the\ntarget resource, an error response containing a \"401 Unauthorized\"\nstatus-line SHOULD be returned.  The error-tag value \"access-denied\"\nis returned in this case.  A server MAY return a \"404 Not Found\"\nstatus-line, as described in Section 6.5.4 in [RFC7231].  The\nerror-tag value \"invalid-value\" is returned in this case.\n\nand\n\nIf the user is authorized to read some but not all of the target\nresource, the unauthorized content is omitted from the response\nmessage-body, and the authorized content is returned to the client.\n\nand\n\nIf a retrieval request for a data resource represents an instance\nthat does not exist, then an error response containing a \"404 Not\nFound\" status-line MUST be returned by the server.  The error-tag\nvalue \"invalid-value\" is used in this case.\n\nSo, it seems that when data were filtered due to NACM, you need to return filtered data. Or, 401, if those data are empty? Not sure. When there are actually no data, you should return 404. With sysrepo, you can\u0027t really know whether there are no data or whether they were just filtered. Unless you queried them twice.\n\n\u003ethe request hits a non-existing path?\n\nThere is not much written in the RFC about errors. https://datatracker.ietf.org/doc/html/rfc8040#section-7 Here it connects rpc-error types to error codes. I think, a non-existing path would be considered an invalid-value error and that should be 400, or 404, or 406. Out of these, 400 is used for most other errors, 404 means not found ofc, and 406 means \"Not Acceptable\". I think 400 is best suited for this.",
+      "parentUuid": "f5e5424f_e09dcf6e",
       "range": {
         "startLine": 130,
         "startChar": 0,
@@ -127,6 +175,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "9fc9abcf_c2659321",
+        "filename": "src/restconf/Server.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-03-23T12:16:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5c2ce185_b632cfae",
+      "revId": "15aef870e8ec65b92d2558b48906b731cfee6e4b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e51a8dd2_bf8aafc3",
@@ -140,6 +206,30 @@
       "writtenOn": "2022-03-18T11:24:15Z",
       "side": 1,
       "message": "please use a const variable somewhere in the test for all of these port numbers",
+      "range": {
+        "startLine": 82,
+        "startChar": 50,
+        "endLine": 82,
+        "endChar": 55
+      },
+      "revId": "15aef870e8ec65b92d2558b48906b731cfee6e4b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e836ad7b_cba29946",
+        "filename": "tests/http-server.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-03-23T12:16:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e51a8dd2_bf8aafc3",
       "range": {
         "startLine": 82,
         "startChar": 50,
