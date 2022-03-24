@@ -3,6 +3,10 @@
     parent: f34-clang-asan-ubsan
     pre-run: ci/pre.yaml
     requires: CzechLight-deps-f34-clang-asan-ubsan
+    required-projects: &projects
+      - CzechLight/dependencies
+      - name: github/nghttp2/nghttp2
+        override-checkout: v1.43.0
     vars:
       zuul_work_dir: "{{ zuul.projects[zuul.project.canonical_hostname + '/CzechLight/rousette'].src_dir }}"
 
@@ -11,13 +15,9 @@
       jobs:
         - f34-gcc-cover:
             requires: CzechLight-deps-f34-gcc
-            required-projects: &projects
-              - CzechLight/dependencies
-              - name: github/nghttp2/nghttp2
-                override-checkout: v1.43.0
-            pre-run: ci/pre.yaml
-        - rousette-f34-clang-asan-ubsan:
             required-projects: *projects
+            pre-run: ci/pre.yaml
+        - rousette-f34-clang-asan-ubsan
         - f34-clang-tsan:
             requires: CzechLight-deps-f34-clang-tsan
             required-projects: *projects
