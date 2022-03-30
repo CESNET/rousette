@@ -1,0 +1,3 @@
+add table inet filter
+add chain inet filter reject_localhost_3000 { type filter hook output priority 0; }
+add rule inet filter reject_localhost_3000 ip daddr localhost tcp dport 3000 meta skuid != root reject

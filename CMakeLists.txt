@@ -109,6 +109,8 @@ install(TARGETS
     rousette
     RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/)
 
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/rousette-backend.nft DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/rousette)
+
 include(CTest)
 if(BUILD_TESTING)
     find_package(trompeloeil 33 REQUIRED)
