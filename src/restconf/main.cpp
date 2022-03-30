@@ -16,6 +16,7 @@
 #include <spdlog/spdlog.h>
 #include <sysrepo-cpp/Session.hpp>
 #include "restconf/Server.h"
+#include "vars.hpp"
 
 namespace {
 /** @short Is stderr connected to journald? Not thread safe. */
@@ -65,7 +66,7 @@ int main(int argc [[maybe_unused]], char* argv [[maybe_unused]] [])
 
     auto conn = sysrepo::Connection{};
     auto server = rousette::restconf::Server{conn};
-    server.listen_and_serve("::1", "10080");
+    server.listen_and_serve("::1", ROUSETTE_PORT);
 
     return 0;
 }

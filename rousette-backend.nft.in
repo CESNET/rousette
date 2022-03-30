@@ -1,0 +1,3 @@
+add table inet filter
+add chain inet filter rousette_backend { type filter hook output priority 0; }
+add rule inet filter rousette_backend ip daddr localhost tcp dport @ROUSETTE_PORT@ meta skuid != root reject

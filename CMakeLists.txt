@@ -74,6 +74,12 @@ pkg_check_modules(SYSREPO-CPP REQUIRED sysrepo-cpp>=1.1.0 IMPORTED_TARGET)
 pkg_check_modules(LIBYANG-CPP REQUIRED libyang-cpp>=1.1.0 IMPORTED_TARGET)
 pkg_check_modules(SYSTEMD REQUIRED IMPORTED_TARGET libsystemd)
 
+if(NOT ROUSETTE_PORT)
+    set(ROUSETTE_PORT "10080")
+endif()
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/vars.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/vars.hpp @ONLY)
+
 add_library(rousette-http STATIC
     src/http/EventStream.cpp
     src/http/utils.cpp
@@ -103,11 +109,15 @@ target_link_libraries(watch-operational-ds PUBLIC rousette-sysrepo)
 add_executable(rousette src/restconf/main.cpp)
 target_link_libraries(rousette PUBLIC rousette-restconf PkgConfig::SYSTEMD)
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/rousette-backend.nft.in ${CMAKE_CURRENT_BINARY_DIR}/rousette-backend.nft @ONLY)
+
 install(TARGETS
     # clock-demo
     # watch-operational-ds
     rousette
     RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/rousette-backend.nft DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/rousette)
 
 include(CTest)
 if(BUILD_TESTING)
