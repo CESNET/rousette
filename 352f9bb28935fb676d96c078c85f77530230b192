@@ -1,0 +1,84 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "67aa16b8_7dfbf195",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-31T00:03:12Z",
+      "side": 1,
+      "message": "As the very minimum, this needs a paragraph in the README about stuff being designed to only be reachable via that reverse proxy, and serious security implications existing if that\u0027s not the case.",
+      "revId": "352f9bb28935fb676d96c078c85f77530230b192",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "78d2c4d1_edcffd99",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-31T00:03:12Z",
+      "side": 1,
+      "message": "I think this goes before the actual NACM implementation?",
+      "revId": "352f9bb28935fb676d96c078c85f77530230b192",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4f4f2f90_d83da448",
+        "filename": "rousette-backend.nft",
+        "patchSetId": 1
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-31T00:03:12Z",
+      "side": 1,
+      "message": "please change its name to something rousette-specific",
+      "range": {
+        "startLine": 2,
+        "startChar": 22,
+        "endLine": 2,
+        "endChar": 43
+      },
+      "revId": "352f9bb28935fb676d96c078c85f77530230b192",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3ddab4e0_2e911a40",
+        "filename": "rousette-backend.nft",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-31T00:03:12Z",
+      "side": 1,
+      "message": "In src/restconf/main.cpp the port number is currently hardcoded as 10080. Please either make this configurable at CMake time (and use that number in the .cpp file as well as here), or use the same hardcoded value at both places.",
+      "range": {
+        "startLine": 3,
+        "startChar": 72,
+        "endLine": 3,
+        "endChar": 76
+      },
+      "revId": "352f9bb28935fb676d96c078c85f77530230b192",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
