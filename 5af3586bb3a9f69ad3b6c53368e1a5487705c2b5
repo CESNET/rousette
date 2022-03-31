@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "535d3738_2a0b7a92",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-31T12:33:15Z",
+      "side": 1,
+      "message": "Just dumping some more ideas here: there are some \"initial ideas\" on how to tackle this via systemd. Apparently, nft (and even bpf) can match on a cgroup v2 now, and a cgroup is something that is used by systemd for processes of each service. Unfortunately, the cgroup IDs are dynamic, so this might need a restart of rousette whenever the reverse proxy restarts (which sounds doable).\n\nExtra links:\n- https://github.com/mk-fg/systemd-cgroup-nftables-policy-manager\n- https://github.com/systemd/systemd/issues/7327\n- https://github.com/systemd/systemd/issues/22527\n\nI can imagine a configuration via ExecPre which simply injects an appropriate cgroupv2 nft meta thing by looking up the reverse-proxy\u0027s cgroup ID from rousette\u0027s service unit. This will make it possible to support runtime-configurable TCP listening ports.",
+      "revId": "5af3586bb3a9f69ad3b6c53368e1a5487705c2b5",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
