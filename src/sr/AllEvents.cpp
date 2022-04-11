@@ -64,7 +64,7 @@ sysrepo::ErrorCode AllEvents::onChange(sysrepo::Session session, const std::stri
 
     // FIXME: the list of changes is not complete, see https://github.com/sysrepo/sysrepo/issues/2352
 
-    std::set<libyang::DataNode, libyang::PointerCompare> seen;
+    std::set<libyang::DataNode, libyang::SomeOrder> seen;
     for (const auto& srChange : changes) {
         auto node = srChange.node;
         while (node.parent()) {
