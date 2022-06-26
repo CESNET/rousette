@@ -67,12 +67,12 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 find_package(spdlog REQUIRED)
 find_package(PkgConfig)
-pkg_check_modules(nghttp2 REQUIRED IMPORTED_TARGET libnghttp2_asio>=1.41.0 libnghttp2)
+pkg_check_modules(nghttp2 REQUIRED libnghttp2_asio>=1.41.0 libnghttp2 IMPORTED_TARGET)
 find_package(Boost REQUIRED COMPONENTS system thread)
 
 pkg_check_modules(SYSREPO-CPP REQUIRED sysrepo-cpp>=1.1.0 IMPORTED_TARGET)
 pkg_check_modules(LIBYANG-CPP REQUIRED libyang-cpp>=1.1.0 IMPORTED_TARGET)
-pkg_check_modules(SYSTEMD REQUIRED IMPORTED_TARGET libsystemd)
+pkg_check_modules(SYSTEMD REQUIRED libsystemd IMPORTED_TARGET)
 
 add_library(rousette-http STATIC
     src/http/EventStream.cpp
