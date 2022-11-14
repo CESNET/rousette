@@ -5,14 +5,15 @@
  *
 */
 
+#include "restconf/Server.h"
+#include "http/utils.hpp"
+#include "restconf/utils.h"
+#include "sr/OpticalEvents.h"
 #include <boost/algorithm/string/predicate.hpp>
 #include <nghttp2/asio_http2_server.h>
 #include <regex>
 #include <spdlog/spdlog.h>
-#include "http/utils.hpp"
-#include "restconf/Server.h"
-#include "restconf/utils.h"
-#include "sr/OpticalEvents.h"
+#include <sysrepo-cpp/utils/exception.hpp>
 
 using namespace std::literals;
 
@@ -124,18 +125,26 @@ Server::Server(sysrepo::Connection conn)
 
             auto sess = conn.sessionStart();
             sess.switchDatastore(sysrepo::Datastore::Operational);
-            auto data = sess.getData('/' + *path);
 
-            if (!data) {
+            try {
+              auto data = sess.getData('/' + *path);
+
+              if (!data) {
                 rejectResponse(req, res, 404, "no data from sysrepo");
                 return;
-            }
+              }
 
-            res.write_head(200, {
-                {"content-type", {"application/yang-data+json", false}},
-                {"access-control-allow-origin", {"*", false}},
-            });
-            res.end(*data->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings));
+              res.write_head(
+                  200,
+                  {
+                      {"content-type", {"application/yang-data+json", false}},
+                      {"access-control-allow-origin", {"*", false}},
+                  });
+              res.end(*data->printStr(libyang::DataFormat::JSON,
+                                      libyang::PrintFlags::WithSiblings));
+            } catch (const sysrepo::ErrorWithCode &e) {
+              rejectResponse(req, res, 404, "no data from sysrepo");
+            }
         });
 }
 
