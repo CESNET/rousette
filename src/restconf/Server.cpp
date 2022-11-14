@@ -9,6 +9,7 @@
 #include <nghttp2/asio_http2_server.h>
 #include <regex>
 #include <spdlog/spdlog.h>
+#include <sysrepo-cpp/utils/exception.hpp>
 #include "http/utils.hpp"
 #include "restconf/Server.h"
 #include "restconf/utils.h"
@@ -122,20 +123,29 @@ Server::Server(sysrepo::Connection conn)
                 return;
             }
 
-            auto sess = conn.sessionStart();
-            sess.switchDatastore(sysrepo::Datastore::Operational);
-            auto data = sess.getData('/' + *path);
+            try {
+                auto sess = conn.sessionStart();
+                sess.switchDatastore(sysrepo::Datastore::Operational);
 
-            if (!data) {
-                rejectResponse(req, res, 404, "no data from sysrepo");
-                return;
+                auto data = sess.getData('/' + *path);
+
+                if (!data) {
+                    rejectResponse(req, res, 404, "no data from sysrepo");
+                    return;
+                }
+
+                res.write_head(
+                    200,
+                    {
+                        {"content-type", {"application/yang-data+json", false}},
+                        {"access-control-allow-origin", {"*", false}},
+                    });
+                res.end(*data->printStr(libyang::DataFormat::JSON,
+                                      libyang::PrintFlags::WithSiblings));
+            } catch (const sysrepo::ErrorWithCode &e) {
+                spdlog::error("Sysrepo exception: {}", e.what());
+                rejectResponse(req, res, 500, "sysrepo exception: internal server error");
             }
-
-            res.write_head(200, {
-                {"content-type", {"application/yang-data+json", false}},
-                {"access-control-allow-origin", {"*", false}},
-            });
-            res.end(*data->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings));
         });
 }
 
