@@ -9,6 +9,7 @@
 #include <nghttp2/asio_http2_server.h>
 #include <regex>
 #include <spdlog/spdlog.h>
+#include <sysrepo-cpp/utils/exception.hpp>
 #include "http/utils.hpp"
 #include "restconf/Server.h"
 #include "restconf/utils.h"
@@ -126,18 +127,23 @@ Server::Server(sysrepo::Connection conn)
 
             auto sess = conn.sessionStart();
             sess.switchDatastore(sysrepo::Datastore::Operational);
-            auto data = sess.getData('/' + *path);
 
-            if (!data) {
-                rejectResponse(req, res, 404, "no data from sysrepo");
-                return;
+            try {
+                auto data = sess.getData('/' + *path);
+
+                if (!data) {
+                    rejectResponse(req, res, 404, "no data from sysrepo");
+                    return;
+                }
+
+                res.write_head(200, {
+                    {"content-type", {"application/yang-data+json", false}},
+                    {"access-control-allow-origin", {"*", false}},
+                });
+                res.end(*data->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings));
+            } catch(const sysrepo::ErrorWithCode& e) {
+				rejectResponse(req, res, 404, "no data from sysrepo");
             }
-
-            res.write_head(200, {
-                {"content-type", {"application/yang-data+json", false}},
-                {"access-control-allow-origin", {"*", false}},
-            });
-            res.end(*data->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings));
         });
 }
 
