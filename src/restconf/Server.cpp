@@ -81,7 +81,10 @@ bool allow_anonymous_read_for(const std::string& path)
 void rejectResponse(const request& req, const response& res, const int code, const std::string& message)
 {
     spdlog::debug("{}: {}", http::peer_from_request(req), message);
-    res.write_head(code, {{"content-type", {"text/plain", false}}});
+    res.write_head(code, {
+        {"content-type", {"text/plain", false}},
+        {"access-control-allow-origin", {"*", false}}
+    });
     res.end("go away");
 }
 
