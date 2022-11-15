@@ -50,7 +50,7 @@ const std::initializer_list<std::string> allowedPrefixes {
     {"ietf-system"s},
     {"czechlight-lldp"s},
     {"czechlight-system:firmware"s},
-    {"czechlight-system:networking"s},
+    {"czechlight-system:leds"s},
 };
 }
 }
