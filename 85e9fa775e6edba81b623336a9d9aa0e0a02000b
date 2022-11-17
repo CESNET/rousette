@@ -16,6 +16,23 @@
       "message": "recheck",
       "revId": "85e9fa775e6edba81b623336a9d9aa0e0a02000b",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "eec97d8e_8e7977d1",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 146,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-11-17T11:29:41Z",
+      "side": 1,
+      "message": "That\u0027s an overly broad exception, and not reporting an error (i.e., silently discarding an error and \"just\" saying \"nope\" to the client) is not a good fix even if the catch handler was more specific, IMHO.\n\nI absolutely agree that we should not crash (especially by \"just\" requesting some data which just aren\u0027t there). (Actually I had my weak moment and I wanted to explore the possibility of just letting the code crash in a controlled manner without taking the rest of the NETCONF stack along (because crashing is so simple...). But this might cause troubles on sysrepo because this is in a multithreaded environment; chances are that this will kill a sysrepo-using thread in a place where the upstream code won\u0027t recover. OK, no joy there.)\n\nSo let\u0027s try not to crash, and if there\u0027s an unhandled exception, just log that error and return some failure code to the client. At the same time, let\u0027s try to prevent a catch-all exception handler (which prints a wrong message). We could check upfront that the model is present \u0026 implemented, or we could try to extract a proper error \"type\" from sysrepo\u0027s response so that the code returns back something which is RESTCONF-compliant.",
+      "revId": "85e9fa775e6edba81b623336a9d9aa0e0a02000b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
