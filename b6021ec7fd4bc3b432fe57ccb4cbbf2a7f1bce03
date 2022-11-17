@@ -22,6 +22,30 @@
       },
       "revId": "b6021ec7fd4bc3b432fe57ccb4cbbf2a7f1bce03",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "17ffb5d9_d90be628",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-11-17T09:02:29Z",
+      "side": 1,
+      "message": "Browser rejects the response and prints a fancy error into console.\n\n  Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://10.0.254.90/restconf/data/czechlight-system:firmware. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 502.",
+      "parentUuid": "42e4da11_73674adf",
+      "range": {
+        "startLine": 9,
+        "startChar": 37,
+        "endLine": 9,
+        "endChar": 59
+      },
+      "revId": "b6021ec7fd4bc3b432fe57ccb4cbbf2a7f1bce03",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
