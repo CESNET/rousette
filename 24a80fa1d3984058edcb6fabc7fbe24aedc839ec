@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f45e7cb5_259cb6e8",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-11-21T14:05:38Z",
+      "side": 1,
+      "message": "what would you think about `isPathImplemented` or `hasModuleForPath` or something like that? I worry a little bit about the string parameter; even though it has a proper name.",
+      "range": {
+        "startLine": 82,
+        "startChar": 5,
+        "endLine": 82,
+        "endChar": 22
+      },
+      "revId": "24a80fa1d3984058edcb6fabc7fbe24aedc839ec",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
