@@ -79,6 +79,18 @@ bool allow_anonymous_read_for(const std::string& path)
             });
 }
 
+bool moduleImplemented(const sysrepo::Session& session, const std::string& path)
+{
+    std::string moduleName;
+    if (auto pos = path.find(":"); pos != std::string::npos) {
+        moduleName = path.substr(0, pos);
+    } else {
+        moduleName = path;
+    }
+
+    return session.getContext().getModuleImplemented(moduleName).has_value();
+}
+
 void rejectResponse(const request& req, const response& res, const int code, const std::string& message)
 {
     spdlog::debug("{}: {}", http::peer_from_request(req), message);
@@ -126,6 +138,11 @@ Server::Server(sysrepo::Connection conn)
             try {
               auto sess = conn.sessionStart();
               sess.switchDatastore(sysrepo::Datastore::Operational);
+
+              if (!moduleImplemented(sess, *path)) {
+                  rejectResponse(req, res, 404, "module not implemented");
+                  return;
+              }
 
               auto data = sess.getData('/' + *path);
 
