@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "efaa0db6_6d673569",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-11-22T09:30:55Z",
+      "side": 1,
+      "message": "installed at ROADM-LINE-SDN-ID210516, 10.0.254.56",
+      "revId": "d7c3a28f954f051129395b8aae7769b504fe11b8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
