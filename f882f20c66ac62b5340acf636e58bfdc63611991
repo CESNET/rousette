@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "04bcc67f_fad04529",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000106
+      },
+      "writtenOn": "2023-02-06T14:01:15Z",
+      "side": 1,
+      "message": "Hello, could you please review the README.md for rousette that I have just uploaded? Thank you, Vaclav",
+      "revId": "f882f20c66ac62b5340acf636e58bfdc63611991",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
