@@ -35,6 +35,23 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "96813cb5_d6ddb314",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-02-08T08:51:55Z",
+      "side": 1,
+      "message": "I think this is a shell-script to build which is too specific for your use-case. Different users have different needs. Let\u0027s try to follow the style of the README from sysrepo-cpp repository.\n",
+      "revId": "f882f20c66ac62b5340acf636e58bfdc63611991",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c8458b08_86c25002",
@@ -65,6 +82,29 @@
       "writtenOn": "2023-02-06T17:18:27Z",
       "side": 1,
       "message": "in markdown, the number of consecutive \u0027#\u0027 matters because it controls the \"level\" of each heading; this creates a \"h1\" which is too much (also below)",
+      "revId": "f882f20c66ac62b5340acf636e58bfdc63611991",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6c203e9f_9129eccc",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-02-08T08:51:55Z",
+      "side": 1,
+      "message": "This won\u0027t work for me, I use different version, see Jan\u0027s comment about shell script.",
+      "range": {
+        "startLine": 14,
+        "startChar": 0,
+        "endLine": 14,
+        "endChar": 1
+      },
       "revId": "f882f20c66ac62b5340acf636e58bfdc63611991",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -105,6 +145,30 @@
       "writtenOn": "2023-02-06T17:18:27Z",
       "side": 1,
       "message": "Please list all the dependencies which are needed, and *then* you might suggest that these might be retrieved via that other repo. However, that is not really necessary.",
+      "range": {
+        "startLine": 20,
+        "startChar": 0,
+        "endLine": 39,
+        "endChar": 20
+      },
+      "revId": "f882f20c66ac62b5340acf636e58bfdc63611991",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d0b926bb_6ee95cc6",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-02-08T08:51:55Z",
+      "side": 1,
+      "message": "I think we should not hint at dependencies repository. Let\u0027s give user a freedom to use any compatible versions he wishes to use.",
+      "parentUuid": "b5c6fe44_636c130b",
       "range": {
         "startLine": 20,
         "startChar": 0,

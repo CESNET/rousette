@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4efcfdc4_fb625503",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-02-08T08:51:55Z",
+      "side": 0,
+      "message": "Can we make this a link to RESTCONF RFC? (RFC 8040)",
+      "range": {
+        "startLine": 3,
+        "startChar": 29,
+        "endLine": 3,
+        "endChar": 37
+      },
+      "revId": "0e48bdb8d4c168a315504766523f4df4349d8516",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
