@@ -1,6 +1,29 @@
 {
   "comments": [
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "750083b8_04c2dc24",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-02-11T10:34:09Z",
+      "side": 1,
+      "message": "Gerrit is a code review system. Until somebody says \"Now this is OK for me, let\u0027s merge\" we iterate changes and only after that a single commit is submitted into the repository, e.g. these versions we iterate will not be seen in the git repo, only the final version.\n\nIn this sentence are referring to a change between version (patchset) 1 and version 2 of this change. When this gets merged the user will not see these versions in his `git log`. He will see a commit with \"all the versions (patchsets) merged into one\" (you can see the diffs here in gerrit under Files tab, select a diff between Base and Patchset n where n is the latest patch). So, this will get very confusing for any user because the content changed a lot between Base and Patchset 2.\n\nIt might be confusing at the start (maybe even a bit more confusing if you are not fluent in git). It took me some time to get used to it as well but I hope you will get a grasp of it.",
+      "range": {
+        "startLine": 11,
+        "startChar": 33,
+        "endLine": 11,
+        "endChar": 61
+      },
+      "revId": "69a30eca6b684b04389400475cfa3126b76a934e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "136e9975_974cb1cc",
@@ -14,6 +37,29 @@
       "writtenOn": "2023-02-10T17:22:59Z",
       "side": 1,
       "message": "Here is my first comment",
+      "revId": "69a30eca6b684b04389400475cfa3126b76a934e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "08e15dbf_bc177fcd",
+        "filename": "README.md",
+        "patchSetId": 2
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-02-11T10:34:09Z",
+      "side": 1,
+      "message": "Not sure if a nit or not but I don\u0027t think we should step from level 1 heading to level 3 heading. I know this is not a HTML (but write this also to be rendered as HTML) but W3C discourages skipping heading levels, see https://www.w3.org/TR/2012/NOTE-WCAG20-TECHS-20120103/G141\n\nTLDR: This should be a level 2 heading (##). Same for headings below; they should be level 3 (###) and not level 5 (#####).",
+      "range": {
+        "startLine": 11,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 3
+      },
       "revId": "69a30eca6b684b04389400475cfa3126b76a934e",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
