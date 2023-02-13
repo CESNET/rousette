@@ -16,6 +16,69 @@
       "message": "I am sending the modified README.md for rousette for your review.",
       "revId": "e7899dcdee4b2ed78a9357dcd2cbf98c61ddca65",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "76bc2cc7_47c9f094",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-02-13T18:57:58Z",
+      "side": 1,
+      "message": "Two comments below. However, I think you have accidentally sent this as a new change instead of modifying the previous change (Id1ba09e06c4d5e402a8536d5ced505bc92971e26)",
+      "revId": "e7899dcdee4b2ed78a9357dcd2cbf98c61ddca65",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "27b643fa_15fbc2d2",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-02-13T18:57:58Z",
+      "side": 1,
+      "message": "nit: probably a trailing whitespace",
+      "range": {
+        "startLine": 17,
+        "startChar": 79,
+        "endLine": 17,
+        "endChar": 80
+      },
+      "revId": "e7899dcdee4b2ed78a9357dcd2cbf98c61ddca65",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b9d9ff52_f0d0cf65",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-02-13T18:57:58Z",
+      "side": 1,
+      "message": "This is not `sysrepo-cpp`, please change in favour of `rousette`",
+      "range": {
+        "startLine": 18,
+        "startChar": 30,
+        "endLine": 18,
+        "endChar": 41
+      },
+      "revId": "e7899dcdee4b2ed78a9357dcd2cbf98c61ddca65",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
