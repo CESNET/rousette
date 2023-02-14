@@ -36,6 +36,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "c2a5e2da_3bf3190f",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-02-14T14:29:12Z",
+      "side": 1,
+      "message": "I don\u0027t see any change of the commit message, so this comment has not been addressed.",
+      "parentUuid": "07b8de78_a2324899",
+      "revId": "f882f20c66ac62b5340acf636e58bfdc63611991",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "04bcc67f_fad04529",

@@ -33,6 +33,190 @@
       "message": "Accepted",
       "revId": "6b53d4471c96d711b78a84c13b1ffdf90834492a",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "adfea12f_17ae18c1",
+        "filename": "README.md",
+        "patchSetId": 3
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-02-14T14:29:12Z",
+      "side": 1,
+      "message": "You might want to mention something like:\n\n Do not use the [standalone version of nghttp2-asio](https://github.com/nghttp2/nghttp2-asio).\n\nIt misled you in the past, and it\u0027s feasible that it will mislead others as well.",
+      "range": {
+        "startLine": 7,
+        "startChar": 2,
+        "endLine": 7,
+        "endChar": 73
+      },
+      "revId": "6b53d4471c96d711b78a84c13b1ffdf90834492a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "068642c0_05a30bd4",
+        "filename": "README.md",
+        "patchSetId": 3
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-02-14T14:29:12Z",
+      "side": 1,
+      "message": "This looks like a copy-paste from the other repo. This project, rousette, does not use sysrepo directly.",
+      "range": {
+        "startLine": 8,
+        "startChar": 2,
+        "endLine": 8,
+        "endChar": 116
+      },
+      "revId": "6b53d4471c96d711b78a84c13b1ffdf90834492a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8737144a_27caaced",
+        "filename": "README.md",
+        "patchSetId": 3
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-02-14T14:29:12Z",
+      "side": 1,
+      "message": "broken markdown syntax",
+      "range": {
+        "startLine": 11,
+        "startChar": 2,
+        "endLine": 11,
+        "endChar": 12
+      },
+      "revId": "6b53d4471c96d711b78a84c13b1ffdf90834492a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cc25ae81_7146139e",
+        "filename": "README.md",
+        "patchSetId": 3
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-02-14T14:29:12Z",
+      "side": 1,
+      "message": "This list is missing:\n\n- spdlog\n- Boost\u0027s system and thread\n- doctest (in the same was as trompeloeil)",
+      "range": {
+        "startLine": 8,
+        "startChar": 0,
+        "endLine": 14,
+        "endChar": 111
+      },
+      "revId": "6b53d4471c96d711b78a84c13b1ffdf90834492a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f5d25afa_58a029a0",
+        "filename": "README.md",
+        "patchSetId": 3
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-02-14T14:29:12Z",
+      "side": 1,
+      "message": "Don\u0027t talk about how to build the other projects, that\u0027s not relevant here. Also, nghttp2 has dual build systems with both autotools and cmake.",
+      "range": {
+        "startLine": 17,
+        "startChar": 0,
+        "endLine": 17,
+        "endChar": 80
+      },
+      "revId": "6b53d4471c96d711b78a84c13b1ffdf90834492a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3ca13284_0bb775e8",
+        "filename": "README.md",
+        "patchSetId": 3
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-02-14T14:29:12Z",
+      "side": 1,
+      "message": "wrong copy-paste?",
+      "range": {
+        "startLine": 18,
+        "startChar": 31,
+        "endLine": 18,
+        "endChar": 41
+      },
+      "revId": "6b53d4471c96d711b78a84c13b1ffdf90834492a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "19a8ed11_60ff6801",
+        "filename": "README.md",
+        "patchSetId": 3
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-02-14T14:29:12Z",
+      "side": 1,
+      "message": "Move this before `## Dependencies`, please. A couple of sentences as a summary of what the project does is a good start, more useful than what libraries are used.",
+      "range": {
+        "startLine": 27,
+        "startChar": 0,
+        "endLine": 28,
+        "endChar": 127
+      },
+      "revId": "6b53d4471c96d711b78a84c13b1ffdf90834492a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a22ee143_b00628b5",
+        "filename": "README.md",
+        "patchSetId": 3
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-02-14T14:29:12Z",
+      "side": 1,
+      "message": "nit: we\u0027re trying to follow a different convention with markdown docs -- one line per sentence",
+      "range": {
+        "startLine": 31,
+        "startChar": 103,
+        "endLine": 33,
+        "endChar": 119
+      },
+      "revId": "6b53d4471c96d711b78a84c13b1ffdf90834492a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
