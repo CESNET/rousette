@@ -58,6 +58,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "e296a570_8693b7be",
+        "filename": "README.md",
+        "patchSetId": 3
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000106
+      },
+      "writtenOn": "2023-02-14T18:52:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "adfea12f_17ae18c1",
+      "range": {
+        "startLine": 7,
+        "startChar": 2,
+        "endLine": 7,
+        "endChar": 73
+      },
+      "revId": "6b53d4471c96d711b78a84c13b1ffdf90834492a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "068642c0_05a30bd4",
@@ -71,6 +95,30 @@
       "writtenOn": "2023-02-14T14:29:12Z",
       "side": 1,
       "message": "This looks like a copy-paste from the other repo. This project, rousette, does not use sysrepo directly.",
+      "range": {
+        "startLine": 8,
+        "startChar": 2,
+        "endLine": 8,
+        "endChar": 116
+      },
+      "revId": "6b53d4471c96d711b78a84c13b1ffdf90834492a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d4a19478_42692120",
+        "filename": "README.md",
+        "patchSetId": 3
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1000106
+      },
+      "writtenOn": "2023-02-14T18:52:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "068642c0_05a30bd4",
       "range": {
         "startLine": 8,
         "startChar": 2,
@@ -104,6 +152,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "35971c55_66217a71",
+        "filename": "README.md",
+        "patchSetId": 3
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000106
+      },
+      "writtenOn": "2023-02-14T18:52:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8737144a_27caaced",
+      "range": {
+        "startLine": 11,
+        "startChar": 2,
+        "endLine": 11,
+        "endChar": 12
+      },
+      "revId": "6b53d4471c96d711b78a84c13b1ffdf90834492a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "cc25ae81_7146139e",
@@ -117,6 +189,30 @@
       "writtenOn": "2023-02-14T14:29:12Z",
       "side": 1,
       "message": "This list is missing:\n\n- spdlog\n- Boost\u0027s system and thread\n- doctest (in the same was as trompeloeil)",
+      "range": {
+        "startLine": 8,
+        "startChar": 0,
+        "endLine": 14,
+        "endChar": 111
+      },
+      "revId": "6b53d4471c96d711b78a84c13b1ffdf90834492a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "83a050db_d7153c69",
+        "filename": "README.md",
+        "patchSetId": 3
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000106
+      },
+      "writtenOn": "2023-02-14T18:52:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cc25ae81_7146139e",
       "range": {
         "startLine": 8,
         "startChar": 0,
@@ -150,6 +246,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "b59f7e74_c3ddb7c2",
+        "filename": "README.md",
+        "patchSetId": 3
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1000106
+      },
+      "writtenOn": "2023-02-14T18:52:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f5d25afa_58a029a0",
+      "range": {
+        "startLine": 17,
+        "startChar": 0,
+        "endLine": 17,
+        "endChar": 80
+      },
+      "revId": "6b53d4471c96d711b78a84c13b1ffdf90834492a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3ca13284_0bb775e8",
@@ -173,6 +293,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "d543e41d_10c70aab",
+        "filename": "README.md",
+        "patchSetId": 3
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000106
+      },
+      "writtenOn": "2023-02-14T18:52:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3ca13284_0bb775e8",
+      "range": {
+        "startLine": 18,
+        "startChar": 31,
+        "endLine": 18,
+        "endChar": 41
+      },
+      "revId": "6b53d4471c96d711b78a84c13b1ffdf90834492a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "19a8ed11_60ff6801",
@@ -186,6 +330,30 @@
       "writtenOn": "2023-02-14T14:29:12Z",
       "side": 1,
       "message": "Move this before `## Dependencies`, please. A couple of sentences as a summary of what the project does is a good start, more useful than what libraries are used.",
+      "range": {
+        "startLine": 27,
+        "startChar": 0,
+        "endLine": 28,
+        "endChar": 127
+      },
+      "revId": "6b53d4471c96d711b78a84c13b1ffdf90834492a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0773007f_560d91ce",
+        "filename": "README.md",
+        "patchSetId": 3
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1000106
+      },
+      "writtenOn": "2023-02-14T18:52:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "19a8ed11_60ff6801",
       "range": {
         "startLine": 27,
         "startChar": 0,
