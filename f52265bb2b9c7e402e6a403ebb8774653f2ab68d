@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f829779d_9cc11f8c",
+        "filename": "README.md",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-02-14T20:54:31Z",
+      "side": 1,
+      "message": "nit: for style, please separate the titles from the paragraphs above and below by a blank line (all levels of all headings, #, ##, etc)",
+      "revId": "f52265bb2b9c7e402e6a403ebb8774653f2ab68d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "600ad7c6_2ddb40bf",
+        "filename": "README.md",
+        "patchSetId": 5
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-02-14T20:54:31Z",
+      "side": 1,
+      "message": "Let\u0027s write it this way, please, to make it obvious that we do not require that particular init system, but that we\u0027re only using its journald support for logging:\n - systemd - the shared library for logging to `sd-journal`",
+      "range": {
+        "startLine": 13,
+        "startChar": 2,
+        "endLine": 13,
+        "endChar": 17
+      },
+      "revId": "f52265bb2b9c7e402e6a403ebb8774653f2ab68d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3d6ec35e_464cb0aa",
+        "filename": "README.md",
+        "patchSetId": 5
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-02-14T20:54:31Z",
+      "side": 1,
+      "message": "link to https://github.com/gabime/spdlog here",
+      "range": {
+        "startLine": 14,
+        "startChar": 2,
+        "endLine": 14,
+        "endChar": 8
+      },
+      "revId": "f52265bb2b9c7e402e6a403ebb8774653f2ab68d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
