@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "515aff41_3f78a98d",
+        "filename": "README.md",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000106
+      },
+      "writtenOn": "2023-02-15T11:01:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f829779d_9cc11f8c",
+      "revId": "f52265bb2b9c7e402e6a403ebb8774653f2ab68d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "600ad7c6_2ddb40bf",
@@ -31,6 +49,30 @@
       "writtenOn": "2023-02-14T20:54:31Z",
       "side": 1,
       "message": "Let\u0027s write it this way, please, to make it obvious that we do not require that particular init system, but that we\u0027re only using its journald support for logging:\n - systemd - the shared library for logging to `sd-journal`",
+      "range": {
+        "startLine": 13,
+        "startChar": 2,
+        "endLine": 13,
+        "endChar": 17
+      },
+      "revId": "f52265bb2b9c7e402e6a403ebb8774653f2ab68d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "dd835a1d_4a16f4c0",
+        "filename": "README.md",
+        "patchSetId": 5
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000106
+      },
+      "writtenOn": "2023-02-15T11:01:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "600ad7c6_2ddb40bf",
       "range": {
         "startLine": 13,
         "startChar": 2,
@@ -64,6 +106,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "09f994f9_624a1371",
+        "filename": "README.md",
+        "patchSetId": 5
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000106
+      },
+      "writtenOn": "2023-02-15T11:01:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3d6ec35e_464cb0aa",
+      "range": {
+        "startLine": 14,
+        "startChar": 2,
+        "endLine": 14,
+        "endChar": 8
+      },
+      "revId": "f52265bb2b9c7e402e6a403ebb8774653f2ab68d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "77019147_9457ee3b",
@@ -77,6 +143,24 @@
       "writtenOn": "2023-02-15T09:23:12Z",
       "side": 1,
       "message": "Please also add one empty line before the heading (and one after, but that was already reported by Jan in another comment",
+      "revId": "f52265bb2b9c7e402e6a403ebb8774653f2ab68d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "63e8ec6a_d9419f3b",
+        "filename": "README.md",
+        "patchSetId": 5
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000106
+      },
+      "writtenOn": "2023-02-15T11:01:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "77019147_9457ee3b",
       "revId": "f52265bb2b9c7e402e6a403ebb8774653f2ab68d",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -98,6 +182,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "225db593_47ae9f1b",
+        "filename": "README.md",
+        "patchSetId": 5
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 1000106
+      },
+      "writtenOn": "2023-02-15T11:01:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "804125a5_2ee928a4",
+      "revId": "f52265bb2b9c7e402e6a403ebb8774653f2ab68d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "ba2c0b9e_250e1c33",
@@ -111,6 +213,30 @@
       "writtenOn": "2023-02-15T09:23:12Z",
       "side": 1,
       "message": "I think there might be a trailing whitespace after the word \"Instructions\"",
+      "range": {
+        "startLine": 30,
+        "startChar": 116,
+        "endLine": 30,
+        "endChar": 117
+      },
+      "revId": "f52265bb2b9c7e402e6a403ebb8774653f2ab68d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "066b092b_b2a524fe",
+        "filename": "README.md",
+        "patchSetId": 5
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1000106
+      },
+      "writtenOn": "2023-02-15T11:01:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ba2c0b9e_250e1c33",
       "range": {
         "startLine": 30,
         "startChar": 116,
