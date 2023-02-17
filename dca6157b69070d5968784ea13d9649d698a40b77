@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "77345a8d_fb3b598c",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-02-17T14:08:42Z",
+      "side": 1,
+      "message": "nit: the one-sentence-per-line convention applies to stuff which is versioned in git (the reasons is to produce diffs without extra noise). Commit messages, on the other hand, are a different animal, please write them as regular text with the usual line wrapping rules. Sorry for confusion.",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 10,
+        "endChar": 21
+      },
+      "revId": "dca6157b69070d5968784ea13d9649d698a40b77",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9bb49fac_f1709da1",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-02-17T14:08:42Z",
+      "side": 1,
+      "message": "Please address the build failure and make sure that the patch does the right thing (does the order of registrations matter, or does the most specific URL match win?).",
+      "revId": "dca6157b69070d5968784ea13d9649d698a40b77",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
