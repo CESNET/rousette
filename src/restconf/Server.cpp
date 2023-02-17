@@ -109,6 +109,12 @@ Server::Server(sysrepo::Connection conn)
         opticsChange(as_restconf_push_update(content, std::chrono::system_clock::now()));
     });
 
+    server->handle("/", [](const auto& req, const auto& res) {
+        const auto& peer = http::peer_from_request(req);
+        spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
+        rejectResponse(req, res, 404, "resource does not exist");
+    });
+
     server->handle("/telemetry/optics", [this](const auto& req, const auto& res) {
         auto client = std::make_shared<http::EventStream>(req, res);
         client->activate(opticsChange, as_restconf_push_update(dwdmEvents->currentData(), std::chrono::system_clock::now()));
