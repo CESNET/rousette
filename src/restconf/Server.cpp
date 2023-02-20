@@ -106,7 +106,7 @@ void rejectResponseWithJSON(const request& req, const response& res, const int c
 
     res.write_head(code, {{"content-type", {"application/yang-data+json", false}},
                           {"access-control-allow-origin", {"*", false}}});
-    res.end("{ \"test:test2\": {} }");
+    res.end("{ \"test\":\"test2\" }");
 
 }
 
@@ -118,6 +118,16 @@ Server::Server(sysrepo::Connection conn)
 {
     dwdmEvents->change.connect([this](const std::string& content) {
         opticsChange(as_restconf_push_update(content, std::chrono::system_clock::now()));
+    });
+
+    server->handle("/", [this](const auto& req, const auto& res) {
+        const auto& peer = http::peer_from_request(req);
+        spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
+        rejectResponse(req, res, 404, "resource does not exist");
+    });
+
+    server->handle("/.well-known/host-meta", [this](const auto& req, const auto& res) {
+        spdlog::info("access of /.well-known/host-meta");
     });
 
     server->handle("/telemetry/optics", [this](const auto& req, const auto& res) {
