@@ -33,6 +33,24 @@
       "message": "instead of logging a debugging message, please implement this according to https://www.rfc-editor.org/rfc/rfc8040#section-3.1",
       "revId": "cb62294235d0494b99d56d0727cc73dc84fdce71",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "372c9064_944d8364",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 128,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-02-22T10:45:22Z",
+      "side": 1,
+      "message": "I will add that this RFC section specifies not only different content but also different HTTP headers.",
+      "parentUuid": "8a5a11c5_180285f2",
+      "revId": "cb62294235d0494b99d56d0727cc73dc84fdce71",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
