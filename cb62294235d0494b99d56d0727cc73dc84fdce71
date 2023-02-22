@@ -3,6 +3,23 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "a331a017_e38e537d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-02-22T10:44:09Z",
+      "side": 1,
+      "message": "a better commit message looks like this:\n\n handle RESTCONF root autodiscovery\n\n The RFC says [1] that a magic .well-known URL should return the\n prefix as a specially formatted XML.\n\n [1] https://www.rfc-editor.org/rfc/rfc8040#section-3.1",
+      "revId": "cb62294235d0494b99d56d0727cc73dc84fdce71",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "8a5a11c5_180285f2",
         "filename": "src/restconf/Server.cpp",
         "patchSetId": 1
