@@ -126,7 +126,7 @@ Server::Server(sysrepo::Connection conn)
         rejectResponse(req, res, 404, "resource does not exist");
     });
 
-    server->handle("/.well-known/host-meta", [this](const auto& req, const auto& res) {
+    server->handle("/.well-known/host-meta", [](const auto& req, const auto& res) {
         const auto& peer = http::peer_from_request(req);
         spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
         res.write_head(
