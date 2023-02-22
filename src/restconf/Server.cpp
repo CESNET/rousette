@@ -34,6 +34,8 @@ auto as_restconf_push_update(const std::string& content, const T& time)
 }
 
 constexpr auto restconfRoot = "/restconf/";
+std::string beginResponseXML = "<XRD xmlns='http://docs.oasis-open.org/ns/xri/xrd-1.0'><Link rel='restconf' href='";
+std::string endResponseXML = "'></XRD>";
 
 namespace pattern {
 const auto atom = "[a-zA-Z_][a-zA-Z_.-]*"s;
@@ -113,6 +115,18 @@ Server::Server(sysrepo::Connection conn)
         const auto& peer = http::peer_from_request(req);
         spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
         rejectResponse(req, res, 404, "resource does not exist");
+    });
+
+    server->handle("/.well-known/host-meta", [](const auto& req, const auto& res) {
+        const auto& peer = http::peer_from_request(req);
+        spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
+        res.write_head(
+                   200,
+                   {
+                       {"content-type", {"application/xrd+xml", false}},
+                       {"access-control-allow-origin", {"*", false}},
+                   });
+        res.end(beginResponseXML + restconfRoot + endResponseXML);
     });
 
     server->handle("/telemetry/optics", [this](const auto& req, const auto& res) {
