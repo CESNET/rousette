@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9d850f1e_0d1cac69",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-02-22T18:00:33Z",
+      "side": 1,
+      "message": "Please squash this into the commit associated with change 6058",
+      "revId": "3168c3ea46da6cd86d7faa97f59e26945e21f7fd",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
