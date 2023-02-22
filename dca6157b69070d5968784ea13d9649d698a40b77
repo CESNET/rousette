@@ -81,6 +81,24 @@
       "parentUuid": "9bb49fac_f1709da1",
       "revId": "dca6157b69070d5968784ea13d9649d698a40b77",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b0120327_26321919",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-02-22T14:38:47Z",
+      "side": 1,
+      "message": "I was a bit curious how the implementation works (I was worried that perhaps this is just a implementation detail or something). The code is explicitly looking for the longest match:\n\nhttps://github.com/nghttp2/nghttp2/blob/babeddb6499f3baae5bf3befa5f503e615cdacf9/src/asio_server_serve_mux.cc#L115-L132",
+      "parentUuid": "79059209_9b0a93e2",
+      "revId": "dca6157b69070d5968784ea13d9649d698a40b77",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
