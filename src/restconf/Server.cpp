@@ -94,9 +94,20 @@ bool hasModuleForPath(const sysrepo::Session& session, const std::string& path)
 void rejectResponse(const request& req, const response& res, const int code, const std::string& message)
 {
     spdlog::debug("{}: {}", http::peer_from_request(req), message);
+
     res.write_head(code, {{"content-type", {"text/plain", false}},
                           {"access-control-allow-origin", {"*", false}}});
     res.end("go away");
+}
+
+void rejectResponseWithJSON(const request& req, const response& res, const int code, const std::string& message)
+{
+    spdlog::debug("{}: {}", http::peer_from_request(req), message);
+
+    res.write_head(code, {{"content-type", {"application/yang-data+json", false}},
+                          {"access-control-allow-origin", {"*", false}}});
+    res.end("{ \"test\":\"test2\" }");
+
 }
 
 Server::~Server() = default;
@@ -138,7 +149,7 @@ Server::Server(sysrepo::Connection conn)
             spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
 
             if (req.method() != "GET") {
-                rejectResponse(req, res, 400, "nothing but GET works");
+                rejectResponseWithJSON(req, res, 405, "method not allowed");
                 return;
             }
 
