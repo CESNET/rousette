@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4b5779eb_85da6e53",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000106
+      },
+      "writtenOn": "2023-02-22T12:16:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "77345a8d_fb3b598c",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 10,
+        "endChar": 21
+      },
+      "revId": "dca6157b69070d5968784ea13d9649d698a40b77",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "9bb49fac_f1709da1",
@@ -37,6 +61,24 @@
       "writtenOn": "2023-02-17T14:08:42Z",
       "side": 1,
       "message": "Please address the build failure and make sure that the patch does the right thing (does the order of registrations matter, or does the most specific URL match win?).",
+      "revId": "dca6157b69070d5968784ea13d9649d698a40b77",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "79059209_9b0a93e2",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000106
+      },
+      "writtenOn": "2023-02-22T12:16:56Z",
+      "side": 1,
+      "message": "The most specific URL match wins",
+      "parentUuid": "9bb49fac_f1709da1",
       "revId": "dca6157b69070d5968784ea13d9649d698a40b77",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
