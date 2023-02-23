@@ -16,6 +16,24 @@
       "message": "Is this necessary? I think that line 120 already logs the request URI (which is .well-known/host-meta) so isn\u0027t the path logged twice? Please check that.",
       "revId": "4051f6f07027d5a55894219b10afd14389c1dfe6",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "63f53615_2d187d69",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 128,
+      "author": {
+        "id": 1000106
+      },
+      "writtenOn": "2023-02-23T11:29:16Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "469c6893_b6c198f1",
+      "revId": "4051f6f07027d5a55894219b10afd14389c1dfe6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
