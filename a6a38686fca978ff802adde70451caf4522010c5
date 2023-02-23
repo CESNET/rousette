@@ -16,6 +16,23 @@
       "message": "Hardcoded text has been moved to variables",
       "revId": "a6a38686fca978ff802adde70451caf4522010c5",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d7911af5_8fdd3434",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000106
+      },
+      "writtenOn": "2023-02-23T14:34:57Z",
+      "side": 1,
+      "message": "All Comments seem to be resolved.",
+      "revId": "a6a38686fca978ff802adde70451caf4522010c5",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
