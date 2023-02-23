@@ -33,6 +33,29 @@
       "message": "All Comments seem to be resolved.",
       "revId": "a6a38686fca978ff802adde70451caf4522010c5",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "dd4788f8_1f4953b8",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-02-23T14:59:16Z",
+      "side": 1,
+      "message": "there\u0027s no need for that; both of these are only used at exactly one place, so let\u0027s not clutter up the global namespace like that",
+      "range": {
+        "startLine": 37,
+        "startChar": 0,
+        "endLine": 38,
+        "endChar": 40
+      },
+      "revId": "a6a38686fca978ff802adde70451caf4522010c5",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
