@@ -135,7 +135,7 @@ Server::Server(sysrepo::Connection conn)
                        {"content-type", {"application/xrd+xml", false}},
                        {"access-control-allow-origin", {"*", false}},
                    });
-        res.end(std::string("<XRD xmlns='http://docs.oasis-open.org/ns/xri/xrd-1.0'><Link rel='restconf' href='")+ restconfRoot + "'></XRD>");
+        res.end("<XRD xmlns='http://docs.oasis-open.org/ns/xri/xrd-1.0'><Link rel='restconf' href='"s + restconfRoot + "'></XRD>"s);
     });
 
     server->handle("/telemetry/optics", [this](const auto& req, const auto& res) {
