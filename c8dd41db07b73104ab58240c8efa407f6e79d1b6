@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "17d3174d_eea4f075",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000106
+      },
+      "writtenOn": "2023-02-24T12:46:37Z",
+      "side": 1,
+      "message": "Response XML string for /.well-known/host-meta is now beeing constructed in agreed way.",
+      "revId": "c8dd41db07b73104ab58240c8efa407f6e79d1b6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
