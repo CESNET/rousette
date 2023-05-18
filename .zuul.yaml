@@ -1,8 +1,8 @@
 - job:
-    name: rousette-f34-clang-asan-ubsan
-    parent: f34-clang-asan-ubsan
+    name: rousette-f38-clang-asan-ubsan
+    parent: f38-clang-asan-ubsan
     pre-run: ci/pre.yaml
-    requires: CzechLight-deps-f34-clang-asan-ubsan
+    requires: CzechLight-deps-f38-clang-asan-ubsan
     required-projects: &projects
       - CzechLight/dependencies
       - name: github/nghttp2/nghttp2
@@ -13,21 +13,21 @@
 - project:
     check:
       jobs:
-        - f34-gcc-cover:
-            requires: CzechLight-deps-f34-gcc
+        - f38-gcc-cover:
+            requires: CzechLight-deps-f38-gcc
             required-projects: *projects
             pre-run: ci/pre.yaml
-        - rousette-f34-clang-asan-ubsan
-        - f34-clang-tsan:
-            requires: CzechLight-deps-f34-clang-tsan
+        - rousette-f38-clang-asan-ubsan
+        - f38-clang-tsan:
+            requires: CzechLight-deps-f38-clang-tsan
             required-projects: *projects
             pre-run: ci/pre.yaml
-        - f34-cpp-coverage-diff:
+        - f38-cpp-coverage-diff:
             voting: false
         - clang-format:
             voting: false
-        - f34-gcc-cover-previous:
-            requires: CzechLight-deps-f34-gcc
+        - f38-gcc-cover-previous:
+            requires: CzechLight-deps-f38-gcc
             required-projects: *projects
             pre-run: ci/pre.yaml
         - czechlight-clearfog:
