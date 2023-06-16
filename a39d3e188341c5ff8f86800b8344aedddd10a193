@@ -16,6 +16,23 @@
       "message": "recheck",
       "revId": "a39d3e188341c5ff8f86800b8344aedddd10a193",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "be62d55b_de891e66",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-06-16T10:38:59Z",
+      "side": 1,
+      "message": "OK, this is because the systemwide curl is built against nghttp2, and we\u0027re trying to replace that one, which won\u0027t fly. The proper fix is to get just the async bindings to build, I\u0027m afraid...",
+      "revId": "a39d3e188341c5ff8f86800b8344aedddd10a193",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
