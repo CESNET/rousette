@@ -154,8 +154,7 @@ Server::Server(sysrepo::Connection conn)
             }
 
             try {
-              auto sess = conn.sessionStart();
-              sess.switchDatastore(sysrepo::Datastore::Operational);
+              auto sess = conn.sessionStart(sysrepo::Datastore::Operational);
 
               if (!hasModuleForPath(sess, *path)) {
                   rejectResponse(req, res, 404, "module not implemented");
