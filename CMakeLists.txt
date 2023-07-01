@@ -173,4 +173,9 @@ if(BUILD_TESTING)
     endfunction()
 
     rousette_test(NAME http-server LIBRARIES rousette-restconf)
+
+    set(fixture_nacm
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/nacm-test-a.yang
+        JSON ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/nacm.json)
+    rousette_test(NAME nacm LIBRARIES rousette-restconf FIXTURE fixture_nacm)
 endif()

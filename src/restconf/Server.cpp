@@ -53,6 +53,11 @@ const std::initializer_list<std::string> allowedPrefixes {
     {"czechlight-system:leds"s},
 };
 }
+
+namespace nacm {
+    const auto DEFAULT_USER = "nobody";
+    const auto NACM_USER_HEADER = "x-netconf-nacm-user";
+}
 }
 
 std::optional<std::string> as_subtree_path(const std::string& path)
@@ -99,7 +104,8 @@ void rejectResponse(const request& req, const response& res, const int code, con
     res.end("go away");
 }
 
-std::optional<libyang::DataNode> getData(sysrepo::Session sess, const std::string& path) {
+std::optional<libyang::DataNode> getData(sysrepo::Session sess, const std::string& path, const std::string& nacmUser) {
+    sess.setNacmUser(nacmUser);
     return sess.getData('/' + path);
 }
 
@@ -109,6 +115,8 @@ Server::Server(sysrepo::Connection conn)
     : server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
+    nacmSub = conn.sessionStart(sysrepo::Datastore::Operational).initNacm();
+
     dwdmEvents->change.connect([this](const std::string& content) {
         opticsChange(as_restconf_push_update(content, std::chrono::system_clock::now()));
     });
@@ -141,6 +149,11 @@ Server::Server(sysrepo::Connection conn)
             const auto& peer = http::peer_from_request(req);
             spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
 
+            std::string nacmUser = nacm::DEFAULT_USER;
+            if (auto itUserHeader = req.header().find(nacm::NACM_USER_HEADER); itUserHeader != req.header().end()) {
+                nacmUser = itUserHeader->second.value;
+            }
+
             if (req.method() != "GET") {
                 rejectResponse(req, res, 400, "nothing but GET works");
                 return;
@@ -165,7 +178,7 @@ Server::Server(sysrepo::Connection conn)
                     return;
                 }
 
-                if (auto data = getData(sess, *path); data) {
+                if (auto data = getData(sess, *path, nacmUser); data) {
                     res.write_head(
                         200,
                         {

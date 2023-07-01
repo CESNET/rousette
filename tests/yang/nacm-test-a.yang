@@ -1,0 +1,25 @@
+module nacm-test-a {
+    yang-version 1.1;
+    prefix nacma;
+    namespace "http://example.com/nacma";
+
+    import ietf-netconf-acm {
+        prefix nacm;
+        reference
+            "RFC 8341: Network Configuration Access Control Model";
+    }
+
+    container cont {
+        leaf l1 {
+            type int32;
+        }
+
+        leaf l2 {
+            type int32;
+        }
+
+        leaf l3 {
+            type int32;
+        }
+    }
+}
