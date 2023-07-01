@@ -7,6 +7,7 @@
 
 #pragma once
 #include <sysrepo-cpp/Connection.hpp>
+#include <sysrepo-cpp/Subscription.hpp>
 #include "http/EventStream.h"
 
 namespace nghttp2::asio_http2::server {
@@ -25,6 +26,8 @@ std::optional<std::string> as_subtree_path(const std::string& path);
 
 std::optional<libyang::DataNode> getData(sysrepo::Session sess, const std::string& path, const std::string& nacmUser);
 
+std::optional<libyang::DataNode> getData(sysrepo::Session sess, const std::string& path, const std::string& nacmUser);
+
 /** @short A RESTCONF-ish server */
 class Server {
 public:
@@ -34,6 +37,7 @@ public:
     void stop();
 private:
     std::unique_ptr<nghttp2::asio_http2::server::http2> server;
+    std::optional<sysrepo::Subscription> nacmSub;
     std::unique_ptr<sr::OpticalEvents> dwdmEvents;
     using JsonDiffSignal = boost::signals2::signal<void(const std::string& json)>;
     JsonDiffSignal opticsChange;
