@@ -87,6 +87,7 @@ add_library(rousette-sysrepo STATIC
 target_link_libraries(rousette-sysrepo PUBLIC spdlog::spdlog PkgConfig::SYSREPO-CPP PkgConfig::LIBYANG-CPP)
 
 add_library(rousette-restconf STATIC
+    src/restconf/Nacm.cpp
     src/restconf/Server.cpp
     src/restconf/utils.cpp
 )
@@ -173,4 +174,8 @@ if(BUILD_TESTING)
     endfunction()
 
     rousette_test(NAME http-server LIBRARIES rousette-restconf)
+
+    set(fixture_http_test
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/nacm-test.yang)
+    rousette_test(NAME http-communication LIBRARIES rousette-restconf FIXTURE fixture_http_test)
 endif()

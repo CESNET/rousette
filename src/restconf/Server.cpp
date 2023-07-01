@@ -9,8 +9,10 @@
 #include <nghttp2/asio_http2_server.h>
 #include <regex>
 #include <spdlog/spdlog.h>
+#include <sysrepo-cpp/Enum.hpp>
 #include <sysrepo-cpp/utils/exception.hpp>
 #include "http/utils.hpp"
+#include "restconf/Nacm.h"
 #include "restconf/Server.h"
 #include "restconf/utils.h"
 #include "sr/OpticalEvents.h"
@@ -85,6 +87,7 @@ Server::~Server() = default;
 
 Server::Server(sysrepo::Connection conn)
     : server{std::make_unique<nghttp2::asio_http2::server::http2>()}
+    , nacm(conn)
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
     dwdmEvents->change.connect([this](const std::string& content) {
@@ -115,9 +118,14 @@ Server::Server(sysrepo::Connection conn)
     });
 
     server->handle(restconfRoot,
-        [conn](const auto& req, const auto& res) mutable {
+        [&](const auto& req, const auto& res) mutable {
             const auto& peer = http::peer_from_request(req);
             spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
+
+            std::string nacmUser = identity::ANONYMOUS_USER;
+            if (auto itUserHeader = req.header().find(identity::NACM_USER_HEADER); itUserHeader != req.header().end()) {
+                nacmUser = itUserHeader->second.value;
+            }
 
             if (req.method() != "GET") {
                 rejectResponse(req, res, 400, "nothing but GET works");
@@ -130,6 +138,11 @@ Server::Server(sysrepo::Connection conn)
                 return;
             }
 
+            if (nacmUser == identity::ANONYMOUS_USER && !nacm.anonymousEnabled()) {
+                rejectResponse(req, res, 400, "anonymous access not allowed: wrong configuration of NACM rules");
+                return;
+            }
+
             try {
                 auto sess = conn.sessionStart(sysrepo::Datastore::Operational);
 
@@ -138,7 +151,7 @@ Server::Server(sysrepo::Connection conn)
                     return;
                 }
 
-                if (auto data = getData(sess, *path); data) {
+                if (auto data = getData(sess, *path, nacmUser); data) {
                     res.write_head(
                         200,
                         {
