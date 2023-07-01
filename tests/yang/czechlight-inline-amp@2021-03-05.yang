@@ -1,0 +1,70 @@
+module czechlight-inline-amp {
+  yang-version 1.1;
+  namespace
+    "http://czechlight.cesnet.cz/yang/czechlight-inline-amp";
+
+  prefix "cla-ila";
+
+  import czechlight-roadm-common {
+    prefix "cla-common";
+    revision-date 2021-03-05;
+  }
+
+  import opendevice-types {
+    prefix "odt";
+    revision-date 2017-10-08;
+  }
+
+  organization "CESNET";
+  contact "photonic@cesnet.cz";
+  description "Inline Amplifier";
+
+  revision 2019-09-30 {
+    description "Initial release";
+  }
+
+  revision 2021-03-05 {
+    description "Spectrum scanning via operational datastore";
+  }
+
+  grouping one-direction-config {
+    leaf enabled {
+      type boolean;
+      description "If not set, the amplifier will be shut down";
+      default true;
+    }
+    leaf output-voa {
+      description "Output Variable Optical Attenuator";
+      type cla-common:attenuation-type {
+        range "0.0..30.0";
+      }
+      default 0;
+    }
+    container optical-power {
+      description "Power measurements over the whole C-band";
+      config false;
+
+      leaf input {
+        description "Input optical power";
+        type odt:optical-power-dBm;
+        mandatory true;
+      }
+
+      leaf output {
+        description "Output optical power";
+        type odt:optical-power-dBm;
+        mandatory true;
+      }
+    }
+  }
+
+  container east-to-west {
+    description "Configuration of the east-to-west amplifier";
+    uses one-direction-config;
+  }
+
+  container west-to-east {
+    description "Configuration of the west-to-east amplifier";
+    uses one-direction-config;
+  }
+}

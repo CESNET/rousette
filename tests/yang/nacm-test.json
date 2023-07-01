@@ -1,0 +1,8 @@
+{
+    "nacm-test:limited": {
+        "val": "limited"
+    },
+    "nacm-test:unlimited": {
+        "val": "unlimited"
+    }
+}

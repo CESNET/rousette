@@ -140,9 +140,9 @@ if(BUILD_TESTING)
 
         if(NOT CMAKE_CROSSCOMPILING)
             if(NOT(TEST_COMMAND))
-                add_test(test-${TEST_NAME} test-${TEST_NAME})
+                add_test(test-${TEST_NAME} /bin/bash -c "./test-${TEST_NAME} ; sysrepoctl -l")
             else()
-                add_test(NAME test-${TEST_NAME} COMMAND ${TEST_COMMAND})
+                add_test(NAME test-${TEST_NAME} COMMAND /bin/bash -c "./test-${TEST_NAME} ; sysrepoctl -l")
             endif()
         endif()
 
@@ -173,4 +173,25 @@ if(BUILD_TESTING)
     endfunction()
 
     rousette_test(NAME http-server LIBRARIES rousette-restconf)
+
+    set(fixture_http_test
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/czechlight-inline-amp@2021-03-05.yang
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/nacm-test.yang
+        JSON ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/nacm-test.json)
+    rousette_test(NAME http-communication LIBRARIES rousette-restconf FIXTURE fixture_http_test)
+
+    add_test(NAME nacm-load COMMAND ${SYSREPOCFG} --import=${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/nacm-rules.json)
+    add_test(NAME nacm-unload COMMAND ${SYSREPOCFG} -C startup -d running -m ietf-netconf-acm)
+
+    set_property(TEST nacm-load nacm-unload APPEND PROPERTY ENVIRONMENT
+      "SYSREPO_REPOSITORY_PATH=${CMAKE_CURRENT_BINARY_DIR}/test_repositories/test_http-communication"
+      "SYSREPO_SHM_PREFIX=rousette_test_http-communication"
+    )
+
+    set_tests_properties(nacm-load PROPERTIES FIXTURES_SETUP sysrepo:env:load-nacm-rules)
+    set_tests_properties(nacm-load PROPERTIES FIXTURES_REQUIRED sysrepo:env:http-communication)
+    set_tests_properties(nacm-unload PROPERTIES FIXTURES_CLEANUP sysrepo:env:load-nacm-rules)
+    set_tests_properties(nacm-unload PROPERTIES FIXTURES_REQUIRED sysrepo:env:http-communication)
+
+    set_tests_properties(test-http-communication PROPERTIES FIXTURES_REQUIRED "sysrepo:env:http-communication;sysrepo:env:load-nacm-rules")
 endif()

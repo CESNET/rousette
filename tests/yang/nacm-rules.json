@@ -1,0 +1,42 @@
+{
+    "ietf-netconf-acm:nacm": {
+        "enable-external-groups": false,
+        "rule-list": [
+            {
+                "name": "Allow DWDM control to the optics group",
+                "group": ["optics"],
+                "rule": [
+                    {
+                        "name": "nacm-test:optics",
+                        "module-name": "nacm-test",
+                        "action": "permit"
+                    }
+                ]
+            },
+            {
+                "name": "Anonymous user",
+                "group": ["nobody"],
+                "rule": [
+                    {
+                        "name": "nacm-test:anonymous",
+                        "module-name": "nacm-test",
+                        "action": "permit",
+                        "access-operations": "read",
+                        "path": "/nacm-test:limited"
+                    }
+                ]
+            },
+            {
+                "name": "Reject all",
+                "group": ["*"],
+                "rule": [
+                    {
+                        "name": "Reject all",
+                        "module-name": "nacm-test",
+                        "action": "deny",
+                    }
+                ]
+            }
+        ]
+    }
+}
