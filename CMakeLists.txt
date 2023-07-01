@@ -88,6 +88,7 @@ target_link_libraries(rousette-sysrepo PUBLIC spdlog::spdlog PkgConfig::SYSREPO-
 
 add_library(rousette-restconf STATIC
     src/restconf/Server.cpp
+    src/restconf/nacm.cpp
     src/restconf/utils.cpp
 )
 target_link_libraries(rousette-restconf PUBLIC rousette-http rousette-sysrepo Boost::system Threads::Threads)
@@ -142,7 +143,7 @@ if(BUILD_TESTING)
             if(NOT(TEST_COMMAND))
                 add_test(test-${TEST_NAME} test-${TEST_NAME})
             else()
-                add_test(NAME test-${TEST_NAME} COMMAND ${TEST_COMMAND})
+                add_test(NAME test-${TEST_NAME} COMMAND ${TEST_NAME})
             endif()
         endif()
 
@@ -173,4 +174,8 @@ if(BUILD_TESTING)
     endfunction()
 
     rousette_test(NAME http-server LIBRARIES rousette-restconf)
+
+    set(fixture_http_test
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/nacm-test.yang)
+    rousette_test(NAME http-communication LIBRARIES rousette-restconf FIXTURE fixture_http_test)
 endif()

@@ -12,6 +12,7 @@
 #include <sysrepo-cpp/utils/exception.hpp>
 #include "http/utils.hpp"
 #include "restconf/Server.h"
+#include "restconf/nacm.h"
 #include "restconf/utils.h"
 #include "sr/OpticalEvents.h"
 
@@ -39,6 +40,12 @@ namespace pattern {
 const auto atom = "[a-zA-Z_][a-zA-Z_.-]*"s;
 const std::regex moduleWildcard{"^"s + restconfRoot + "data/(" + atom + ":\\*)$"};
 const std::regex subtree{"^"s + restconfRoot + "data/(" + atom + ":" + atom + "(/(" + atom + ":)?" + atom + ")*)$"};
+}
+
+namespace nacm {
+const auto ANONYMOUS_USER = "restconf-anonymous";
+const auto ANONYMOUS_GROUP = "restconf-anonymous";
+const auto NACM_USER_HEADER = "x-netconf-nacm-user";
 }
 }
 
@@ -74,7 +81,9 @@ void rejectResponse(const request& req, const response& res, const int code, con
     res.end("go away");
 }
 
-std::optional<libyang::DataNode> getData(sysrepo::Session sess, const std::string& path) {
+std::optional<libyang::DataNode> getData(sysrepo::Session sess, const std::string& path, const std::string& nacmUser) {
+    sess.setNacmUser(nacmUser);
+    spdlog::info("  nacm user: {}", nacmUser);
     return sess.getData('/' + path);
 }
 
@@ -82,6 +91,7 @@ Server::~Server() = default;
 
 Server::Server(sysrepo::Connection conn)
     : server{std::make_unique<nghttp2::asio_http2::server::http2>()}
+    , nacmSub(conn.sessionStart(sysrepo::Datastore::Running).initNacm())
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
     dwdmEvents->change.connect([this](const std::string& content) {
@@ -116,6 +126,11 @@ Server::Server(sysrepo::Connection conn)
             const auto& peer = http::peer_from_request(req);
             spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
 
+            std::string nacmUser = nacm::ANONYMOUS_USER;
+            if (auto itUserHeader = req.header().find(nacm::NACM_USER_HEADER); itUserHeader != req.header().end()) {
+                nacmUser = itUserHeader->second.value;
+            }
+
             if (req.method() != "GET") {
                 rejectResponse(req, res, 400, "nothing but GET works");
                 return;
@@ -127,6 +142,11 @@ Server::Server(sysrepo::Connection conn)
                 return;
             }
 
+            if (nacmUser == nacm::ANONYMOUS_USER && !validAnonymousNacmRules(conn, nacm::ANONYMOUS_GROUP)) {
+                rejectResponse(req, res, 400, "anonymous access not allowed: wrong configuration of NACM rules");
+                return;
+            }
+
             try {
                 auto sess = conn.sessionStart(sysrepo::Datastore::Operational);
 
@@ -135,7 +155,7 @@ Server::Server(sysrepo::Connection conn)
                     return;
                 }
 
-                if (auto data = getData(sess, *path); data) {
+                if (auto data = getData(sess, *path, nacmUser); data) {
                     res.write_head(
                         200,
                         {
