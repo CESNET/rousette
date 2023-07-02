@@ -123,16 +123,52 @@ if(BUILD_TESTING)
     target_link_libraries(DoctestIntegration doctest::doctest spdlog::spdlog)
     target_compile_definitions(DoctestIntegration PUBLIC DOCTEST_CONFIG_SUPER_FAST_ASSERTS)
 
-    function(rousette_test fname)
-        add_executable(test_${fname} tests/${fname}.cpp)
-        target_link_libraries(test_${fname} DoctestIntegration)
-        if(NOT CMAKE_CROSSCOMPILING)
-            add_test(test_${fname} test_${fname})
-        endif()
-        target_include_directories(test_${fname} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-        set_tests_properties(test_${fname} PROPERTIES TIMEOUT 60)
-    endfunction()
+    find_program(SYSREPOCTL sysrepoctl)
+    find_program(SYSREPOCFG sysrepocfg)
 
-    rousette_test(http-server)
-    target_link_libraries(test_http-server rousette-restconf)
+    function(rousette_test)
+        cmake_parse_arguments(TEST "" "NAME;FIXTURE;RESOURCE_LOCK" "LIBRARIES;COMMAND" ${ARGN})
+
+        add_executable(test-${TEST_NAME} ${CMAKE_SOURCE_DIR}/tests/${TEST_NAME}.cpp)
+        target_link_libraries(test-${TEST_NAME} DoctestIntegration ${TEST_LIBRARIES})
+        target_include_directories(test-${TEST_NAME}
+            PUBLIC
+                ${CMAKE_CURRENT_SOURCE_DIR}
+            PRIVATE
+                ${CMAKE_BINARY_DIR}
+        )
+
+        if(NOT CMAKE_CROSSCOMPILING)
+            if(NOT(TEST_COMMAND))
+                add_test(test-${TEST_NAME} test-${TEST_NAME})
+            else()
+                add_test(NAME test-${TEST_NAME} COMMAND ${TEST_COMMAND})
+            endif()
+        endif()
+
+        set(test_name_init sysrepo:prep:${TEST_NAME})
+        set(test_name_cleanup sysrepo:clean:${TEST_NAME})
+        set(fixture_name sysrepo:env:${TEST_NAME})
+
+        if(TEST_RESOURCE_LOCK)
+            set_tests_properties(test-${TEST_NAME} PROPERTIES RESOURCE_LOCK "${TEST_RESOURCE_LOCK}")
+        endif()
+
+        # How to do this:
+        # take the args for manage module from variable "fixture{fixture_name}"
+        # and then add set env vars for sysrepo
+        # set them ALSO for the init/cleanup tests
+        if(TEST_FIXTURE)
+            add_test(NAME ${test_name_init} COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/sysrepoctl-manage-module.sh ${SYSREPOCTL} ${SYSREPOCFG} prepare ${${TEST_FIXTURE}})
+            set_tests_properties(${test_name_init} PROPERTIES FIXTURES_SETUP ${fixture_name})
+            add_test(NAME ${test_name_cleanup} COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/sysrepoctl-manage-module.sh ${SYSREPOCTL} ${SYSREPOCFG} uninstall ${${TEST_FIXTURE}})
+            set_tests_properties(${test_name_cleanup} PROPERTIES FIXTURES_CLEANUP ${fixture_name})
+
+            set_tests_properties(test-${TEST_NAME} PROPERTIES FIXTURES_REQUIRED ${fixture_name})
+            set_property(TEST test-${TEST_NAME} ${test_name_init} ${test_name_cleanup} APPEND PROPERTY ENVIRONMENT
+              "SYSREPO_REPOSITORY_PATH=${CMAKE_CURRENT_BINARY_DIR}/test_repositories/test_${TEST_NAME}"
+              "SYSREPO_SHM_PREFIX=rousette_test_${TEST_NAME}"
+            )
+        endif()
+    endfunction()
 endif()
