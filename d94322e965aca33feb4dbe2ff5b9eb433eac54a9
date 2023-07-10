@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7bc72d56_b1ed5a21",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-07-10T09:12:03Z",
+      "side": 1,
+      "message": "I think that some comments from https://gerrit.cesnet.cz/c/CzechLight/rousette/+/5543 apply here as well -- let\u0027s talk about this one interactively and figure out how to best implement it",
+      "revId": "d94322e965aca33feb4dbe2ff5b9eb433eac54a9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "72e80088_681fadfd",
+        "filename": "tests/yang/nacm-test-a.yang",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-07-10T09:12:03Z",
+      "side": 1,
+      "message": "is this one actually needed?",
+      "range": {
+        "startLine": 6,
+        "startChar": 0,
+        "endLine": 10,
+        "endChar": 5
+      },
+      "revId": "d94322e965aca33feb4dbe2ff5b9eb433eac54a9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
