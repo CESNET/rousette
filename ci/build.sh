@@ -11,6 +11,7 @@ ZUUL_PROJECT_SHORT_NAME=$(jq < ~/zuul-env.json -r ".projects[] | select(.name ==
 ZUUL_GERRIT_HOSTNAME=$(jq < ~/zuul-env.json -r '.project.canonical_hostname')
 ZUUL_JOB_NAME_NO_PROJECT=${ZUUL_JOB_NAME##${ZUUL_PROJECT_SHORT_NAME}-}
 ZUUL_SRC_COMMON_PREFIX=${ZUUL_PROJECT_SRC_DIR:0:-${#LEAF_PROJECT_NAME}}
+NGHTTP2_ASIO_SRC_DIR=$HOME/$(jq < ~/zuul-env.json -r ".projects[] | select(.name == \"github/nghttp2/nghttp2-asio\").src_dir")
 
 CI_PARALLEL_JOBS=$(awk -vcpu=$(getconf _NPROCESSORS_ONLN) 'BEGIN{printf "%.0f", cpu*1.3+1}')
 CMAKE_OPTIONS=""
@@ -70,6 +71,14 @@ if [[ -z "${ARTIFACT_URL}" ]]; then
 fi
 
 curl ${ARTIFACT_URL} | unzstd --stdout | tar -C ${PREFIX} -xf -
+
+NGHTTP2_ASIO_BUILD_DIR=~/build-nghttp2-asio
+mkdir ${NGHTTP2_ASIO_BUILD_DIR}
+pushd ${NGHTTP2_ASIO_BUILD_DIR}
+cmake -GNinja -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Debug} -DCMAKE_INSTALL_PREFIX=${PREFIX} ${CMAKE_OPTIONS} ${NGHTTP2_ASIO_SRC_DIR}
+ninja-build install
+ctest -j${CI_PARALLEL_JOBS} --output-on-failure
+popd
 
 cd ${BUILD_DIR}
 cmake -GNinja -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Debug} -DCMAKE_INSTALL_PREFIX=${PREFIX} ${CMAKE_OPTIONS} ${ZUUL_PROJECT_SRC_DIR}

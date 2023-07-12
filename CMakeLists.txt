@@ -67,7 +67,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 find_package(spdlog REQUIRED)
 find_package(PkgConfig)
-pkg_check_modules(nghttp2 REQUIRED IMPORTED_TARGET libnghttp2_asio>=1.41.0 libnghttp2)
+pkg_check_modules(nghttp2 REQUIRED IMPORTED_TARGET libnghttp2_asio>=0.0.90 libnghttp2)
 find_package(Boost REQUIRED COMPONENTS system thread)
 
 pkg_check_modules(SYSREPO-CPP REQUIRED IMPORTED_TARGET sysrepo-cpp>=1.1.0)
