@@ -11,9 +11,8 @@ Before that happens, it will, hopefully, be a small HTTP wrapper around sysrepo 
 
 ## Dependencies
 
-- [nghttp2](https://github.com/nghttp2/nghttp2) with enabled Asio library
-Do not use the [standalone version of nghttp2-asio](https://github.com/nghttp2/nghttp2-asio).
-- [sysrepo-cpp](https://github.com/sysrepo/sysrepo-cpp) - object-oriented bindings of the [*sysrepo*](https://github.com/sysrepo/sysrepo) library.
+- [nghttp2-asio](https://github.com/nghttp2/nghttp2-asio) - asynchronous C++ library for HTTP/2
+- [sysrepo-cpp](https://github.com/sysrepo/sysrepo-cpp) - object-oriented bindings of the [*sysrepo*](https://github.com/sysrepo/sysrepo) library
 - [libyang-cpp](https://github.com/CESNET/libyang-cpp) - C++ bindings for *libyang*
 - systemd - the shared library for logging to `sd-journal`
 - [spdlog](https://github.com/gabime/spdlog) - Very fast, header-only/compiled, C++ logging library
