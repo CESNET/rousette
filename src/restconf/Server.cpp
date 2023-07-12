@@ -99,6 +99,10 @@ void rejectResponse(const request& req, const response& res, const int code, con
     res.end("go away");
 }
 
+std::optional<libyang::DataNode> getData(sysrepo::Session sess, const std::string& path) {
+    return sess.getData('/' + path);
+}
+
 Server::~Server() = default;
 
 Server::Server(sysrepo::Connection conn)
@@ -154,33 +158,29 @@ Server::Server(sysrepo::Connection conn)
             }
 
             try {
-              auto sess = conn.sessionStart();
-              sess.switchDatastore(sysrepo::Datastore::Operational);
+                auto sess = conn.sessionStart(sysrepo::Datastore::Operational);
 
-              if (!hasModuleForPath(sess, *path)) {
-                  rejectResponse(req, res, 404, "module not implemented");
-                  return;
-              }
+                if (!hasModuleForPath(sess, *path)) {
+                    rejectResponse(req, res, 404, "module not implemented");
+                    return;
+                }
 
-              auto data = sess.getData('/' + *path);
-
-              if (!data) {
-                rejectResponse(req, res, 404, "no data from sysrepo");
-                return;
-              }
-
-              res.write_head(
-                  200,
-                  {
-                      {"content-type", {"application/yang-data+json", false}},
-                      {"access-control-allow-origin", {"*", false}},
-                  });
-              res.end(*data->printStr(libyang::DataFormat::JSON,
-                                      libyang::PrintFlags::WithSiblings));
-            } catch (const sysrepo::ErrorWithCode &e) {
-              spdlog::error("Sysrepo exception: {}", e.what());
-              rejectResponse(req, res, 500,
-                             "sysrepo exception: internal server error");
+                if (auto data = getData(sess, *path); data) {
+                    res.write_head(
+                        200,
+                        {
+                            {"content-type", {"application/yang-data+json", false}},
+                            {"access-control-allow-origin", {"*", false}},
+                        });
+                    res.end(*data->printStr(libyang::DataFormat::JSON,
+                                            libyang::PrintFlags::WithSiblings));
+                } else {
+                    rejectResponse(req, res, 404, "no data from sysrepo");
+                    return;
+                }
+            } catch (const sysrepo::ErrorWithCode& e) {
+                spdlog::error("Sysrepo exception: {}", e.what());
+                rejectResponse(req, res, 500, "sysrepo exception: internal server error");
             }
         });
 }
