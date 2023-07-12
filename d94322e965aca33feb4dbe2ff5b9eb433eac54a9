@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4cca380e_e828b36c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-07-12T07:14:18Z",
+      "side": 1,
+      "message": "Hm, I did not see that patch. It seems I effectively implemented a duplicate of that...",
+      "parentUuid": "7bc72d56_b1ed5a21",
+      "revId": "d94322e965aca33feb4dbe2ff5b9eb433eac54a9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "72e80088_681fadfd",
