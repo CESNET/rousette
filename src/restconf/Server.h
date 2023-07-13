@@ -18,6 +18,11 @@ namespace sr {
 class OpticalEvents;
 }
 
+enum class AsyncServer {
+    ASYNCHRONOUS,
+    SYNCHRONOUS,
+};
+
 /** @short RESTCONF protocol */
 namespace restconf {
 
@@ -30,7 +35,9 @@ class Server {
 public:
     explicit Server(sysrepo::Connection conn);
     ~Server();
-    void listen_and_serve(const std::string& address, const std::string& port);
+    void listen_and_serve(const std::string& address, const std::string& port, AsyncServer async);
+    void stop();
+
 private:
     std::unique_ptr<nghttp2::asio_http2::server::http2> server;
     std::unique_ptr<sr::OpticalEvents> dwdmEvents;
