@@ -186,12 +186,18 @@ Server::Server(sysrepo::Connection conn)
         });
 }
 
-void Server::listen_and_serve(const std::string& address, const std::string& port)
+void Server::listen_and_serve(const std::string& address, const std::string& port, AsyncServer async)
 {
     spdlog::debug("Listening at {} {}", address, port);
     boost::system::error_code ec;
-    if (server->listen_and_serve(ec, address, port)) {
+    if (server->listen_and_serve(ec, address, port, async == AsyncServer::ASYNCHRONOUS)) {
         throw std::runtime_error{"Server error: " + ec.message()};
     }
+}
+
+void Server::stop()
+{
+    server->stop();
+    server->join();
 }
 }
