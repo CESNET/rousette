@@ -5,6 +5,7 @@
  *
 */
 
+#include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <inttypes.h>
@@ -65,7 +66,13 @@ int main(int argc [[maybe_unused]], char* argv [[maybe_unused]] [])
 
     auto conn = sysrepo::Connection{};
     auto server = rousette::restconf::Server{conn};
-    server.listen_and_serve("::1", "10080");
+    server.listen_and_serve("::1", "10080", rousette::AsyncServer::ASYNCHRONOUS);
+
+    signal(SIGTERM, [](int){});
+    signal(SIGINT, [](int){});
+    pause();
+
+    server.stop();
 
     return 0;
 }
