@@ -28,9 +28,9 @@ bool allow_anonymous_read_for(const std::string& path);
 /** @short A RESTCONF-ish server */
 class Server {
 public:
-    explicit Server(sysrepo::Connection conn);
+    explicit Server(sysrepo::Connection conn, const std::string& address, const std::string& port);
     ~Server();
-    void listen_and_serve(const std::string& address, const std::string& port);
+
 private:
     std::unique_ptr<nghttp2::asio_http2::server::http2> server;
     std::unique_ptr<sr::OpticalEvents> dwdmEvents;

@@ -135,4 +135,7 @@ if(BUILD_TESTING)
 
     rousette_test(http-server)
     target_link_libraries(test_http-server rousette-restconf)
+
+    rousette_test(graceful-shutdown)
+    target_link_libraries(test_graceful-shutdown rousette-restconf)
 endif()

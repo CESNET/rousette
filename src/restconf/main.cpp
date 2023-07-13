@@ -5,6 +5,7 @@
  *
 */
 
+#include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <inttypes.h>
@@ -64,8 +65,11 @@ int main(int argc [[maybe_unused]], char* argv [[maybe_unused]] [])
     spdlog::set_level(spdlog::level::trace);
 
     auto conn = sysrepo::Connection{};
-    auto server = rousette::restconf::Server{conn};
-    server.listen_and_serve("::1", "10080");
+    auto server = rousette::restconf::Server{conn, "::1", "10080"};
+
+    signal(SIGTERM, [](int) {});
+    signal(SIGINT, [](int) {});
+    pause();
 
     return 0;
 }

@@ -104,9 +104,22 @@ std::optional<libyang::DataNode> getData(sysrepo::Session sess, const std::strin
     return sess.getData('/' + path);
 }
 
-Server::~Server() = default;
+Server::~Server()
+{
+    // notification to stop has to go through the asio io_context
+    for (const auto& service : server->io_services()) {
+        boost::asio::deadline_timer t{*service, boost::posix_time::pos_infin};
+        t.async_wait([server = this->server.get()](const boost::system::error_code&) {
+                spdlog::trace("Stoping HTTP/2 server");
+                server->stop();
+                });
+        t.cancel();
+    }
 
-Server::Server(sysrepo::Connection conn)
+    server->join();
+}
+
+Server::Server(sysrepo::Connection conn, const std::string& address, const std::string& port)
     : server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
@@ -184,14 +197,11 @@ Server::Server(sysrepo::Connection conn)
                 rejectResponse(req, res, 500, "sysrepo exception: internal server error");
             }
         });
-}
 
-void Server::listen_and_serve(const std::string& address, const std::string& port)
-{
-    spdlog::debug("Listening at {} {}", address, port);
     boost::system::error_code ec;
-    if (server->listen_and_serve(ec, address, port)) {
+    if (server->listen_and_serve(ec, address, port, true)) {
         throw std::runtime_error{"Server error: " + ec.message()};
     }
+    spdlog::debug("Listening at {} {}", address, port);
 }
 }
