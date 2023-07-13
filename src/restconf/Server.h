@@ -30,7 +30,8 @@ class Server {
 public:
     explicit Server(sysrepo::Connection conn);
     ~Server();
-    void listen_and_serve(const std::string& address, const std::string& port);
+    void listen_and_serve(const std::string& address, const std::string& port, bool asynchronous);
+    void stop();
 private:
     std::unique_ptr<nghttp2::asio_http2::server::http2> server;
     std::unique_ptr<sr::OpticalEvents> dwdmEvents;
