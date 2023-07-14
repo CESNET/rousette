@@ -1,0 +1,17 @@
+module nacm-test {
+    yang-version 1.1;
+    prefix nacm-test;
+    namespace "http://example.com/nacm-test";
+
+    container limited {
+        leaf val {
+            type string;
+        }
+    }
+
+    container unlimited {
+        leaf val {
+            type string;
+        }
+    }
+}
