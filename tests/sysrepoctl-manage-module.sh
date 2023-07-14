@@ -17,6 +17,9 @@ if [[ ! -x "${SYSREPOCFG}" ]]; then
   exit 1
 fi
 
+# always cleanup ietf-netconf-acm -- the data might contain YANG paths to other modules which might result in invalid datastore content
+sysrepocfg -C startup -d running -m ietf-netconf-acm
+
 MODE="${1}"
 shift
 [ "${MODE}" != "prepare" ] && [ "${MODE}" != "uninstall" ] && error "Invalid mode of operation (neither prepare nor uninstall)"
