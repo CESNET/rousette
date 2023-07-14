@@ -40,31 +40,3 @@ TEST_CASE("subtree path validity") {
         REQUIRE(rousette::restconf::as_subtree_path(input) == xpath);
     }
 }
-
-TEST_CASE("allowed paths for anonymous read") {
-
-    auto allowed = {
-        "czechlight-roadm-device:*",
-        "czechlight-roadm-device:spectrum-scan",
-        "czechlight-roadm-device:something/complex",
-        "czechlight-system:firmware",
-    };
-    auto rejected = {
-        "foo:*",
-        "foo:bar",
-        "unrelated:wtf/czechlight-roadm-device:something/complex",
-        "czechlight-system:authentication",
-        "czechlight-system:*",
-        "ietf-netconf-server:*",
-    };
-
-    for (const auto path : allowed) {
-        CAPTURE(path);
-        REQUIRE(rousette::restconf::allow_anonymous_read_for(path));
-    }
-
-    for (const auto path : rejected) {
-        CAPTURE(path);
-        REQUIRE(!rousette::restconf::allow_anonymous_read_for(path));
-    }
-}

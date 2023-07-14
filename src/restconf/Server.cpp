@@ -39,19 +39,6 @@ namespace pattern {
 const auto atom = "[a-zA-Z_][a-zA-Z_.-]*"s;
 const std::regex moduleWildcard{"^"s + restconfRoot + "data/(" + atom + ":\\*)$"};
 const std::regex subtree{"^"s + restconfRoot + "data/(" + atom + ":" + atom + "(/(" + atom + ":)?" + atom + ")*)$"};
-
-const std::initializer_list<std::string> allowedPrefixes {
-    {"czechlight-roadm-device"s},
-    {"czechlight-coherent-add-drop"s},
-    {"czechlight-inline-amp"s},
-    {"ietf-yang-library"s},
-    {"ietf-hardware"s},
-    {"ietf-interfaces"s},
-    {"ietf-system"s},
-    {"czechlight-lldp"s},
-    {"czechlight-system:firmware"s},
-    {"czechlight-system:leds"s},
-};
 }
 }
 
@@ -65,18 +52,6 @@ std::optional<std::string> as_subtree_path(const std::string& path)
         return match[1].str();
     }
     return std::nullopt;
-}
-
-bool allow_anonymous_read_for(const std::string& path)
-{
-    return std::any_of(std::begin(pattern::allowedPrefixes), std::end(pattern::allowedPrefixes),
-            [path](const auto& prefix) {
-                if (prefix.find(':') == std::string::npos) {
-                    return boost::starts_with(path, prefix + ":");
-                } else {
-                    return boost::starts_with(path, prefix);
-                }
-            });
 }
 
 bool hasModuleForPath(const sysrepo::Session& session, const std::string& path)
@@ -152,11 +127,6 @@ Server::Server(sysrepo::Connection conn)
             auto path = as_subtree_path(req.uri().path);
             if (!path) {
                 rejectResponse(req, res, 400, "not a subtree path");
-                return;
-            }
-
-            if (!allow_anonymous_read_for(*path)) {
-                rejectResponse(req, res, 400, "module not allowed");
                 return;
             }
 
