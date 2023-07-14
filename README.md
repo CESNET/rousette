@@ -9,6 +9,22 @@
 One day, this might become a [RESTCONF](https://www.rfc-editor.org/rfc/rfc8040.html) server on top of [sysrepo](https://www.sysrepo.org/).
 Before that happens, it will, hopefully, be a small HTTP wrapper around sysrepo which publishes some data in a RESTCONF format.
 
+### Access control model
+
+Rousette implements [RFC 8341 (NACM)](https://www.rfc-editor.org/rfc/rfc8341).
+The server is supposed to be run behind a proxy that performs authentication and all the requests to this server should contain HTTP/2 header `x-remote-user` containing the username.
+The access rights for users (and groups) are configurable via `ietf-netconf-acm` YANG model.
+
+As an extension, this server also supports a special user account whose access is limited to read-only operation to whitelisted modules.
+The reverse proxy should still "authenticate" this user and set the respective header, but `rousette` will perform extra safety checks to ensure that there are NACM rules which enforce read-only access.
+Such user must be in group `ANONYMOUS_GROUP` (CMake option) and there must be some specific access right set up in `ietf-netconf-acm` model (these are currently very opinionated for our use-case).
+
+1. The first entry of `rule-list` list must be configured for `ANONYMOUS_GROUP`.
+2. All the rules except the last one in this rule-list entry must enable only "read" access operation.
+3. The last rule in the first rule-set must be a wildcard rule that disables all operations over all modules.
+
+The anonymous user access is disabled whenever these rules are not met.
+
 ## Dependencies
 
 - [nghttp2-asio](https://github.com/nghttp2/nghttp2-asio) - asynchronous C++ library for HTTP/2
