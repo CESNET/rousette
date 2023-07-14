@@ -9,8 +9,10 @@
 #include <nghttp2/asio_http2_server.h>
 #include <regex>
 #include <spdlog/spdlog.h>
+#include <sysrepo-cpp/Enum.hpp>
 #include <sysrepo-cpp/utils/exception.hpp>
 #include "http/utils.hpp"
+#include "restconf/Nacm.h"
 #include "restconf/Server.h"
 #include "restconf/utils.h"
 #include "sr/OpticalEvents.h"
@@ -39,19 +41,6 @@ namespace pattern {
 const auto atom = "[a-zA-Z_][a-zA-Z0-9_.-]*"s;
 const std::regex moduleWildcard{"^"s + restconfRoot + "data/(" + atom + ":\\*)$"};
 const std::regex subtree{"^"s + restconfRoot + "data/(" + atom + ":" + atom + "(/(" + atom + ":)?" + atom + ")*)$"};
-
-const std::initializer_list<std::string> allowedPrefixes {
-    {"czechlight-roadm-device"s},
-    {"czechlight-coherent-add-drop"s},
-    {"czechlight-inline-amp"s},
-    {"ietf-yang-library"s},
-    {"ietf-hardware"s},
-    {"ietf-interfaces"s},
-    {"ietf-system"s},
-    {"czechlight-lldp"s},
-    {"czechlight-system:firmware"s},
-    {"czechlight-system:leds"s},
-};
 }
 }
 
@@ -65,18 +54,6 @@ std::optional<std::string> as_subtree_path(const std::string& path)
         return match[1].str();
     }
     return std::nullopt;
-}
-
-bool allow_anonymous_read_for(const std::string& path)
-{
-    return std::any_of(std::begin(pattern::allowedPrefixes), std::end(pattern::allowedPrefixes),
-            [path](const auto& prefix) {
-                if (prefix.find(':') == std::string::npos) {
-                    return boost::starts_with(path, prefix + ":");
-                } else {
-                    return boost::starts_with(path, prefix);
-                }
-            });
 }
 
 bool hasModuleForPath(const sysrepo::Session& session, const std::string& path)
@@ -99,11 +76,6 @@ void rejectResponse(const request& req, const response& res, const int code, con
     res.end("go away");
 }
 
-std::optional<libyang::DataNode> getData(sysrepo::Session sess, const std::string& path)
-{
-    return sess.getData('/' + path);
-}
-
 Server::~Server()
 {
     // notification to stop has to go through the asio io_context
@@ -120,7 +92,8 @@ Server::~Server()
 }
 
 Server::Server(sysrepo::Connection conn, const std::string& address, const std::string& port)
-    : server{std::make_unique<nghttp2::asio_http2::server::http2>()}
+    : nacm(conn)
+    , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
     dwdmEvents->change.connect([this](const std::string& content) {
@@ -151,9 +124,23 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     });
 
     server->handle(restconfRoot,
-        [conn](const auto& req, const auto& res) mutable {
+        [conn /* itentionally by value, otherwise conn would be destroyed after the ctor returns */, this](const auto& req, const auto& res) mutable {
             const auto& peer = http::peer_from_request(req);
             spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
+
+            std::string nacmUser;
+            if (auto itUserHeader = req.header().find("x-remote-user"); itUserHeader != req.header().end() && !itUserHeader->second.value.empty()) {
+                nacmUser = itUserHeader->second.value;
+            } else {
+                rejectResponse(req, res, 401, "HTTP header x-remote-user not found or empty");
+                return;
+            }
+
+            auto sess = conn.sessionStart(sysrepo::Datastore::Operational);
+            if (!nacm.authorize(sess, nacmUser)) {
+                rejectResponse(req, res, 401, "access denied");
+                return;
+            }
 
             if (req.method() != "GET") {
                 rejectResponse(req, res, 400, "nothing but GET works");
@@ -166,20 +153,13 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 return;
             }
 
-            if (!allow_anonymous_read_for(*path)) {
-                rejectResponse(req, res, 400, "module not allowed");
-                return;
-            }
-
             try {
-                auto sess = conn.sessionStart(sysrepo::Datastore::Operational);
-
                 if (!hasModuleForPath(sess, *path)) {
                     rejectResponse(req, res, 404, "module not implemented");
                     return;
                 }
 
-                if (auto data = getData(sess, *path); data) {
+                if (auto data = sess.getData('/' + *path); data) {
                     res.write_head(
                         200,
                         {
