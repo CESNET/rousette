@@ -36,6 +36,9 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(CMAKE_CXX_FLAGS "-Wsuggest-override ${CMAKE_CXX_FLAGS}")
 endif()
 
+set(ANONYMOUS_USER "yangnobody" CACHE STRING "Configures system user used for anonymous access to sysrepo")
+set(ANONYMOUS_USER_GROUP "yangnobody" CACHE STRING "Configures system user group used for anonymous access to sysrepo")
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 add_custom_target(rousette-version-cmake-ide
@@ -86,10 +89,14 @@ add_library(rousette-sysrepo STATIC
 target_link_libraries(rousette-sysrepo PUBLIC spdlog::spdlog PkgConfig::SYSREPO-CPP PkgConfig::LIBYANG-CPP)
 
 add_library(rousette-restconf STATIC
+    src/restconf/Nacm.cpp
     src/restconf/Server.cpp
     src/restconf/utils.cpp
 )
 target_link_libraries(rousette-restconf PUBLIC rousette-http rousette-sysrepo Boost::system Threads::Threads)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/restconf/NacmIdentities.h.in ${CMAKE_CURRENT_BINARY_DIR}/NacmIdentities.h @ONLY)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(clock-demo src/clock.cpp)
 target_link_libraries(clock-demo rousette-http Boost::system Threads::Threads)
