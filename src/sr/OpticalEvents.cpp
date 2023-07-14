@@ -46,7 +46,6 @@ OpticalEvents::OpticalEvents(sysrepo::Session session)
             throw;
         }
     }
-    throw std::runtime_error{"No DWDM modules found"};
 }
 
 sysrepo::ErrorCode OpticalEvents::onChange(sysrepo::Session session, const std::string& module)
