@@ -23,7 +23,7 @@ namespace restconf {
 
 std::optional<std::string> as_subtree_path(const std::string& path);
 
-bool allow_anonymous_read_for(const std::string& path);
+std::optional<libyang::DataNode> getData(sysrepo::Session sess, const std::string& path, const std::string& nacmUser);
 
 /** @short A RESTCONF-ish server */
 class Server {
