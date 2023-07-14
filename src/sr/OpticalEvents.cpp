@@ -46,7 +46,8 @@ OpticalEvents::OpticalEvents(sysrepo::Session session)
             throw;
         }
     }
-    throw std::runtime_error{"No DWDM modules found"};
+
+    spdlog::warn("Telemetry disabled. No CzechLight YANG modules found.");
 }
 
 sysrepo::ErrorCode OpticalEvents::onChange(sysrepo::Session session, const std::string& module)
