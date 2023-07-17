@@ -36,7 +36,7 @@ auto as_restconf_push_update(const std::string& content, const T& time)
 constexpr auto restconfRoot = "/restconf/";
 
 namespace pattern {
-const auto atom = "[a-zA-Z_][a-zA-Z_.-]*"s;
+const auto atom = "[a-zA-Z_][a-zA-Z0-9_.-]*"s;
 const std::regex moduleWildcard{"^"s + restconfRoot + "data/(" + atom + ":\\*)$"};
 const std::regex subtree{"^"s + restconfRoot + "data/(" + atom + ":" + atom + "(/(" + atom + ":)?" + atom + ")*)$"};
 

@@ -24,6 +24,8 @@ TEST_CASE("subtree path validity") {
         {"/restconf/data/foo", {}},
         {"/restconf/data/foo:", {}},
         {"/restconf/data/foo:*", "foo:*"},
+        {"/restconf/data/333:666", {}},
+        {"/restconf/data/x333:y666", "x333:y666"},
         {"/restconf/data/foo:*/bar", {}},
         {"/restconf/data/:bar", {}},
         {"/restconf/data/foo:bar", "foo:bar"},
