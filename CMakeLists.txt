@@ -4,7 +4,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-
 include(GNUInstallDirs)
 
 # Set a default build type if none was specified. This was shamelessly stolen
@@ -173,5 +172,8 @@ if(BUILD_TESTING)
     endfunction()
 
     rousette_test(NAME http-server LIBRARIES rousette-restconf)
-    rousette_test(NAME graceful-shutdown LIBRARIES rousette-restconf)
+
+    set(fixture-http
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/ietf-system@2014-08-06.yang)
+    rousette_test(NAME http-communication LIBRARIES rousette-restconf FIXTURE fixture-http)
 endif()
