@@ -99,7 +99,10 @@ void rejectResponse(const request& req, const response& res, const int code, con
     res.end("go away");
 }
 
-std::optional<libyang::DataNode> getData(sysrepo::Session sess, const std::string& path) {
+std::optional<libyang::DataNode> getData(sysrepo::Session sess, const std::string& path, const std::string& nacmUser)
+{
+    sess.setNacmUser(nacmUser);
+    spdlog::info("  nacm user: {}", nacmUser);
     return sess.getData('/' + path);
 }
 
