@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4a97f238_25da78eb",
+        "filename": "src/sr/OpticalEvents.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-07-17T10:56:38Z",
+      "side": 0,
+      "message": "I think it makes sense to log a warning, though, because in the real life (on a real box) this would be a bit unexpected.",
+      "revId": "36c633391a3408c39ee05754f1758db9d27026ee",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}

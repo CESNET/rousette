@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "206f6384_3da6e795",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-07-17T10:56:38Z",
+      "side": 1,
+      "message": "please also add something like:\n\n This file is (still) specific to CzechLight, but let\u0027s make our life easier in writing unit tests for the HTTP server and don\u0027t fail hard here.",
+      "revId": "cb60470c21c05520191cb4020652362f09d69bac",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
