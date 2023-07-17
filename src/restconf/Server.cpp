@@ -99,7 +99,8 @@ void rejectResponse(const request& req, const response& res, const int code, con
     res.end("go away");
 }
 
-std::optional<libyang::DataNode> getData(sysrepo::Session sess, const std::string& path) {
+std::optional<libyang::DataNode> getData(sysrepo::Session sess, const std::string& path)
+{
     return sess.getData('/' + path);
 }
 
