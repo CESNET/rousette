@@ -57,6 +57,30 @@
       },
       "revId": "d94322e965aca33feb4dbe2ff5b9eb433eac54a9",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "63bcff59_961f0910",
+        "filename": "tests/yang/nacm-test-a.yang",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-07-17T15:40:01Z",
+      "side": 1,
+      "message": "It is not. Done",
+      "parentUuid": "72e80088_681fadfd",
+      "range": {
+        "startLine": 6,
+        "startChar": 0,
+        "endLine": 10,
+        "endChar": 5
+      },
+      "revId": "d94322e965aca33feb4dbe2ff5b9eb433eac54a9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }

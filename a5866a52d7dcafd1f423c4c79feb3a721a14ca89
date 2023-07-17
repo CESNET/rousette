@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "edcfad8d_e0781fd8",
+        "filename": "src/restconf/Nacm.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-07-17T15:40:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f84cd35e_16be0fdd",
+      "range": {
+        "startLine": 21,
+        "startChar": 5,
+        "endLine": 21,
+        "endChar": 21
+      },
+      "revId": "a5866a52d7dcafd1f423c4c79feb3a721a14ca89",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "130cb070_67ef5583",
@@ -37,6 +61,24 @@
       "writtenOn": "2023-07-17T11:23:36Z",
       "side": 1,
       "message": "whenever there\u0027s a `return false`, please also add some logging which says why it\u0027s going to reject anonymous access",
+      "revId": "a5866a52d7dcafd1f423c4c79feb3a721a14ca89",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "72e562c6_f8acf115",
+        "filename": "src/restconf/Nacm.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-07-17T15:40:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "130cb070_67ef5583",
       "revId": "a5866a52d7dcafd1f423c4c79feb3a721a14ca89",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -87,6 +129,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "51086d5a_d1ef6794",
+        "filename": "src/restconf/Nacm.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-07-17T15:40:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "918b1aaf_a6214baf",
+      "range": {
+        "startLine": 62,
+        "startChar": 12,
+        "endLine": 62,
+        "endChar": 28
+      },
+      "revId": "a5866a52d7dcafd1f423c4c79feb3a721a14ca89",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "aed24043_90acf2c0",
@@ -104,6 +170,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8c65583c_90048ed3",
+        "filename": "src/restconf/Nacm.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-07-17T15:40:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "aed24043_90acf2c0",
+      "revId": "a5866a52d7dcafd1f423c4c79feb3a721a14ca89",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "a90af470_ab9a2c1f",
@@ -117,6 +201,24 @@
       "writtenOn": "2023-07-17T11:23:36Z",
       "side": 1,
       "message": "This looks a bit weird to me. Please add some docs which explain what this class is doing -- why should one instantiate it, what does it do, is it supposed to be a global one for the process (and if so, why it is not enough to just get the NACM subscription via sysrepo-cpp), or whether it\u0027s supposed to exist per-session (in that case, the constructor should probably work with data obtained from some HTTP headers instead of being parameterlss), etc",
+      "revId": "a5866a52d7dcafd1f423c4c79feb3a721a14ca89",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "769a986b_5f710901",
+        "filename": "src/restconf/Nacm.h",
+        "patchSetId": 8
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-07-17T15:40:01Z",
+      "side": 1,
+      "message": "OK, I just wanted to put everything NACM-related to a separate module because this one already does *a lot* of things (at least I think). Of course, it is just one sr subscription so I can put it here if you wish.\n\nI\u0027ll add the docs later, I need a break.",
+      "parentUuid": "a90af470_ab9a2c1f",
       "revId": "a5866a52d7dcafd1f423c4c79feb3a721a14ca89",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -146,6 +248,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "322ac25b_c72ab4f6",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 128,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-07-17T15:40:01Z",
+      "side": 1,
+      "message": "OK, I did not understood what this should do. Now missing/empty value header rejects with Unauthorized.\n\nI edited README with a draft regarding NACM and anonymous access.",
+      "parentUuid": "7975fc1c_b1f81d78",
+      "range": {
+        "startLine": 125,
+        "startChar": 0,
+        "endLine": 128,
+        "endChar": 13
+      },
+      "revId": "a5866a52d7dcafd1f423c4c79feb3a721a14ca89",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "24a1243a_a8e17ee6",
         "filename": "tests/http-communication.cpp",
         "patchSetId": 8
@@ -157,6 +283,24 @@
       "writtenOn": "2023-07-17T11:23:36Z",
       "side": 1,
       "message": "I would prefer to add a simple HTTP test in a separate commit. It won\u0027t have to do anything NACM-related, so the best option (IMHO) is to move it to one of the first places in the series, and just retrieve something form ietf-system or some other \"benign\" module which is already allowed by the right-now-in-the-master-branch whitelist.\n\nWhich means that we can then squash the commit \"server: remove allow_anonymous_read_for\" to this one if we want to have an atomic and \"safe\" history with on unexpected read holes.",
+      "revId": "a5866a52d7dcafd1f423c4c79feb3a721a14ca89",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3e5cb51a_61b8d1c7",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-07-17T15:40:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "24a1243a_a8e17ee6",
       "revId": "a5866a52d7dcafd1f423c4c79feb3a721a14ca89",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
