@@ -16,6 +16,24 @@
       "message": "can you please also say which project was this extracted from, and from which version?",
       "revId": "23582ac2adfc93c5531c4cb9f10434ae43c43406",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "012e7dc4_04d0221f",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-07-17T11:04:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "096e5144_94c695bb",
+      "revId": "23582ac2adfc93c5531c4cb9f10434ae43c43406",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
