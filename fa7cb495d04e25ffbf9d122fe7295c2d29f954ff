@@ -1,0 +1,61 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a37313e3_f38d5c7b",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-07-18T08:44:32Z",
+      "side": 1,
+      "message": "As discussed during the call, this will cause troubles if/when upstream decides to add operator\u003d\u003d to their classes (I have no clue whether they will do that or not). Tomas explained that this enables that default operator\u003d\u003d on a std::multimap\u003cstring, header_value\u003e to work. This will move to a custom comparison.",
+      "range": {
+        "startLine": 34,
+        "startChar": 0,
+        "endLine": 37,
+        "endChar": 2
+      },
+      "revId": "fa7cb495d04e25ffbf9d122fe7295c2d29f954ff",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fee9d675_4e6621c2",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-07-18T08:44:32Z",
+      "side": 1,
+      "message": "log this and REQUIRE(false)",
+      "revId": "fa7cb495d04e25ffbf9d122fe7295c2d29f954ff",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "16ca3e00_beace011",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 109,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-07-18T08:44:32Z",
+      "side": 1,
+      "message": "this will be moved to that custom comparison as well",
+      "revId": "fa7cb495d04e25ffbf9d122fe7295c2d29f954ff",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
