@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "aff183d9_6ae163cc",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-07-18T07:48:57Z",
+      "side": 1,
+      "message": "Nah, it looks like this is not thread-safe, and that\u0027s why https://gerrit.cesnet.cz/c/CzechLight/rousette/+/6366/1 fails :(",
+      "revId": "bb62f170eb67c254efa67842b92e5e3a21999072",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
