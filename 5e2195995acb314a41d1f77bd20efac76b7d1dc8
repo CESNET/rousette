@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "21011830_f5c8a99f",
+        "filename": "tests/yang/nacm-test.yang",
+        "patchSetId": 9
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-07-18T08:16:37Z",
+      "side": 1,
+      "message": "This file is unused.",
+      "revId": "5e2195995acb314a41d1f77bd20efac76b7d1dc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
