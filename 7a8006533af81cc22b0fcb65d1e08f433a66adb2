@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c6c3ad34_a673de4d",
+        "filename": "README.md",
+        "patchSetId": 15
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-07-19T09:13:58Z",
+      "side": 1,
+      "message": "what about this:\n\n As an extension, this server also supports a special user account whose access is limited to read-only operation to whitelisted modules.\n The reverse proxy should still \"authenticate\" this user and set the respective header, but `rousette` will perform extra safety checks to ensure that there are NACM rules which enforce read-only access.\n Such user must be in group `ANONYMOUS_GROUP` (CMake option) and there must be some specific access right set up in `ietf-netconf-acm` model (these are currently very opinionated for our use-case).\n \n 1. The first entry of `rule-list` list must be configured for `ANONYMOUS_GROUP`.\n 2. All the rules except the last one in this rule-list entry must enable only \"read\" access operation.\n 3. The last rule in the first rule-set must be a wildcard rule that disables all operations over all modules.\n \n The anonymous user access is disabled whenever these rules are not met.",
+      "range": {
+        "startLine": 18,
+        "startChar": 0,
+        "endLine": 18,
+        "endChar": 1
+      },
+      "revId": "7a8006533af81cc22b0fcb65d1e08f433a66adb2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "626e76b0_aa906fe3",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 15
+      },
+      "lineNbr": 141,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-07-19T09:13:58Z",
+      "side": 1,
+      "message": "I\u0027d prefer just \"Access denied\". This method is called \"authorize\", not \"checkAnonymousAccessAndSetNacmUserAnyway\", so I think it\u0027s better to assume, from the caller\u0027s PoV, that it\u0027s not just about the anonymous access.",
+      "range": {
+        "startLine": 141,
+        "startChar": 47,
+        "endLine": 141,
+        "endChar": 75
+      },
+      "revId": "7a8006533af81cc22b0fcb65d1e08f433a66adb2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4a43f1c4_c05512ca",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 15
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-07-19T09:13:58Z",
+      "side": 1,
+      "message": "What is this for? The code is always initializing the content on line 123 (which is a good thing, since the test might have crashed, so it\u0027s better to copy stuff at the beginning).\n\nIf this is about cleanup, I\u0027d say \"don\u0027t bother\" because it\u0027s a test which runs with a prefixed sysrepo anyway.\n\n(and in case you remove this, please remove that file as well)",
+      "range": {
+        "startLine": 126,
+        "startChar": 0,
+        "endLine": 130,
+        "endChar": 41
+      },
+      "revId": "7a8006533af81cc22b0fcb65d1e08f433a66adb2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bbe7345a_22e46cad",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 15
+      },
+      "lineNbr": 179,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-07-19T09:13:58Z",
+      "side": 1,
+      "message": "- it\u0027s just \"coincidence\" that both your and mine laptop and the CI machines as well are TZ\u003dEurope/Prague\n- it\u0027s +2 only during DST, not during winter",
+      "range": {
+        "startLine": 179,
+        "startChar": 6,
+        "endLine": 179,
+        "endChar": 30
+      },
+      "revId": "7a8006533af81cc22b0fcb65d1e08f433a66adb2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
