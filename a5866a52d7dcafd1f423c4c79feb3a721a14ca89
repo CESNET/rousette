@@ -223,6 +223,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "a0680b82_633834e3",
+        "filename": "src/restconf/Nacm.h",
+        "patchSetId": 8
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-07-19T09:33:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "769a986b_5f710901",
+      "revId": "a5866a52d7dcafd1f423c4c79feb3a721a14ca89",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "7975fc1c_b1f81d78",
@@ -260,6 +278,30 @@
       "side": 1,
       "message": "OK, I did not understood what this should do. Now missing/empty value header rejects with Unauthorized.\n\nI edited README with a draft regarding NACM and anonymous access.",
       "parentUuid": "7975fc1c_b1f81d78",
+      "range": {
+        "startLine": 125,
+        "startChar": 0,
+        "endLine": 128,
+        "endChar": 13
+      },
+      "revId": "a5866a52d7dcafd1f423c4c79feb3a721a14ca89",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9f3c1a7c_0848ff8f",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 128,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-07-19T09:33:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "322ac25b_c72ab4f6",
       "range": {
         "startLine": 125,
         "startChar": 0,
