@@ -72,6 +72,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "55fb7361_fc90ff09",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 15
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-07-19T09:27:42Z",
+      "side": 1,
+      "message": "This is performed in toder to cleanup the datastore so ietf-system module can be uninstalled. We reference a path inside ietf-system in the running DS in the ietf-netconf-acm. That means: if we must first cleanup the data in order to safely uninstall ietf-system module. Otherwise the DS content would be invalid.\n\nHowever, what happens when the test crashes? One thing for sure: the data will not be cleaned. The init fixture of the test should probably handle this.",
+      "parentUuid": "4a43f1c4_c05512ca",
+      "range": {
+        "startLine": 126,
+        "startChar": 0,
+        "endLine": 130,
+        "endChar": 41
+      },
+      "revId": "7a8006533af81cc22b0fcb65d1e08f433a66adb2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "c3d4d240_4ae7c785",
         "filename": "tests/http-communication.cpp",
         "patchSetId": 15
@@ -100,6 +124,30 @@
       "writtenOn": "2023-07-19T09:13:58Z",
       "side": 1,
       "message": "- it\u0027s just \"coincidence\" that both your and mine laptop and the CI machines as well are TZ\u003dEurope/Prague\n- it\u0027s +2 only during DST, not during winter",
+      "range": {
+        "startLine": 179,
+        "startChar": 6,
+        "endLine": 179,
+        "endChar": 30
+      },
+      "revId": "7a8006533af81cc22b0fcb65d1e08f433a66adb2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "25c19638_67796d21",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 15
+      },
+      "lineNbr": 179,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-07-19T09:27:42Z",
+      "side": 1,
+      "message": "These are just some data so the tests have something to query for. I don\u0027t think it matters that timezone offset is 2 or 3 or any other value.",
+      "parentUuid": "bbe7345a_22e46cad",
       "range": {
         "startLine": 179,
         "startChar": 6,
