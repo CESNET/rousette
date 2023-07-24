@@ -142,6 +142,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c54cf7df_2fc7c0a6",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 15
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-07-24T09:25:10Z",
+      "side": 1,
+      "message": "Done. Solved by a \"hack\" - sysrepoctl-manage-module.sh now cleans the DS on every run.",
+      "parentUuid": "55fb7361_fc90ff09",
+      "range": {
+        "startLine": 126,
+        "startChar": 0,
+        "endLine": 130,
+        "endChar": 41
+      },
+      "revId": "7a8006533af81cc22b0fcb65d1e08f433a66adb2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c3d4d240_4ae7c785",
@@ -155,6 +179,24 @@
       "writtenOn": "2023-07-19T09:21:31Z",
       "side": 1,
       "message": "Add tests for ietf-system leaves that has `nacm:default-deny-read`. What has precedence - our configuration that says anonymous is permitted to read, or the nacm:default-deny-read?",
+      "revId": "7a8006533af81cc22b0fcb65d1e08f433a66adb2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f31ce5c5_7c2ee4c6",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 15
+      },
+      "lineNbr": 141,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-07-24T09:25:10Z",
+      "side": 1,
+      "message": "Done. RFC says that rules have precedence over these nacm:* annotations.",
+      "parentUuid": "c3d4d240_4ae7c785",
       "revId": "7a8006533af81cc22b0fcb65d1e08f433a66adb2",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
