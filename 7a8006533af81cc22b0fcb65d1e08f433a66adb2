@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8b245fd3_2c258cac",
+        "filename": "README.md",
+        "patchSetId": 15
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-07-24T08:37:09Z",
+      "side": 1,
+      "message": "Agreed, thnaks.",
+      "parentUuid": "c6c3ad34_a673de4d",
+      "range": {
+        "startLine": 18,
+        "startChar": 0,
+        "endLine": 18,
+        "endChar": 1
+      },
+      "revId": "7a8006533af81cc22b0fcb65d1e08f433a66adb2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "626e76b0_aa906fe3",
@@ -37,6 +61,30 @@
       "writtenOn": "2023-07-19T09:13:58Z",
       "side": 1,
       "message": "I\u0027d prefer just \"Access denied\". This method is called \"authorize\", not \"checkAnonymousAccessAndSetNacmUserAnyway\", so I think it\u0027s better to assume, from the caller\u0027s PoV, that it\u0027s not just about the anonymous access.",
+      "range": {
+        "startLine": 141,
+        "startChar": 47,
+        "endLine": 141,
+        "endChar": 75
+      },
+      "revId": "7a8006533af81cc22b0fcb65d1e08f433a66adb2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "988b2606_617078bd",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 15
+      },
+      "lineNbr": 141,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-07-24T08:37:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "626e76b0_aa906fe3",
       "range": {
         "startLine": 141,
         "startChar": 47,
