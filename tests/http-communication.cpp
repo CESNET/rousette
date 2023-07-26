@@ -134,13 +134,9 @@ TEST_CASE("HTTP")
                                           srSess.copyConfig(sysrepo::Datastore::Startup, "ietf-netconf-acm");
                                       });
 
-    const ng::header_map yangJsonRespHeaders{
+    const ng::header_map headers{
         {"access-control-allow-origin", {"*", false}},
         {"content-type", {"application/yang-data+json", false}},
-    };
-    const ng::header_map errorRespHeaders{
-        {"access-control-allow-origin", {"*", false}},
-        {"content-type", {"text/plain", false}},
     };
 
     // something we can read
@@ -154,8 +150,31 @@ TEST_CASE("HTTP")
     srSess.applyChanges();
 
     // no or empty x-remote-user header gets rejected
-    REQUIRE(retrieveData("/ietf-system:*", std::nullopt) == Response{401, errorRespHeaders, "go away"});
-    REQUIRE(retrieveData("/ietf-system:*", "") == Response{401, errorRespHeaders, "go away"});
+    REQUIRE(retrieveData("/ietf-system:*", std::nullopt) == Response{401, headers, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "access-denied",
+        "error-message": "HTTP header x-remote-user not found or empty."
+      }
+    ]
+  }
+}
+)"});
+
+    REQUIRE(retrieveData("/ietf-system:*", "") == Response{401, headers, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "access-denied",
+        "error-message": "HTTP header x-remote-user not found or empty."
+      }
+    ]
+  }
+}
+)"});
 
     // setup real-like NACM
     srSess.switchDatastore(sysrepo::Datastore::Running);
@@ -184,7 +203,7 @@ TEST_CASE("HTTP")
     srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/rule[name='1']/action", "permit"); // overrides nacm:default-deny-* rules in ietf-system model
     srSess.applyChanges();
 
-    REQUIRE(retrieveData("/ietf-system:*", "yangnobody") == Response{200, yangJsonRespHeaders, R"({
+    REQUIRE(retrieveData("/ietf-system:*", "yangnobody") == Response{200, headers, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -192,11 +211,44 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-    REQUIRE(retrieveData("/ietf-interfaces:idk", "yangnobody") == Response{404, errorRespHeaders, "go away"s});
-    REQUIRE(retrieveData("/ietf-system:system/clock", "yangnobody") == Response{404, errorRespHeaders, "go away"});
-    REQUIRE(retrieveData("/ietf-system:system/clock/timezone-utc-offset", "yangnobody") == Response{404, errorRespHeaders, "go away"});
+    REQUIRE(retrieveData("/ietf-interfaces:idk", "yangnobody") == Response{400, headers, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-failed",
+        "error-message": "Module not found."
+      }
+    ]
+  }
+}
+)"});
+    REQUIRE(retrieveData("/ietf-system:system/clock", "yangnobody") == Response{404, headers, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "No data from sysrepo."
+      }
+    ]
+  }
+}
+)"});
+    REQUIRE(retrieveData("/ietf-system:system/clock/timezone-utc-offset", "yangnobody") == Response{404, headers, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "No data from sysrepo."
+      }
+    ]
+  }
+}
+)"});
 
-    REQUIRE(retrieveData("/ietf-system:*", "dwdm") == Response{200, yangJsonRespHeaders, R"({
+    REQUIRE(retrieveData("/ietf-system:*", "dwdm") == Response{200, headers, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -219,8 +271,19 @@ TEST_CASE("HTTP")
 }
 )"});
 
-    REQUIRE(retrieveData("/ietf-interfaces:idk", "dwdm") == Response{404, errorRespHeaders, "go away"s});
-    REQUIRE(retrieveData("/ietf-system:system/clock", "dwdm") == Response{200, yangJsonRespHeaders, R"({
+    REQUIRE(retrieveData("/ietf-interfaces:idk", "dwdm") == Response{400, headers, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-failed",
+        "error-message": "Module not found."
+      }
+    ]
+  }
+}
+)"});
+    REQUIRE(retrieveData("/ietf-system:system/clock", "dwdm") == Response{200, headers, R"({
   "ietf-system:system": {
     "clock": {
       "timezone-utc-offset": 2
@@ -229,7 +292,7 @@ TEST_CASE("HTTP")
 }
 )"});
 
-    REQUIRE(retrieveData("/ietf-system:system/radius/server", "norules") == Response{200, yangJsonRespHeaders, R"({
+    REQUIRE(retrieveData("/ietf-system:system/radius/server", "norules") == Response{200, headers, R"({
   "ietf-system:system": {
     "radius": {
       "server": [
@@ -302,8 +365,19 @@ TEST_CASE("HTTP")
             srSess.applyChanges();
         }
 
-        REQUIRE(retrieveData("/ietf-system:*", "yangnobody") == Response{401, errorRespHeaders, "go away"});
-        REQUIRE(retrieveData("/ietf-system:*", "dwdm") == Response{200, yangJsonRespHeaders, R"({
+        REQUIRE(retrieveData("/ietf-system:*", "yangnobody") == Response{401, headers, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "access-denied",
+        "error-message": "Access denied."
+      }
+    ]
+  }
+}
+)"});
+        REQUIRE(retrieveData("/ietf-system:*", "dwdm") == Response{200, headers, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
