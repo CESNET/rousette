@@ -42,6 +42,22 @@ const auto atom = "[a-zA-Z_][a-zA-Z0-9_.-]*"s;
 const std::regex moduleWildcard{"^"s + restconfRoot + "data/(" + atom + ":\\*)$"};
 const std::regex subtree{"^"s + restconfRoot + "data/(" + atom + ":" + atom + "(/(" + atom + ":)?" + atom + ")*)$"};
 }
+
+void rejectWithError(libyang::Context ctx, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage)
+{
+    spdlog::debug("{}: Rejected with {}: {}", http::peer_from_request(req), errorTag, errorMessage);
+
+    auto ext = ctx.getModuleImplemented("ietf-restconf")->extensionInstance("yang-errors");
+
+    auto errors = ctx.newExtPath("/ietf-restconf:errors", std::nullopt, ext);
+    errors->newExtPath("/ietf-restconf:errors/error[1]/error-type", errorType, ext);
+    errors->newExtPath("/ietf-restconf:errors/error[1]/error-tag", errorTag, ext);
+    errors->newExtPath("/ietf-restconf:errors/error[1]/error-message", errorMessage, ext);
+
+    res.write_head(code, {{"content-type", {"application/yang-data+json", false}},
+                          {"access-control-allow-origin", {"*", false}}});
+    res.end(*errors->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings));
+}
 }
 
 std::optional<std::string> as_subtree_path(const std::string& path)
@@ -68,14 +84,6 @@ bool hasModuleForPath(const sysrepo::Session& session, const std::string& path)
     return session.getContext().getModuleImplemented(moduleName).has_value();
 }
 
-void rejectResponse(const request& req, const response& res, const int code, const std::string& message)
-{
-    spdlog::debug("{}: {}", http::peer_from_request(req), message);
-    res.write_head(code, {{"content-type", {"text/plain", false}},
-                          {"access-control-allow-origin", {"*", false}}});
-    res.end("go away");
-}
-
 Server::~Server()
 {
     // notification to stop has to go through the asio io_context
@@ -96,6 +104,10 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
+    if (!conn.sessionStart().getContext().getModuleImplemented("ietf-restconf")) {
+        throw std::runtime_error("Module ietf-restconf@2017-01-26 is not implemented in sysrepo");
+    }
+
     dwdmEvents->change.connect([this](const std::string& content) {
         opticsChange(as_restconf_push_update(content, std::chrono::system_clock::now()));
     });
@@ -130,34 +142,35 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             const auto& peer = http::peer_from_request(req);
             spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
 
+            auto sess = conn.sessionStart(sysrepo::Datastore::Operational);
+
             std::string nacmUser;
             if (auto itUserHeader = req.header().find("x-remote-user"); itUserHeader != req.header().end() && !itUserHeader->second.value.empty()) {
                 nacmUser = itUserHeader->second.value;
             } else {
-                rejectResponse(req, res, 401, "HTTP header x-remote-user not found or empty");
+                rejectWithError(sess.getContext(), req, res, 401, "protocol", "access-denied", "HTTP header x-remote-user not found or empty.");
                 return;
             }
 
-            auto sess = conn.sessionStart(sysrepo::Datastore::Operational);
             if (!nacm.authorize(sess, nacmUser)) {
-                rejectResponse(req, res, 401, "access denied");
+                rejectWithError(sess.getContext(), req, res, 401, "protocol", "access-denied", "Access denied.");
                 return;
             }
 
             if (req.method() != "GET") {
-                rejectResponse(req, res, 400, "nothing but GET works");
+                rejectWithError(sess.getContext(), req, res, 405, "application", "operation-not-supported", "Method not allowed.");
                 return;
             }
 
             auto path = as_subtree_path(req.uri().path);
             if (!path) {
-                rejectResponse(req, res, 400, "not a subtree path");
+                rejectWithError(sess.getContext(), req, res, 400, "application", "operation-failed", "Not a subtree path."); // FIXME: Is this correct error? This is what Netopeer2 returns when invalid path is supplied.
                 return;
             }
 
             try {
                 if (!hasModuleForPath(sess, *path)) {
-                    rejectResponse(req, res, 404, "module not implemented");
+                    rejectWithError(sess.getContext(), req, res, 400, "application", "operation-failed", "Module not found.");
                     return;
                 }
 
@@ -171,12 +184,12 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     res.end(*data->printStr(libyang::DataFormat::JSON,
                                             libyang::PrintFlags::WithSiblings));
                 } else {
-                    rejectResponse(req, res, 404, "no data from sysrepo");
+                    rejectWithError(sess.getContext(), req, res, 404, "application", "invalid-value", "No data from sysrepo.");
                     return;
                 }
             } catch (const sysrepo::ErrorWithCode& e) {
                 spdlog::error("Sysrepo exception: {}", e.what());
-                rejectResponse(req, res, 500, "sysrepo exception: internal server error");
+                rejectWithError(sess.getContext(), req, res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception.");
             }
         });
 
