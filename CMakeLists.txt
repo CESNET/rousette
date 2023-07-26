@@ -114,6 +114,7 @@ install(TARGETS
     # watch-operational-ds
     rousette
     RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/)
+install(FILES ${CMAKE_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang DESTINATION ${CMAKE_INSTALL_PREFIX}/share/velia/yang)
 
 include(CTest)
 if(BUILD_TESTING)
@@ -181,6 +182,7 @@ if(BUILD_TESTING)
     rousette_test(NAME http-server LIBRARIES rousette-restconf)
 
     set(fixture-http
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/ietf-system@2014-08-06.yang FEATURE radius)
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/ietf-system@2014-08-06.yang FEATURE radius
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang)
     rousette_test(NAME http-communication LIBRARIES rousette-restconf FIXTURE fixture-http)
 endif()
