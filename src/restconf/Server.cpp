@@ -39,8 +39,11 @@ constexpr auto restconfRoot = "/restconf/";
 
 namespace pattern {
 const auto atom = "[a-zA-Z_][a-zA-Z0-9_.-]*"s;
+const auto reservedChars = "%(3A|3a|2F|2f|3F|3f|23|5B|5b|5D|5d|40|20|21|24|26|27|28|29|2A|2a|2B|2b|2C|2c|3B|3b|3D|3d)"s;
+const auto key = "([a-zA-Z0-9\"-]|" + reservedChars + ")+";// + reservedChars + ")*"s;
+const auto list = atom + "(=" + key + "(," + key + "|,)*)?"s;
 const std::regex moduleWildcard{"^"s + restconfRoot + "data/(" + atom + ":\\*)$"};
-const std::regex subtree{"^"s + restconfRoot + "data/(" + atom + ":" + atom + "(/(" + atom + ":)?" + atom + ")*)$"};
+const std::regex subtree{"^"s + restconfRoot + "data/(" + atom + ":" + atom + "(/(" + atom + ":)?" + list + ")*)$"};
 }
 }
 
