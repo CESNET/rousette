@@ -33,6 +33,23 @@ TEST_CASE("subtree path validity") {
         {"/restconf/data/foo:bar/meh:baz", "foo:bar/meh:baz"},
         {"/restconf/data/foo:bar/yay/meh:baz", "foo:bar/yay/meh:baz"},
         {"/restconf/data/foo:bar/:baz", {}},
+        {"/restconf/data/foo:bar/Y=instance-value", "foo:bar/Y=instance-value"},
+        {"/restconf/data/foo:bar/X=Y=instance-value", {}},
+        {"/restconf/data/foo:bar/lst=key1", "foo:bar/lst=key1"},
+        {"/restconf/data/foo:bar/lst=key1/leaf", "foo:bar/lst=key1/leaf"},
+        {"/restconf/data/foo:bar/lst=key1,", "foo:bar/lst=key1,"},
+        {"/restconf/data/foo:bar/lst=key1,,,,", "foo:bar/lst=key1,,,,"},
+        {"/restconf/data/foo:bar/lst=key1,,,,=", {}},
+        {"/restconf/data/foo:bar/lst=key1,/leaf", "foo:bar/lst=key1,/leaf"},
+        {"/restconf/data/foo:bar/lst=key1,key2", "foo:bar/lst=key1,key2"},
+        {"/restconf/data/foo:bar/lst=key1,key2/leaf", "foo:bar/lst=key1,key2/leaf"},
+        {"/restconf/data/foo:bar/lst=key1,key2/lst2=key1/leaf", "foo:bar/lst=key1,key2/lst2=key1/leaf"},
+        {"/restconf/data/foo:bar/lst=", {}},
+        {"/restconf/data/foo:bar/prefix:lst=key1/prefix:leaf", "foo:bar/prefix:lst=key1/prefix:leaf"},
+        {"/restconf/data/foo:bar/lst==", {}},
+        {"/restconf/data/foo:bar/lst==key", {}},
+        {"/restconf/data/foo:bar/=key", {}},
+        {"/restconf/data/foo:bar/lst=key1,,key3", "foo:bar/lst=key1,,key3"},
     };
     for (const auto& x : data) {
         const auto& input = x.first;
