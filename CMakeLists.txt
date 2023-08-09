@@ -91,6 +91,7 @@ target_link_libraries(rousette-sysrepo PUBLIC spdlog::spdlog PkgConfig::SYSREPO-
 add_library(rousette-restconf STATIC
     src/restconf/Nacm.cpp
     src/restconf/Server.cpp
+    src/restconf/uri.cpp
     src/restconf/utils.cpp
 )
 target_link_libraries(rousette-restconf PUBLIC rousette-http rousette-sysrepo Boost::system Threads::Threads)
@@ -180,6 +181,7 @@ if(BUILD_TESTING)
     endfunction()
 
     rousette_test(NAME http-server LIBRARIES rousette-restconf)
+    rousette_test(NAME uri-parser LIBRARIES rousette-restconf)
 
     set(fixture-http
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/ietf-system@2014-08-06.yang FEATURE radius
