@@ -1,0 +1,193 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "15c5b08c_6b0fb131",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-09T12:34:22Z",
+      "side": 1,
+      "message": "please add a comment explaining why this is needed (character classes)",
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7929ffa8_c27cc6ca",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-09T12:34:22Z",
+      "side": 1,
+      "message": "also explain *why* that\u0027s needed",
+      "range": {
+        "startLine": 28,
+        "startChar": 207,
+        "endLine": 28,
+        "endChar": 213
+      },
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3d2eaa43_1caee0a8",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-09T12:34:22Z",
+      "side": 1,
+      "message": "I think it\u0027s better to use a free-standing function for this purpose. Or do you expect this URL parser to get some additional functionality \"soon\"?",
+      "range": {
+        "startLine": 41,
+        "startChar": 0,
+        "endLine": 57,
+        "endChar": 1
+      },
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2c927ba3_dadf7ffc",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-09T12:34:22Z",
+      "side": 1,
+      "message": "please add a brief comment with the purpose of this class (and the others, too). It\u0027s OK to just refer to a term in https://datatracker.ietf.org/doc/html/rfc8040#section-3.5.3.1 , maybe with an explanation on WTF that `api-identifier` thing is :).",
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "270fe7cb_3f5114ea",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-09T12:34:22Z",
+      "side": 1,
+      "message": "it\u0027s working on the path only, so let\u0027s decouple this from nghttp2-asio and use a plain old boring std::string, please",
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f07eaf02_f49d054b",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-09T12:34:22Z",
+      "side": 1,
+      "message": "https://en.cppreference.com/w/cpp/experimental/ostream_joiner",
+      "range": {
+        "startLine": 26,
+        "startChar": 0,
+        "endLine": 27,
+        "endChar": 24
+      },
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a90f09ed_795383b5",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-09T12:34:22Z",
+      "side": 1,
+      "message": "ostream_joiner also here",
+      "range": {
+        "startLine": 54,
+        "startChar": 0,
+        "endLine": 55,
+        "endChar": 23
+      },
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ef98f0bf_832ad248",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 94,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-09T12:34:22Z",
+      "side": 1,
+      "message": "nit: this is needed to distinguish from a nullopt, right? Would it help if you added two overloaded constructors, one taking a `(const char *identifier)`, the other a `(const char *prefix, const char *identifier)` (and maybe a third one, if needed, for constructing from a std::optional\u003cstd::string\u003e and std::string to preserve the existing functionality)?\n\nAnd maybe you can go one step further and add a convenience ctor overload for the PathSegment as well, so that you don\u0027t have to provide that `{}` when no key values are passed?",
+      "range": {
+        "startLine": 94,
+        "startChar": 55,
+        "endLine": 94,
+        "endChar": 56
+      },
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a066dc87_b583411c",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 262,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-09T12:34:22Z",
+      "side": 1,
+      "message": "does this one need a raw string literal?",
+      "range": {
+        "startLine": 262,
+        "startChar": 17,
+        "endLine": 262,
+        "endChar": 18
+      },
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
