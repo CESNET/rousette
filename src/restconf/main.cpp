@@ -64,6 +64,13 @@ int main(int argc [[maybe_unused]], char* argv [[maybe_unused]] [])
     }
     spdlog::set_level(spdlog::level::trace);
 
+    /* We will parse URIs using boost::spirit's alnum/alpha/... matchers which are locale-dependent.
+     * Let's use something stable no matter what the system is using
+     */
+    if (!std::setlocale(LC_CTYPE, "C.UTF-8")) {
+        throw std::runtime_error("Could not set locale C.UTF-8");
+    }
+
     auto conn = sysrepo::Connection{};
     auto server = rousette::restconf::Server{conn, "::1", "10080"};
 
