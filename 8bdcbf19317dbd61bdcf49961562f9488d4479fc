@@ -38,6 +38,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "1a0c105a_fa10321a",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-09T20:46:45Z",
+      "side": 1,
+      "message": "That\u0027s one more reason for docs, I guess :). Anyway, spirit\u0027s alnum/alpha/... matchers are locale-dependent, and we want this parser to use something stable, no matter what LC_* settings are in place on the target system.",
+      "parentUuid": "2a44ada1_9d4fbb66",
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "7929ffa8_c27cc6ca",
         "filename": "src/restconf/uri.cpp",
         "patchSetId": 3
@@ -331,6 +349,30 @@
       "side": 1,
       "message": "Why a const char* instead of string? Isn\u0027t std::string\u0027s const char* ctor enough to do the trick?",
       "parentUuid": "ef98f0bf_832ad248",
+      "range": {
+        "startLine": 94,
+        "startChar": 55,
+        "endLine": 94,
+        "endChar": 56
+      },
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4eb62a99_16ea98a5",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 94,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-09T20:46:45Z",
+      "side": 1,
+      "message": "My bad; I thought that there\u0027s a reason why you had to use the `\"foo\"s` instead of `\"foo\"`, and that this is because one cannot probably construct an std::optional\u003cstd::string\u003e from `\"foo\"` using that uniform initialization via `{}`. What I had not realized is the fact that once you have a constructor which takes std::string, you can pass a C string literal there just fine.",
+      "parentUuid": "5fe9f032_4b118e7e",
       "range": {
         "startLine": 94,
         "startChar": 55,
