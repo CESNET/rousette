@@ -20,6 +20,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "2a44ada1_9d4fbb66",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-09T17:47:22Z",
+      "side": 1,
+      "message": "Sorry, I probably forgot why we discussed this. 😞",
+      "parentUuid": "15c5b08c_6b0fb131",
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "7929ffa8_c27cc6ca",
         "filename": "src/restconf/uri.cpp",
         "patchSetId": 3
@@ -31,6 +49,30 @@
       "writtenOn": "2023-08-09T12:34:22Z",
       "side": 1,
       "message": "also explain *why* that\u0027s needed",
+      "range": {
+        "startLine": 28,
+        "startChar": 207,
+        "endLine": 28,
+        "endChar": 213
+      },
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "83f84535_30d620b1",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-09T17:47:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7929ffa8_c27cc6ca",
       "range": {
         "startLine": 28,
         "startChar": 207,
@@ -64,6 +106,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "81a5d5f9_b2d14b0a",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-09T17:47:22Z",
+      "side": 1,
+      "message": "Agreed. In previous iteration I designed this whole Path/Parser stuff differently and it made sense then.",
+      "parentUuid": "3d2eaa43_1caee0a8",
+      "range": {
+        "startLine": 41,
+        "startChar": 0,
+        "endLine": 57,
+        "endChar": 1
+      },
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "2c927ba3_dadf7ffc",
@@ -77,6 +143,24 @@
       "writtenOn": "2023-08-09T12:34:22Z",
       "side": 1,
       "message": "please add a brief comment with the purpose of this class (and the others, too). It\u0027s OK to just refer to a term in https://datatracker.ietf.org/doc/html/rfc8040#section-3.5.3.1 , maybe with an explanation on WTF that `api-identifier` thing is :).",
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "dca73c63_d93f526b",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-09T17:47:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2c927ba3_dadf7ffc",
       "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -98,6 +182,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "9bad65a4_6dbd6335",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-09T17:47:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "270fe7cb_3f5114ea",
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f07eaf02_f49d054b",
@@ -111,6 +213,30 @@
       "writtenOn": "2023-08-09T12:34:22Z",
       "side": 1,
       "message": "https://en.cppreference.com/w/cpp/experimental/ostream_joiner",
+      "range": {
+        "startLine": 26,
+        "startChar": 0,
+        "endLine": 27,
+        "endChar": 24
+      },
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "fac90fb0_8de7dad3",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-09T17:47:22Z",
+      "side": 1,
+      "message": "Of course...",
+      "parentUuid": "f07eaf02_f49d054b",
       "range": {
         "startLine": 26,
         "startChar": 0,
@@ -144,6 +270,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "19d1d583_39e88e78",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-09T17:47:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a90f09ed_795383b5",
+      "range": {
+        "startLine": 54,
+        "startChar": 0,
+        "endLine": 55,
+        "endChar": 23
+      },
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "ef98f0bf_832ad248",
@@ -167,6 +317,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "5fe9f032_4b118e7e",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 94,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-09T17:47:22Z",
+      "side": 1,
+      "message": "Why a const char* instead of string? Isn\u0027t std::string\u0027s const char* ctor enough to do the trick?",
+      "parentUuid": "ef98f0bf_832ad248",
+      "range": {
+        "startLine": 94,
+        "startChar": 55,
+        "endLine": 94,
+        "endChar": 56
+      },
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "a066dc87_b583411c",
@@ -180,6 +354,30 @@
       "writtenOn": "2023-08-09T12:34:22Z",
       "side": 1,
       "message": "does this one need a raw string literal?",
+      "range": {
+        "startLine": 262,
+        "startChar": 17,
+        "endLine": 262,
+        "endChar": 18
+      },
+      "revId": "8bdcbf19317dbd61bdcf49961562f9488d4479fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "01ada042_c901de06",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 262,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-09T17:47:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a066dc87_b583411c",
       "range": {
         "startLine": 262,
         "startChar": 17,
