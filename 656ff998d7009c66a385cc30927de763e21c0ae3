@@ -35,6 +35,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c6049374_924d8d14",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-09T11:29:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fa559385_d65601d8",
+      "revId": "656ff998d7009c66a385cc30927de763e21c0ae3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "bd23a57b_61764472",
@@ -58,6 +76,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "fd092baf_1dcc94c5",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 109,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-09T11:29:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bd23a57b_61764472",
+      "range": {
+        "startLine": 109,
+        "startChar": 73,
+        "endLine": 109,
+        "endChar": 84
+      },
+      "revId": "656ff998d7009c66a385cc30927de763e21c0ae3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "b1ba73f8_1274a564",
@@ -71,6 +113,30 @@
       "writtenOn": "2023-08-01T21:41:09Z",
       "side": 1,
       "message": "What\u0027s the plan for these FIXMEs? Asking on the ML?",
+      "range": {
+        "startLine": 168,
+        "startChar": 1,
+        "endLine": 174,
+        "endChar": 146
+      },
+      "revId": "656ff998d7009c66a385cc30927de763e21c0ae3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1d2c5b70_03ac65f0",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 174,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-09T11:29:02Z",
+      "side": 1,
+      "message": "The code associated with the second one will be probably removed. For the first one, we will have to ask probably. So far this is what netopeer2 returns.",
+      "parentUuid": "b1ba73f8_1274a564",
       "range": {
         "startLine": 168,
         "startChar": 1,
