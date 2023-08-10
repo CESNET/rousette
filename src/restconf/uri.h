@@ -47,6 +47,7 @@ public:
 
     bool operator==(const ResourcePath&) const = default;
     std::vector<PathSegment> getSegments() const;
+    std::string asLibyangPath(const libyang::Context& ctx) const;
 
 private:
     std::vector<PathSegment> m_segments;

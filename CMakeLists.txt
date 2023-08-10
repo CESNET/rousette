@@ -181,10 +181,15 @@ if(BUILD_TESTING)
     endfunction()
 
     rousette_test(NAME http-server LIBRARIES rousette-restconf)
-    rousette_test(NAME uri-parser LIBRARIES rousette-restconf)
 
     set(fixture-http
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/ietf-system@2014-08-06.yang FEATURE radius
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang)
     rousette_test(NAME http-communication LIBRARIES rousette-restconf FIXTURE fixture-http)
+
+    set(fixture-uri-parser
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/ietf-system@2014-08-06.yang
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/ietf-interfaces@2018-02-20.yang
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/ietf-ip@2018-02-22.yang)
+    rousette_test(NAME uri-parser LIBRARIES rousette-restconf FIXTURE fixture-uri-parser)
 endif()
