@@ -9,6 +9,7 @@
 #include <boost/spirit/home/x3.hpp>
 #include <string>
 #include <sysrepo-cpp/Session.hpp>
+#include "restconf/uri.h"
 
 namespace rousette::restconf {
 
