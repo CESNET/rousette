@@ -8,6 +8,8 @@
 
 #include "trompeloeil_doctest.h"
 #include <experimental/iterator>
+#include <sysrepo-cpp/Connection.hpp>
+#include "restconf/uri.h"
 #include "restconf/uri_impl.h"
 
 namespace rousette::restconf::impl {
@@ -232,6 +234,54 @@ TEST_CASE("URI path parser")
 
             CAPTURE(uriPath);
             REQUIRE(!rousette::restconf::impl::parseUriPath(uriPath));
+        }
+    }
+
+    SECTION("LY")
+    {
+        auto conn = sysrepo::Connection{};
+        auto sess = conn.sessionStart();
+
+        REQUIRE(sess.getContext().getModuleImplemented("ietf-system"));
+        REQUIRE(sess.getContext().getModuleImplemented("ietf-interfaces"));
+        REQUIRE(sess.getContext().getModuleImplemented("ietf-ip"));
+
+        SECTION("Contextually valid paths")
+        {
+            for (const auto& [uriPath, expectedLyPath] : {
+                     std::pair<std::string, std::optional<std::string>>{"/restconf/data/ietf-system:system/clock", "/ietf-system:system/clock"},
+                     {"/restconf/data/ietf-system:system/clock/timezone-utc-offset", "/ietf-system:system/clock/timezone-utc-offset"},
+                     {"/restconf/data/ietf-interfaces:interfaces/interface=eth0", "/ietf-interfaces:interfaces/interface[name='eth0']"},
+                     {"/restconf/data/ietf-interfaces:interfaces/interface=et\"h0", "/ietf-interfaces:interfaces/interface[name='et\"h0']"},
+                     {"/restconf/data/ietf-interfaces:interfaces/interface", "/ietf-interfaces:interfaces/interface"},
+                     {"/restconf/data/ietf-interfaces:interfaces/interface=eth0/ietf-ip:ipv4/address=127.0.0.1/prefix-length", "/ietf-interfaces:interfaces/interface[name='eth0']/ietf-ip:ipv4/address[ip='127.0.0.1']/prefix-length"},
+                     {"/restconf/data/ietf-interfaces:interfaces/interface=eth0/higher-layer-if", "/ietf-interfaces:interfaces/interface[name='eth0']/higher-layer-if"},
+                     {"/restconf/data/ietf-interfaces:interfaces/interface=eth0/higher-layer-if=br0", "/ietf-interfaces:interfaces/interface[name='eth0']/higher-layer-if[.='br0']"},
+                 }) {
+                CAPTURE(uriPath);
+                REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
+                auto lyPath = rousette::restconf::asLibyangPath(sess.getContext(), uriPath);
+                CAPTURE(lyPath);
+                REQUIRE(lyPath == expectedLyPath);
+            }
+        }
+
+        SECTION("Contextually invalid paths")
+        {
+            for (const auto& uriPath : std::vector<std::string>{
+                     "/restconf/data/hello:world", // nonexistent module
+                     "/restconf/data/ietf-system:foo", // nonexistent top-level node
+                     "/restconf/data/ietf-system:system/tick-tock", // nonexistent node
+                     "/restconf/data/ietf-system:system/clock/timezone-name", // feature not enabled
+                     "/restconf/data/ietf-interfaces:interfaces=eth0", // node not a list
+                     "/restconf/data/ietf-interfaces:interfaces/interface=eth0,eth1", // wrong number of list elements
+                     "/restconf/data/ietf-interfaces:interfaces/interface=eth0/higher-layer-if=br0,eth1", // wrong number of leaf-list elements
+                     //"/restconf/data/ietf-system:system/clock/timezone-utc-offset[name='foo']", // node not a list node
+                 }) {
+                CAPTURE(uriPath);
+                REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
+                REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(sess.getContext(), uriPath), std::runtime_error);
+            }
         }
     }
 }

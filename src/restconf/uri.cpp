@@ -7,13 +7,15 @@
 #include <algorithm>
 #include <experimental/iterator>
 #include <iostream>
+#include <libyang-cpp/SchemaNode.hpp>
 #include <optional>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include "restconf/uri_impl.h"
 
-namespace rousette::restconf::impl {
+namespace rousette::restconf {
+namespace impl {
 
 namespace {
 namespace x3 = boost::spirit::x3;
@@ -39,6 +41,7 @@ const auto fullyQualifiedListInstance = x3::rule<class keyList, PathSegment>{"li
 const auto uriGrammar = x3::rule<class grammar, std::vector<PathSegment>>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> "/" >> x3::lit("data") >> "/"
     >> fullyQualifiedListInstance >> -("/" >> listInstance % "/"); // RFC 8040, sec 3.5.3
 }
+
 
 std::optional<ResourcePath> parseUriPath(const std::string& uriPath)
 {
@@ -78,5 +81,99 @@ PathSegment::PathSegment(const ApiIdentifier& apiIdent, const std::vector<std::s
 ResourcePath::ResourcePath(const std::vector<PathSegment>& segments)
     : segments(segments)
 {
+}
+}
+
+namespace {
+std::optional<libyang::SchemaNode> findChildSchemaNode(libyang::SchemaNode node, const impl::ApiIdentifier& childIdentifier)
+{
+    for (const auto& child : node.childInstantiables()) {
+        if (child.name() == childIdentifier.identifier && (!childIdentifier.prefix || std::string{child.module().name()} == childIdentifier.prefix)) {
+            return child;
+        }
+    }
+
+    return std::nullopt;
+}
+
+/** @brief Returns fully qualified name of the nodeType
+ *
+ * @return string in the form <module>:<nodeName> if the parent module does not exist or is different from module of @p node else return only name of @p node.
+ */
+std::string canonicalName(libyang::SchemaNode currentNode)
+{
+    using namespace std::string_literals;
+
+    std::string res;
+
+    if (!currentNode.parent() || currentNode.parent()->module().name() != currentNode.module().name()) {
+        res += std::string{currentNode.module().name()} + ":";
+    }
+
+    return res + std::string{currentNode.name()};
+}
+
+/** @brief Escapes key with the other type of quotes than found in the string.
+ *
+ *  @throws std::invalid_argument if both single and double quotes used in the input
+ * */
+std::string escapeListKey(const std::string& str)
+{
+    auto singleQuotes = str.find('\'') != std::string::npos;
+    auto doubleQuotes = str.find('\"') != std::string::npos;
+
+    if (singleQuotes && doubleQuotes) {
+        throw std::invalid_argument("Encountered mixed single and double quotes in XPath; can't properly escape.");
+    } else if (singleQuotes) {
+        return '\"' + str + '\"';
+    } else {
+        return '\'' + str + '\'';
+    }
+}
+}
+
+std::string asLibyangPath(const libyang::Context& ctx, const std::string& uriPath)
+{
+    std::optional<libyang::SchemaNode> currentNode;
+    std::string res;
+
+    auto resourcePath = impl::parseUriPath(uriPath);
+    if (!resourcePath) {
+        throw std::runtime_error("URI wrong format");
+    }
+
+    for (auto it = resourcePath->segments.begin(); it != resourcePath->segments.end(); ++it) {
+        auto prev = currentNode;
+        currentNode = currentNode ? findChildSchemaNode(*currentNode, it->apiIdent) : ctx.findPath("/" + *it->apiIdent.prefix + ":" + it->apiIdent.identifier);
+        if (!currentNode) {
+            throw std::runtime_error("Node path not found, prev=" + prev->path());
+        }
+
+        res += "/" + canonicalName(*currentNode);
+
+        if (currentNode->nodeType() == libyang::NodeType::List) {
+            const auto& listKeys = currentNode->asList().keys();
+
+            if (it->keys.size() == listKeys.size()) {
+                // FIXME: use std::views::zip in C++23
+                auto itKeyValue = it->keys.begin();
+                for (auto itKeyName = listKeys.begin(); itKeyName != listKeys.end(); ++itKeyName, ++itKeyValue) {
+                    res += '[' + std::string{itKeyName->name()} + "=" + escapeListKey(*itKeyValue) + ']';
+                }
+            } else if (it->keys.size() > 0 && it->keys.size() != listKeys.size()) {
+                throw std::runtime_error("List keys count mismatch");
+            }
+        } else if (currentNode->nodeType() == libyang::NodeType::Leaflist) {
+            if (it->keys.size() == 1) {
+                res += "[.=" + escapeListKey(it->keys.front()) + ']';
+            } else if (it->keys.size() > 1) {
+                throw std::runtime_error("Leaflist keys count mismatch");
+            }
+        } else if (it->keys.size() > 0) {
+            throw std::runtime_error("Current node is neither list nor leaflist but keys were specified");
+        }
+    }
+
+    return res;
 }
 }
