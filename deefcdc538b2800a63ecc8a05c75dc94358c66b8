@@ -1,0 +1,181 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "901eedee_d2a2fb66",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-10T20:48:51Z",
+      "side": 1,
+      "message": "I this is wrong (at least if yanglint is correct) because this one could match nodes which should not be matched. The reason is that the augmenting module can insert extra nodes with the same unqalified name as existing nodes, and these only differ by a prefix. Like this:\n\nFile `a.yang`:\n \nmodule \"a\" {\n\tnamespace \"a\";\n\tprefix \"a\";\n\tcontainer c {\n\t\tleaf l1 {type string; }\n\t}\n}\n\nFile `b.yang`:\n \nmodule \"b\" {\n\tnamespace \"b\";\n\tprefix \"b\";\n\timport a {\n\t\tprefix \"a\";\n\t}\n\taugment \"/a:c\" {\n\t\tleaf l1 { type string; }\n\t}\n}\n\n...and the resulting tree:\n\n \nmodule: a\n  +--rw c\n     +--rw l1?     string\n     +--rw b:l1?   string\n \nmodule: b\n \n  augment /a:c:\n    +--rw l1?   string\n\nPlease also add a test for this nice corner case.",
+      "range": {
+        "startLine": 48,
+        "startChar": 59,
+        "endLine": 48,
+        "endChar": 82
+      },
+      "revId": "deefcdc538b2800a63ecc8a05c75dc94358c66b8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "04d1afb2_daae168f",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-10T20:48:51Z",
+      "side": 1,
+      "message": "I used wrong terminology on the call; the proper term is \"qualified\", not \"canonical\" (that one refers to the preferred format of values of various types). Sorry.\n\nLet\u0027s call this `maybeQualified` because it doesn\u0027t always turn the name into the qualified form.",
+      "range": {
+        "startLine": 60,
+        "startChar": 12,
+        "endLine": 60,
+        "endChar": 25
+      },
+      "revId": "deefcdc538b2800a63ecc8a05c75dc94358c66b8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0561bb66_520e388a",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-10T20:48:51Z",
+      "side": 1,
+      "message": "This function currently allows addressing the whole `list` or `leaf-list` (by passing no keys). That makes sense to me, but I think it\u0027s actually not allowed by the standard:\n\n\u003e A data resource represents a YANG data node that is a descendant node of a datastore resource.  Each YANG-defined data node can be uniquely targeted by the request-line of an HTTP method.  Containers, leafs, leaf-list entries, list entries, anydata nodes, and anyxml nodes are data resources.\n\n(https://datatracker.ietf.org/doc/html/rfc8040#section-3.5)\n\nThis is also replicated in libyang where the result of DataNode::findXPath() is a Set\u003cDataNode\u003e, not just a DataNode.",
+      "revId": "deefcdc538b2800a63ecc8a05c75dc94358c66b8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0e2146ca_4e25a881",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 146,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-10T20:48:51Z",
+      "side": 1,
+      "message": "This might be user facing, so let\u0027s do something like:\n\n No such node \"foo\" below \"bar\".",
+      "range": {
+        "startLine": 146,
+        "startChar": 37,
+        "endLine": 146,
+        "endChar": 80
+      },
+      "revId": "deefcdc538b2800a63ecc8a05c75dc94358c66b8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8e69c5f7_ad5a21dc",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 161,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-10T20:48:51Z",
+      "side": 1,
+      "message": "here:\n List \"foo\" requires exactly X key values",
+      "revId": "deefcdc538b2800a63ecc8a05c75dc94358c66b8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bd310521_52ad47ec",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 167,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-10T20:48:51Z",
+      "side": 1,
+      "message": "msg:\n Leaf-list \"foo\" requires exactly one key",
+      "revId": "deefcdc538b2800a63ecc8a05c75dc94358c66b8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a3775b41_c8adfb8d",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 170,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-10T20:48:51Z",
+      "side": 1,
+      "message": "and here:\n No keys are allowed for \"foo\"",
+      "revId": "deefcdc538b2800a63ecc8a05c75dc94358c66b8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4d70a6fb_e845386e",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-10T20:48:51Z",
+      "side": 1,
+      "message": "squash to another commit",
+      "revId": "deefcdc538b2800a63ecc8a05c75dc94358c66b8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c94b9c3c_28b2ac79",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 273,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-10T20:48:51Z",
+      "side": 1,
+      "message": "this one should be already visible by the REQUIRE below",
+      "range": {
+        "startLine": 273,
+        "startChar": 16,
+        "endLine": 273,
+        "endChar": 32
+      },
+      "revId": "deefcdc538b2800a63ecc8a05c75dc94358c66b8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
