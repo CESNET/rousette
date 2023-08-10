@@ -26,6 +26,23 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "3c101901_110458ee",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-10T11:04:36Z",
+      "side": 1,
+      "message": "Let\u0027s hide all this as an impl detail of the parser. The rousette Server class needs only to understand a function that takes a string and returns string containing libyang path",
+      "revId": "9b17a1f65a7d45d84736bc7b0fa096708bc6bc09",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "1142c8ed_116a09c9",
         "filename": "src/restconf/uri.h",
         "patchSetId": 4
