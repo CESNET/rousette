@@ -8,6 +8,9 @@
 
 #include "trompeloeil_doctest.h"
 #include <experimental/iterator>
+#include <spdlog/spdlog.h>
+#include <sysrepo-cpp/Connection.hpp>
+#include "restconf/uri.h"
 #include "restconf/uri_impl.h"
 
 namespace rousette::restconf::impl {
@@ -65,6 +68,7 @@ TEST_CASE("URI path parser")
 {
     using rousette::restconf::impl::PathSegment;
     using rousette::restconf::impl::ResourcePath;
+    spdlog::set_level(spdlog::level::trace);
 
     SECTION("Valid paths")
     {
@@ -232,6 +236,57 @@ TEST_CASE("URI path parser")
 
             CAPTURE(uriPath);
             REQUIRE(!rousette::restconf::impl::parseUriPath(uriPath));
+        }
+    }
+
+    SECTION("Translation to libyang path")
+    {
+        auto conn = sysrepo::Connection{};
+        auto sess = conn.sessionStart();
+
+        REQUIRE(sess.getContext().getModuleImplemented("example"));
+        REQUIRE(sess.getContext().getModuleImplemented("example-augment"));
+
+        SECTION("Contextually valid paths")
+        {
+            for (const auto& [uriPath, expectedLyPath] : {
+                     std::pair<std::string, std::optional<std::string>>{"/restconf/data/example:top-level-leaf", "/example:top-level-leaf"},
+                     {"/restconf/data/hello:world", std::nullopt}, // nonexistent module
+                     {"/restconf/data/example:foo", std::nullopt}, // nonexistent top-level node
+                     {"/restconf/data/example-augment:b", std::nullopt}, // nonexistent top-level node
+                     {"/restconf/data/example:l/hello-world", std::nullopt}, // nonexistent node
+                     {"/restconf/data/example:f", std::nullopt}, // feature not enabled
+                     {"/restconf/data/example:top-level-list", "/example:top-level-list"},
+                     {"/restconf/data/example:top-level-list=hello", "/example:top-level-list[name='hello']"},
+                     {"/restconf/data/example:l/list=eth0", "/example:l/list[name='eth0']"},
+                     {R"(/restconf/data/example:l/list=et"h0)", R"(/example:l/list[name='et"h0'])"},
+                     {R"(/restconf/data/example:l/list=et%22h0)", R"(/example:l/list[name='et"h0'])"},
+                     {R"(/restconf/data/example:l/list=et%27h0)", R"(/example:l/list[name="et'h0"])"},
+                     {"/restconf/data/example:l/list=eth0/name", "/example:l/list[name='eth0']/name"},
+                     {"/restconf/data/example:l/list=eth0/nested=1,2,3", "/example:l/list[name='eth0']/nested[first='1'][second='2'][third='3']"},
+                     {"/restconf/data/example:l/list=eth0/nested=,2,3", "/example:l/list[name='eth0']/nested[first=''][second='2'][third='3']"},
+                     {"/restconf/data/example:l/list=eth0/nested=,2,", "/example:l/list[name='eth0']/nested[first=''][second='2'][third='']"},
+                     {"/restconf/data/example:l=eth0", std::nullopt}, // node not a (leaf-)list
+                     {"/restconf/data/example:l/list=eth0,eth1", std::nullopt}, // wrong number of list elements
+                     {"/restconf/data/example:l/list=eth0/collection=br0,eth1", std::nullopt}, // wrong number of keys for a leaf-list
+                     {"/restconf/data/example:l/list=eth0/choose", std::nullopt}, // schema nodes should not be visible
+                     {"/restconf/data/example:l/list=eth0/choose/choice1", std::nullopt}, // schema nodes should not be visible
+                     {"/restconf/data/example:l/list=eth0/choice1", "/example:l/list[name='eth0']/choice1"},
+                     {"/restconf/data/example:l/list=eth0/choice2", "/example:l/list[name='eth0']/choice2"},
+                     {"/restconf/data/example:l/list=eth0/collection", "/example:l/list[name='eth0']/collection"},
+                     {"/restconf/data/example:l/list=eth0/collection=val", "/example:l/list[name='eth0']/collection[.='val']"},
+                     {"/restconf/data/example:l/key-less-list", "/example:l/key-less-list"},
+                     {"/restconf/data/example:l/status", "/example:l/status"},
+                     {"/restconf/data/example:a/example-augment:b", "/example:a/example-augment:b"},
+                     {"/restconf/data/example:a/example-augment:b/c", "/example:a/example-augment:b/c"},
+                     {"/restconf/data/example:a/example-augment:b/example-augment:c", "/example:a/example-augment:b/c"},
+                     {"/restconf/data/example:a/example-augment:b/c/enabled", "/example:a/example-augment:b/c/enabled"},
+                 }) {
+                CAPTURE(uriPath);
+                REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
+                CAPTURE(expectedLyPath);
+                REQUIRE(rousette::restconf::asLibyangPath(sess.getContext(), uriPath) == expectedLyPath);
+            }
         }
     }
 }
