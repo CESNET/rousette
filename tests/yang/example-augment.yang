@@ -1,0 +1,20 @@
+module example-augment {
+  yang-version 1.1;
+  namespace "http://example.tld/example-augment";
+  prefix aug;
+
+  import example {
+    prefix ex;
+  }
+
+  augment "/ex:a" {
+    container b {
+      container c {
+        leaf enabled {
+          type boolean;
+          default true;
+        }
+      }
+    }
+  }
+}
