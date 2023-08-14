@@ -180,11 +180,10 @@ if(BUILD_TESTING)
         endif()
     endfunction()
 
-    rousette_test(NAME http-server LIBRARIES rousette-restconf)
-
     set(fixture-http
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/ietf-system@2014-08-06.yang FEATURE radius
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang)
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang FEATURE f1)
     rousette_test(NAME http-communication LIBRARIES rousette-restconf FIXTURE fixture-http)
 
     set(fixture-uri-parser

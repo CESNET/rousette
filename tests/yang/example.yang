@@ -29,6 +29,14 @@ module example {
         leaf choice1 { type string; }
         leaf choice2 { type string; }
       }
+      action example-action {
+        input {
+          leaf i { type string; }
+        }
+        output {
+          leaf o { type string; }
+        }
+      }
     }
     list key-less-list {
       config false;
