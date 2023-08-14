@@ -462,4 +462,20 @@ TEST_CASE("HTTP")
 }
 )"});
     }
+
+    DOCTEST_SUBCASE("Target resource is an operation resource")
+    {
+        REQUIRE(retrieveData("/ietf-system:system-restart", "dwdm") == Response{405, headers, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "operation-not-supported",
+        "error-message": "Target resource is an operation resource."
+      }
+    ]
+  }
+}
+)"});
+    }
 }
