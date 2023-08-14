@@ -14,6 +14,7 @@
 #include "http/utils.hpp"
 #include "restconf/Nacm.h"
 #include "restconf/Server.h"
+#include "restconf/uri.h"
 #include "restconf/utils.h"
 #include "sr/OpticalEvents.h"
 
@@ -36,36 +37,6 @@ auto as_restconf_push_update(const std::string& content, const T& time)
 }
 
 constexpr auto restconfRoot = "/restconf/";
-
-namespace pattern {
-const auto atom = "[a-zA-Z_][a-zA-Z0-9_.-]*"s;
-const std::regex moduleWildcard{"^"s + restconfRoot + "data/(" + atom + ":\\*)$"};
-const std::regex subtree{"^"s + restconfRoot + "data/(" + atom + ":" + atom + "(/(" + atom + ":)?" + atom + ")*)$"};
-}
-}
-
-std::optional<std::string> as_subtree_path(const std::string& path)
-{
-    std::smatch match;
-    if (std::regex_match(path, match, pattern::moduleWildcard) && match.size() > 1) {
-        return match[1].str();
-    }
-    if (std::regex_match(path, match, pattern::subtree) && match.size() > 1) {
-        return match[1].str();
-    }
-    return std::nullopt;
-}
-
-bool hasModuleForPath(const sysrepo::Session& session, const std::string& path)
-{
-    std::string moduleName;
-    if (auto pos = path.find(":"); pos != std::string::npos) {
-        moduleName = path.substr(0, pos);
-    } else {
-        moduleName = path;
-    }
-
-    return session.getContext().getModuleImplemented(moduleName).has_value();
 }
 
 void rejectWithError(libyang::Context ctx, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage)
@@ -162,19 +133,14 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 return;
             }
 
-            auto path = as_subtree_path(req.uri().path);
-            if (!path) {
-                rejectWithError(sess.getContext(), req, res, 400, "application", "operation-failed", "Not a subtree path."); // FIXME: Is this correct error? This is what Netopeer2 returns when invalid path is supplied.
-                return;
-            }
-
             try {
-                if (!hasModuleForPath(sess, *path)) {
-                    rejectWithError(sess.getContext(), req, res, 400, "application", "operation-failed", "Module not found.");
+                auto lyPath = asLibyangPath(sess.getContext(), req.uri().path);
+                if (!lyPath) {
+                    rejectWithError(sess.getContext(), req, res, 400, "application", "operation-failed", "Not a subtree path."); // FIXME: Is this correct error? This is what Netopeer2 returns when invalid path is supplied.
                     return;
                 }
 
-                if (auto data = sess.getData('/' + *path); data) {
+                if (auto data = sess.getData(*lyPath); data) {
                     res.write_head(
                         200,
                         {
@@ -187,6 +153,9 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     rejectWithError(sess.getContext(), req, res, 404, "application", "invalid-value", "No data from sysrepo.");
                     return;
                 }
+            } catch (const std::runtime_error& e) {
+                rejectWithError(sess.getContext(), req, res, 400, "application", "operation-failed", "Module not found.");
+                return;
             } catch (const sysrepo::ErrorWithCode& e) {
                 spdlog::error("Sysrepo exception: {}", e.what());
                 rejectWithError(sess.getContext(), req, res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception.");
