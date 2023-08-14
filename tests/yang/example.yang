@@ -12,6 +12,8 @@ module example {
     leaf name { type string; }
   }
 
+  rpc example-rpc { }
+
   container l {
     if-feature f1;
     list list {
@@ -29,6 +31,7 @@ module example {
         leaf choice1 { type string; }
         leaf choice2 { type string; }
       }
+      action example-action { }
     }
     list key-less-list {
       config false;

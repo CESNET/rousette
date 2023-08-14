@@ -462,4 +462,33 @@ TEST_CASE("HTTP")
 }
 )"});
     }
+
+    DOCTEST_SUBCASE("Target resource is an operation resource")
+    {
+        REQUIRE(retrieveData("/example:example-rpc", "dwdm") == Response{405, headers, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "operation-not-supported",
+        "error-message": "Target resource is an operation resource."
+      }
+    ]
+  }
+}
+)"});
+
+        REQUIRE(retrieveData("/example:l/list=eth0/example-action", "dwdm") == Response{405, headers, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "operation-not-supported",
+        "error-message": "Target resource is an operation resource."
+      }
+    ]
+  }
+}
+)"});
+    }
 }

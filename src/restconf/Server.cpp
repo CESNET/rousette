@@ -140,6 +140,12 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             }
 
             try {
+                auto schNode = sess.getContext().findPath(*lyPath);
+                if (schNode.nodeType() == libyang::NodeType::RPC || schNode.nodeType() == libyang::NodeType::Action) {
+                    rejectWithError(sess.getContext(), req, res, 405, "protocol", "operation-not-supported", "Target resource is an operation resource.");
+                    return;
+                }
+
                 if (auto data = sess.getData(*lyPath); data) {
                     res.write_head(
                         200,
