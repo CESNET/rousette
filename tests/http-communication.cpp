@@ -150,7 +150,7 @@ TEST_CASE("HTTP")
     srSess.applyChanges();
 
     // no or empty x-remote-user header gets rejected
-    REQUIRE(retrieveData("/ietf-system:*", std::nullopt) == Response{401, headers, R"({
+    REQUIRE(retrieveData("/ietf-system:system", std::nullopt) == Response{401, headers, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -163,7 +163,7 @@ TEST_CASE("HTTP")
 }
 )"});
 
-    REQUIRE(retrieveData("/ietf-system:*", "") == Response{401, headers, R"({
+    REQUIRE(retrieveData("/ietf-system:system", "") == Response{401, headers, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -203,7 +203,7 @@ TEST_CASE("HTTP")
     srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/rule[name='1']/action", "permit"); // overrides nacm:default-deny-* rules in ietf-system model
     srSess.applyChanges();
 
-    REQUIRE(retrieveData("/ietf-system:*", "yangnobody") == Response{200, headers, R"({
+    REQUIRE(retrieveData("/ietf-system:system", "yangnobody") == Response{200, headers, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -217,7 +217,7 @@ TEST_CASE("HTTP")
       {
         "error-type": "application",
         "error-tag": "operation-failed",
-        "error-message": "Module not found."
+        "error-message": "Couldn't find schema node: /ietf-interfaces:idk"
       }
     ]
   }
@@ -248,7 +248,7 @@ TEST_CASE("HTTP")
 }
 )"});
 
-    REQUIRE(retrieveData("/ietf-system:*", "dwdm") == Response{200, headers, R"({
+    REQUIRE(retrieveData("/ietf-system:system", "dwdm") == Response{200, headers, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -277,7 +277,7 @@ TEST_CASE("HTTP")
       {
         "error-type": "application",
         "error-tag": "operation-failed",
-        "error-message": "Module not found."
+        "error-message": "Couldn't find schema node: /ietf-interfaces:idk"
       }
     ]
   }
@@ -292,7 +292,20 @@ TEST_CASE("HTTP")
 }
 )"});
 
-    REQUIRE(retrieveData("/ietf-system:system/radius/server", "norules") == Response{200, headers, R"({
+    REQUIRE(retrieveData("/ietf-system:system/radius/server", "norules") == Response{400, headers, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-failed",
+        "error-message": "List '/ietf-system:system/radius/server' requires 1 keys"
+      }
+    ]
+  }
+}
+)"});
+
+    REQUIRE(retrieveData("/ietf-system:system/radius/server=a", "norules") == Response{200, headers, R"({
   "ietf-system:system": {
     "radius": {
       "server": [
@@ -365,7 +378,7 @@ TEST_CASE("HTTP")
             srSess.applyChanges();
         }
 
-        REQUIRE(retrieveData("/ietf-system:*", "yangnobody") == Response{401, headers, R"({
+        REQUIRE(retrieveData("/ietf-system:system", "yangnobody") == Response{401, headers, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -377,7 +390,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-        REQUIRE(retrieveData("/ietf-system:*", "dwdm") == Response{200, headers, R"({
+        REQUIRE(retrieveData("/ietf-system:system", "dwdm") == Response{200, headers, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -396,6 +409,110 @@ TEST_CASE("HTTP")
         }
       ]
     }
+  }
+}
+)"});
+    }
+
+    DOCTEST_SUBCASE("Basic querying of lists")
+    {
+        REQUIRE(retrieveData("/ietf-system:system/radius/server=a", "dwdm") == Response{200, headers, R"({
+  "ietf-system:system": {
+    "radius": {
+      "server": [
+        {
+          "name": "a",
+          "udp": {
+            "address": "1.1.1.1",
+            "shared-secret": "shared-secret"
+          }
+        }
+      ]
+    }
+  }
+}
+)"});
+
+        REQUIRE(retrieveData("/ietf-system:system/radius/server=a/udp/address", "dwdm") == Response{200, headers, R"({
+  "ietf-system:system": {
+    "radius": {
+      "server": [
+        {
+          "name": "a",
+          "udp": {
+            "address": "1.1.1.1"
+          }
+        }
+      ]
+    }
+  }
+}
+)"});
+
+        REQUIRE(retrieveData("/ietf-system:system/radius/server=b", "dwdm") == Response{404, headers, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "No data from sysrepo."
+      }
+    ]
+  }
+}
+)"});
+
+        REQUIRE(retrieveData("/ietf-system:system/radius/server=a,b", "dwdm") == Response{400, headers, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-failed",
+        "error-message": "List '/ietf-system:system/radius/server' requires 1 keys"
+      }
+    ]
+  }
+}
+)"});
+    }
+
+    DOCTEST_SUBCASE("RPCs")
+    {
+        REQUIRE(retrieveData("/ietf-system:system-restart", "dwdm") == Response{400, headers, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-failed",
+        "error-message": "'/ietf-system:system-restart' is not a data resource"
+      }
+    ]
+  }
+}
+)"});
+
+        REQUIRE(retrieveData("/example:l/list=eth0/example-action", "dwdm") == Response{400, headers, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-failed",
+        "error-message": "'/example:l/list/example-action' is not a data resource"
+      }
+    ]
+  }
+}
+)"});
+
+        REQUIRE(retrieveData("/example:l/list=eth0/example-action/i", "dwdm") == Response{400, headers, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-failed",
+        "error-message": "'/example:l/list/example-action' is not a data resource"
+      }
+    ]
   }
 }
 )"});
