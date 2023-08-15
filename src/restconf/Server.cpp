@@ -38,7 +38,23 @@ auto as_restconf_push_update(const std::string& content, const T& time)
 
 constexpr auto restconfRoot = "/restconf/";
 
-void rejectWithError(libyang::Context ctx, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage)
+struct DataFormat {
+    libyang::DataFormat lyDataFormat;
+
+    std::string asMimeType() const
+    {
+        switch (lyDataFormat) {
+        case libyang::DataFormat::JSON:
+            return "application/yang-data+json";
+        case libyang::DataFormat::XML:
+            return "application/yang-data+xml";
+        default:
+            throw std::logic_error("Invalid data format");
+        }
+    };
+};
+
+void rejectWithError(libyang::Context ctx, const DataFormat& dataFormat, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage)
 {
     spdlog::debug("{}: Rejected with {}: {}", http::peer_from_request(req), errorTag, errorMessage);
 
@@ -49,9 +65,49 @@ void rejectWithError(libyang::Context ctx, const request& req, const response& r
     errors->newExtPath("/ietf-restconf:errors/error[1]/error-tag", errorTag, ext);
     errors->newExtPath("/ietf-restconf:errors/error[1]/error-message", errorMessage, ext);
 
-    res.write_head(code, {{"content-type", {"application/yang-data+json", false}},
+    res.write_head(code, {{"content-type", {dataFormat.asMimeType(), false}},
                           {"access-control-allow-origin", {"*", false}}});
-    res.end(*errors->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings));
+    res.end(*errors->printStr(dataFormat.lyDataFormat, libyang::PrintFlags::WithSiblings));
+}
+
+std::variant<DataFormat, int> chooseDataFormat(const nghttp2::asio_http2::header_map& headers)
+{
+    static const auto yangJsonMime = "application/yang-data+json";
+    static const auto yangXmlMime = "application/yang-data+xml";
+
+    std::vector<std::string> acceptTypes;
+    if (auto itHeader = headers.find("accept"); itHeader != headers.end()) {
+        acceptTypes = http::parseAcceptHeader(itHeader->second.value);
+    }
+
+    // FIXME 415 jeste predtimhle returnem
+
+    if (!acceptTypes.empty()) {
+        for (const auto& mediaType : acceptTypes) {
+            if (mediaType == yangXmlMime) {
+                return DataFormat{libyang::DataFormat::XML};
+            } else if (mediaType == yangJsonMime) {
+                return DataFormat{libyang::DataFormat::JSON};
+            }
+        }
+
+        return 406; // If the server does not support any of the requested output encodings for a request, then it MUST return an error response with a "406 Not Acceptable" status-line
+    }
+
+    // If it (the types in the accept header) is not specified, the request input encoding format SHOULD be used, or the server MAY choose any supported content encoding format
+    if (auto itHeader = headers.find("content-type"); itHeader != headers.end()) {
+        const auto& contentType = itHeader->second.value;
+        if (contentType == yangXmlMime || boost::starts_with(contentType, yangXmlMime + ";"s)) {
+            return DataFormat{libyang::DataFormat::XML};
+        } else if (contentType == yangJsonMime || boost::starts_with(contentType, yangJsonMime + ";"s)) {
+            return DataFormat{libyang::DataFormat::JSON};
+        } else {
+            return 415; // If the server does not support the requested input encoding for a request, then it MUST return an error response with a "415 Unsupported Media Type" status-line.
+        }
+    }
+
+    // If there was no request input, then the default output encoding is XML or JSON, depending on server preference.
+    return DataFormat{libyang::DataFormat::JSON};
 }
 }
 
@@ -113,36 +169,46 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             const auto& peer = http::peer_from_request(req);
             spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
 
+            std::variant<DataFormat, int> dataFormatX = chooseDataFormat(req.header());
+            if (auto* statusCode = std::get_if<int>(&dataFormatX)) {
+                res.write_head(*statusCode, {
+                                                {"access-control-allow-origin", {"*", false}},
+                                            });
+                res.end();
+                return;
+            }
+            auto dataFormat = std::get<DataFormat>(dataFormatX);
+
             auto sess = conn.sessionStart(sysrepo::Datastore::Operational);
 
             std::string nacmUser;
             if (auto itUserHeader = req.header().find("x-remote-user"); itUserHeader != req.header().end() && !itUserHeader->second.value.empty()) {
                 nacmUser = itUserHeader->second.value;
             } else {
-                rejectWithError(sess.getContext(), req, res, 401, "protocol", "access-denied", "HTTP header x-remote-user not found or empty.");
+                rejectWithError(sess.getContext(), dataFormat, req, res, 401, "protocol", "access-denied", "HTTP header x-remote-user not found or empty.");
                 return;
             }
 
             if (!nacm.authorize(sess, nacmUser)) {
-                rejectWithError(sess.getContext(), req, res, 401, "protocol", "access-denied", "Access denied.");
+                rejectWithError(sess.getContext(), dataFormat, req, res, 401, "protocol", "access-denied", "Access denied.");
                 return;
             }
 
             if (req.method() != "GET") {
-                rejectWithError(sess.getContext(), req, res, 405, "application", "operation-not-supported", "Method not allowed.");
+                rejectWithError(sess.getContext(), dataFormat, req, res, 405, "application", "operation-not-supported", "Method not allowed.");
                 return;
             }
 
             auto lyPath = asLibyangPath(sess.getContext(), req.uri().path);
             if (!lyPath) {
-                rejectWithError(sess.getContext(), req, res, 400, "application", "operation-failed", "Not a subtree path."); // FIXME: Is this correct error? This is what Netopeer2 returns when invalid path is supplied.
+                rejectWithError(sess.getContext(), dataFormat, req, res, 400, "application", "operation-failed", "Not a subtree path."); // FIXME: Is this correct error? This is what Netopeer2 returns when invalid path is supplied.
                 return;
             }
 
             try {
                 auto schNode = sess.getContext().findPath(*lyPath);
                 if (schNode.nodeType() == libyang::NodeType::RPC || schNode.nodeType() == libyang::NodeType::Action) {
-                    rejectWithError(sess.getContext(), req, res, 405, "protocol", "operation-not-supported", "Target resource is an operation resource.");
+                    rejectWithError(sess.getContext(), dataFormat, req, res, 405, "protocol", "operation-not-supported", "Target resource is an operation resource.");
                     return;
                 }
 
@@ -150,18 +216,17 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     res.write_head(
                         200,
                         {
-                            {"content-type", {"application/yang-data+json", false}},
+                            {"content-type", {dataFormat.asMimeType(), false}},
                             {"access-control-allow-origin", {"*", false}},
                         });
-                    res.end(*data->printStr(libyang::DataFormat::JSON,
-                                            libyang::PrintFlags::WithSiblings));
+                    res.end(*data->printStr(dataFormat.lyDataFormat, libyang::PrintFlags::WithSiblings));
                 } else {
-                    rejectWithError(sess.getContext(), req, res, 404, "application", "invalid-value", "No data from sysrepo.");
+                    rejectWithError(sess.getContext(), dataFormat, req, res, 404, "application", "invalid-value", "No data from sysrepo.");
                     return;
                 }
             } catch (const sysrepo::ErrorWithCode& e) {
                 spdlog::error("Sysrepo exception: {}", e.what());
-                rejectWithError(sess.getContext(), req, res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception.");
+                rejectWithError(sess.getContext(), dataFormat, req, res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception.");
             }
         });
 
