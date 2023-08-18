@@ -180,6 +180,8 @@ if(BUILD_TESTING)
         endif()
     endfunction()
 
+    rousette_test(NAME http-utils LIBRARIES rousette-http)
+
     set(fixture-http
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/ietf-system@2014-08-06.yang FEATURE radius
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang
