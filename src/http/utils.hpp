@@ -10,4 +10,5 @@
 namespace rousette::http {
 
 std::string peer_from_request(const nghttp2::asio_http2::server::request &req);
+std::vector<std::string> parseAcceptHeader(const std::string& headerValue);
 }
