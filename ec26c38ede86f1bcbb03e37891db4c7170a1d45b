@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "01c66d1b_213e227b",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-21T09:17:44Z",
+      "side": 1,
+      "message": "let\u0027s use exceptions instead of the (semi-invisible) debug log",
+      "range": {
+        "startLine": 142,
+        "startChar": 5,
+        "endLine": 142,
+        "endChar": 13
+      },
+      "revId": "ec26c38ede86f1bcbb03e37891db4c7170a1d45b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6876d2a2_bc5ece2f",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-21T09:17:44Z",
+      "side": 1,
+      "message": "I think this branch deserves a comment, something like \"starting at root\"",
+      "range": {
+        "startLine": 159,
+        "startChar": 8,
+        "endLine": 159,
+        "endChar": 16
+      },
+      "revId": "ec26c38ede86f1bcbb03e37891db4c7170a1d45b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "834a46d9_b59cec9a",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-21T09:17:44Z",
+      "side": 1,
+      "message": "I think this will need an extra check to make sure that only \"allowed node types\" are traversed, and that this check has to happen at each level of hierarchy (please add a test for this). For example, libyang\u0027s findXXX functions by default would hit RPC input nodes (IIRC), so when handling a GET (or a future edit), this needs a check that we do not hit an intermediate rpc/action node.",
+      "revId": "ec26c38ede86f1bcbb03e37891db4c7170a1d45b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
