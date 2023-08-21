@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "26c58f2f_e17a7948",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 144,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-21T09:14:06Z",
+      "side": 1,
+      "message": "On a second thought, this might not be a correct place to check the path validity. What happens if the path points to an input node of an RPC, for example?\n\nI think that the cleanest fix is to change `asLibyangPath` to accept a \"path type\" argument (i.e., a data node vs. operation node, maybe some other types in future as well), and check the type of each node as the path gets built.",
+      "revId": "cf1fa03887f40076170928737e6e76de6568a5b6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
