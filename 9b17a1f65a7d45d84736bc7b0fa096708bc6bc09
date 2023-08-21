@@ -65,6 +65,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "bf3b9413_67b91d4a",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-21T07:31:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3c101901_110458ee",
+      "revId": "9b17a1f65a7d45d84736bc7b0fa096708bc6bc09",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "1142c8ed_116a09c9",
@@ -88,6 +106,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "3be667f9_0e360034",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-21T07:31:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1142c8ed_116a09c9",
+      "range": {
+        "startLine": 49,
+        "startChar": 0,
+        "endLine": 52,
+        "endChar": 40
+      },
+      "revId": "9b17a1f65a7d45d84736bc7b0fa096708bc6bc09",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e039f7ea_3ee348f3",
@@ -101,6 +143,30 @@
       "writtenOn": "2023-08-09T20:46:45Z",
       "side": 1,
       "message": "I think that a compiler \"might return a different copy of that vector\" here (it probably won\u0027t because of copy elision), and in that case this will be UB because it\u0027s comparing iterators from two different vectors.\n\nOne more reason to have a publicly accessible member.",
+      "range": {
+        "startLine": 48,
+        "startChar": 14,
+        "endLine": 48,
+        "endChar": 64
+      },
+      "revId": "9b17a1f65a7d45d84736bc7b0fa096708bc6bc09",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "72cbbcf9_c21f083e",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-21T07:31:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e039f7ea_3ee348f3",
       "range": {
         "startLine": 48,
         "startChar": 14,
