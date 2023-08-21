@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ffab235a_c8ea9a9c",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 149,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-21T12:39:37Z",
+      "side": 1,
+      "message": "any reason for checking that here instead of that common check on lines 192-211?",
+      "revId": "39aaee4a83e41f35c606271e7739250f488e164b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e1f89aca_a24f8003",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 302,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-21T12:39:37Z",
+      "side": 1,
+      "message": "nice catch!",
+      "range": {
+        "startLine": 302,
+        "startChar": 52,
+        "endLine": 302,
+        "endChar": 71
+      },
+      "revId": "39aaee4a83e41f35c606271e7739250f488e164b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
