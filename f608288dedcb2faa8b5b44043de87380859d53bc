@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b38baa97_4b463061",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-21T22:14:49Z",
+      "side": 1,
+      "message": "I\u0027m a bit nervous when the try block wraps \"a lot\" of code, then it catches a generic exception from STL, and assumes that it is only used for one particular error case. I think that this one deserves its own exception type.",
+      "range": {
+        "startLine": 155,
+        "startChar": 0,
+        "endLine": 156,
+        "endChar": 68
+      },
+      "revId": "f608288dedcb2faa8b5b44043de87380859d53bc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
