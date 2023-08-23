@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9dc10639_cc12bab8",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 146,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-23T16:33:27Z",
+      "side": 1,
+      "message": "I don\u0027t understand how this comment matches the action here. I agree that this function should return true for an element whose type is leaf-list, but the comment says something different.",
+      "range": {
+        "startLine": 146,
+        "startChar": 42,
+        "endLine": 146,
+        "endChar": 140
+      },
+      "revId": "2ac1a33f1a0527dcaf8ff548dc7299ca0da11a5d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "95561739_a3b40587",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 149,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-23T16:33:27Z",
+      "side": 1,
+      "message": "Nice catch, that\u0027s a corner case that I haven\u0027t thought about. I\u0027m a bit surprised that it\u0027s being checked here, but I think it makes sense.",
+      "range": {
+        "startLine": 149,
+        "startChar": 52,
+        "endLine": 149,
+        "endChar": 99
+      },
+      "revId": "2ac1a33f1a0527dcaf8ff548dc7299ca0da11a5d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}

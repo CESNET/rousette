@@ -299,6 +299,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "d5338c51_1ea4a0e9",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-23T16:33:27Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4d70a6fb_e845386e",
+      "revId": "deefcdc538b2800a63ecc8a05c75dc94358c66b8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c94b9c3c_28b2ac79",
