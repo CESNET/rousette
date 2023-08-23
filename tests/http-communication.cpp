@@ -557,16 +557,11 @@ TEST_CASE("HTTP")
   }
 }
 )"});
+        REQUIRE(retrieveData("/ietf-system:system", {{"x-remote-user", "yangnobody"}, {"content-type", "text/plain"}, {"accept", "application/yang-data+json"}}) == Response{415, onlyCorsHeader, ""});
         REQUIRE(retrieveData("/ietf-system:system", {{"x-remote-user", "yangnobody"}, {"content-type", "application/yang-data+jsonx"}}) == Response{415, onlyCorsHeader, ""});
         REQUIRE(retrieveData("/ietf-system:system", {{"x-remote-user", "yangnobody"}, {"content-type", "application/yang-data+xmlx"}}) == Response{415, onlyCorsHeader, ""});
-        REQUIRE(retrieveData("/ietf-system:system", {{"x-remote-user", "yangnobody"}, {"content-type", "application/yang-data+json;charset=utf8"}}) == Response{200, jsonHeaders, R"({
-  "ietf-system:system": {
-    "contact": "contact",
-    "hostname": "hostname",
-    "location": "location"
-  }
-}
-)"});
+        REQUIRE(retrieveData("/ietf-system:system", {{"x-remote-user", "yangnobody"}, {"content-type", "application/yang-data+json;charset=utf8"}}) == Response{415, onlyCorsHeader, ""});
+        REQUIRE(retrieveData("/ietf-system:system", {{"x-remote-user", "yangnobody"}, {"content-type", "foo"}, {"accept", "application/yang-data+json"}}) == Response{415, onlyCorsHeader, ""});
         REQUIRE(retrieveData("/ietf-system:system", {{"x-remote-user", "yangnobody"}, {"accept", "application/yang-data+xml"}}) == Response{200, xmlHeaders, R"(<system xmlns="urn:ietf:params:xml:ns:yang:ietf-system">
   <contact>contact</contact>
   <hostname>hostname</hostname>

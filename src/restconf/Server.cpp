@@ -80,6 +80,15 @@ std::optional<DataFormat> chooseDataEncoding(const nghttp2::asio_http2::header_m
     static const auto yangJsonMime = "application/yang-data+json";
     static const auto yangXmlMime = "application/yang-data+xml";
 
+    if (auto itHeader = headers.find("content-type"); itHeader != headers.end()) {
+        if (itHeader->second.value != yangXmlMime && itHeader->second.value != yangJsonMime) {
+            // If the server does not support the requested input encoding for a request, then it MUST return an error response with a "415 Unsupported Media Type" status-line.
+            res.write_head(415, {{"access-control-allow-origin", {"*", false}}});
+            res.end();
+            return std::nullopt;
+        }
+    }
+
     std::vector<std::string> acceptTypes;
     std::optional<std::string> contentType;
 
@@ -94,6 +103,13 @@ std::optional<DataFormat> chooseDataEncoding(const nghttp2::asio_http2::header_m
         }
 
         contentType = contentTypes.back(); // RFC 9110: Recipients often attempt to handle this error by using the last syntactically valid member of the list
+    }
+
+    if (contentType && contentType != yangXmlMime && contentType != yangJsonMime) {
+        // If the server does not support the requested input encoding for a request, then it MUST return an error response with a "415 Unsupported Media Type" status-line.
+        res.write_head(415, {{"access-control-allow-origin", {"*", false}}});
+        res.end();
+        return std::nullopt;
     }
 
     if (!acceptTypes.empty()) {
