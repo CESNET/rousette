@@ -1,0 +1,107 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "715f3dd8_e9514f4b",
+        "filename": "src/http/utils.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-23T16:51:29Z",
+      "side": 1,
+      "message": "Is the try/catch necessary? The test suite doesn\u0027t hit it, and I think that the parser should reject non-numeric values already. Is that about a range, maybe? Can you add a test for that? :)",
+      "revId": "441d8e8bd6032915e9145fed6f9d4667015a210c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "37d7b831_f1d9dd29",
+        "filename": "src/http/utils.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-23T16:51:29Z",
+      "side": 1,
+      "message": "nit: I think that this allows `*/something` which is not allowed by https://datatracker.ietf.org/doc/html/rfc9110#section-12.5.1 . Just in case you want to make this nifty :).",
+      "range": {
+        "startLine": 60,
+        "startChar": 0,
+        "endLine": 62,
+        "endChar": 108
+      },
+      "revId": "441d8e8bd6032915e9145fed6f9d4667015a210c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0a25d1d9_77b419c1",
+        "filename": "src/http/utils.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-23T16:51:29Z",
+      "side": 1,
+      "message": "some leftover, perhaps?",
+      "range": {
+        "startLine": 65,
+        "startChar": 93,
+        "endLine": 65,
+        "endChar": 157
+      },
+      "revId": "441d8e8bd6032915e9145fed6f9d4667015a210c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "26c07332_8796484b",
+        "filename": "src/http/utils.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-23T16:51:29Z",
+      "side": 1,
+      "message": "https://datatracker.ietf.org/doc/html/rfc9110#section-12.5.1 says that when the effective q-value is the same, more specific entries win over wildcards (that is, \"foo/bar\" wins over \"foo/*\", which wins over \"*/*\").",
+      "range": {
+        "startLine": 79,
+        "startChar": 0,
+        "endLine": 82,
+        "endChar": 7
+      },
+      "revId": "441d8e8bd6032915e9145fed6f9d4667015a210c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b78d585b_494d8a36",
+        "filename": "tests/http-utils.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-23T16:51:29Z",
+      "side": 1,
+      "message": "please also test for case insensitivity as per https://datatracker.ietf.org/doc/html/rfc7231#section-3.1.1.1",
+      "revId": "441d8e8bd6032915e9145fed6f9d4667015a210c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
