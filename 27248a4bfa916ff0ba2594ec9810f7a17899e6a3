@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4fc2156f_7821704d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-24T13:45:31Z",
+      "side": 1,
+      "message": "this is either checking the content-type twice in a row, or I\u0027m missing something very obvious (in which case a comment should be added, or I should be very gently explained that I should drink even more coffee)",
+      "revId": "27248a4bfa916ff0ba2594ec9810f7a17899e6a3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
