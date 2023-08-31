@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "553ff217_1be789f9",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 9
+      },
+      "lineNbr": 194,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-31T08:19:56Z",
+      "side": 1,
+      "message": "(looking at the v7..v9 diff): nice catch.",
+      "revId": "a564f0cfb24299515b153105b533d40e484e57d9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
