@@ -38,6 +38,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "e0dc5000_81346a0a",
+        "filename": "src/http/utils.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-31T10:06:28Z",
+      "side": 1,
+      "message": "I was thinking of from https://en.cppreference.com/w/cpp/string/basic_string/stof#Exceptions, and which of these you\u0027re concerned about. Since the parser currently rejects anything that doesn\u0027t look like a number, the only thing which might throw here are \"too large\" numbers. What happens if the header contains a `q` that\u0027s a huge number?",
+      "parentUuid": "0cf02516_9b32b8a6",
+      "revId": "441d8e8bd6032915e9145fed6f9d4667015a210c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "37d7b831_f1d9dd29",
         "filename": "src/http/utils.cpp",
         "patchSetId": 2

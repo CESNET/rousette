@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "01805104_a7bbd2c8",
+        "filename": "src/http/utils.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-08-31T10:06:28Z",
+      "side": 1,
+      "message": "IMHO it\u0027s better to move this to the parser handling (similarly to how you transform the main type and the subtyp to lowercase; no info gets lost that way).\n\nAlso please test for uppercase Q :).",
+      "range": {
+        "startLine": 28,
+        "startChar": 0,
+        "endLine": 28,
+        "endChar": 58
+      },
+      "revId": "d521260d2e535295320b10943d499f31e0fa2bba",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
