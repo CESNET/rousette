@@ -20,6 +20,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "0cf02516_9b32b8a6",
+        "filename": "src/http/utils.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-31T07:03:19Z",
+      "side": 1,
+      "message": "You are correct. The parser requires a numeric parameter with parameter named \"q\". What do you mean by a \"range\" in this context?",
+      "parentUuid": "715f3dd8_e9514f4b",
+      "revId": "441d8e8bd6032915e9145fed6f9d4667015a210c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "37d7b831_f1d9dd29",
         "filename": "src/http/utils.cpp",
         "patchSetId": 2
@@ -31,6 +49,30 @@
       "writtenOn": "2023-08-23T16:51:29Z",
       "side": 1,
       "message": "nit: I think that this allows `*/something` which is not allowed by https://datatracker.ietf.org/doc/html/rfc9110#section-12.5.1 . Just in case you want to make this nifty :).",
+      "range": {
+        "startLine": 60,
+        "startChar": 0,
+        "endLine": 62,
+        "endChar": 108
+      },
+      "revId": "441d8e8bd6032915e9145fed6f9d4667015a210c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "da4c1136_afad9da4",
+        "filename": "src/http/utils.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-31T07:03:19Z",
+      "side": 1,
+      "message": "The parser should not allow that now.",
+      "parentUuid": "37d7b831_f1d9dd29",
       "range": {
         "startLine": 60,
         "startChar": 0,
@@ -64,6 +106,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "b80b0bca_4e7f569b",
+        "filename": "src/http/utils.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-31T07:03:19Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0a25d1d9_77b419c1",
+      "range": {
+        "startLine": 65,
+        "startChar": 93,
+        "endLine": 65,
+        "endChar": 157
+      },
+      "revId": "441d8e8bd6032915e9145fed6f9d4667015a210c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "26c07332_8796484b",
@@ -87,6 +153,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "46fbb128_30175adf",
+        "filename": "src/http/utils.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-31T07:03:19Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "26c07332_8796484b",
+      "range": {
+        "startLine": 79,
+        "startChar": 0,
+        "endLine": 82,
+        "endChar": 7
+      },
+      "revId": "441d8e8bd6032915e9145fed6f9d4667015a210c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "b78d585b_494d8a36",
@@ -100,6 +190,24 @@
       "writtenOn": "2023-08-23T16:51:29Z",
       "side": 1,
       "message": "please also test for case insensitivity as per https://datatracker.ietf.org/doc/html/rfc7231#section-3.1.1.1",
+      "revId": "441d8e8bd6032915e9145fed6f9d4667015a210c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "912532bd_9afe0592",
+        "filename": "tests/http-utils.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-08-31T07:03:19Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b78d585b_494d8a36",
       "revId": "441d8e8bd6032915e9145fed6f9d4667015a210c",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
