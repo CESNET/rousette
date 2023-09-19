@@ -54,6 +54,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "19dbd1ab_8f1bedd7",
+        "filename": "src/http/utils.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-09-19T23:48:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e0dc5000_81346a0a",
+      "revId": "441d8e8bd6032915e9145fed6f9d4667015a210c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "37d7b831_f1d9dd29",
