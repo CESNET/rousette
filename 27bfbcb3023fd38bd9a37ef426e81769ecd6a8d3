@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "b51d38a9_2af6ec33",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-09-25T15:15:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "06aad206_e9a2e532",
+      "revId": "27bfbcb3023fd38bd9a37ef426e81769ecd6a8d3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3d9a1fab_19de2025",
@@ -31,6 +49,24 @@
       "writtenOn": "2023-08-24T13:43:50Z",
       "side": 1,
       "message": "I see why this \"special casing\" is needed (you need a MIME type to return a properly formatted error message), but I think this is not pretty. Ideally, I would prefer a common error path where any error situation encountered during handling this request leads to an exception that\u0027s later caught and transformed into a proper error reply. I think this is also doable here; the caller of this function might simply initialize the MIME type to JSON (it\u0027s an arbitrary choice, really), call a new version of this function `void guessMimeType(const header_map\u0026 headers, /* NON CONST! */ libyang::DataType\u0026 mime)`, and if it threw, well, there\u0027s a common try/catch block.\n\nIf you do not prefer that for some reason, as a minimum please do not touch the `res`. Do not produce the error reply manually from this function, just let the error propagate and call rejectWithError(...) from the caller. I was surprised that this modifies the reply directly in any way (and I had to read the docs to find that out).",
+      "revId": "27bfbcb3023fd38bd9a37ef426e81769ecd6a8d3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ed3c438a_683c8b6d",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-09-25T15:15:04Z",
+      "side": 1,
+      "message": "I tried to avoid exceptions.\n\nIn the solution you propose I don\u0027t probably need to return void. It can just \"guess\" and return the type and throw if something fails.\nHowever, I need to somehow propagate the error from this function because it can return two HTTP status codes based on the error. I altered your proposal a bit.",
+      "parentUuid": "3d9a1fab_19de2025",
       "revId": "27bfbcb3023fd38bd9a37ef426e81769ecd6a8d3",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -58,6 +94,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2f5986e8_4b00161d",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-09-25T15:15:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cf2a59d9_04a98b96",
+      "range": {
+        "startLine": 80,
+        "startChar": 0,
+        "endLine": 81,
+        "endChar": 64
+      },
+      "revId": "27bfbcb3023fd38bd9a37ef426e81769ecd6a8d3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c66554a8_c75f5089",
@@ -71,6 +131,24 @@
       "writtenOn": "2023-08-24T13:43:50Z",
       "side": 1,
       "message": "This comment says that you\u0027re aware of the fact that the format is different, yet this code calls the same function anyway. IMHO, the comment should also very briefly explain why this is a good thing and why it still produces correct results.",
+      "revId": "27bfbcb3023fd38bd9a37ef426e81769ecd6a8d3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "19661d64_2a001dcf",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-09-25T15:15:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c66554a8_c75f5089",
       "revId": "27bfbcb3023fd38bd9a37ef426e81769ecd6a8d3",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -92,6 +170,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c82241a9_ede5a733",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-09-25T15:15:04Z",
+      "side": 1,
+      "message": "Yeah, totally forgot about these.",
+      "parentUuid": "ac3d5b80_dfc11e76",
+      "revId": "27bfbcb3023fd38bd9a37ef426e81769ecd6a8d3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "db82ab08_8748815c",
@@ -105,6 +201,30 @@
       "writtenOn": "2023-08-24T13:43:50Z",
       "side": 1,
       "message": "nit: this might be made easier (also below) by a new function:\n \nstd::optional\u003clibyang::DataFormat\u003e dataTypeFromMimeType(const std::string\u0026 mime)",
+      "range": {
+        "startLine": 101,
+        "startChar": 0,
+        "endLine": 105,
+        "endChar": 13
+      },
+      "revId": "27bfbcb3023fd38bd9a37ef426e81769ecd6a8d3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "fe5600e5_d187b2e9",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-09-25T15:15:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "db82ab08_8748815c",
       "range": {
         "startLine": 101,
         "startChar": 0,
@@ -151,6 +271,30 @@
       "writtenOn": "2023-08-24T13:43:50Z",
       "side": 1,
       "message": "Why is this needed? asLibyangPath() already checks that it\u0027s something that can be retrieved via GET.",
+      "range": {
+        "startLine": 218,
+        "startChar": 16,
+        "endLine": 221,
+        "endChar": 17
+      },
+      "revId": "27bfbcb3023fd38bd9a37ef426e81769ecd6a8d3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "11552d50_ae72374a",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 221,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-09-25T15:15:04Z",
+      "side": 1,
+      "message": "This looks like the abandoned patch. I think I failed in a conflict resolution somewhere",
+      "parentUuid": "4cdbd8b9_3b5c3abe",
       "range": {
         "startLine": 218,
         "startChar": 16,
