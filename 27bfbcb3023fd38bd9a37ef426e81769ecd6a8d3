@@ -71,6 +71,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "cacfeec0_ea3cc585",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-09-26T09:43:11Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "ed3c438a_683c8b6d",
+      "revId": "27bfbcb3023fd38bd9a37ef426e81769ecd6a8d3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "cf2a59d9_04a98b96",
