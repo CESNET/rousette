@@ -158,6 +158,59 @@ libyang::DataFormat chooseDataEncoding(const nghttp2::asio_http2::header_map& he
     // If there was no request input, then the default output encoding is XML or JSON, depending on server preference.
     return libyang::DataFormat::JSON;
 }
+
+bool dataExists(sysrepo::Session session, const std::string& path)
+{
+    if (auto data = session.getData(path)) {
+        if (data->findPath(path)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+struct RequestContext {
+    const nghttp2::asio_http2::server::request& req;
+    const nghttp2::asio_http2::server::response& res;
+    libyang::DataFormat dataFormat;
+    sysrepo::Session sess;
+    std::string lyPath;
+    std::string payload;
+};
+
+void processPut(std::shared_ptr<RequestContext> requestCtx)
+{
+    auto ctx = requestCtx->sess.getContext();
+    requestCtx->sess.switchDatastore(sysrepo::Datastore::Running);
+
+    bool nodeExisted = dataExists(requestCtx->sess, requestCtx->lyPath);
+    auto [parent, node] = ctx.newPath2(requestCtx->lyPath, std::nullopt);
+
+    if (node->parent()) {
+        spdlog::error(".... {} {}", node->path(), node->parent()->path());
+
+        node = node->parent();
+        node->parseSubtree(requestCtx->payload, libyang::DataFormat::JSON, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+        spdlog::error(".... {}", *node->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings));
+    } else {
+        spdlog::error(".... {}", node->path());
+        parent = node = ctx.parseData(requestCtx->payload, libyang::DataFormat::JSON, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+        spdlog::error(".... {}", *node->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings));
+    }
+
+    auto mod = ctx.getModuleImplemented("ietf-netconf");
+    node->newMeta(*mod, "operation", "replace");
+
+    requestCtx->sess.editBatch(*parent, sysrepo::DefaultOperation::Merge);
+    requestCtx->sess.applyChanges();
+
+    requestCtx->res.write_head(nodeExisted ? 204 : 201,
+                               {
+                                   {"content-type", {asMimeType(requestCtx->dataFormat), false}},
+                                   {"access-control-allow-origin", {"*", false}},
+                               });
+    requestCtx->res.end();
+}
 }
 
 Server::~Server()
@@ -183,6 +236,10 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     if (!conn.sessionStart().getContext().getModuleImplemented("ietf-restconf")) {
         throw std::runtime_error("Module ietf-restconf@2017-01-26 is not implemented in sysrepo");
     }
+
+    m_runningSub = conn.sessionStart(sysrepo::Datastore::Running).onModuleChange("example", [&](auto, auto, auto, auto, auto, auto) {
+        return sysrepo::ErrorCode::Ok;
+    });
 
     dwdmEvents->change.connect([this](const std::string& content) {
         opticsChange(as_restconf_push_update(content, std::chrono::system_clock::now()));
@@ -241,24 +298,34 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 return;
             }
 
-            if (req.method() != "GET") {
-                rejectWithError(sess.getContext(), dataFormat, req, res, 405, "application", "operation-not-supported", "Method not allowed.");
-                return;
-            }
-
             try {
                 auto lyPath = asLibyangPath(sess.getContext(), req.uri().path);
 
-                if (auto data = sess.getData(*lyPath); data) {
-                    res.write_head(
-                        200,
-                        {
-                            {"content-type", {asMimeType(dataFormat), false}},
-                            {"access-control-allow-origin", {"*", false}},
-                        });
-                    res.end(*data->printStr(dataFormat, libyang::PrintFlags::WithSiblings));
+                if (req.method() == "GET") {
+                    if (auto data = sess.getData(*lyPath); data) {
+                        res.write_head(
+                            200,
+                            {
+                                {"content-type", {asMimeType(dataFormat), false}},
+                                {"access-control-allow-origin", {"*", false}},
+                            });
+                        res.end(*data->printStr(dataFormat, libyang::PrintFlags::WithSiblings));
+                    } else {
+                        rejectWithError(sess.getContext(), dataFormat, req, res, 404, "application", "invalid-value", "No data from sysrepo.");
+                        return;
+                    }
+                } else if (req.method() == "PUT") {
+                    auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, *lyPath);
+
+                    req.on_data([requestCtx](const uint8_t* data, std::size_t length) {
+                        if (length > 0) {
+                            requestCtx->payload.append(reinterpret_cast<const char*>(data), length);
+                        } else {
+                            processPut(requestCtx);
+                        }
+                    });
                 } else {
-                    rejectWithError(sess.getContext(), dataFormat, req, res, 404, "application", "invalid-value", "No data from sysrepo.");
+                    rejectWithError(sess.getContext(), dataFormat, req, res, 405, "application", "operation-not-supported", "Method not allowed.");
                     return;
                 }
             } catch (const sysrepo::ErrorWithCode& e) {

@@ -32,6 +32,7 @@ public:
     ~Server();
 
 private:
+    std::optional<sysrepo::Subscription> m_runningSub /** Subscription for running data so they appear in operational DS as well */;
     Nacm nacm;
     std::unique_ptr<nghttp2::asio_http2::server::http2> server;
     std::unique_ptr<sr::OpticalEvents> dwdmEvents;
