@@ -36,9 +36,9 @@ TEST_CASE("reading data")
     DOCTEST_SUBCASE("unsupported methods")
     {
         // we do not support these http methods yet
-        for (const auto& httpMethod : {"OPTIONS"s, "POST"s, "PUT"s, "PATCH"s, "DELETE"s}) {
+        for (const auto& httpMethod : {"OPTIONS"s, "POST"s, "PATCH"s, "DELETE"s}) {
             CAPTURE(httpMethod);
-            REQUIRE(clientRequest(httpMethod, RESTCONF_DATA_ROOT "/ietf-system:system", {AUTH_ROOT}) == Response{405, jsonHeaders, R"({
+            REQUIRE(clientRequest(httpMethod, RESTCONF_DATA_ROOT "/ietf-system:system", "", {AUTH_ROOT}) == Response{405, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
