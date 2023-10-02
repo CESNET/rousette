@@ -114,6 +114,49 @@ Response retrieveData(auto xpath, const std::map<std::string, std::string>& head
     return {statusCode, resHeaders, oss.str()};
 }
 
+Response putData(auto xpath, const std::string& payload, const std::map<std::string, std::string>& headers = {})
+{
+    boost::asio::io_service io_service;
+    ng_client::session client(io_service, SERVER_ADDRESS, SERVER_PORT);
+    // this is a test, and the server is expected to reply "soon"
+    client.read_timeout(boost::posix_time::seconds(3));
+
+    std::ostringstream oss;
+    ng::header_map resHeaders;
+    int statusCode;
+    std::optional<std::string> clientError;
+
+    client.on_connect([&](auto) {
+        boost::system::error_code ec;
+
+        ng::header_map reqHeaders;
+        for (const auto& [name, value] : headers) {
+            reqHeaders.insert({name, {value, false}});
+        }
+
+        auto req = client.submit(ec, "PUT", SERVER_ADDRESS_AND_PORT + "/restconf/data"s + xpath, payload, reqHeaders);
+        req->on_response([&](const ng_client::response& res) {
+            res.on_data([&oss](const uint8_t* data, std::size_t len) {
+                oss.write(reinterpret_cast<const char*>(data), len);
+            });
+            statusCode = res.status_code();
+            resHeaders = res.header();
+        });
+        req->on_close([&client](auto) {
+            client.shutdown();
+        });
+    });
+    client.on_error([&clientError](const boost::system::error_code& ec) {
+        clientError = ec.message();
+    });
+    io_service.run();
+    if (clientError) {
+        FAIL("HTTP client error: ", *clientError);
+    }
+
+    return {statusCode, resHeaders, oss.str()};
+}
+
 TEST_CASE("HTTP")
 {
     spdlog::set_level(spdlog::level::trace);
@@ -121,6 +164,8 @@ TEST_CASE("HTTP")
     auto srConn = sysrepo::Connection{};
     auto srSess = srConn.sessionStart(sysrepo::Datastore::Running);
     srSess.copyConfig(sysrepo::Datastore::Startup, "ietf-netconf-acm");
+    srSess.copyConfig(sysrepo::Datastore::Startup, "example");
+    srSess.copyConfig(sysrepo::Datastore::Startup, "ietf-system");
 
     auto server = rousette::restconf::Server{srConn, SERVER_ADDRESS, SERVER_PORT};
     auto guard = make_unique_resource([] {},
@@ -146,7 +191,7 @@ TEST_CASE("HTTP")
 
 
     // something we can read
-    srSess.switchDatastore(sysrepo::Datastore::Operational);
+    srSess.switchDatastore(sysrepo::Datastore::Running);
     srSess.setItem("/ietf-system:system/contact", "contact");
     srSess.setItem("/ietf-system:system/hostname", "hostname");
     srSess.setItem("/ietf-system:system/location", "location");
@@ -154,6 +199,14 @@ TEST_CASE("HTTP")
     srSess.setItem("/ietf-system:system/radius/server[name='a']/udp/address", "1.1.1.1");
     srSess.setItem("/ietf-system:system/radius/server[name='a']/udp/shared-secret", "shared-secret");
     srSess.applyChanges();
+
+    auto sub1 = srSess.onModuleChange("ietf-system", [&](auto, auto, auto, auto, auto, auto) {
+        return sysrepo::ErrorCode::Ok;
+    });
+    auto sub2 = srSess.onModuleChange("example", [&](auto, auto, auto, auto, auto, auto) {
+        return sysrepo::ErrorCode::Ok;
+    });
+
 
     // no or empty x-remote-user header gets rejected
     REQUIRE(retrieveData("/ietf-system:system", {}) == Response{401, jsonHeaders, R"({
@@ -202,6 +255,9 @@ TEST_CASE("HTTP")
     srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='12']/action", "permit");
     srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='12']/access-operations", "read");
     srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='12']/path", "/ietf-system:system/location");
+    srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='13']/module-name", "example");
+    srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='13']/action", "permit");
+    srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='13']/access-operations", "read");
     srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='99']/module-name", "*");
     srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='99']/action", "deny");
     srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/group[.='optics']", "");
@@ -695,6 +751,250 @@ TEST_CASE("HTTP")
   <hostname>hostname</hostname>
   <location>location</location>
 </system>
+)"});
+    }
+
+    SECTION("PUT")
+    {
+        REQUIRE(putData("/ietf-system:system", R"({"ietf-system:system":{"ietf-system:location":"prague"}}")", {{"x-remote-user", "yangnobody"}, {"content-type", "application/yang-data+json"}}) == Response{403, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "access-denied",
+        "error-message": "Access denied."
+      }
+    ]
+  }
+}
+)"});
+        REQUIRE(putData("/example:top-level-leaf", R"({"example:top-level-leaf": "str"}")", {{"x-remote-user", "root"}, {"content-type", "application/yang-data+json"}}) == Response{201, jsonHeaders, ""});
+        REQUIRE(retrieveData("/example:top-level-leaf", {{"x-remote-user", "yangnobody"}, {"accept", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
+  "example:top-level-leaf": "str"
+}
+)"});
+        REQUIRE(putData("/example:top-level-leaf", R"({"example:top-level-leaf": "other-str"}")", {{"x-remote-user", "root"}, {"content-type", "application/yang-data+json"}}) == Response{204, jsonHeaders, ""});
+        REQUIRE(retrieveData("/example:top-level-leaf", {{"x-remote-user", "yangnobody"}, {"accept", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
+  "example:top-level-leaf": "other-str"
+}
+)"});
+
+        REQUIRE(putData("/example:nonsense", R"({"example:nonsense": "other-str"}")", {{"x-remote-user", "root"}, {"content-type", "application/yang-data+json"}}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-failed",
+        "error-message": "Couldn't find schema node: /example:nonsense"
+      }
+    ]
+  }
+}
+)"});
+        REQUIRE(putData("/example:top-level-leaf", R"({"example:nonsense": "other-str"}")", {{"x-remote-user", "root"}, {"content-type", "application/yang-data+json"}}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "Validation failure: Can't parse data: LY_EVALID"
+      }
+    ]
+  }
+}
+)"});
+
+        REQUIRE(putData("/example:a", R"({"example:a":{"example:b":{"example:c":{"example:enabled":true}}}}")", {{"x-remote-user", "root"}, {"content-type", "application/yang-data+json"}}) == Response{204, jsonHeaders, ""});
+        REQUIRE(putData("/example:a", R"({"example:a":{"example:b":{"example:c":{"example:enabled":"false}}}}")", {{"x-remote-user", "root"}, {"content-type", "application/yang-data+json"}}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "Validation failure: Can't parse data: LY_EVALID"
+      }
+    ]
+  }
+}
+)"});
+        REQUIRE(retrieveData("/example:a/b/c/enabled", {{"x-remote-user", "yangnobody"}, {"content-type", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
+
+}
+)"});
+
+        REQUIRE(putData("/example:a/b/c", R"({"example:enabled":false}")", {{"x-remote-user", "root"}, {"content-type", "application/yang-data+json"}}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "Validation failure: DataNode::parseSubtree: lyd_parse_data failed: LY_EVALID"
+      }
+    ]
+  }
+}
+)"});
+        REQUIRE(putData("/example:a/b/c", R"({"example:c":{"example:enabled":false}}")", {{"x-remote-user", "root"}, {"content-type", "application/yang-data+json"}}) == Response{204, jsonHeaders, ""});
+        REQUIRE(retrieveData("/example:a/b/c/enabled", {{"x-remote-user", "yangnobody"}, {"content-type", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
+  "example:a": {
+    "b": {
+      "c": {
+        "enabled": false
+      }
+    }
+  }
+}
+)"});
+
+        REQUIRE(putData("/example:a/b/c/enabled", R"({"example:enabled":true}")", {{"x-remote-user", "root"}, {"content-type", "application/yang-data+json"}}) == Response{204, jsonHeaders, ""});
+        REQUIRE(retrieveData("/example:a/b/c/enabled", {{"x-remote-user", "yangnobody"}, {"content-type", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
+  "example:a": {
+    "b": {
+      "c": {
+        "enabled": true
+      }
+    }
+  }
+}
+)"});
+
+        REQUIRE(putData("/example:a/b/c/l", R"({"example:l":"val"}")", {{"x-remote-user", "root"}, {"content-type", "application/yang-data+json"}}) == Response{201, jsonHeaders, ""});
+        REQUIRE(retrieveData("/example:a/b/c", {{"x-remote-user", "yangnobody"}, {"content-type", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
+  "example:a": {
+    "b": {
+      "c": {
+        "enabled": true,
+        "l": "val"
+      }
+    }
+  }
+}
+)"});
+
+        REQUIRE(putData("/example:a/b", R"({"example:b": {}}")", {{"x-remote-user", "root"}, {"content-type", "application/yang-data+json"}}) == Response{204, jsonHeaders, ""});
+        REQUIRE(retrieveData("/example:a/b/c", {{"x-remote-user", "yangnobody"}, {"content-type", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
+
+}
+)"});
+
+        REQUIRE(putData("/example:a/b", R"({"example:b": {"example:c": {"example:l": "ahoj"}}}")", {{"x-remote-user", "root"}, {"content-type", "application/yang-data+json"}}) == Response{204, jsonHeaders, ""});
+        REQUIRE(retrieveData("/example:a/b/c", {{"x-remote-user", "yangnobody"}, {"content-type", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
+  "example:a": {
+    "b": {
+      "c": {
+        "l": "ahoj"
+      }
+    }
+  }
+}
+)"});
+
+        REQUIRE(putData("/example:a/b/c/enabled", R"({"example:enabled": false}}}")", {{"x-remote-user", "root"}, {"content-type", "application/yang-data+json"}}) == Response{204, jsonHeaders, ""});
+        REQUIRE(retrieveData("/example:a/b/c", {{"x-remote-user", "yangnobody"}, {"content-type", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
+  "example:a": {
+    "b": {
+      "c": {
+        "enabled": false,
+        "l": "ahoj"
+      }
+    }
+  }
+}
+)"});
+
+        REQUIRE(putData("/example:a/b/c/enabled", R"({"example:l":"hey"}")", {{"x-remote-user", "root"}, {"content-type", "application/yang-data+json"}}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-failed",
+        "error-message": "Invalid data for PUT (Top-level node name mismatch)."
+      }
+    ]
+  }
+}
+)"});
+
+        REQUIRE(putData("/example:a/example-augment:b", R"({"example:b": {}}")", {{"x-remote-user", "root"}, {"content-type", "application/yang-data+json"}}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-failed",
+        "error-message": "Invalid data for PUT (Top-level node name mismatch)."
+      }
+    ]
+  }
+}
+)"});
+
+        REQUIRE(putData("/example:a/example-augment:b", R"({"example-augment:b": { "example-augment:c" : {"example-augment:enabled" : false}}}")", {{"x-remote-user", "root"}, {"content-type", "application/yang-data+json"}}) == Response{204, jsonHeaders, ""});
+        REQUIRE(retrieveData("/example:a", {{"x-remote-user", "yangnobody"}, {"content-type", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
+  "example:a": {
+    "b": {
+      "c": {
+        "enabled": false,
+        "l": "ahoj"
+      }
+    },
+    "example-augment:b": {
+      "c": {
+        "enabled": false
+      }
+    }
+  }
+}
+)"});
+
+        REQUIRE(putData("/example:a/example-augment:b", R"({"example-augment:b": { "example-augment:c" : {"example-augment:enabled" : false}}}")", {{"x-remote-user", "root"}}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Content-type header missing."
+      }
+    ]
+  }
+}
+)"});
+
+        REQUIRE(retrieveData("/example:a", {{"x-remote-user", "yangnobody"}, {"content-type", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
+  "example:a": {
+    "b": {
+      "c": {
+        "enabled": false,
+        "l": "ahoj"
+      }
+    },
+    "example-augment:b": {
+      "c": {
+        "enabled": false
+      }
+    }
+  }
+}
+)"});
+
+        REQUIRE(putData("/example:a/b", R"({"example:b": {"example:c": {"example:l": "ahoj"}}}")", {{"x-remote-user", "root"}, {"content-type", "application/yang-data+xml"}}) == Response{400, xmlHeaders, R"(<errors xmlns="urn:ietf:params:xml:ns:yang:ietf-restconf">
+  <error>
+    <error-type>application</error-type>
+    <error-tag>invalid-value</error-tag>
+    <error-message>Validation failure: DataNode::parseSubtree: lyd_parse_data failed: LY_EVALID</error-message>
+  </error>
+</errors>
+)"});
+
+        REQUIRE(putData("/example:a/b", R"(<b xmlns="http://example.tld/example"><c><l>libyang is love</l></c></b>)", {{"x-remote-user", "root"}, {"content-type", "application/yang-data+xml"}}) == Response{204, xmlHeaders, ""});
+        REQUIRE(retrieveData("/example:a/b", {{"x-remote-user", "yangnobody"}, {"content-type", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
+  "example:a": {
+    "b": {
+      "c": {
+        "l": "libyang is love"
+      }
+    }
+  }
+}
 )"});
     }
 }

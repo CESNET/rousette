@@ -62,6 +62,9 @@ module example {
           type boolean;
           default true;
         }
+        leaf l {
+          type string;
+        }
       }
     }
   }
