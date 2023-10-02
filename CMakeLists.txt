@@ -206,7 +206,8 @@ if(BUILD_TESTING)
     set(fixture-http
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/ietf-system@2014-08-06.yang FEATURE radius
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang FEATURE f1)
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang FEATURE f1
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-augment.yang)
     rousette_test(NAME http-communication LIBRARIES rousette-restconf FIXTURE fixture-http)
     wrap_test_pam(http-communication)
 
