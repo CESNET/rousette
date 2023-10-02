@@ -227,6 +227,7 @@ TEST_CASE("NACM")
             const auto start = std::chrono::steady_clock::now();
             REQUIRE(clientRequest("GET",
                         RESTCONF_DATA_ROOT "/ietf-system:system",
+                        "",
                         {{"authorization", "Basic ZHdkbTpGQUlM"}},
                         boost::posix_time::seconds(5))
                     == Response{401, jsonHeaders, R"({
@@ -252,6 +253,7 @@ TEST_CASE("NACM")
             const auto start = std::chrono::steady_clock::now();
             REQUIRE_THROWS_WITH(clientRequest("GET",
                         RESTCONF_DATA_ROOT "/ietf-system:system",
+                        "",
                         {{"authorization", "Basic ZHdkbTpGQUlM"}},
                         boost::posix_time::milliseconds(100)),
                     "HTTP client error: Connection timed out");
