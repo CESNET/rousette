@@ -241,24 +241,47 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 return;
             }
 
-            if (req.method() != "GET") {
-                rejectWithError(sess.getContext(), dataFormat, req, res, 405, "application", "operation-not-supported", "Method not allowed.");
-                return;
-            }
-
             try {
                 auto lyPath = asLibyangPath(sess.getContext(), req.uri().path);
 
-                if (auto data = sess.getData(*lyPath); data) {
-                    res.write_head(
-                        200,
-                        {
-                            {"content-type", {asMimeType(dataFormat), false}},
-                            {"access-control-allow-origin", {"*", false}},
-                        });
-                    res.end(*data->printStr(dataFormat, libyang::PrintFlags::WithSiblings));
+                if (req.method() == "GET") {
+                    if (auto data = sess.getData(*lyPath); data) {
+                        res.write_head(
+                            200,
+                            {
+                                {"content-type", {asMimeType(dataFormat), false}},
+                                {"access-control-allow-origin", {"*", false}},
+                            });
+                        res.end(*data->printStr(dataFormat, libyang::PrintFlags::WithSiblings));
+                    } else {
+                        rejectWithError(sess.getContext(), dataFormat, req, res, 404, "application", "invalid-value", "No data from sysrepo.");
+                        return;
+                    }
+                } else if (req.method() == "PUT") {
+                    struct RequestData {
+                        const nghttp2::asio_http2::server::request& req;
+                        const nghttp2::asio_http2::server::response& res;
+                        libyang::DataFormat dataFormat;
+                        sysrepo::Session sess;
+                        std::string payload;
+                    };
+                    auto serverData = std::make_shared<RequestData>(req, res, dataFormat, sess);
+
+                    req.on_data([serverData](const uint8_t* data, std::size_t length) {
+                        if (length > 0) {
+                            serverData->payload.append(reinterpret_cast<const char*>(data), length);
+                        } else {
+                            serverData->res.write_head(
+                                200,
+                                {
+                                    {"content-type", {asMimeType(serverData->dataFormat), false}},
+                                    {"access-control-allow-origin", {"*", false}},
+                                });
+                            serverData->res.end(serverData->payload);
+                        }
+                    });
                 } else {
-                    rejectWithError(sess.getContext(), dataFormat, req, res, 404, "application", "invalid-value", "No data from sysrepo.");
+                    rejectWithError(sess.getContext(), dataFormat, req, res, 405, "application", "operation-not-supported", "Method not allowed.");
                     return;
                 }
             } catch (const sysrepo::ErrorWithCode& e) {
