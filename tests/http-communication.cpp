@@ -114,6 +114,49 @@ Response retrieveData(auto xpath, const std::map<std::string, std::string>& head
     return {statusCode, resHeaders, oss.str()};
 }
 
+Response putData(auto xpath, const std::string& payload, const std::map<std::string, std::string>& headers = {})
+{
+    boost::asio::io_service io_service;
+    ng_client::session client(io_service, SERVER_ADDRESS, SERVER_PORT);
+    // this is a test, and the server is expected to reply "soon"
+    client.read_timeout(boost::posix_time::seconds(3));
+
+    std::ostringstream oss;
+    ng::header_map resHeaders;
+    int statusCode;
+    std::optional<std::string> clientError;
+
+    client.on_connect([&](auto) {
+        boost::system::error_code ec;
+
+        ng::header_map reqHeaders;
+        for (const auto& [name, value] : headers) {
+            reqHeaders.insert({name, {value, false}});
+        }
+
+        auto req = client.submit(ec, "PUT", SERVER_ADDRESS_AND_PORT + "/restconf/data"s + xpath, payload, reqHeaders);
+        req->on_response([&](const ng_client::response& res) {
+            res.on_data([&oss](const uint8_t* data, std::size_t len) {
+                oss.write(reinterpret_cast<const char*>(data), len);
+            });
+            statusCode = res.status_code();
+            resHeaders = res.header();
+        });
+        req->on_close([&client](auto) {
+            client.shutdown();
+        });
+    });
+    client.on_error([&clientError](const boost::system::error_code& ec) {
+        clientError = ec.message();
+    });
+    io_service.run();
+    if (clientError) {
+        FAIL("HTTP client error: ", *clientError);
+    }
+
+    return {statusCode, resHeaders, oss.str()};
+}
+
 TEST_CASE("HTTP")
 {
     spdlog::set_level(spdlog::level::trace);
@@ -696,5 +739,7 @@ TEST_CASE("HTTP")
   <location>location</location>
 </system>
 )"});
+
+        REQUIRE(putData("/ietf-system:system", R"({"ietf-system:system":{"ietf-system:location":"prague"}}")", {{"x-remote-user", "yangnobody"}, {"content-type", "application/yang-data+json"}}) == Response{201, jsonHeaders, ""});
     }
 }
