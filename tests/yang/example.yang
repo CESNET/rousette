@@ -11,6 +11,7 @@ module example {
     key "name";
     leaf name { type string; }
   }
+  leaf-list top-level-leaf-list { type int32; }
 
   container tlc {
     if-feature f1;
@@ -62,8 +63,16 @@ module example {
           type boolean;
           default true;
         }
+        leaf blower {
+          type string;
+        }
       }
     }
+  }
+
+  container two-leafs {
+    leaf a { type string; }
+    leaf b { type string; }
   }
 
   rpc test-rpc {

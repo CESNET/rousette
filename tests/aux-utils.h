@@ -95,6 +95,7 @@ const ng::header_map xmlHeaders{
 
 Response clientRequest(auto method,
         auto uri,
+        const std::string& data,
         const std::map<std::string, std::string>& headers,
         // this is a test, and the server is expected to reply "soon"
         const boost::posix_time::time_duration timeout=boost::posix_time::seconds(3))
@@ -117,7 +118,7 @@ Response clientRequest(auto method,
             reqHeaders.insert({name, {value, false}});
         }
 
-        auto req = client.submit(ec, method, SERVER_ADDRESS_AND_PORT + uri, reqHeaders);
+        auto req = client.submit(ec, method, SERVER_ADDRESS_AND_PORT + uri, data, reqHeaders);
         req->on_response([&](const ng_client::response& res) {
             res.on_data([&oss](const uint8_t* data, std::size_t len) {
                 oss.write(reinterpret_cast<const char*>(data), len);
@@ -143,7 +144,12 @@ Response clientRequest(auto method,
 
 Response get(auto uri, const std::map<std::string, std::string>& headers)
 {
-    return clientRequest("GET", uri, headers);
+    return clientRequest("GET", uri, "", headers);
+}
+
+Response put(auto xpath, const std::string& data, const std::map<std::string, std::string>& headers)
+{
+    return clientRequest("PUT", xpath, data, headers);
 }
 
 auto manageNacm(sysrepo::Session session)
