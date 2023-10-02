@@ -53,6 +53,16 @@ std::string asMimeType(libyang::DataFormat dataFormat)
     }
 }
 
+bool isSameNode(const libyang::DataNode& child, const PathSegment& lastPathSegment)
+{
+    return child.schema().module().name() == *lastPathSegment.apiIdent.prefix && child.schema().name() == lastPathSegment.apiIdent.identifier;
+}
+
+bool isSameNode(const libyang::DataNode& a, const libyang::SchemaNode& b)
+{
+    return a.schema() == b;
+}
+
 enum class MimeTypeWildcards { ALLOWED, FORBIDDEN };
 
 bool mimeMatch(const std::string& providedMime, const std::string& applicationMime, MimeTypeWildcards wildcards)
@@ -175,6 +185,153 @@ DataFormat chooseDataEncoding(const nghttp2::asio_http2::header_map& headers)
     // If there was no request input, then the default output encoding is XML or JSON, depending on server preference.
     return {resContentType, resAccept ? *resAccept : libyang::DataFormat::JSON};
 }
+
+bool dataExists(sysrepo::Session session, const std::string& path)
+{
+    if (auto data = session.getData(path)) {
+        if (data->findPath(path)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/** @brief Checks if node is a key node in a maybeList node list */
+bool isKeyNode(const auto& maybeList, const auto& node)
+{
+    if (maybeList.schema().nodeType() == libyang::NodeType::List) {
+        auto listKeys = maybeList.schema().asList().keys();
+        auto it = std::find_if(listKeys.begin(), listKeys.end(), [&node](const auto& key) {
+            return isSameNode(node, key);
+        });
+        return it != listKeys.end();
+    }
+    return false;
+}
+
+/** @brief Returns position of a key named keyName in a list
+ *
+ * In RESTCONF we obtain keys in URI without name, they are ordered by position.
+ */
+size_t getKeyPosition(const libyang::DataNode& lst, const std::string_view& keyName)
+{
+    if (lst.schema().nodeType() != libyang::NodeType::List) {
+        throw std::runtime_error("Can't get key index in not a list");
+    }
+    auto keys = lst.schema().asList().keys();
+    if (auto it = std::find_if(keys.begin(), keys.end(), [&keyName](const auto& keyNode) { return keyNode.name() == keyName; }); it != keys.end()) {
+        return std::distance(keys.begin(), it);
+    }
+    throw std::out_of_range("List does does not have a key with name " + std::string(keyName));
+}
+
+/** @brief In case node is a (leaf-)list check if the key values are the same as the keys specified in the lastPathSegment.
+ * @return The node where the mismatch occurs */
+std::optional<libyang::DataNode> checkKeysMismatch(const libyang::DataNode& node, const PathSegment& lastPathSegment)
+{
+    if (node.schema().nodeType() == libyang::NodeType::List) {
+        for (const auto& listChild : node.immediateChildren()) {
+            if (isKeyNode(node, listChild)) {
+                if (auto keyValue = lastPathSegment.keys[getKeyPosition(node, listChild.schema().name())]; keyValue != listChild.asTerm().valueStr()) {
+                    return listChild;
+                }
+            }
+        }
+    } else if (node.schema().nodeType() == libyang::NodeType::Leaflist) {
+        if (auto keyValue = lastPathSegment.keys[0]; keyValue != node.asTerm().valueStr()) {
+            return node;
+        }
+    }
+    return std::nullopt;
+}
+
+
+struct RequestContext {
+    const nghttp2::asio_http2::server::request& req;
+    const nghttp2::asio_http2::server::response& res;
+    DataFormat dataFormat;
+    sysrepo::Session sess;
+    std::string lyPathOriginal;
+    std::string payload;
+};
+
+void processPut(std::shared_ptr<RequestContext> requestCtx)
+{
+    try {
+        auto [lyPathParent, lastPathSegment] = asLibyangPathSplit(requestCtx->sess.getContext(), requestCtx->req.uri().path);
+
+        auto ctx = requestCtx->sess.getContext();
+        requestCtx->sess.switchDatastore(sysrepo::Datastore::Running);
+
+        auto mod = ctx.getModuleImplemented("ietf-netconf");
+        bool nodeExisted = dataExists(requestCtx->sess, requestCtx->lyPathOriginal);
+        std::optional<libyang::DataNode> edit;
+        std::optional<libyang::DataNode> replacementNode;
+
+        if (!lyPathParent.empty()) {
+            auto [parent, node] = ctx.newPath2(lyPathParent, std::nullopt);
+            node->parseSubtree(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+
+            for (const auto& child : node->immediateChildren()) {
+                /* everything that is under node is either
+                 *  - a list key that was created by newPath2 call
+                 *  - a single child that is created by parseSubtree with the name of lastPathSegment (which can be a list)
+                 * anything else is an error (either too many children provided or invalid name)
+                 */
+                if (isSameNode(child, lastPathSegment)) {
+                    if (auto offendingNode = checkKeysMismatch(child, lastPathSegment)) {
+                        throw ErrorResponse(400, "application", "operation-failed", "Invalid data for PUT (list key mismatch between URI path and data).", offendingNode->path());
+                    }
+                    replacementNode = child;
+                } else if (!isKeyNode(*node, child)) {
+                    throw ErrorResponse(400, "application", "operation-failed", "Invalid data for PUT (data contains invalid node).", child.path());
+                }
+            }
+
+            edit = parent;
+        } else {
+            auto parent = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+            edit = parent;
+            replacementNode = parent;
+
+            if (!isSameNode(*replacementNode, lastPathSegment)) {
+                throw ErrorResponse(400, "application", "operation-failed", "Invalid data for PUT (data contains invalid node).", replacementNode->path());
+            }
+            if (auto offendingNode = checkKeysMismatch(*parent, lastPathSegment)) {
+                throw ErrorResponse(400, "application", "operation-failed", "Invalid data for PUT (list key mismatch between URI path and data).", offendingNode->path());
+            }
+        }
+
+        replacementNode->newMeta(*mod, "operation", "replace"); // FIXME: check no other nc:operations in the tree
+
+        requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
+        requestCtx->sess.applyChanges();
+
+        requestCtx->res.write_head(nodeExisted ? 204 : 201,
+                                   {
+                                       {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
+                                       {"access-control-allow-origin", {"*", false}},
+                                   });
+        requestCtx->res.end();
+    } catch (const ErrorResponse& e) {
+        rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath);
+    } catch (libyang::ErrorWithCode& e) {
+        if (e.code() == libyang::ErrorCode::ValidationFailure) {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "application", "invalid-value", "Validation failure: "s + e.what());
+        } else {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to libyang exception: "s + e.what());
+        }
+    } catch (sysrepo::ErrorWithCode& e) {
+        if (e.code() == sysrepo::ErrorCode::Unauthorized) {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 403, "application", "access-denied", "Access denied.");
+        } else {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception: "s + e.what());
+        }
+    } catch (const InvalidURIException& e) {
+        spdlog::error("URI parser exception: {}", e.what());
+        rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "operation-not-supported", "Invalid URI for PUT request");
+    }
+}
 }
 
 Server::~Server()
@@ -197,8 +354,10 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
-    if (!conn.sessionStart().getContext().getModuleImplemented("ietf-restconf")) {
-        throw std::runtime_error("Module ietf-restconf@2017-01-26 is not implemented in sysrepo");
+    for (const auto& [module, version] : {std::pair<std::string, std::string>{"ietf-restconf", "2017-01-26"}, {"ietf-netconf", ""}}) {
+        if (!conn.sessionStart().getContext().getModuleImplemented(module)) {
+            throw std::runtime_error("Module "s + module + "@" + version + " is not implemented in sysrepo");
+        }
     }
 
     dwdmEvents->change.connect([this](const std::string& content) {
@@ -254,22 +413,35 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     throw ErrorResponse(401, "protocol", "access-denied", "Access denied.");
                 }
 
-                if (req.method() != "GET") {
-                    throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
-                }
-
                 auto lyPath = asLibyangPath(sess.getContext(), req.uri().path);
 
-                if (auto data = sess.getData(lyPath); data) {
-                    res.write_head(
-                        200,
-                        {
-                            {"content-type", {asMimeType(dataFormat.response), false}},
-                            {"access-control-allow-origin", {"*", false}},
-                        });
-                    res.end(*data->printStr(dataFormat.response, libyang::PrintFlags::WithSiblings));
+                if (req.method() == "GET") {
+                    if (auto data = sess.getData(lyPath); data) {
+                        res.write_head(
+                            200,
+                            {
+                                {"content-type", {asMimeType(dataFormat.response), false}},
+                                {"access-control-allow-origin", {"*", false}},
+                            });
+                        res.end(*data->printStr(dataFormat.response, libyang::PrintFlags::WithSiblings));
+                    } else {
+                        throw ErrorResponse(404, "application", "invalid-value", "No data from sysrepo.");
+                    }
+                } else if (req.method() == "PUT") {
+                    if (!dataFormat.request) {
+                        throw ErrorResponse(400, "protocol", "invalid-value", "Content-type header missing.");
+                    }
+                    auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, lyPath);
+
+                    req.on_data([requestCtx](const uint8_t* data, std::size_t length) {
+                        if (length > 0) {
+                            requestCtx->payload.append(reinterpret_cast<const char*>(data), length);
+                        } else {
+                            processPut(requestCtx);
+                        }
+                    });
                 } else {
-                    throw ErrorResponse(404, "application", "invalid-value", "No data from sysrepo.");
+                    throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
                 }
             } catch (const auth::Error& e) {
                 if (e.delay) {
