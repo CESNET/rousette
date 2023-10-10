@@ -161,9 +161,9 @@ bool isValidDataResource(libyang::SchemaNode node)
  * @throws InvalidURIException When the path is contextually invalid
  * @throws InvalidURIException When URI cannot be parsed
  * @throws InvalidURIException When unable to properly escape YANG list key value (i.e., the list value contains both single and double quotes).
- * @return libyang path as a string or std::nullopt when the path has wrong format or contextually wrong (nonexistent leafs, wrong list keys, etc.).
+ * @return libyang path as a string
  */
-std::optional<std::string> asLibyangPath(const libyang::Context& ctx, const std::string& uriPath)
+std::string asLibyangPath(const libyang::Context& ctx, const std::string& uriPath)
 {
     std::optional<libyang::SchemaNode> currentNode;
     std::string res;

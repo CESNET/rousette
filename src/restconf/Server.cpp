@@ -249,7 +249,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             try {
                 auto lyPath = asLibyangPath(sess.getContext(), req.uri().path);
 
-                if (auto data = sess.getData(*lyPath); data) {
+                if (auto data = sess.getData(lyPath); data) {
                     res.write_head(
                         200,
                         {

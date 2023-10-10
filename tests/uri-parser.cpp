@@ -264,7 +264,7 @@ TEST_CASE("URI path parser")
         SECTION("Contextually valid paths")
         {
             for (const auto& [uriPath, expectedLyPath] : {
-                     std::pair<std::string, std::optional<std::string>>{"/restconf/data/example:top-level-leaf", "/example:top-level-leaf"},
+                     std::pair<std::string, std::string>{"/restconf/data/example:top-level-leaf", "/example:top-level-leaf"},
                      {"/restconf/data/example:top-level-list=hello", "/example:top-level-list[name='hello']"},
                      {"/restconf/data/example:l/list=eth0", "/example:l/list[name='eth0']"},
                      {R"(/restconf/data/example:l/list=et"h0)", R"(/example:l/list[name='et"h0'])"},

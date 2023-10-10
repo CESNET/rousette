@@ -14,7 +14,7 @@ class Context;
 }
 
 namespace rousette::restconf {
-std::optional<std::string> asLibyangPath(const libyang::Context& ctx, const std::string& uriPath);
+std::string asLibyangPath(const libyang::Context& ctx, const std::string& uriPath);
 
 class InvalidURIException : public std::invalid_argument {
 public:
