@@ -12,7 +12,7 @@
 #include "restconf/uri.h"
 #include "restconf/uri_impl.h"
 
-namespace rousette::restconf::impl {
+namespace rousette::restconf {
 
 std::ostream& operator<<(std::ostream& os, const ApiIdentifier& obj)
 {
@@ -37,6 +37,15 @@ std::ostream& operator<<(std::ostream& os, const PathSegment& obj)
     return os << "]}";
 }
 
+std::ostream& operator<<(std::ostream& os, const std::vector<PathSegment>& v)
+{
+    os << "[";
+    std::copy(v.begin(), v.end(), std::experimental::make_ostream_joiner(os, ", "));
+    return os << "]";
+}
+}
+
+namespace rousette::restconf::impl {
 std::ostream& operator<<(std::ostream& os, const ResourcePath& obj)
 {
     os << "[";
@@ -81,7 +90,8 @@ struct StringMaker<std::optional<rousette::restconf::impl::ResourcePath>> {
 
 TEST_CASE("URI path parser")
 {
-    using rousette::restconf::impl::PathSegment;
+    using rousette::restconf::ApiIdentifier;
+    using rousette::restconf::PathSegment;
     using rousette::restconf::impl::ResourcePath;
 
     SECTION("Valid paths")
@@ -290,6 +300,19 @@ TEST_CASE("URI path parser")
                 CAPTURE(uriPath);
                 REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
                 REQUIRE(rousette::restconf::asLibyangPath(sess.getContext(), uriPath) == expectedLyPath);
+            }
+
+            for (const auto& [uriPath, expectedLyPathParent, expectedLastSegment] : {
+                     std::tuple<std::string, std::string, PathSegment>{"/restconf/data/example:top-level-leaf", "", PathSegment({"example", "top-level-leaf"})},
+                     {"/restconf/data/example:top-level-list=hello", "", PathSegment({"example", "top-level-list"}, {"hello"})},
+                     {"/restconf/data/example:l/list=eth0/collection=1", "/example:l/list[name='eth0']", PathSegment({"example", "collection"}, {"1"})},
+                     {"/restconf/data/example:l/status", "/example:l", PathSegment({"example", "status"})},
+                     {"/restconf/data/example:a/example-augment:b/c", "/example:a/example-augment:b", PathSegment({"example-augment", "c"})},
+                 }) {
+                CAPTURE(uriPath);
+                auto [lyPathParent, lastSegment] = rousette::restconf::asLibyangPathSplit(sess.getContext(), uriPath);
+                REQUIRE(lyPathParent == expectedLyPathParent);
+                REQUIRE(lastSegment == expectedLastSegment);
             }
         }
 
