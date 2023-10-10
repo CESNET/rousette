@@ -49,6 +49,12 @@ std::optional<ResourcePath> parseUriPath(const std::string& uriPath)
     return out;
 }
 
+ResourcePath::ResourcePath(const std::vector<PathSegment>& segments)
+    : segments(segments)
+{
+}
+}
+
 ApiIdentifier::ApiIdentifier() = default;
 
 ApiIdentifier::ApiIdentifier(const std::string& prefix, const std::string& identifier)
@@ -71,14 +77,8 @@ PathSegment::PathSegment(const ApiIdentifier& apiIdent, const std::vector<std::s
 {
 }
 
-ResourcePath::ResourcePath(const std::vector<PathSegment>& segments)
-    : segments(segments)
-{
-}
-}
-
 namespace {
-std::optional<libyang::SchemaNode> findChildSchemaNode(libyang::SchemaNode node, const impl::ApiIdentifier& childIdentifier)
+std::optional<libyang::SchemaNode> findChildSchemaNode(libyang::SchemaNode node, const ApiIdentifier& childIdentifier)
 {
     for (const auto& child : node.childInstantiables()) {
         if (child.name() == childIdentifier.identifier) {
@@ -128,7 +128,7 @@ std::string escapeListKey(const std::string& str)
     }
 }
 
-std::string apiIdentName(const impl::ApiIdentifier& apiIdent)
+std::string apiIdentName(const ApiIdentifier& apiIdent)
 {
     if (!apiIdent.prefix) {
         return apiIdent.identifier;
@@ -154,26 +154,13 @@ bool isValidDataResource(libyang::SchemaNode node)
         return false;
     }
 }
-}
 
-/** @brief Transforms URI path (i.e., data resource identifier) into a path that is understood by libyang
- *
- * @throws InvalidURIException When the path is contextually invalid
- * @throws InvalidURIException When URI cannot be parsed
- * @throws InvalidURIException When unable to properly escape YANG list key value (i.e., the list value contains both single and double quotes).
- * @return libyang path as a string
- */
-std::string asLibyangPath(const libyang::Context& ctx, const std::string& uriPath)
+std::string pathSegmentsToLibyangPath(const libyang::Context& ctx, const std::vector<PathSegment>::const_iterator& begin, const std::vector<PathSegment>::const_iterator& end)
 {
     std::optional<libyang::SchemaNode> currentNode;
     std::string res;
 
-    auto resourcePath = impl::parseUriPath(uriPath);
-    if (!resourcePath) {
-        throw InvalidURIException("Syntax error");
-    }
-
-    for (auto it = resourcePath->segments.begin(); it != resourcePath->segments.end(); ++it) {
+    for (auto it = begin; it != end; ++it) {
         if (auto prevNode = currentNode) {
             if (!(currentNode = findChildSchemaNode(*currentNode, it->apiIdent))) {
                 throw InvalidURIException("Node '" + apiIdentName(it->apiIdent) + "' is not a child of '" + prevNode->path() + "'");
@@ -216,7 +203,54 @@ std::string asLibyangPath(const libyang::Context& ctx, const std::string& uriPat
             throw InvalidURIException("'"s + currentNode->path() + "' is not a data resource");
         }
     }
-
     return res;
 }
+}
+
+/** @brief Transforms URI path (i.e., data resource identifier) into a path that is understood by libyang
+ *
+ * @throws InvalidURIException When the path is contextually invalid
+ * @throws InvalidURIException When URI cannot be parsed
+ * @throws InvalidURIException When unable to properly escape YANG list key value (i.e., the list value contains both single and double quotes).
+ * @return libyang path as a string
+ */
+std::string asLibyangPath(const libyang::Context& ctx, const std::string& uriPath)
+{
+    auto resourcePath = impl::parseUriPath(uriPath);
+    if (!resourcePath) {
+        throw InvalidURIException("Syntax error");
+    }
+    return pathSegmentsToLibyangPath(ctx, resourcePath->segments.begin(), resourcePath->segments.end());
+}
+
+/** @brief Transforms URI path (i.e., data resource identifier) into a path that is understood by libyang and
+ * returns a path to the parent node (or empty if this path was a root node) and ApiIdentifier describing the last path segment.
+ * This is useful for the PUT method where we have to start editing the tree in the parent node.
+ *
+ * @throws InvalidURIException When the path is contextually invalid
+ * @throws InvalidURIException When URI cannot be parsed
+ * @throws InvalidURIException When unable to properly escape YANG list key value (i.e., the list value contains both single and double quotes).
+ * @return libyang path to the parent as a string and an PathSegment instance describing the last path segment node
+ */
+std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath)
+{
+    auto resourcePath = impl::parseUriPath(uriPath);
+    if (!resourcePath) {
+        throw InvalidURIException("Syntax error");
+    }
+
+
+    auto lastSegment = resourcePath->segments.back();
+    auto parentPath = pathSegmentsToLibyangPath(ctx, resourcePath->segments.begin(), resourcePath->segments.end() - 1);
+
+    // we know that the path is valid so we can get last segment module from ly
+    if (!lastSegment.apiIdent.prefix) {
+        auto fullPath = pathSegmentsToLibyangPath(ctx, resourcePath->segments.begin(), resourcePath->segments.end());
+        auto lastNode = ctx.findPath(fullPath);
+        lastSegment.apiIdent.prefix = std::string(lastNode.module().name());
+    }
+
+    return {parentPath, lastSegment};
+}
+
 }
