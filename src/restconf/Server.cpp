@@ -123,10 +123,15 @@ std::optional<std::string> getHeaderValue(const nghttp2::asio_http2::header_map&
     return it->second.value;
 }
 
-/** @brief Chooses data response data format w.r.t. accept/content-type http header.
+struct DataFormat {
+    std::optional<libyang::DataFormat> request; // request encoding is not always needed (e.g. GET)
+    libyang::DataFormat response;
+};
+
+/** @brief Chooses request and response data format w.r.t. accept/content-type http headers.
  * @throws ErrorResponse if invalid accept/content-type header found
  */
-libyang::DataFormat chooseDataEncoding(const nghttp2::asio_http2::header_map& headers)
+DataFormat chooseDataEncoding(const nghttp2::asio_http2::header_map& headers)
 {
     std::vector<std::string> acceptTypes;
     std::optional<std::string> contentType;
@@ -145,28 +150,38 @@ libyang::DataFormat chooseDataEncoding(const nghttp2::asio_http2::header_map& he
         }
     }
 
+    std::optional<libyang::DataFormat> resAccept;
+    std::optional<libyang::DataFormat> resContentType;
+
     if (!acceptTypes.empty()) {
         for (const auto& mediaType : acceptTypes) {
             if (auto type = dataTypeFromMimeType(mediaType, MimeTypeWildcards::ALLOWED)) {
-                return *type;
+                resAccept = *type;
+                break;
             }
         }
 
-        throw ErrorResponse(406, "application", "operation-not-supported", "No requested format supported");
+        if (!resAccept) {
+            throw ErrorResponse(406, "application", "operation-not-supported", "No requested format supported");
+        }
     }
 
     // If it (the types in the accept header) is not specified, the request input encoding format SHOULD be used, or the server MAY choose any supported content encoding format
     if (contentType) {
         if (auto type = dataTypeFromMimeType(*contentType, MimeTypeWildcards::FORBIDDEN)) {
-            return *type;
+            resContentType = *type;
         } else {
             // If the server does not support the requested input encoding for a request, then it MUST return an error response with a "415 Unsupported Media Type" status-line.
             throw ErrorResponse(415, "application", "operation-not-supported", "content-type format value not supported");
         }
     }
 
+    if (!resAccept) {
+        resAccept = resContentType;
+    }
+
     // If there was no request input, then the default output encoding is XML or JSON, depending on server preference.
-    return libyang::DataFormat::JSON;
+    return {resContentType, resAccept ? *resAccept : libyang::DataFormat::JSON};
 }
 }
 
@@ -229,7 +244,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
 
             auto sess = conn.sessionStart(sysrepo::Datastore::Operational);
-            libyang::DataFormat dataFormat;
+            DataFormat dataFormat;
 
             try {
                 dataFormat = chooseDataEncoding(req.header());
@@ -242,17 +257,17 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             if (auto userHeader = getHeaderValue(req.header(), "x-remote-user"); userHeader && !userHeader->empty()) {
                 nacmUser = *userHeader;
             } else {
-                rejectWithError(sess.getContext(), dataFormat, req, res, 401, "protocol", "access-denied", "HTTP header x-remote-user not found or empty.");
+                rejectWithError(sess.getContext(), dataFormat.response, req, res, 401, "protocol", "access-denied", "HTTP header x-remote-user not found or empty.");
                 return;
             }
 
             if (!nacm.authorize(sess, nacmUser)) {
-                rejectWithError(sess.getContext(), dataFormat, req, res, 401, "protocol", "access-denied", "Access denied.");
+                rejectWithError(sess.getContext(), dataFormat.response, req, res, 401, "protocol", "access-denied", "Access denied.");
                 return;
             }
 
             if (req.method() != "GET") {
-                rejectWithError(sess.getContext(), dataFormat, req, res, 405, "application", "operation-not-supported", "Method not allowed.");
+                rejectWithError(sess.getContext(), dataFormat.response, req, res, 405, "application", "operation-not-supported", "Method not allowed.");
                 return;
             }
 
@@ -263,20 +278,20 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     res.write_head(
                         200,
                         {
-                            {"content-type", {asMimeType(dataFormat), false}},
+                            {"content-type", {asMimeType(dataFormat.response), false}},
                             {"access-control-allow-origin", {"*", false}},
                         });
-                    res.end(*data->printStr(dataFormat, libyang::PrintFlags::WithSiblings));
+                    res.end(*data->printStr(dataFormat.response, libyang::PrintFlags::WithSiblings));
                 } else {
-                    rejectWithError(sess.getContext(), dataFormat, req, res, 404, "application", "invalid-value", "No data from sysrepo.");
+                    rejectWithError(sess.getContext(), dataFormat.response, req, res, 404, "application", "invalid-value", "No data from sysrepo.");
                     return;
                 }
             } catch (const sysrepo::ErrorWithCode& e) {
                 spdlog::error("Sysrepo exception: {}", e.what());
-                rejectWithError(sess.getContext(), dataFormat, req, res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception.");
+                rejectWithError(sess.getContext(), dataFormat.response, req, res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception.");
             } catch (const InvalidURIException& e) {
                 spdlog::error("URI parser exception: {}", e.what());
-                rejectWithError(sess.getContext(), dataFormat, req, res, 400, "application", "operation-failed", e.what());
+                rejectWithError(sess.getContext(), dataFormat.response, req, res, 400, "application", "operation-failed", e.what());
             }
         });
 
