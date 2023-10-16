@@ -1,0 +1,61 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c9922afc_04d1093c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-16T08:35:22Z",
+      "side": 1,
+      "message": "(sorry, I forgot to push \"reply\" to this one last week)",
+      "revId": "7a861c9bf00bce2026af0633bc4bf7b9e77fc531",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8c43fbe9_b78a5912",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 158,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-16T08:35:22Z",
+      "side": 1,
+      "message": "let\u0027s call this \"asLibyangPath\", overloads are OK",
+      "range": {
+        "startLine": 158,
+        "startChar": 12,
+        "endLine": 158,
+        "endChar": 37
+      },
+      "revId": "7a861c9bf00bce2026af0633bc4bf7b9e77fc531",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d12aee29_c05c70af",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-16T08:35:22Z",
+      "side": 1,
+      "message": "unrelated, and I wonder why you need this one",
+      "revId": "7a861c9bf00bce2026af0633bc4bf7b9e77fc531",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
