@@ -113,6 +113,16 @@ void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat
     res.end(*errors->printStr(dataFormat, libyang::PrintFlags::WithSiblings));
 }
 
+std::optional<std::string> getHeaderValue(const nghttp2::asio_http2::header_map& headers, const std::string& header)
+{
+    auto it = headers.find(header);
+    if (it == headers.end()) {
+        return std::nullopt;
+    }
+
+    return it->second.value;
+}
+
 /** @brief Chooses data response data format w.r.t. accept/content-type http header.
  * @throws ErrorResponse if invalid accept/content-type header found
  */
@@ -121,11 +131,11 @@ libyang::DataFormat chooseDataEncoding(const nghttp2::asio_http2::header_map& he
     std::vector<std::string> acceptTypes;
     std::optional<std::string> contentType;
 
-    if (auto it = headers.find("accept"); it != headers.end()) {
-        acceptTypes = http::parseAcceptHeader(it->second.value);
+    if (auto value = getHeaderValue(headers, "accept")) {
+        acceptTypes = http::parseAcceptHeader(*value);
     }
-    if (auto it = headers.find("content-type"); it != headers.end()) {
-        auto contentTypes = http::parseAcceptHeader(it->second.value); // content type doesn't have the same syntax as accept but content-type is a singleton object similar to those in accept header (RFC 9110) so this should be fine
+    if (auto value = getHeaderValue(headers, "content-type")) {
+        auto contentTypes = http::parseAcceptHeader(*value); // content type doesn't have the same syntax as accept but content-type is a singleton object similar to those in accept header (RFC 9110) so this should be fine
 
         if (contentTypes.size() > 1) {
             spdlog::trace("Multiple content-type entries found");
@@ -229,8 +239,8 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             }
 
             std::string nacmUser;
-            if (auto itUserHeader = req.header().find("x-remote-user"); itUserHeader != req.header().end() && !itUserHeader->second.value.empty()) {
-                nacmUser = itUserHeader->second.value;
+            if (auto userHeader = getHeaderValue(req.header(), "x-remote-user"); userHeader && !userHeader->empty()) {
+                nacmUser = *userHeader;
             } else {
                 rejectWithError(sess.getContext(), dataFormat, req, res, 401, "protocol", "access-denied", "HTTP header x-remote-user not found or empty.");
                 return;
