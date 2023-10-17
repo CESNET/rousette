@@ -12,6 +12,7 @@
 #include <sysrepo-cpp/Enum.hpp>
 #include <sysrepo-cpp/utils/exception.hpp>
 #include "http/utils.hpp"
+#include "restconf/Exceptions.h"
 #include "restconf/Nacm.h"
 #include "restconf/Server.h"
 #include "restconf/uri.h"
@@ -37,21 +38,6 @@ auto as_restconf_push_update(const std::string& content, const T& time)
 }
 
 constexpr auto restconfRoot = "/restconf/";
-
-struct ErrorResponse : public std::exception {
-    int code;
-    std::string errorTag;
-    std::string errorType;
-    std::string errorMessage;
-
-    ErrorResponse(int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage)
-        : code(code)
-        , errorTag(errorTag)
-        , errorType(errorType)
-        , errorMessage(errorMessage)
-    {
-    }
-};
 
 std::string asMimeType(libyang::DataFormat dataFormat)
 {
