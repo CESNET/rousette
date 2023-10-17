@@ -17,9 +17,9 @@ The access rights for users (and groups) are configurable via `ietf-netconf-acm`
 
 As an extension, this server also supports a special user account whose access is limited to read-only operation to whitelisted modules.
 The reverse proxy should still "authenticate" this user and set the respective header, but `rousette` will perform extra safety checks to ensure that there are NACM rules which enforce read-only access.
-Such user must be in group `ANONYMOUS_GROUP` (CMake option) and there must be some specific access right set up in `ietf-netconf-acm` model (these are currently very opinionated for our use-case).
+Such user must be in group `ANONYMOUS_USER_GROUP` (CMake option) and there must be some specific access right set up in `ietf-netconf-acm` model (these are currently very opinionated for our use-case).
 
-1. The first entry of `rule-list` list must be configured for `ANONYMOUS_GROUP`.
+1. The first entry of `rule-list` list must be configured for `ANONYMOUS_USER_GROUP`.
 2. All the rules except the last one in this rule-list entry must enable only "read" access operation.
 3. The last rule in the first rule-set must be a wildcard rule that disables all operations over all modules.
 
