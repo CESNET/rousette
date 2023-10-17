@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0c070428_30b28049",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 217,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-17T10:15:41Z",
+      "side": 1,
+      "message": "nit: I would prefer `lyPathParent.empty()`, but hey, it\u0027s up to you",
+      "range": {
+        "startLine": 217,
+        "startChar": 12,
+        "endLine": 217,
+        "endChar": 30
+      },
+      "revId": "5b686526b13712ab30432384cccf3a1dce76296b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "68c773fc_f6376506",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 248,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-17T10:15:41Z",
+      "side": 1,
+      "message": "let\u0027s print out the exception here as well, otherwise it\u0027s going to be painful to debug this",
+      "range": {
+        "startLine": 248,
+        "startChar": 166,
+        "endLine": 248,
+        "endChar": 213
+      },
+      "revId": "5b686526b13712ab30432384cccf3a1dce76296b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
