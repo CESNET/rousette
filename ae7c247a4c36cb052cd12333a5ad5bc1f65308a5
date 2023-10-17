@@ -1,0 +1,61 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c53fae42_e6de94e7",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-17T10:02:35Z",
+      "side": 1,
+      "message": "you were right I forgot to push reply",
+      "revId": "ae7c247a4c36cb052cd12333a5ad5bc1f65308a5",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "68698831_eb45ed84",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-17T10:02:35Z",
+      "side": 1,
+      "message": "let\u0027s turn this into a struct with named members; that way it\u0027s easy to use it like this:\n auto format \u003d chooseDataEncoding(...);\n if (*format.request \u003d\u003d libyang::DataFormat::JSON)\n   ...",
+      "revId": "ae7c247a4c36cb052cd12333a5ad5bc1f65308a5",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "56b1cb19_d3070cce",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 243,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-17T10:02:35Z",
+      "side": 1,
+      "message": "nit: `responseFormat` sounds a like something that\u0027s more pleasant to work with (or just use the named struct as I suggest above)",
+      "range": {
+        "startLine": 243,
+        "startChar": 32,
+        "endLine": 243,
+        "endChar": 50
+      },
+      "revId": "ae7c247a4c36cb052cd12333a5ad5bc1f65308a5",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
