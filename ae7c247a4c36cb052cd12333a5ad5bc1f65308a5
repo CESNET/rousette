@@ -35,6 +35,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8c862141_a3eaf48a",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-17T11:08:56Z",
+      "side": 1,
+      "message": "Agreed. Naming members is easy. Naming the struct was hard. If you have a better name, please share it :)",
+      "parentUuid": "68698831_eb45ed84",
+      "revId": "ae7c247a4c36cb052cd12333a5ad5bc1f65308a5",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "56b1cb19_d3070cce",
@@ -48,6 +66,30 @@
       "writtenOn": "2023-10-17T10:02:35Z",
       "side": 1,
       "message": "nit: `responseFormat` sounds a like something that\u0027s more pleasant to work with (or just use the named struct as I suggest above)",
+      "range": {
+        "startLine": 243,
+        "startChar": 32,
+        "endLine": 243,
+        "endChar": 50
+      },
+      "revId": "ae7c247a4c36cb052cd12333a5ad5bc1f65308a5",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7200b774_871cb34a",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 243,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-17T11:08:56Z",
+      "side": 1,
+      "message": "I used the named struct.",
+      "parentUuid": "56b1cb19_d3070cce",
       "range": {
         "startLine": 243,
         "startChar": 32,
