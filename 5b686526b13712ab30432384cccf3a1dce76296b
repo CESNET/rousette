@@ -93,6 +93,30 @@
       },
       "revId": "5b686526b13712ab30432384cccf3a1dce76296b",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "07f4811f_dc899059",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 248,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-17T15:39:13Z",
+      "side": 1,
+      "message": "I think there\u0027s no harm in printing detailed error messages, to be honest. These are only printed to authenticated users, and the information that they contain is not sensitive. If printed, it might allow a potential user to debug a possible error in their request.",
+      "parentUuid": "8dfb35cd_8bb54432",
+      "range": {
+        "startLine": 248,
+        "startChar": 166,
+        "endLine": 248,
+        "endChar": 213
+      },
+      "revId": "5b686526b13712ab30432384cccf3a1dce76296b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }

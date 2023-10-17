@@ -1,0 +1,113 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "73fcd015_6ca9a99e",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 194,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-17T15:39:13Z",
+      "side": 1,
+      "message": "the read operations should target the `operational` DS by default. Is there a reason for not doing that in the test suite here?",
+      "range": {
+        "startLine": 193,
+        "startChar": 0,
+        "endLine": 194,
+        "endChar": 56
+      },
+      "revId": "97cab4e4489069b7417d792823ab00b3cbbab07c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e4363b35_271f196a",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 208,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-17T15:39:13Z",
+      "side": 1,
+      "message": "This means that nothing actually tests that these writes \"happen\". I would prefer to test this via setting an expectation mock, and manually allowing writes.\n\nI see that the code is testing for that by (re)requesting the just-written data, but I think it\u0027s cleaner to set up a mocked write.",
+      "range": {
+        "startLine": 206,
+        "startChar": 0,
+        "endLine": 208,
+        "endChar": 7
+      },
+      "revId": "97cab4e4489069b7417d792823ab00b3cbbab07c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fcc3dcb4_90b8abe0",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 757,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-17T15:39:13Z",
+      "side": 1,
+      "message": "For me, it\u0027s very hard to decipher what\u0027s going on here in these tests. Perhaps adding them into SECTIONs is a bit too much, but at least a trivial comment like \"bool as a string\" or \"not enough NACM rights\" would go a long way.",
+      "revId": "97cab4e4489069b7417d792823ab00b3cbbab07c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "459ce8a3_b0bbc27d",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 807,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-17T15:39:13Z",
+      "side": 1,
+      "message": "nit: all the namespaces after and including this one are not needed; it\u0027s OK to just say `\"b\"` here. Also, same below.",
+      "range": {
+        "startLine": 807,
+        "startChar": 56,
+        "endLine": 807,
+        "endChar": 64
+      },
+      "revId": "97cab4e4489069b7417d792823ab00b3cbbab07c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e5c2f5cd_bf9497fd",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 823,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-17T15:39:13Z",
+      "side": 1,
+      "message": "what is this code testing?",
+      "range": {
+        "startLine": 820,
+        "startChar": 0,
+        "endLine": 823,
+        "endChar": 5
+      },
+      "revId": "97cab4e4489069b7417d792823ab00b3cbbab07c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
