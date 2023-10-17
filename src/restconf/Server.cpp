@@ -245,33 +245,27 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
             auto sess = conn.sessionStart(sysrepo::Datastore::Operational);
             DataFormat dataFormat;
+            // default for "early exceptions" when the MIME type detection fails
+            dataFormat.response = libyang::DataFormat::JSON;
 
             try {
                 dataFormat = chooseDataEncoding(req.header());
-            } catch (const ErrorResponse& e) {
-                rejectWithError(sess.getContext(), libyang::DataFormat::JSON, req, res, e.code, e.errorType, e.errorTag, e.errorMessage);
-                return;
-            }
 
-            std::string nacmUser;
-            if (auto userHeader = getHeaderValue(req.header(), "x-remote-user"); userHeader && !userHeader->empty()) {
-                nacmUser = *userHeader;
-            } else {
-                rejectWithError(sess.getContext(), dataFormat.response, req, res, 401, "protocol", "access-denied", "HTTP header x-remote-user not found or empty.");
-                return;
-            }
+                std::string nacmUser;
+                if (auto userHeader = getHeaderValue(req.header(), "x-remote-user"); userHeader && !userHeader->empty()) {
+                     nacmUser = *userHeader;
+                } else {
+                     throw ErrorResponse(401, "protocol", "access-denied", "HTTP header x-remote-user not found or empty.");
+                }
 
-            if (!nacm.authorize(sess, nacmUser)) {
-                rejectWithError(sess.getContext(), dataFormat.response, req, res, 401, "protocol", "access-denied", "Access denied.");
-                return;
-            }
+                if (!nacm.authorize(sess, nacmUser)) {
+                    throw ErrorResponse(401, "protocol", "access-denied", "Access denied.");
+                }
 
-            if (req.method() != "GET") {
-                rejectWithError(sess.getContext(), dataFormat.response, req, res, 405, "application", "operation-not-supported", "Method not allowed.");
-                return;
-            }
+                if (req.method() != "GET") {
+                    throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
+                }
 
-            try {
                 auto lyPath = asLibyangPath(sess.getContext(), req.uri().path);
 
                 if (auto data = sess.getData(lyPath); data) {
@@ -283,9 +277,10 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         });
                     res.end(*data->printStr(dataFormat.response, libyang::PrintFlags::WithSiblings));
                 } else {
-                    rejectWithError(sess.getContext(), dataFormat.response, req, res, 404, "application", "invalid-value", "No data from sysrepo.");
-                    return;
+                    throw ErrorResponse(404, "application", "invalid-value", "No data from sysrepo.");
                 }
+            } catch (const ErrorResponse& e) {
+                rejectWithError(sess.getContext(), dataFormat.response, req, res, e.code, e.errorType, e.errorTag, e.errorMessage);
             } catch (const sysrepo::ErrorWithCode& e) {
                 spdlog::error("Sysrepo exception: {}", e.what());
                 rejectWithError(sess.getContext(), dataFormat.response, req, res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception.");
