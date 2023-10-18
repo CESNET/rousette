@@ -14,10 +14,12 @@
 #include "http/utils.hpp"
 #include "restconf/Exceptions.h"
 #include "restconf/Nacm.h"
+#include "restconf/PAM.h"
 #include "restconf/Server.h"
 #include "restconf/uri.h"
 #include "restconf/utils.h"
 #include "sr/OpticalEvents.h"
+#include "NacmIdentities.h"
 
 using namespace std::literals;
 
@@ -238,10 +240,10 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 dataFormat = chooseDataEncoding(req.header());
 
                 std::string nacmUser;
-                if (auto userHeader = getHeaderValue(req.header(), "x-remote-user"); userHeader && !userHeader->empty()) {
-                     nacmUser = *userHeader;
+                if (auto authHeader = getHeaderValue(req.header(), "authorization")) {
+                    nacmUser = rousette::authenticate_pam(*authHeader, std::nullopt, peer);
                 } else {
-                     throw ErrorResponse(401, "protocol", "access-denied", "HTTP header x-remote-user not found or empty.");
+                    nacmUser = ANONYMOUS_USER;
                 }
 
                 if (!nacm.authorize(sess, nacmUser)) {

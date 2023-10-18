@@ -9,15 +9,23 @@
 One day, this might become a [RESTCONF](https://www.rfc-editor.org/rfc/rfc8040.html) server on top of [sysrepo](https://www.sysrepo.org/).
 Before that happens, it will, hopefully, be a small HTTP wrapper around sysrepo which publishes some data in a RESTCONF format.
 
+Since this service only talks cleartext HTTP/2, it's recommended to run it behind a reverse proxy.
+If used, TLS connections must be terminated by the reverse proxy.
+
 ### Access control model
 
 Rousette implements [RFC 8341 (NACM)](https://www.rfc-editor.org/rfc/rfc8341).
-The server is supposed to be run behind a proxy that performs authentication and all the requests to this server should contain HTTP/2 header `x-remote-user` containing the username.
 The access rights for users (and groups) are configurable via `ietf-netconf-acm` YANG model.
 
-As an extension, this server also supports a special user account whose access is limited to read-only operation to whitelisted modules.
-The reverse proxy should still "authenticate" this user and set the respective header, but `rousette` will perform extra safety checks to ensure that there are NACM rules which enforce read-only access.
-Such user must be in group `ANONYMOUS_USER_GROUP` (CMake option) and there must be some specific access right set up in `ietf-netconf-acm` model (these are currently very opinionated for our use-case).
+The reverse proxy must pass the `authorization` header as-is and delegate authentication/authorization to the RESTCONF server.
+The server currently supports two authentication/authorization methods:
+
+- a systemwide PAM setup through the *Basic* HTTP authentication, i.e., via the `authorization` header, which is checked against the system's PAM configuration
+- a special anonymous access.
+
+When the request does not contain the `authorization` header, and anonymous access is enabled (see below), the server will perform extra safety checks.
+When certain conditions are met, the anonymous access will be mapped to a NACM account named in the `ANONYMOUS_USER` CMake option.
+Such user must be in group `ANONYMOUS_USER_GROUP` (CMake option) and there must be some specific access right set up in `ietf-netconf-acm` model (these are currently very opinionated for our use-case):
 
 1. The first entry of `rule-list` list must be configured for `ANONYMOUS_USER_GROUP`.
 2. All the rules except the last one in this rule-list entry must enable only "read" access operation.
