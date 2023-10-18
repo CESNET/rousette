@@ -23,5 +23,10 @@ struct ErrorResponse : public std::exception {
         , errorMessage(errorMessage)
     {
     }
+
+    const char* what() const noexcept override
+    {
+        return errorMessage.c_str();
+    }
 };
 }
