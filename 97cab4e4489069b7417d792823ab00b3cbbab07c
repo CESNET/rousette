@@ -26,6 +26,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "3cadc87b_0b08ad71",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 194,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-23T08:16:47Z",
+      "side": 1,
+      "message": "This only sets some data to be read in sysrepo. The server managers its own sessions in the Server class.",
+      "parentUuid": "73fcd015_6ca9a99e",
+      "range": {
+        "startLine": 193,
+        "startChar": 0,
+        "endLine": 194,
+        "endChar": 56
+      },
+      "revId": "97cab4e4489069b7417d792823ab00b3cbbab07c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "e4363b35_271f196a",
         "filename": "tests/http-communication.cpp",
         "patchSetId": 8
