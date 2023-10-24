@@ -34,6 +34,24 @@
       "parentUuid": "b62f9f4e_7343a408",
       "revId": "9999200cb7857204e0198195e37f97177c427878",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5a829d59_c708fa05",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-24T18:46:46Z",
+      "side": 1,
+      "message": "In general I prefer a unified list of dependencies in all projects, but I guess we\u0027re already making exceptions. There\u0027s libyang-cpp which cannot be brought to anything fresher than doctest 2.3.6 because it\u0027s used in https://github.com/Telecominfraproject/oopt-gnpy-libyang , and that one is getting Doctest through system packages, and Ubuntu is lagging severely in there.\n\nBut I guess it makes sense in these projects, fair enough, thanks!\n\nDone",
+      "parentUuid": "bcced866_c1804586",
+      "revId": "9999200cb7857204e0198195e37f97177c427878",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
