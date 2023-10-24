@@ -119,8 +119,8 @@ install(FILES ${CMAKE_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang DESTINATION
 
 include(CTest)
 if(BUILD_TESTING)
-    find_package(trompeloeil 33 REQUIRED)
-    find_package(doctest 2.3.1 REQUIRED)
+    find_package(trompeloeil 45 REQUIRED)
+    find_package(doctest 2.4.11 REQUIRED)
 
     add_library(DoctestIntegration STATIC
         tests/doctest_integration.cpp
