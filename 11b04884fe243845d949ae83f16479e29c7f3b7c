@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "b9e05c37_dbc22961",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 227,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-25T11:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d0ac54e4_a2f52a85",
+      "range": {
+        "startLine": 227,
+        "startChar": 101,
+        "endLine": 227,
+        "endChar": 142
+      },
+      "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "28b441e3_db75e4b5",
@@ -37,6 +61,30 @@
       "writtenOn": "2023-10-25T08:16:55Z",
       "side": 1,
       "message": "nit: this might benefit from some markup, like bullet points with `- foo` instead of just ` foo`",
+      "range": {
+        "startLine": 233,
+        "startChar": 0,
+        "endLine": 234,
+        "endChar": 99
+      },
+      "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d2ac689d_c56b6475",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 234,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-25T11:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "28b441e3_db75e4b5",
       "range": {
         "startLine": 233,
         "startChar": 0,
@@ -87,6 +135,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "7bd92102_f26792cf",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 239,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-25T11:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2e98d529_832f17d3",
+      "range": {
+        "startLine": 239,
+        "startChar": 27,
+        "endLine": 239,
+        "endChar": 157
+      },
+      "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "b469572c_c694fbe0",
@@ -100,6 +172,24 @@
       "writtenOn": "2023-10-25T08:16:55Z",
       "side": 1,
       "message": "Can you please return the offending XPath in the `error-path` attribute?",
+      "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "cc2a9260_1959192d",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 242,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-25T11:06:17Z",
+      "side": 1,
+      "message": "Done. I am printing the offending XPath from data. Not sure which XPath is better to output (the one from URI, the one found incorrectly in data, or the parent of the URI one?)",
+      "parentUuid": "b469572c_c694fbe0",
       "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -127,6 +217,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f7a851a5_2dbf9d7b",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 253,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-25T11:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "99e27a03_548fcd49",
+      "range": {
+        "startLine": 253,
+        "startChar": 16,
+        "endLine": 253,
+        "endChar": 180
+      },
+      "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "dc7f875d_31d7dcb0",
@@ -144,6 +258,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "0afdf7fa_27d1d66d",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 254,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-25T11:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dc7f875d_31d7dcb0",
+      "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "a3be42bc_c5a7ba4d",
@@ -157,6 +289,30 @@
       "writtenOn": "2023-10-25T08:16:55Z",
       "side": 1,
       "message": "Also check for ietf-netconf because it\u0027s used for those magic attributes",
+      "range": {
+        "startLine": 308,
+        "startChar": 0,
+        "endLine": 310,
+        "endChar": 5
+      },
+      "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "242dc67f_1def5f94",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 310,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-25T11:06:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a3be42bc_c5a7ba4d",
       "range": {
         "startLine": 308,
         "startChar": 0,
@@ -203,6 +359,24 @@
       "writtenOn": "2023-10-25T08:16:55Z",
       "side": 1,
       "message": "please wrap this (and other invocations as well) in a macro, so that these lines of code here only show the XPath and the associated value",
+      "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d0b49581_55208cc5",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 828,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-25T11:06:17Z",
+      "side": 1,
+      "message": "Done. I used the idea we talked about on the call.",
+      "parentUuid": "6c3fb3f1_ad1b6c36",
       "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
