@@ -48,6 +48,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "29b2c1db_59da42a4",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 194,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-25T08:16:55Z",
+      "side": 1,
+      "message": "right, my bad, sorry",
+      "parentUuid": "3cadc87b_0b08ad71",
+      "range": {
+        "startLine": 193,
+        "startChar": 0,
+        "endLine": 194,
+        "endChar": 56
+      },
+      "revId": "97cab4e4489069b7417d792823ab00b3cbbab07c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e4363b35_271f196a",
@@ -126,6 +150,24 @@
       "side": 1,
       "message": "I tried to add a comment to all the tests. If anything still unclear, please let met know.",
       "parentUuid": "fcc3dcb4_90b8abe0",
+      "revId": "97cab4e4489069b7417d792823ab00b3cbbab07c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e54e8308_6903d2b6",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 757,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-25T08:16:55Z",
+      "side": 1,
+      "message": "thanks; I\u0027ll go through this once the writes are wrapped in macros so that they are more readable",
+      "parentUuid": "1e05b309_1fdb2fb8",
       "revId": "97cab4e4489069b7417d792823ab00b3cbbab07c",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },

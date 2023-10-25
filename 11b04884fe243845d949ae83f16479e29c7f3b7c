@@ -1,0 +1,210 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d0ac54e4_a2f52a85",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 227,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-25T08:16:55Z",
+      "side": 1,
+      "message": "I think this needs comparing of namespace-qualified names, not just plain names. Also, please move that to a helper function somewhere.",
+      "range": {
+        "startLine": 227,
+        "startChar": 101,
+        "endLine": 227,
+        "endChar": 142
+      },
+      "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "28b441e3_db75e4b5",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 234,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-25T08:16:55Z",
+      "side": 1,
+      "message": "nit: this might benefit from some markup, like bullet points with `- foo` instead of just ` foo`",
+      "range": {
+        "startLine": 233,
+        "startChar": 0,
+        "endLine": 234,
+        "endChar": 99
+      },
+      "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6727280a_219c5448",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 238,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-25T08:16:55Z",
+      "side": 1,
+      "message": "What happens when the URL indicates one key value, and the data that are parsed from the XML/JSON payload have a different value? I think that the RFC explicitly forbids that.",
+      "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2e98d529_832f17d3",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 239,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-25T08:16:55Z",
+      "side": 1,
+      "message": "(let\u0027s use that helper function that I suggested above here as well, please)",
+      "range": {
+        "startLine": 239,
+        "startChar": 27,
+        "endLine": 239,
+        "endChar": 157
+      },
+      "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b469572c_c694fbe0",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 242,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-25T08:16:55Z",
+      "side": 1,
+      "message": "Can you please return the offending XPath in the `error-path` attribute?",
+      "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "99e27a03_548fcd49",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 253,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-25T08:16:55Z",
+      "side": 1,
+      "message": "same here",
+      "range": {
+        "startLine": 253,
+        "startChar": 16,
+        "endLine": 253,
+        "endChar": 180
+      },
+      "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "dc7f875d_31d7dcb0",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 254,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-25T08:16:55Z",
+      "side": 1,
+      "message": "`error-path` here as well, please",
+      "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a3be42bc_c5a7ba4d",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 310,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-25T08:16:55Z",
+      "side": 1,
+      "message": "Also check for ietf-netconf because it\u0027s used for those magic attributes",
+      "range": {
+        "startLine": 308,
+        "startChar": 0,
+        "endLine": 310,
+        "endChar": 5
+      },
+      "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6eb0086c_b60d7902",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 814,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-25T08:16:55Z",
+      "side": 1,
+      "message": "if this goes above https://gerrit.cesnet.cz/c/CzechLight/rousette/+/6520, it will need some changes\n\n(nothing to change now I guess, just a comment for me for the merge)",
+      "range": {
+        "startLine": 814,
+        "startChar": 112,
+        "endLine": 814,
+        "endChar": 143
+      },
+      "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6c3fb3f1_ad1b6c36",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 828,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-25T08:16:55Z",
+      "side": 1,
+      "message": "please wrap this (and other invocations as well) in a macro, so that these lines of code here only show the XPath and the associated value",
+      "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
