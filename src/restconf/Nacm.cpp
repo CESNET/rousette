@@ -99,6 +99,7 @@ Nacm::Nacm(sysrepo::Connection conn)
 bool Nacm::authorize(sysrepo::Session session, const std::string& user)
 {
     if (user == ANONYMOUS_USER && !m_anonymousEnabled) {
+        spdlog::trace("Anonymous access not configured");
         return false;
     }
 
