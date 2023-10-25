@@ -72,7 +72,7 @@ int main(int argc [[maybe_unused]], char* argv [[maybe_unused]] [])
     }
 
     auto conn = sysrepo::Connection{};
-    auto server = rousette::restconf::Server{conn, "::1", "10080"};
+    auto server = rousette::restconf::Server{conn, "::1", "10080", std::nullopt};
 
     signal(SIGTERM, [](int) {});
     signal(SIGINT, [](int) {});
