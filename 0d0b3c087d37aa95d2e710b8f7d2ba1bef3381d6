@@ -64,6 +64,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "38010bf2_3a52279c",
+        "filename": "src/restconf/PAM.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-25T19:10:10Z",
+      "side": 1,
+      "message": "Done, since this is a self-contained file. I won\u0027t be changing the existing files, though (the root cause is that we\u0027re usually copying some common bits around, yeah, I know it sucks, but it\u0027s how we create these projects anyway).",
+      "parentUuid": "0e42e770_14fdc0ce",
+      "range": {
+        "startLine": 2,
+        "startChar": 17,
+        "endLine": 2,
+        "endChar": 26
+      },
+      "revId": "0d0b3c087d37aa95d2e710b8f7d2ba1bef3381d6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "7aa20d33_5754cb23",
@@ -87,6 +111,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "11e6c97e_11eb1812",
+        "filename": "src/restconf/PAM.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-25T19:10:10Z",
+      "side": 1,
+      "message": "There\u0027s some direct logging in pam_userpass_conv(). Originally, I was throwing exceptions in there, but it\u0027s a C function that gets executed from a C library which makes assumptions about error handling that is expected to be done via return values. If the code throws, then even when I catch that exceptions thrown (indirectly) by pam_authenticate, the C PAM library would leak memory. So I came up with logging the error directly.\n\nNow, two of these cases are a failing strdup(), which probably means that we\u0027re FUBAR anyway, and good luck logging in that case. But the thrid case is the PAM_ERROR_MSG and PAM_TEXT_INFO cases (or an unhandled conversation type), and I\u0027d like to have real error handling for these situations.",
+      "parentUuid": "7aa20d33_5754cb23",
+      "range": {
+        "startLine": 17,
+        "startChar": 0,
+        "endLine": 17,
+        "endChar": 1
+      },
+      "revId": "0d0b3c087d37aa95d2e710b8f7d2ba1bef3381d6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "79b78e1d_9b0efb34",
@@ -100,6 +148,24 @@
       "writtenOn": "2023-10-25T18:17:29Z",
       "side": 1,
       "message": "Could we please make this a struct with named fields? I know, we probably have to add boost fusion but I agree with your opinion from last week that those .first and .second members are unreadable.",
+      "revId": "0d0b3c087d37aa95d2e710b8f7d2ba1bef3381d6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "44d0bdea_67c9d197",
+        "filename": "src/restconf/PAM.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-25T19:10:10Z",
+      "side": 1,
+      "message": "Good catch, and you\u0027re absolutely right. In fact, I made a mistake in one of the previous versions of this patch where I fed the PAM code the .first (i.e., username) for both PAM_PROMPT_ECHO_ON and PAM_PROMPT_ECHO_OFF cases :). Thanks for catching this.",
+      "parentUuid": "79b78e1d_9b0efb34",
       "revId": "0d0b3c087d37aa95d2e710b8f7d2ba1bef3381d6",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
