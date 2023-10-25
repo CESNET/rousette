@@ -84,7 +84,7 @@ std::optional<libyang::DataFormat> dataTypeFromMimeType(const std::string& mime,
     return std::nullopt;
 }
 
-void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage)
+void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath = std::nullopt)
 {
     spdlog::debug("{}: Rejected with {}: {}", http::peer_from_request(req), errorTag, errorMessage);
 
@@ -94,6 +94,10 @@ void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat
     errors->newExtPath("/ietf-restconf:errors/error[1]/error-type", errorType, ext);
     errors->newExtPath("/ietf-restconf:errors/error[1]/error-tag", errorTag, ext);
     errors->newExtPath("/ietf-restconf:errors/error[1]/error-message", errorMessage, ext);
+
+    if (errorPath) {
+        errors->newExtPath("/ietf-restconf:errors/error[1]/error-path", *errorPath, ext);
+    }
 
     res.write_head(code, {{"content-type", {asMimeType(dataFormat), false}}, {"access-control-allow-origin", {"*", false}}});
     res.end(*errors->printStr(dataFormat, libyang::PrintFlags::WithSiblings));
