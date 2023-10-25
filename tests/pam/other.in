@@ -1,0 +1,6 @@
+auth required pam_userdb.so db=@TEST_PAM_USERDB_NOSUFFIX@ debug crypt=none
+account required pam_userdb.so db=@TEST_PAM_USERDB_NOSUFFIX@ debug crypt=none
+password required pam_warn.so
+password required pam_deny.so
+session  required pam_warn.so
+session  required pam_deny.so
