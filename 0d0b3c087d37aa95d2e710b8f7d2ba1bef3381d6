@@ -1,0 +1,124 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "32d631e1_4f23a93c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-25T18:17:29Z",
+      "side": 1,
+      "message": "I think this looks mostly good. There are a lot of complaints from clang-format though...\nLet me do another sweep on this later, after I understand the PAM api.",
+      "revId": "0d0b3c087d37aa95d2e710b8f7d2ba1bef3381d6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d0f1b63d_6b465484",
+        "filename": "src/restconf/Nacm.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-25T18:17:29Z",
+      "side": 1,
+      "message": "nit: this is perhaps for another patch",
+      "range": {
+        "startLine": 102,
+        "startChar": 0,
+        "endLine": 102,
+        "endChar": 57
+      },
+      "revId": "0d0b3c087d37aa95d2e710b8f7d2ba1bef3381d6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0e42e770_14fdc0ce",
+        "filename": "src/restconf/PAM.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-25T18:17:29Z",
+      "side": 1,
+      "message": "nit rousette was not there in 2016 (same in other files)",
+      "range": {
+        "startLine": 2,
+        "startChar": 17,
+        "endLine": 2,
+        "endChar": 26
+      },
+      "revId": "0d0b3c087d37aa95d2e710b8f7d2ba1bef3381d6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7aa20d33_5754cb23",
+        "filename": "src/restconf/PAM.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-25T18:17:29Z",
+      "side": 1,
+      "message": "What is the reason behind having spdlog include here?",
+      "range": {
+        "startLine": 17,
+        "startChar": 0,
+        "endLine": 17,
+        "endChar": 1
+      },
+      "revId": "0d0b3c087d37aa95d2e710b8f7d2ba1bef3381d6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "79b78e1d_9b0efb34",
+        "filename": "src/restconf/PAM.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-25T18:17:29Z",
+      "side": 1,
+      "message": "Could we please make this a struct with named fields? I know, we probably have to add boost fusion but I agree with your opinion from last week that those .first and .second members are unreadable.",
+      "revId": "0d0b3c087d37aa95d2e710b8f7d2ba1bef3381d6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6410eab7_4c6fbe50",
+        "filename": "tests/pam.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-25T18:17:29Z",
+      "side": 1,
+      "message": "Could we add tests with multiple colons encoded in the string? The parser seems ok, just to be sure.",
+      "revId": "0d0b3c087d37aa95d2e710b8f7d2ba1bef3381d6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
