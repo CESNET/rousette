@@ -75,6 +75,7 @@ find_package(Boost REQUIRED COMPONENTS system thread)
 pkg_check_modules(SYSREPO-CPP REQUIRED IMPORTED_TARGET sysrepo-cpp>=1.1.0)
 pkg_check_modules(LIBYANG-CPP REQUIRED IMPORTED_TARGET libyang-cpp>=1.1.0)
 pkg_check_modules(SYSTEMD REQUIRED IMPORTED_TARGET libsystemd)
+pkg_check_modules(PAM REQUIRED IMPORTED_TARGET pam)
 
 add_library(rousette-http STATIC
     src/http/EventStream.cpp
@@ -88,13 +89,18 @@ add_library(rousette-sysrepo STATIC
 )
 target_link_libraries(rousette-sysrepo PUBLIC spdlog::spdlog PkgConfig::SYSREPO-CPP PkgConfig::LIBYANG-CPP)
 
-add_library(rousette-restconf STATIC
+add_library(rousette-auth STATIC
     src/restconf/Nacm.cpp
+    src/restconf/PAM.cpp
+)
+target_link_libraries(rousette-auth PUBLIC spdlog::spdlog PkgConfig::SYSREPO-CPP PkgConfig::PAM)
+
+add_library(rousette-restconf STATIC
     src/restconf/Server.cpp
     src/restconf/uri.cpp
     src/restconf/utils.cpp
 )
-target_link_libraries(rousette-restconf PUBLIC rousette-http rousette-sysrepo Boost::system Threads::Threads)
+target_link_libraries(rousette-restconf PUBLIC rousette-http rousette-sysrepo rousette-auth Boost::system Threads::Threads)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/restconf/NacmIdentities.h.in ${CMAKE_CURRENT_BINARY_DIR}/NacmIdentities.h @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -133,6 +139,8 @@ if(BUILD_TESTING)
 
     find_program(SYSREPOCTL sysrepoctl)
     find_program(SYSREPOCFG sysrepocfg)
+    find_program(BERKLEY_DB_LOAD db_load)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/configure.cmake.h.in ${CMAKE_CURRENT_BINARY_DIR}/configure.cmake.h @ONLY)
 
     function(rousette_test)
         cmake_parse_arguments(TEST "" "NAME;FIXTURE;RESOURCE_LOCK" "LIBRARIES;COMMAND" ${ARGN})
@@ -181,12 +189,24 @@ if(BUILD_TESTING)
     endfunction()
 
     rousette_test(NAME http-utils LIBRARIES rousette-http)
+    rousette_test(NAME pam LIBRARIES rousette-auth)
+
+    set(TEST_PAM_USERDB_NOSUFFIX ${CMAKE_CURRENT_BINARY_DIR}/tests/pam/userdb)
+    set(TEST_PAM_USERDB_FILE ${TEST_PAM_USERDB_NOSUFFIX}.db)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/pam/other.in ${CMAKE_CURRENT_BINARY_DIR}/tests/pam/other @ONLY)
+    add_custom_command(OUTPUT ${TEST_PAM_USERDB_FILE}
+        COMMAND ${CMAKE_COMMAND} -E remove ${TEST_PAM_USERDB_FILE}
+        COMMAND ${BERKLEY_DB_LOAD} -f ${CMAKE_CURRENT_SOURCE_DIR}/tests/pam/database.dump ${TEST_PAM_USERDB_FILE}
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tests/pam/database.dump)
+    add_custom_target(generate_pam_userdb DEPENDS ${TEST_PAM_USERDB_FILE})
+    add_dependencies(test-pam generate_pam_userdb)
 
     set(fixture-http
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/ietf-system@2014-08-06.yang FEATURE radius
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang FEATURE f1)
     rousette_test(NAME http-communication LIBRARIES rousette-restconf FIXTURE fixture-http)
+    add_dependencies(test-http-communication generate_pam_userdb)
 
     set(fixture-uri-parser
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang FEATURE f1

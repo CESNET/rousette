@@ -1,0 +1,17 @@
+VERSION=3
+format=print
+type=hash
+h_nelem=5
+db_pagesize=4096
+HEADER=END
+ Aladdin
+ open sesame
+ dwdm
+ DWDM
+ root
+ sekrit
+ yangnobody
+ no chance
+ norules
+ empty
+DATA=END
