@@ -41,6 +41,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "3a7a2552_592890da",
+        "filename": "src/restconf/Nacm.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-25T20:49:05Z",
+      "side": 1,
+      "message": "The reason why I added it in the first place is [1]. I actually spent quite some time trying to figure out why a simple data retrieval was failing. The fact that all auth-related failure responses that go out via HTTP are just \"Authentication failed\", which is a deliberate decision, didn\u0027t help; I was thinking that the code must be wrong, but in the end it was just a missing NACM rule. That\u0027s why I added an explicit logging output here, and I think that a similar situation would not have happened prior to this patch, so I\u0027d prefer to keep it as-is.\n\n[1] https://gerrit.cesnet.cz/c/CzechLight/rousette/+/6520/5/tests/http-communication.cpp#161",
+      "parentUuid": "d0f1b63d_6b465484",
+      "range": {
+        "startLine": 102,
+        "startChar": 0,
+        "endLine": 102,
+        "endChar": 57
+      },
+      "revId": "0d0b3c087d37aa95d2e710b8f7d2ba1bef3381d6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "0e42e770_14fdc0ce",
@@ -183,6 +207,24 @@
       "writtenOn": "2023-10-25T18:17:29Z",
       "side": 1,
       "message": "Could we add tests with multiple colons encoded in the string? The parser seems ok, just to be sure.",
+      "revId": "0d0b3c087d37aa95d2e710b8f7d2ba1bef3381d6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "495a9b01_5f0f5be5",
+        "filename": "tests/pam.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-25T20:49:05Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6410eab7_4c6fbe50",
       "revId": "0d0b3c087d37aa95d2e710b8f7d2ba1bef3381d6",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
