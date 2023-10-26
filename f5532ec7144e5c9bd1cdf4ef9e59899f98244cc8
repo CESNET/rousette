@@ -1,0 +1,284 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "73a7f6cc_68c37067",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-26T13:57:19Z",
+      "side": 1,
+      "message": "nit: I would prefer these functions that check something and return a boolean to follow the `isFoo` pattern",
+      "range": {
+        "startLine": 54,
+        "startChar": 5,
+        "endLine": 54,
+        "endChar": 13
+      },
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ae53e578_3fa2bdb8",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-26T13:57:19Z",
+      "side": 1,
+      "message": "any particular reason for requiring a Leaf instead of a SchemaNode?\n\nAlso, do you think that an operator\u003d\u003d for SchemaNode in libyang-cpp would help?",
+      "range": {
+        "startLine": 59,
+        "startChar": 57,
+        "endLine": 59,
+        "endChar": 61
+      },
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e5a6888a_310f5aaf",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 235,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-26T13:57:19Z",
+      "side": 1,
+      "message": "nit: many",
+      "range": {
+        "startLine": 235,
+        "startChar": 57,
+        "endLine": 235,
+        "endChar": 61
+      },
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "30232511_d75e177a",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 380,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-26T13:57:19Z",
+      "side": 1,
+      "message": "just throw an appropriate ErrorResponse and rely on the common catch handler",
+      "range": {
+        "startLine": 379,
+        "startChar": 0,
+        "endLine": 380,
+        "endChar": 31
+      },
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e2301226_c79bf162",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 385,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-26T13:57:19Z",
+      "side": 1,
+      "message": "same here, throw ErrorResponse",
+      "range": {
+        "startLine": 384,
+        "startChar": 0,
+        "endLine": 385,
+        "endChar": 31
+      },
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6993bc09_8838f6e5",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 397,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-26T13:57:19Z",
+      "side": 1,
+      "message": "This branch is taken if the request method is neither GET nor PUT, so the error message is wrong (it used to be an else branch for GET\u0027s actual operation, and that one got moved to line 379 already).",
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "16ca0b43_bcfe44f3",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 823,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-26T13:57:19Z",
+      "side": 1,
+      "message": "please add a #define for this, something like CONTENT_TYPE_JSON for example",
+      "range": {
+        "startLine": 823,
+        "startChar": 145,
+        "endLine": 823,
+        "endChar": 191
+      },
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "62e2632d_3391f03a",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 849,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-26T13:57:19Z",
+      "side": 1,
+      "message": "I was a bit surprised that the error-path is not set here, so I went digging. I think that this exceptions comes from uri.cpp:172. In case we want to have the `error-path` here, that seems pretty straightforward, just add another member to the InvalidURIException to always pass a XPath in there. The human-readable error message (what()) should be preserved.\n\nBut I went a bit deeper to how RFC8040 works with error-path in general, and I was surprised -- they sometimes encode the full URL, including the /restconf/data/ prefix, i.e. https://datatracker.ietf.org/doc/html/rfc8040#page-78 . In two other cases it\u0027s just the usual data reference (except maybe the RPC input where I would have expect the path to the RPC as the prefix, instead of the fake `input` node). Maybe they use the /rc:restconf/rc:data to indicate that the problem is already in the URL?\n\nANyway, I\u0027m itnerested in what you think about this one.",
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "bd6aad6f_82120e82",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 863,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-26T13:57:19Z",
+      "side": 1,
+      "message": "Note to myself: `error-path` is not set because of the way how libyang-cpp and libyang \"handle\" detailed error info. Since the logging mechanism is used for this, a fix would probably require capturing the logged errors (or maybe non-errors as well?) and somehow returning them embedded into exceptions. That in turn would require somebody to prune the log buffer for unrelated stuff from previous calls... We could do that either within libyang-cpp itself, or maybe in Rousette (that might be actually very easy, just walk the log, and turn all errors into an extra `error` record to be included in the outgoing exception).\n\nAlso on line 898; these are IMHO exactly the use cases where the error-path makes sense the most. Just imagine if the amount of data was larger.\n\nIt\u0027s tricky. Suggestions welcome.",
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6980ddbf_a30fc6c0",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 930,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-26T13:57:19Z",
+      "side": 1,
+      "message": "These have (slightly) different input data, but the difference in the error reporting is a big one; the first one has no error-path, while the other one does. I guess that\u0027s due to the usual libyang-cpp deficiency, but please add a short comment to each of these how exactly the paths are \"wrong\". I\u0027d like to be able to tell what the difference is, based on the comments alone.",
+      "range": {
+        "startLine": 905,
+        "startChar": 1,
+        "endLine": 930,
+        "endChar": 1
+      },
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "07a9bbe0_c814a5b7",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 932,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-26T13:57:19Z",
+      "side": 1,
+      "message": "please add a comment here:\n  // same name, but a different namespace within the data",
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cc40865b_d1b5c389",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 945,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-26T13:57:19Z",
+      "side": 1,
+      "message": "please add a comment:\n // top-level node in the data, but URL indicates a subtree",
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "749dc8aa_c3d02550",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 976,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-26T13:57:19Z",
+      "side": 1,
+      "message": "I guess you want an explicit check that the data retrieval uses correct namespaces; let\u0027s say so in the comment, please",
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "611fe054_2d0751d0",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 1044,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-26T13:57:19Z",
+      "side": 1,
+      "message": "Please also test that PUT cannot change list keys:\n\n \u003e If the target resource represents a YANG list instance, then the key\n \u003e leaf values, in message-body representation, MUST be the same as the\n \u003e key leaf values in the request URI.  The PUT method MUST NOT be used\n \u003e to change the key leaf values for a data resource instance.",
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
