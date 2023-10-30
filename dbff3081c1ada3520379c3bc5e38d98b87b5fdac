@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "83fff6da_79cde726",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 219,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-30T13:47:54Z",
+      "side": 1,
+      "message": "The current server code checks authN/authZ before checking the request method, so this code is checking something else than what you\u0027re aiming for. This needs a proper authorization header.",
+      "range": {
+        "startLine": 219,
+        "startChar": 65,
+        "endLine": 219,
+        "endChar": 67
+      },
+      "revId": "dbff3081c1ada3520379c3bc5e38d98b87b5fdac",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
