@@ -14,7 +14,6 @@
 #include <sysrepo-cpp/Session.hpp>
 #include "restconf/Server.h"
 #include "tests/UniqueResource.h"
-#include "configure.cmake.h"
 
 using namespace std::string_literals;
 namespace ng = nghttp2::asio_http2;
@@ -126,7 +125,7 @@ TEST_CASE("HTTP")
     auto srSess = srConn.sessionStart(sysrepo::Datastore::Running);
     srSess.copyConfig(sysrepo::Datastore::Startup, "ietf-netconf-acm");
 
-    auto server = rousette::restconf::Server{srConn, SERVER_ADDRESS, SERVER_PORT, std::filesystem::path(CMAKE_CURRENT_BINARY_DIR) / "tests" / "pam"};
+    auto server = rousette::restconf::Server{srConn, SERVER_ADDRESS, SERVER_PORT};
     auto guard = make_unique_resource([] {},
                                       [&]() {
                                           srSess.switchDatastore(sysrepo::Datastore::Running);

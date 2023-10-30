@@ -45,7 +45,7 @@ The anonymous user access is disabled whenever these rules are not met.
 - CMake 3.19+
 - optionally for built-in tests, [Doctest](https://github.com/onqtam/doctest/) as a C++ unit test framework
 - optionally for built-in tests, [trompeloeil](https://github.com/rollbear/trompeloeil) for mock objects in C++
-- optionally for built-in tests, [Berkley DB's `db_load` from the `db-utils` package](https://docs.oracle.com/cd/E17076_05/html/api_reference/C/db_load.html) for PAM mocking
+- optionally for built-in tests, [`pam_matrix` and `pam_wrapper`](https://cwrap.org/pam_wrapper.html) for PAM mocking
 
 ## Building
 
