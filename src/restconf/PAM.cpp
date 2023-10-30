@@ -112,6 +112,7 @@ static int pam_userpass_conv(int num_msg, const struct pam_message** msg, struct
 
 std::string authenticate_pam(const UserPass& userPass, const std::optional<std::filesystem::path>& dir, const std::optional<std::string>& remoteHost)
 {
+    spdlog::trace("authenticate_pam: called");
     pam_handle_t* pamh = nullptr;
     int res;
     pam_conv conv = {
@@ -129,22 +130,27 @@ std::string authenticate_pam(const UserPass& userPass, const std::optional<std::
         pam_end(pamh, res);
     };
 
+    spdlog::trace("authenticate_pam: pam_start_confdir...");
     res = pam_start_confdir("rousette", userPass.username.c_str(), &conv, dir ? std::string(*dir).c_str() : nullptr, &pamh);
     std::unique_ptr<pam_handle_t, decltype(pamh_deleter)> guard{pamh, pamh_deleter};
     check("pam_start_confdir(" + (dir ? std::string(*dir) : std::string{}) + ")");
 
     if (remoteHost) {
+        spdlog::trace("authenticate_pam: pam_set_item(PAM_RHOST)...");
         res = pam_set_item(pamh, PAM_RHOST, remoteHost->c_str());
         check("pam_set_item(PAM_RHOST)");
     }
 
+    spdlog::trace("authenticate_pam: pam_authenticate...");
     res = pam_authenticate(pamh, 0);
     check("pam_authenticate");
 
+    spdlog::trace("authenticate_pam: pam_acct_mgmt...");
     res = pam_acct_mgmt(pamh, 0);
     check("pam_acct_mgmt");
 
     const void* item;
+    spdlog::trace("authenticate_pam: pam_get_item...");
     res = pam_get_item(pamh, PAM_USER, &item);
     check("pam_get_item(PAM_USER)");
     return (const char*)(item);
@@ -153,6 +159,7 @@ std::string authenticate_pam(const UserPass& userPass, const std::optional<std::
 
 std::string authenticate_pam(const std::string& blob, const std::optional<std::filesystem::path>& pamConfigDir, const std::optional<std::string>& remoteHost)
 {
+    spdlog::trace("authenticate_pam blob={}", blob);
     return authenticate_pam(parseBasicAuth(blob), pamConfigDir, remoteHost);
 }
 }

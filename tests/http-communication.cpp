@@ -86,11 +86,16 @@ Response clientRequest(auto method, auto xpath, const std::map<std::string, std:
     boost::asio::io_service io_service;
     ng_client::session client(io_service, SERVER_ADDRESS, SERVER_PORT);
 
+    // this is a test, and the server is expected to reply "soon"
+    client.read_timeout(boost::posix_time::milliseconds(3000));
+
     std::ostringstream oss;
     ng::header_map resHeaders;
     int statusCode;
+    std::optional<std::string> clientError;
 
     client.on_connect([&](auto) {
+        spdlog::trace("clientRequest: on_connect");
         boost::system::error_code ec;
 
         ng::header_map reqHeaders;
@@ -98,22 +103,36 @@ Response clientRequest(auto method, auto xpath, const std::map<std::string, std:
             reqHeaders.insert({name, {value, false}});
         }
 
+        spdlog::trace("clientRequest: submitting...");
         auto req = client.submit(ec, method, SERVER_ADDRESS_AND_PORT + "/restconf/data"s + xpath, reqHeaders);
+        spdlog::trace("clientRequest: ...submitted");
         req->on_response([&](const ng_client::response& res) {
+            spdlog::trace("clientRequest: req->on_response");
             res.on_data([&oss](const uint8_t* data, std::size_t len) {
+                spdlog::trace("clientRequest: res.on_data len={}", len);
                 oss.write(reinterpret_cast<const char*>(data), len);
             });
             statusCode = res.status_code();
             resHeaders = res.header();
         });
         req->on_close([&client](auto) {
+            spdlog::trace("clientRequest: req->on_close");
             client.shutdown();
+            spdlog::trace("HTTP client shutdown");
         });
+        spdlog::trace("clientRequest: on_connect CB done");
     });
-    client.on_error([](const boost::system::error_code& ec) {
-        FAIL("HTTP client error: ", ec.message());
+    client.on_error([&clientError](const boost::system::error_code& ec) {
+        spdlog::trace("clientRequest: client.on_error: {}", ec.message());
+        clientError = ec.message();
     });
+    spdlog::trace("io_service.run(): running");
     io_service.run();
+    spdlog::trace("io_service.run(): returned");
+
+    if (clientError) {
+        FAIL("HTTP client error: ", *clientError);
+    }
 
     return {statusCode, resHeaders, oss.str()};
 }

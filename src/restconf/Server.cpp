@@ -246,7 +246,9 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 std::string nacmUser;
                 if (auto authHeader = getHeaderValue(req.header(), "authorization")) {
                     try {
+                        spdlog::trace("server: requesting PAM auth...");
                         nacmUser = rousette::auth::authenticate_pam(*authHeader, pamConfigDir, peer);
+                        spdlog::trace("server: PAM nacmUser={}", nacmUser);
                     } catch (auth::Error& e) {
                         spdlog::error("PAM failed: {}", e.what());
                         throw ErrorResponse{401, "protocol", "access-denied", "Access denied."};
