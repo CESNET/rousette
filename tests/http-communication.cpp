@@ -81,7 +81,7 @@ static const auto SERVER_ADDRESS_AND_PORT = "http://["s + SERVER_ADDRESS + "]" +
 #define AUTH_DWDM {"authorization", "Basic ZHdkbTpEV0RN"}
 #define AUTH_NORULES {"authorization", "Basic bm9ydWxlczplbXB0eQ=="}
 
-Response retrieveData(auto xpath, const std::map<std::string, std::string>& headers = {})
+Response clientRequest(auto method, auto xpath, const std::map<std::string, std::string>& headers)
 {
     boost::asio::io_service io_service;
     ng_client::session client(io_service, SERVER_ADDRESS, SERVER_PORT);
@@ -98,7 +98,7 @@ Response retrieveData(auto xpath, const std::map<std::string, std::string>& head
             reqHeaders.insert({name, {value, false}});
         }
 
-        auto req = client.submit(ec, "GET", SERVER_ADDRESS_AND_PORT + "/restconf/data"s + xpath, reqHeaders);
+        auto req = client.submit(ec, method, SERVER_ADDRESS_AND_PORT + "/restconf/data"s + xpath, reqHeaders);
         req->on_response([&](const ng_client::response& res) {
             res.on_data([&oss](const uint8_t* data, std::size_t len) {
                 oss.write(reinterpret_cast<const char*>(data), len);
@@ -116,6 +116,11 @@ Response retrieveData(auto xpath, const std::map<std::string, std::string>& head
     io_service.run();
 
     return {statusCode, resHeaders, oss.str()};
+}
+
+Response get(auto xpath, const std::map<std::string, std::string>& headers)
+{
+    return clientRequest("GET", xpath, headers);
 }
 
 TEST_CASE("HTTP")
@@ -160,7 +165,7 @@ TEST_CASE("HTTP")
     srSess.applyChanges();
 
     // anonymous access doesn't work without magic NACM rules
-    REQUIRE(retrieveData("/ietf-system:system", {}) == Response{401, jsonHeaders, R"({
+    REQUIRE(get("/ietf-system:system", {}) == Response{401, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -200,7 +205,7 @@ TEST_CASE("HTTP")
     srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/rule[name='1']/action", "permit"); // overrides nacm:default-deny-* rules in ietf-system model
     srSess.applyChanges();
 
-    REQUIRE(retrieveData("/ietf-system:system", {}) == Response{200, jsonHeaders, R"({
+    REQUIRE(get("/ietf-system:system", {}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -208,7 +213,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-    REQUIRE(retrieveData("/ietf-interfaces:idk", {}) == Response{400, jsonHeaders, R"({
+    REQUIRE(get("/ietf-interfaces:idk", {}) == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -220,7 +225,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-    REQUIRE(retrieveData("/ietf-system:system/clock", {}) == Response{404, jsonHeaders, R"({
+    REQUIRE(get("/ietf-system:system/clock", {}) == Response{404, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -232,7 +237,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-    REQUIRE(retrieveData("/ietf-system:system/clock/timezone-utc-offset", {}) == Response{404, jsonHeaders, R"({
+    REQUIRE(get("/ietf-system:system/clock/timezone-utc-offset", {}) == Response{404, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -245,7 +250,7 @@ TEST_CASE("HTTP")
 }
 )"});
 
-    REQUIRE(retrieveData("/ietf-system:system", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
+    REQUIRE(get("/ietf-system:system", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -269,7 +274,7 @@ TEST_CASE("HTTP")
 )"});
 
     // wrong password
-    REQUIRE(retrieveData("/ietf-system:system", {{"authorization", "Basic ZHdkbTpGQUlM"}}) == Response{401, jsonHeaders, R"({
+    REQUIRE(get("/ietf-system:system", {{"authorization", "Basic ZHdkbTpGQUlM"}}) == Response{401, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -282,7 +287,7 @@ TEST_CASE("HTTP")
 }
 )"});
 
-    REQUIRE(retrieveData("/ietf-interfaces:idk", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
+    REQUIRE(get("/ietf-interfaces:idk", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -294,7 +299,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-    REQUIRE(retrieveData("/ietf-system:system/clock", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
+    REQUIRE(get("/ietf-system:system/clock", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "clock": {
       "timezone-utc-offset": 2
@@ -303,7 +308,7 @@ TEST_CASE("HTTP")
 }
 )"});
 
-    REQUIRE(retrieveData("/ietf-system:system/radius/server", {AUTH_NORULES}) == Response{400, jsonHeaders, R"({
+    REQUIRE(get("/ietf-system:system/radius/server", {AUTH_NORULES}) == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -316,7 +321,7 @@ TEST_CASE("HTTP")
 }
 )"});
 
-    REQUIRE(retrieveData("/ietf-system:system/radius/server=a", {AUTH_NORULES}) == Response{200, jsonHeaders, R"({
+    REQUIRE(get("/ietf-system:system/radius/server=a", {AUTH_NORULES}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "radius": {
       "server": [
@@ -389,7 +394,7 @@ TEST_CASE("HTTP")
             srSess.applyChanges();
         }
 
-        REQUIRE(retrieveData("/ietf-system:system", {}) == Response{401, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system", {}) == Response{401, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -401,7 +406,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-        REQUIRE(retrieveData("/ietf-system:system", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -427,7 +432,7 @@ TEST_CASE("HTTP")
 
     DOCTEST_SUBCASE("Basic querying of lists")
     {
-        REQUIRE(retrieveData("/ietf-system:system/radius/server=a", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system/radius/server=a", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "radius": {
       "server": [
@@ -444,7 +449,7 @@ TEST_CASE("HTTP")
 }
 )"});
 
-        REQUIRE(retrieveData("/ietf-system:system/radius/server=a/udp/address", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system/radius/server=a/udp/address", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "radius": {
       "server": [
@@ -460,7 +465,7 @@ TEST_CASE("HTTP")
 }
 )"});
 
-        REQUIRE(retrieveData("/ietf-system:system/radius/server=b", {AUTH_DWDM}) == Response{404, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system/radius/server=b", {AUTH_DWDM}) == Response{404, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -473,7 +478,7 @@ TEST_CASE("HTTP")
 }
 )"});
 
-        REQUIRE(retrieveData("/ietf-system:system/radius/server=a,b", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system/radius/server=a,b", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -489,7 +494,7 @@ TEST_CASE("HTTP")
 
     DOCTEST_SUBCASE("RPCs")
     {
-        REQUIRE(retrieveData("/ietf-system:system-restart", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system-restart", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -502,7 +507,7 @@ TEST_CASE("HTTP")
 }
 )"});
 
-        REQUIRE(retrieveData("/example:l/list=eth0/example-action", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
+        REQUIRE(get("/example:l/list=eth0/example-action", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -515,7 +520,7 @@ TEST_CASE("HTTP")
 }
 )"});
 
-        REQUIRE(retrieveData("/example:l/list=eth0/example-action/i", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
+        REQUIRE(get("/example:l/list=eth0/example-action/i", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -535,7 +540,7 @@ TEST_CASE("HTTP")
             {"access-control-allow-origin", {"*", false}},
         };
 
-        REQUIRE(retrieveData("/ietf-system:system", {}) == Response{200, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system", {}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -543,7 +548,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-        REQUIRE(retrieveData("/ietf-system:system", {{"accept", "text/plain"}}) == Response{406, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system", {{"accept", "text/plain"}}) == Response{406, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -555,7 +560,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-        REQUIRE(retrieveData("/ietf-system:system", {{"accept", "application/yang-data"}}) == Response{406, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system", {{"accept", "application/yang-data"}}) == Response{406, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -567,7 +572,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-        REQUIRE(retrieveData("/ietf-system:system", {{"content-type", "text/plain"}}) == Response{415, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system", {{"content-type", "text/plain"}}) == Response{415, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -579,7 +584,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-        REQUIRE(retrieveData("/ietf-system:system", {{"accept", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system", {{"accept", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -587,7 +592,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-        REQUIRE(retrieveData("/ietf-system:system", {{"content-type", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system", {{"content-type", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -595,7 +600,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-        REQUIRE(retrieveData("/ietf-system:system", {{"content-type", "application/yang-data+jsonx"}}) == Response{415, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system", {{"content-type", "application/yang-data+jsonx"}}) == Response{415, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -607,7 +612,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-        REQUIRE(retrieveData("/ietf-system:system", {{"content-type", "application/yang-data+xmlx"}}) == Response{415, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system", {{"content-type", "application/yang-data+xmlx"}}) == Response{415, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -619,7 +624,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-        REQUIRE(retrieveData("/ietf-system:system", {{"content-type", "application/yang-data+json;charset=utf8"}}) == Response{200, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system", {{"content-type", "application/yang-data+json;charset=utf8"}}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -627,19 +632,19 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-        REQUIRE(retrieveData("/ietf-system:system", {{"accept", "application/yang-data+xml"}}) == Response{200, xmlHeaders, R"(<system xmlns="urn:ietf:params:xml:ns:yang:ietf-system">
+        REQUIRE(get("/ietf-system:system", {{"accept", "application/yang-data+xml"}}) == Response{200, xmlHeaders, R"(<system xmlns="urn:ietf:params:xml:ns:yang:ietf-system">
   <contact>contact</contact>
   <hostname>hostname</hostname>
   <location>location</location>
 </system>
 )"});
-        REQUIRE(retrieveData("/ietf-system:system", {{"accept", "application/yang-data+xml,application/yang-data+json"}}) == Response{200, xmlHeaders, R"(<system xmlns="urn:ietf:params:xml:ns:yang:ietf-system">
+        REQUIRE(get("/ietf-system:system", {{"accept", "application/yang-data+xml,application/yang-data+json"}}) == Response{200, xmlHeaders, R"(<system xmlns="urn:ietf:params:xml:ns:yang:ietf-system">
   <contact>contact</contact>
   <hostname>hostname</hostname>
   <location>location</location>
 </system>
 )"});
-        REQUIRE(retrieveData("/ietf-system:system", {{"content-type", "application/yang-data+xml"}, {"accept", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system", {{"content-type", "application/yang-data+xml"}, {"accept", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -647,7 +652,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-        REQUIRE(retrieveData("/ietf-system:system", {{"accept", "blabla"}}) == Response{200, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system", {{"accept", "blabla"}}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -655,7 +660,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-        REQUIRE(retrieveData("/ietf-system:system", {{"accept", "*/*"}}) == Response{200, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system", {{"accept", "*/*"}}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -663,7 +668,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-        REQUIRE(retrieveData("/ietf-system:system", {{"accept", "application/*"}}) == Response{200, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system", {{"accept", "application/*"}}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -671,7 +676,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-        REQUIRE(retrieveData("/ietf-system:system", {{"accept", "image/*"}}) == Response{406, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system", {{"accept", "image/*"}}) == Response{406, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -683,7 +688,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-        REQUIRE(retrieveData("/ietf-system:system", {{"content-type", "application/*"}}) == Response{415, jsonHeaders, R"({
+        REQUIRE(get("/ietf-system:system", {{"content-type", "application/*"}}) == Response{415, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -695,7 +700,7 @@ TEST_CASE("HTTP")
   }
 }
 )"});
-        REQUIRE(retrieveData("/ietf-system:system", {{"accept", "application/yang-data+json;q=0.4,application/yang-data+xml"}}) == Response{200, xmlHeaders, R"(<system xmlns="urn:ietf:params:xml:ns:yang:ietf-system">
+        REQUIRE(get("/ietf-system:system", {{"accept", "application/yang-data+json;q=0.4,application/yang-data+xml"}}) == Response{200, xmlHeaders, R"(<system xmlns="urn:ietf:params:xml:ns:yang:ietf-system">
   <contact>contact</contact>
   <hostname>hostname</hostname>
   <location>location</location>
