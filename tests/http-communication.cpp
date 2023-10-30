@@ -85,9 +85,13 @@ Response clientRequest(auto method, auto xpath, const std::map<std::string, std:
     boost::asio::io_service io_service;
     ng_client::session client(io_service, SERVER_ADDRESS, SERVER_PORT);
 
+    // this is a test, and the server is expected to reply "soon"
+    client.read_timeout(boost::posix_time::seconds(3));
+
     std::ostringstream oss;
     ng::header_map resHeaders;
     int statusCode;
+    std::optional<std::string> clientError;
 
     client.on_connect([&](auto) {
         boost::system::error_code ec;
@@ -109,10 +113,14 @@ Response clientRequest(auto method, auto xpath, const std::map<std::string, std:
             client.shutdown();
         });
     });
-    client.on_error([](const boost::system::error_code& ec) {
-        FAIL("HTTP client error: ", ec.message());
+    client.on_error([&clientError](const boost::system::error_code& ec) {
+        clientError = ec.message();
     });
     io_service.run();
+
+    if (clientError) {
+        FAIL("HTTP client error: ", *clientError);
+    }
 
     return {statusCode, resHeaders, oss.str()};
 }
