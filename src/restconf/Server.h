@@ -6,7 +6,6 @@
 */
 
 #pragma once
-#include <filesystem>
 #include <sysrepo-cpp/Connection.hpp>
 #include <sysrepo-cpp/Subscription.hpp>
 #include "http/EventStream.h"
@@ -29,8 +28,7 @@ std::optional<std::string> as_subtree_path(const std::string& path);
 /** @short A RESTCONF-ish server */
 class Server {
 public:
-    explicit Server(sysrepo::Connection conn, const std::string& address, const std::string& port,
-            const std::optional<std::filesystem::path>& pamConfigDir);
+    explicit Server(sysrepo::Connection conn, const std::string& address, const std::string& port);
     ~Server();
 
 private:

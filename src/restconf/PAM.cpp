@@ -97,20 +97,28 @@ static int pam_userpass_conv(int num_msg, const struct pam_message** msg, struct
                 return PAM_BUF_ERR;
             }
             break;
-        /* case PAM_ERROR_MSG: */
-        /* case PAM_TEXT_INFO: */
+        case PAM_ERROR_MSG:
+            spdlog::error("PAM: pam_userpass_conv: PAM_ERROR_MSG: {}", msg[i]->msg);
+            break;
+        case PAM_TEXT_INFO:
+            spdlog::info("PAM: pam_userpass_conv: PAM_TEXT_INFO: {}", msg[i]->msg);
+            break;
         default:
-            spdlog::critical("PAM: pam_userpass_conv: unexpected msg_style {}", msg[i]->msg_style);
+            spdlog::critical("PAM: pam_userpass_conv: unexpected msg_style {}: {}", msg[i]->msg_style, msg[i]->msg);
             return PAM_CONV_ERR;
         }
         resp.get()[i].resp_retcode = PAM_SUCCESS;
         resp.get()[i].resp = str;
     }
-    *resp_r = resp.release();
+    if (resp_r) {
+        *resp_r = resp.release();
+    } else {
+        spdlog::warn("PAM: pam_userpass_conv: no reply expected, weird");
+    }
     return PAM_SUCCESS;
 }
 
-std::string authenticate_pam(const UserPass& userPass, const std::optional<std::filesystem::path>& dir, const std::optional<std::string>& remoteHost)
+std::string authenticate_pam(const UserPass& userPass, const std::optional<std::string>& remoteHost)
 {
     pam_handle_t* pamh = nullptr;
     int res;
@@ -129,9 +137,9 @@ std::string authenticate_pam(const UserPass& userPass, const std::optional<std::
         pam_end(pamh, res);
     };
 
-    res = pam_start_confdir("rousette", userPass.username.c_str(), &conv, dir ? std::string(*dir).c_str() : nullptr, &pamh);
+    res = pam_start("rousette", userPass.username.c_str(), &conv, &pamh);
     std::unique_ptr<pam_handle_t, decltype(pamh_deleter)> guard{pamh, pamh_deleter};
-    check("pam_start_confdir(" + (dir ? std::string(*dir) : std::string{}) + ")");
+    check("pam_start()");
 
     if (remoteHost) {
         res = pam_set_item(pamh, PAM_RHOST, remoteHost->c_str());
@@ -151,9 +159,9 @@ std::string authenticate_pam(const UserPass& userPass, const std::optional<std::
 }
 }
 
-std::string authenticate_pam(const std::string& blob, const std::optional<std::filesystem::path>& pamConfigDir, const std::optional<std::string>& remoteHost)
+std::string authenticate_pam(const std::string& blob, const std::optional<std::string>& remoteHost)
 {
-    return authenticate_pam(parseBasicAuth(blob), pamConfigDir, remoteHost);
+    return authenticate_pam(parseBasicAuth(blob), remoteHost);
 }
 }
 

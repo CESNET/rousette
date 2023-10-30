@@ -188,7 +188,7 @@ Server::~Server()
     server->join();
 }
 
-Server::Server(sysrepo::Connection conn, const std::string& address, const std::string& port, const std::optional<std::filesystem::path>& pamConfigDir)
+Server::Server(sysrepo::Connection conn, const std::string& address, const std::string& port)
     : nacm(conn)
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
@@ -227,7 +227,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     });
 
     server->handle(restconfRoot,
-        [conn /* intentionally by value, otherwise conn gets destroyed when the ctor returns */, this, pamConfigDir](const auto& req, const auto& res) mutable {
+        [conn /* intentionally by value, otherwise conn gets destroyed when the ctor returns */, this](const auto& req, const auto& res) mutable {
             const auto& peer = http::peer_from_request(req);
             spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
 
@@ -242,7 +242,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 std::string nacmUser;
                 if (auto authHeader = getHeaderValue(req.header(), "authorization")) {
                     try {
-                        nacmUser = rousette::auth::authenticate_pam(*authHeader, pamConfigDir, peer);
+                        nacmUser = rousette::auth::authenticate_pam(*authHeader, peer);
                     } catch (auth::Error& e) {
                         spdlog::error("PAM failed: {}", e.what());
                         throw ErrorResponse{401, "protocol", "access-denied", "Access denied."};

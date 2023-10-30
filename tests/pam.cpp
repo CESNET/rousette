@@ -7,7 +7,6 @@
 
 #include "trompeloeil_doctest.h"
 #include "restconf/PAM.h"
-#include "configure.cmake.h"
 
 TEST_CASE("URI path parser")
 {
@@ -41,14 +40,7 @@ TEST_CASE("URI path parser")
             blob = "bm9ydWxlczplbXB0eQ==";
         }
 
-        SECTION("double colon") {
-            username = "foo";
-            blob = "Zm9vOmJhcjpiYXo=";
-        }
-
-        REQUIRE(authenticate_pam("Basic " + blob,
-                    std::filesystem::path(CMAKE_CURRENT_BINARY_DIR) / "tests" / "pam",
-                    "[::1]:666") == username);
+        REQUIRE(authenticate_pam("Basic " + blob, "[::1]:666") == username);
     }
 
     SECTION("failed") {
@@ -67,7 +59,7 @@ TEST_CASE("URI path parser")
 
         SECTION("invalid user") {
             input = "Basic MDox";
-            error = "PAM: pam_authenticate: User not known to the underlying authentication module";
+            error = "PAM: pam_authenticate: Authentication failure";
         }
 
         SECTION("wrong password") {
@@ -76,7 +68,7 @@ TEST_CASE("URI path parser")
         }
 
         REQUIRE_THROWS_WITH_AS(
-                authenticate_pam(input, std::filesystem::path(CMAKE_CURRENT_BINARY_DIR) / "tests" / "pam", ""),
+                authenticate_pam(input, ""),
                 error.c_str(),
                 rousette::auth::Error);
     }
