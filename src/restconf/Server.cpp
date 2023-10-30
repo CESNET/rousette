@@ -14,10 +14,12 @@
 #include "http/utils.hpp"
 #include "restconf/Exceptions.h"
 #include "restconf/Nacm.h"
+#include "restconf/PAM.h"
 #include "restconf/Server.h"
 #include "restconf/uri.h"
 #include "restconf/utils.h"
 #include "sr/OpticalEvents.h"
+#include "NacmIdentities.h"
 
 using namespace std::literals;
 
@@ -190,7 +192,7 @@ Server::~Server()
     server->join();
 }
 
-Server::Server(sysrepo::Connection conn, const std::string& address, const std::string& port)
+Server::Server(sysrepo::Connection conn, const std::string& address, const std::string& port, const std::optional<std::filesystem::path>& pamConfigDir)
     : nacm(conn)
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
@@ -229,7 +231,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     });
 
     server->handle(restconfRoot,
-        [conn /* intentionally by value, otherwise conn gets destroyed when the ctor returns */, this](const auto& req, const auto& res) mutable {
+        [conn /* intentionally by value, otherwise conn gets destroyed when the ctor returns */, this, pamConfigDir](const auto& req, const auto& res) mutable {
             const auto& peer = http::peer_from_request(req);
             spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
 
@@ -242,10 +244,15 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 dataFormat = chooseDataEncoding(req.header());
 
                 std::string nacmUser;
-                if (auto userHeader = getHeaderValue(req.header(), "x-remote-user"); userHeader && !userHeader->empty()) {
-                     nacmUser = *userHeader;
+                if (auto authHeader = getHeaderValue(req.header(), "authorization")) {
+                    try {
+                        nacmUser = rousette::auth::authenticate_pam(*authHeader, pamConfigDir, peer);
+                    } catch (auth::Error& e) {
+                        spdlog::error("PAM failed: {}", e.what());
+                        throw ErrorResponse{401, "protocol", "access-denied", "Access denied."};
+                    }
                 } else {
-                     throw ErrorResponse(401, "protocol", "access-denied", "HTTP header x-remote-user not found or empty.");
+                    nacmUser = ANONYMOUS_USER;
                 }
 
                 if (!nacm.authorize(sess, nacmUser)) {
