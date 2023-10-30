@@ -6,6 +6,7 @@
 */
 
 #include <string>
+#include <optional>
 
 namespace rousette::restconf {
 
@@ -15,12 +16,14 @@ struct ErrorResponse : public std::exception {
     std::string errorTag;
     std::string errorType;
     std::string errorMessage;
+    std::optional<std::string> errorPath;
 
-    ErrorResponse(int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage)
+    ErrorResponse(int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath = std::nullopt)
         : code(code)
         , errorTag(errorTag)
         , errorType(errorType)
         , errorMessage(errorMessage)
+        , errorPath(errorPath)
     {
     }
 

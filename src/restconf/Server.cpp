@@ -277,7 +277,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     throw ErrorResponse(404, "application", "invalid-value", "No data from sysrepo.");
                 }
             } catch (const ErrorResponse& e) {
-                rejectWithError(sess.getContext(), dataFormat.response, req, res, e.code, e.errorType, e.errorTag, e.errorMessage);
+                rejectWithError(sess.getContext(), dataFormat.response, req, res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath);
             } catch (const sysrepo::ErrorWithCode& e) {
                 spdlog::error("Sysrepo exception: {}", e.what());
                 rejectWithError(sess.getContext(), dataFormat.response, req, res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception.");
