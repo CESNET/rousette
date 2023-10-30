@@ -79,6 +79,7 @@ static const auto SERVER_ADDRESS_AND_PORT = "http://["s + SERVER_ADDRESS + "]" +
 
 #define AUTH_DWDM {"authorization", "Basic ZHdkbTpEV0RN"}
 #define AUTH_NORULES {"authorization", "Basic bm9ydWxlczplbXB0eQ=="}
+#define AUTH_ROOT {"authorization", "Basic cm9vdDpzZWtyaXQ="}
 
 Response clientRequest(auto method, auto xpath, const std::map<std::string, std::string>& headers)
 {
@@ -211,6 +212,23 @@ TEST_CASE("HTTP")
     srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/rule[name='1']/module-name", "ietf-system");
     srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/rule[name='1']/action", "permit"); // overrides nacm:default-deny-* rules in ietf-system model
     srSess.applyChanges();
+
+    // we do not support these http methods yet
+    for (const auto& httpMethod : {"OPTIONS"s, "POST"s, "PUT"s, "PATCH"s, "DELETE"s}) {
+        CAPTURE(httpMethod);
+        REQUIRE(clientRequest(httpMethod, "/ietf-system:system", {AUTH_DWDM}) == Response{405, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-not-supported",
+        "error-message": "Method not allowed."
+      }
+    ]
+  }
+}
+)"});
+    }
 
     REQUIRE(get("/ietf-system:system", {}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
