@@ -6,7 +6,6 @@
 */
 
 #pragma once
-#include <filesystem>
 #include <optional>
 #include <string>
 
@@ -19,10 +18,9 @@ class Error : public std::runtime_error {
 /** @brief Talk to PAM
  *
  * @param blob Raw data from the Authorization HTTP header
- * @param pamConfigDir Override systemwide PAM configuration
  * @param remoteHost Arbitrary debugging info about the remote host which triggered this action
  *
  * @return the authenticated username
  */
-std::string authenticate_pam(const std::string& blob, const std::optional<std::filesystem::path>& pamConfigDir, const std::optional<std::string>& remoteHost);
+std::string authenticate_pam(const std::string& blob, const std::optional<std::string>& remoteHost);
 }

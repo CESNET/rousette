@@ -6,8 +6,8 @@
         state: present
       become: true
 
-    - name: install libdb-utils
+    - name: install pam_wrapper
       package:
-        name: libdb-utils
+        name: pam_wrapper
         state: present
       become: true

@@ -1,6 +1,4 @@
-auth required pam_userdb.so db=@TEST_PAM_USERDB_NOSUFFIX@ debug crypt=none
-account required pam_userdb.so db=@TEST_PAM_USERDB_NOSUFFIX@ debug crypt=none
-password required pam_warn.so
-password required pam_deny.so
-session  required pam_warn.so
-session  required pam_deny.so
+auth required @PAM_WRAPPER_MODULES_DIR@/pam_matrix.so passdb=@TEST_PAM_WRAPPER_DB@ verbose
+account required @PAM_WRAPPER_MODULES_DIR@/pam_matrix.so passdb=@TEST_PAM_WRAPPER_DB@ verbose
+password required @PAM_WRAPPER_MODULES_DIR@/pam_matrix.so passdb=@TEST_PAM_WRAPPER_DB@ verbose
+session required @PAM_WRAPPER_MODULES_DIR@/pam_matrix.so passdb=@TEST_PAM_WRAPPER_DB@ verbose

@@ -139,8 +139,10 @@ if(BUILD_TESTING)
 
     find_program(SYSREPOCTL sysrepoctl)
     find_program(SYSREPOCFG sysrepocfg)
-    find_program(BERKLEY_DB_LOAD db_load)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/configure.cmake.h.in ${CMAKE_CURRENT_BINARY_DIR}/configure.cmake.h @ONLY)
+    pkg_check_modules(pam_wrapper REQUIRED IMPORTED_TARGET pam_wrapper)
+    pkg_get_variable(PAM_WRAPPER_MODULES_DIR pam_wrapper modules)
+    set(TEST_PAM_WRAPPER_DB ${CMAKE_CURRENT_SOURCE_DIR}/tests/pam/users)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/pam/other.in ${CMAKE_CURRENT_BINARY_DIR}/tests/pam/other @ONLY)
 
     function(rousette_test)
         cmake_parse_arguments(TEST "" "NAME;FIXTURE;RESOURCE_LOCK" "LIBRARIES;COMMAND" ${ARGN})
@@ -188,25 +190,25 @@ if(BUILD_TESTING)
         endif()
     endfunction()
 
+    function(wrap_test_pam TEST_NAME)
+        set_property(TEST test-${TEST_NAME} APPEND PROPERTY ENVIRONMENT
+            "LD_PRELOAD=${pam_wrapper_LDFLAGS}"
+            "PAM_WRAPPER_SERVICE_DIR=${CMAKE_CURRENT_BINARY_DIR}/tests/pam"
+            "PAM_WRAPPER=1"
+            "UID_WRAPPER_DISABLE_DEEPBIND=1"
+            )
+    endfunction()
+
     rousette_test(NAME http-utils LIBRARIES rousette-http)
     rousette_test(NAME pam LIBRARIES rousette-auth)
-
-    set(TEST_PAM_USERDB_NOSUFFIX ${CMAKE_CURRENT_BINARY_DIR}/tests/pam/userdb)
-    set(TEST_PAM_USERDB_FILE ${TEST_PAM_USERDB_NOSUFFIX}.db)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/pam/other.in ${CMAKE_CURRENT_BINARY_DIR}/tests/pam/other @ONLY)
-    add_custom_command(OUTPUT ${TEST_PAM_USERDB_FILE}
-        COMMAND ${CMAKE_COMMAND} -E remove ${TEST_PAM_USERDB_FILE}
-        COMMAND ${BERKLEY_DB_LOAD} -f ${CMAKE_CURRENT_SOURCE_DIR}/tests/pam/database.dump ${TEST_PAM_USERDB_FILE}
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tests/pam/database.dump)
-    add_custom_target(generate_pam_userdb DEPENDS ${TEST_PAM_USERDB_FILE})
-    add_dependencies(test-pam generate_pam_userdb)
+    wrap_test_pam(pam)
 
     set(fixture-http
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/ietf-system@2014-08-06.yang FEATURE radius
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang FEATURE f1)
     rousette_test(NAME http-communication LIBRARIES rousette-restconf FIXTURE fixture-http)
-    add_dependencies(test-http-communication generate_pam_userdb)
+    wrap_test_pam(http-communication)
 
     set(fixture-uri-parser
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang FEATURE f1
