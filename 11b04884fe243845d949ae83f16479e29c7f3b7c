@@ -364,6 +364,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "b0b70a71_2b52bd33",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 814,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-31T13:36:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6eb0086c_b60d7902",
+      "range": {
+        "startLine": 814,
+        "startChar": 112,
+        "endLine": 814,
+        "endChar": 143
+      },
+      "revId": "11b04884fe243845d949ae83f16479e29c7f3b7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "6c3fb3f1_ad1b6c36",

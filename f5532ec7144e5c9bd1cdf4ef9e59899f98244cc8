@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "bcb35390_2d375619",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-31T13:36:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "73a7f6cc_68c37067",
+      "range": {
+        "startLine": 54,
+        "startChar": 5,
+        "endLine": 54,
+        "endChar": 13
+      },
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "ae53e578_3fa2bdb8",
@@ -37,6 +61,30 @@
       "writtenOn": "2023-10-26T13:57:19Z",
       "side": 1,
       "message": "any particular reason for requiring a Leaf instead of a SchemaNode?\n\nAlso, do you think that an operator\u003d\u003d for SchemaNode in libyang-cpp would help?",
+      "range": {
+        "startLine": 59,
+        "startChar": 57,
+        "endLine": 59,
+        "endChar": 61
+      },
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "891110d7_4ee7c9a9",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-31T13:36:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ae53e578_3fa2bdb8",
       "range": {
         "startLine": 59,
         "startChar": 57,
@@ -70,6 +118,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "ec48e504_e74a5889",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 235,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-31T13:36:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e5a6888a_310f5aaf",
+      "range": {
+        "startLine": 235,
+        "startChar": 57,
+        "endLine": 235,
+        "endChar": 61
+      },
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "30232511_d75e177a",
@@ -83,6 +155,30 @@
       "writtenOn": "2023-10-26T13:57:19Z",
       "side": 1,
       "message": "just throw an appropriate ErrorResponse and rely on the common catch handler",
+      "range": {
+        "startLine": 379,
+        "startChar": 0,
+        "endLine": 380,
+        "endChar": 31
+      },
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "47594462_d82fd4ea",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 380,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-31T13:36:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "30232511_d75e177a",
       "range": {
         "startLine": 379,
         "startChar": 0,
@@ -116,6 +212,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "5f9cee97_a496ff68",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 385,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-31T13:36:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e2301226_c79bf162",
+      "range": {
+        "startLine": 384,
+        "startChar": 0,
+        "endLine": 385,
+        "endChar": 31
+      },
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "6993bc09_8838f6e5",
@@ -133,6 +253,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "0cea1444_0c5689bb",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 397,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-31T13:36:11Z",
+      "side": 1,
+      "message": "Done. Sorry, probably a wrong rebase.",
+      "parentUuid": "6993bc09_8838f6e5",
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "16ca0b43_bcfe44f3",
@@ -146,6 +284,30 @@
       "writtenOn": "2023-10-26T13:57:19Z",
       "side": 1,
       "message": "please add a #define for this, something like CONTENT_TYPE_JSON for example",
+      "range": {
+        "startLine": 823,
+        "startChar": 145,
+        "endLine": 823,
+        "endChar": 191
+      },
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3290e26c_4ab3c938",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 823,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-31T13:36:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "16ca0b43_bcfe44f3",
       "range": {
         "startLine": 823,
         "startChar": 145,
@@ -230,6 +392,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "ca88dc03_19a4be87",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 932,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-31T13:36:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "07a9bbe0_c814a5b7",
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "cc40865b_d1b5c389",
@@ -247,6 +427,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "9e53e66e_9e9bf5b4",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 945,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-31T13:36:11Z",
+      "side": 1,
+      "message": "It is more like \"different top-level node in the data than the URL indicates\"",
+      "parentUuid": "cc40865b_d1b5c389",
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "749dc8aa_c3d02550",
@@ -260,6 +458,24 @@
       "writtenOn": "2023-10-26T13:57:19Z",
       "side": 1,
       "message": "I guess you want an explicit check that the data retrieval uses correct namespaces; let\u0027s say so in the comment, please",
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9fe7b59a_b1d44942",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 976,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-31T13:36:11Z",
+      "side": 1,
+      "message": "I modified the comment so it is more clear what is going on here.",
+      "parentUuid": "749dc8aa_c3d02550",
       "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
