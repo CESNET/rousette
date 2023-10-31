@@ -22,6 +22,30 @@
       },
       "revId": "dbff3081c1ada3520379c3bc5e38d98b87b5fdac",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7bd0e94d_f5a20b9a",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 219,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-10-31T08:59:33Z",
+      "side": 1,
+      "message": "This test has a proper NACM setup just few lines above this call so I think it worked as expected because the anonymous user access was enabled. But I added the auth header anyway.",
+      "parentUuid": "83fff6da_79cde726",
+      "range": {
+        "startLine": 219,
+        "startChar": 65,
+        "endLine": 219,
+        "endChar": 67
+      },
+      "revId": "dbff3081c1ada3520379c3bc5e38d98b87b5fdac",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
