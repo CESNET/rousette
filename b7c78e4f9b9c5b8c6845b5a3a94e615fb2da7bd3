@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f2bf6401_4c0ecba1",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 219,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-10-31T10:37:34Z",
+      "side": 1,
+      "message": "AUTH_ROOT",
+      "range": {
+        "startLine": 219,
+        "startChar": 66,
+        "endLine": 219,
+        "endChar": 75
+      },
+      "revId": "b7c78e4f9b9c5b8c6845b5a3a94e615fb2da7bd3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
