@@ -89,13 +89,16 @@ const ng::header_map xmlHeaders{
     {"content-type", {"application/yang-data+xml", false}},
 };
 
-Response clientRequest(auto method, auto xpath, const std::map<std::string, std::string>& headers)
+Response clientRequest(auto method,
+        auto xpath,
+        const std::map<std::string, std::string>& headers,
+        // this is a test, and the server is expected to reply "soon"
+        const boost::posix_time::time_duration timeout=boost::posix_time::seconds(3))
 {
     boost::asio::io_service io_service;
     ng_client::session client(io_service, SERVER_ADDRESS, SERVER_PORT);
 
-    // this is a test, and the server is expected to reply "soon"
-    client.read_timeout(boost::posix_time::seconds(3));
+    client.read_timeout(timeout);
 
     std::ostringstream oss;
     ng::header_map resHeaders;
@@ -128,7 +131,7 @@ Response clientRequest(auto method, auto xpath, const std::map<std::string, std:
     io_service.run();
 
     if (clientError) {
-        FAIL("HTTP client error: ", *clientError);
+        throw std::runtime_error{"HTTP client error: " + *clientError};
     }
 
     return {statusCode, resHeaders, oss.str()};
