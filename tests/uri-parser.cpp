@@ -219,6 +219,7 @@ TEST_CASE("URI path parser")
                  {"/restconf/data/foo:list=A%25Z", ResourcePath({
                                                        {{"foo", "list"}, {"A%Z"}},
                                                    })},
+                 {"/restconf/data", ResourcePath({})}
              }) {
 
             CAPTURE(uriPath);

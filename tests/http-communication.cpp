@@ -53,6 +53,18 @@ TEST_CASE("HTTP")
         }
     }
 
+    DOCTEST_SUBCASE("entire datastore")
+    {
+        REQUIRE(get("", {}) == Response{200, jsonHeaders, R"({
+  "ietf-system:system": {
+    "contact": "contact",
+    "hostname": "hostname",
+    "location": "location"
+  }
+}
+)"});
+    }
+
     DOCTEST_SUBCASE("Basic querying of lists")
     {
         REQUIRE(get("/ietf-system:system/radius/server=a", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
