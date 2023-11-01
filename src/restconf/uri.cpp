@@ -32,8 +32,8 @@ const auto apiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentif
 const auto listInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = apiIdentifier >> -('=' >> keyList);
 const auto fullyQualifiedApiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentifier"} = identifier >> ':' >> identifier;
 const auto fullyQualifiedListInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = fullyQualifiedApiIdentifier >> -('=' >> keyList);
-const auto uriGrammar = x3::rule<class grammar, std::vector<PathSegment>>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> "/" >> x3::lit("data") >> "/"
-    >> fullyQualifiedListInstance >> -("/" >> listInstance % "/"); // RFC 8040, sec 3.5.3
+const auto uriGrammar = x3::rule<class grammar, std::vector<PathSegment>>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> "/" >> x3::lit("data") >>
+    -("/" >> fullyQualifiedListInstance >> -("/" >> listInstance % "/")); // RFC 8040, sec 3.5.3
 }
 
 std::optional<ResourcePath> parseUriPath(const std::string& uriPath)
@@ -220,6 +220,9 @@ std::string asLibyangPath(const libyang::Context& ctx, const std::string& uriPat
     if (!resourcePath) {
         throw InvalidURIException("Syntax error");
     }
+    if (resourcePath->segments.empty()) {
+        return "/*";
+    }
     return asLibyangPath(ctx, resourcePath->segments.begin(), resourcePath->segments.end());
 }
 
@@ -237,6 +240,9 @@ std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& c
     auto resourcePath = impl::parseUriPath(uriPath);
     if (!resourcePath) {
         throw InvalidURIException("Syntax error");
+    }
+    if (resourcePath->segments.empty()) {
+        throw InvalidURIException("Cannot split the datastore resource URI");
     }
 
 
