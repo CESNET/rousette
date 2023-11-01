@@ -42,6 +42,11 @@ struct UserPass {
     std::string password;
 };
 
+struct PamConvData {
+    UserPass userPass;
+    std::optional<std::chrono::microseconds> delay;
+};
+
 UserPass parseBasicAuth(const std::string& blob)
 {
     std::string b64;
@@ -64,9 +69,16 @@ UserPass parseBasicAuth(const std::string& blob)
     return res;
 }
 
+static void pam_register_delay(int retval, unsigned usec_delay, void *appdata_ptr)
+{
+    (void)retval;
+    auto& delay = reinterpret_cast<PamConvData*>(appdata_ptr)->delay;
+    delay = std::chrono::microseconds{usec_delay};
+};
+
 static int pam_userpass_conv(int num_msg, const struct pam_message** msg, struct pam_response** resp_r, void* appdata_ptr)
 {
-    const auto& userPass = *(const UserPass*)(appdata_ptr);
+    const auto& userPass = reinterpret_cast<const PamConvData*>(appdata_ptr)->userPass;
 
     auto release_response = [&num_msg](struct pam_response* resp) {
         for (int i = 0; i < num_msg; ++i) {
@@ -122,14 +134,15 @@ std::string authenticate_pam(const UserPass& userPass, const std::optional<std::
 {
     pam_handle_t* pamh = nullptr;
     int res;
+    PamConvData data{userPass, std::nullopt};
     pam_conv conv = {
         .conv = pam_userpass_conv,
-        .appdata_ptr = (void*)(&userPass),
+        .appdata_ptr = (void*)(&data),
     };
 
-    auto check = [&res, &pamh](const std::string& fun) {
+    auto check = [&res, &pamh, &data](const std::string& fun) {
         if (res != PAM_SUCCESS) {
-            throw Error{"PAM: " + fun + ": " + pam_strerror(pamh, res)};
+            throw Error{"PAM: " + fun + ": " + pam_strerror(pamh, res), data.delay};
         }
     };
 
@@ -145,6 +158,9 @@ std::string authenticate_pam(const UserPass& userPass, const std::optional<std::
         res = pam_set_item(pamh, PAM_RHOST, remoteHost->c_str());
         check("pam_set_item(PAM_RHOST)");
     }
+
+    res = pam_set_item(pamh, PAM_FAIL_DELAY, (const void*)pam_register_delay);
+    check("pam_set_item(PAM_FAIL_DELAY)");
 
     res = pam_authenticate(pamh, 0);
     check("pam_authenticate");

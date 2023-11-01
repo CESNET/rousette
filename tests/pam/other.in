@@ -1,3 +1,4 @@
+auth optional pam_faildelay.so delay=3000000
 auth required @PAM_WRAPPER_MODULES_DIR@/pam_matrix.so passdb=@TEST_PAM_WRAPPER_DB@ verbose
 account required @PAM_WRAPPER_MODULES_DIR@/pam_matrix.so passdb=@TEST_PAM_WRAPPER_DB@ verbose
 password required @PAM_WRAPPER_MODULES_DIR@/pam_matrix.so passdb=@TEST_PAM_WRAPPER_DB@ verbose

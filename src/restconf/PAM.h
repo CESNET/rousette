@@ -6,13 +6,21 @@
 */
 
 #pragma once
+#include <chrono>
 #include <optional>
 #include <string>
 
 namespace rousette::auth {
 
 class Error : public std::runtime_error {
-    using std::runtime_error::runtime_error;
+public:
+    std::optional<std::chrono::microseconds> delay;
+
+    Error(const std::string& message, std::optional<std::chrono::microseconds> delay=std::nullopt)
+        : std::runtime_error{message}
+        , delay(delay)
+    {
+    }
 };
 
 /** @brief Talk to PAM
