@@ -337,6 +337,24 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "5be2dada_603741dd",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 849,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-01T12:14:51Z",
+      "side": 1,
+      "message": "We talked about this on the call few days ago. I agree we should implement error-path reporting for wrong URIs too but it is for another patch.",
+      "parentUuid": "62e2632d_3391f03a",
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "bd6aad6f_82120e82",
         "filename": "tests/http-communication.cpp",
         "patchSetId": 14
@@ -365,6 +383,30 @@
       "writtenOn": "2023-10-26T13:57:19Z",
       "side": 1,
       "message": "These have (slightly) different input data, but the difference in the error reporting is a big one; the first one has no error-path, while the other one does. I guess that\u0027s due to the usual libyang-cpp deficiency, but please add a short comment to each of these how exactly the paths are \"wrong\". I\u0027d like to be able to tell what the difference is, based on the comments alone.",
+      "range": {
+        "startLine": 905,
+        "startChar": 1,
+        "endLine": 930,
+        "endChar": 1
+      },
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "397df539_c9b5e7f5",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 930,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-01T12:14:51Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6980ddbf_a30fc6c0",
       "range": {
         "startLine": 905,
         "startChar": 1,
@@ -493,6 +535,24 @@
       "writtenOn": "2023-10-26T13:57:19Z",
       "side": 1,
       "message": "Please also test that PUT cannot change list keys:\n\n \u003e If the target resource represents a YANG list instance, then the key\n \u003e leaf values, in message-body representation, MUST be the same as the\n \u003e key leaf values in the request URI.  The PUT method MUST NOT be used\n \u003e to change the key leaf values for a data resource instance.",
+      "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c314bfa3_f7ede05a",
+        "filename": "tests/http-communication.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 1044,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-01T12:14:51Z",
+      "side": 1,
+      "message": "This should now be solved.",
+      "parentUuid": "611fe054_2d0751d0",
       "revId": "f5532ec7144e5c9bd1cdf4ef9e59899f98244cc8",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
