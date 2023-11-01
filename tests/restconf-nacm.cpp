@@ -222,8 +222,14 @@ TEST_CASE("HTTP")
 }
 )"});
 
-        // wrong password
-        REQUIRE(get("/ietf-system:system", {{"authorization", "Basic ZHdkbTpGQUlM"}}) == Response{401, jsonHeaders, R"({
+        {
+            // a wrong password should cause a delayed response
+            const auto start = std::chrono::steady_clock::now();
+            REQUIRE(clientRequest("GET",
+                        "/ietf-system:system",
+                        {{"authorization", "Basic ZHdkbTpGQUlM"}},
+                        boost::posix_time::seconds(5))
+                    == Response{401, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -235,6 +241,22 @@ TEST_CASE("HTTP")
   }
 }
 )"});
+            auto processingMS = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
+            REQUIRE(processingMS <= 5'000);
+            REQUIRE(processingMS >= 1'500);
+        }
+
+        {
+            // wrong password: the server should not crash when the client times out
+            const auto start = std::chrono::steady_clock::now();
+            REQUIRE_THROWS_WITH(clientRequest("GET",
+                        "/ietf-system:system",
+                        {{"authorization", "Basic ZHdkbTpGQUlM"}},
+                        boost::posix_time::milliseconds(100)),
+                    "HTTP client error: Connection timed out");
+            auto processingMS = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
+            REQUIRE(processingMS <= 500);
+        }
 
         REQUIRE(get("/ietf-interfaces:idk", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
