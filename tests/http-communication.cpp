@@ -230,6 +230,15 @@ TEST_CASE("HTTP")
 )"});
     }
 
+    REQUIRE(get("", {}) == Response{200, jsonHeaders, R"({
+  "ietf-system:system": {
+    "contact": "contact",
+    "hostname": "hostname",
+    "location": "location"
+  }
+}
+)"});
+
     REQUIRE(get("/ietf-system:system", {}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "contact": "contact",
