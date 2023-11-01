@@ -8,7 +8,7 @@
 #include "trompeloeil_doctest.h"
 #include "restconf/PAM.h"
 
-TEST_CASE("URI path parser")
+TEST_CASE("HTTP PAM auth")
 {
     using rousette::auth::authenticate_pam;
 
