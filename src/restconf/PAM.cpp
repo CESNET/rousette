@@ -110,10 +110,10 @@ static int pam_userpass_conv(int num_msg, const struct pam_message** msg, struct
             }
             break;
         case PAM_ERROR_MSG:
-            spdlog::error("PAM: pam_userpass_conv: PAM_ERROR_MSG: {}", msg[i]->msg);
-            break;
         case PAM_TEXT_INFO:
-            spdlog::info("PAM: pam_userpass_conv: PAM_TEXT_INFO: {}", msg[i]->msg);
+            // There's no user to show these messages to, so let's just ignore them.
+            // There's very likely also no point in logging them because they are, by definition, intended for the
+            // user, not for the system operator.
             break;
         default:
             spdlog::critical("PAM: pam_userpass_conv: unexpected msg_style {}: {}", msg[i]->msg_style, msg[i]->msg);
@@ -124,8 +124,6 @@ static int pam_userpass_conv(int num_msg, const struct pam_message** msg, struct
     }
     if (resp_r) {
         *resp_r = resp.release();
-    } else {
-        spdlog::warn("PAM: pam_userpass_conv: no reply expected, weird");
     }
     return PAM_SUCCESS;
 }
