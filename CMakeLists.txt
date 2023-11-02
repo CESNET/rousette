@@ -182,20 +182,26 @@ if(BUILD_TESTING)
             set_tests_properties(test-${TEST_NAME} PROPERTIES RESOURCE_LOCK "${TEST_RESOURCE_LOCK}")
         endif()
 
-        # How to do this:
-        # take the args for manage module from variable "fixture{fixture_name}"
-        # and then add set env vars for sysrepo
-        # set them ALSO for the init/cleanup tests
         if(TEST_FIXTURE)
-            add_test(NAME ${test_name_init} COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/sysrepoctl-manage-module.sh ${SYSREPOCTL} ${SYSREPOCFG} prepare ${${TEST_FIXTURE}})
+            set(SYSREPO_REPOSITORY_PATH ${CMAKE_CURRENT_BINARY_DIR}/test_repositories/test_${TEST_NAME})
+            set(SYSREPO_SHM_PREFIX rousette_test_${TEST_NAME})
+            add_test(NAME ${test_name_init}
+                COMMAND ${SYSREPOCTL}
+                --search-dirs ${CMAKE_CURRENT_SOURCE_DIR}/yang:${CMAKE_CURRENT_SOURCE_DIR}/tests/yang
+                ${${TEST_FIXTURE}})
             set_tests_properties(${test_name_init} PROPERTIES FIXTURES_SETUP ${fixture_name})
-            add_test(NAME ${test_name_cleanup} COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/sysrepoctl-manage-module.sh ${SYSREPOCTL} ${SYSREPOCFG} uninstall ${${TEST_FIXTURE}})
+            add_test(NAME ${test_name_cleanup}
+                COMMAND ${CMAKE_COMMAND}
+                    -DTHIS_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}
+                    -DTEST_NAME=${TEST_NAME}
+                    -DSYSREPO_SHM_PREFIX=${SYSREPO_SHM_PREFIX}
+                    -P ${PROJECT_SOURCE_DIR}/cmake/SysrepoClean.cmake
+                    )
             set_tests_properties(${test_name_cleanup} PROPERTIES FIXTURES_CLEANUP ${fixture_name})
-
             set_tests_properties(test-${TEST_NAME} PROPERTIES FIXTURES_REQUIRED ${fixture_name})
-            set_property(TEST test-${TEST_NAME} ${test_name_init} ${test_name_cleanup} APPEND PROPERTY ENVIRONMENT
-              "SYSREPO_REPOSITORY_PATH=${CMAKE_CURRENT_BINARY_DIR}/test_repositories/test_${TEST_NAME}"
-              "SYSREPO_SHM_PREFIX=rousette_test_${TEST_NAME}"
+            set_property(TEST test-${TEST_NAME} ${test_name_init} APPEND PROPERTY ENVIRONMENT
+                "SYSREPO_REPOSITORY_PATH=${SYSREPO_REPOSITORY_PATH}"
+                "SYSREPO_SHM_PREFIX=${SYSREPO_SHM_PREFIX}"
             )
         endif()
 
@@ -210,8 +216,8 @@ if(BUILD_TESTING)
     wrap_test_pam(pam)
 
     set(common-models
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/ietf-system@2014-08-06.yang FEATURE radius
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang FEATURE f1)
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/ietf-system@2014-08-06.yang --enable-feature radius
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang --enable-feature f1)
     rousette_test(NAME http-communication LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ON)
 endif()
