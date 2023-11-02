@@ -2,6 +2,7 @@
  * Copyright (C) 2023 CESNET, https://photonics.cesnet.cz/
  *
  * Written by Tomáš Pecka <tomas.pecka@cesnet.cz>
+ * Written by Jan Kundrát <jan.kundrat@cesnet.cz>
  *
  */
 
@@ -9,29 +10,15 @@ static const auto SERVER_PORT = "10080";
 #include "tests/aux-utils.h"
 #include <nghttp2/asio_http2.h>
 #include <spdlog/spdlog.h>
-#include <sysrepo-cpp/Session.hpp>
 #include "restconf/Server.h"
-#include "tests/UniqueResource.h"
 
 TEST_CASE("HTTP")
 {
     spdlog::set_level(spdlog::level::trace);
-
     auto srConn = sysrepo::Connection{};
     auto srSess = srConn.sessionStart(sysrepo::Datastore::Running);
-    srSess.copyConfig(sysrepo::Datastore::Startup, "ietf-netconf-acm");
-
+    auto nacmGuard = manageNacm(srSess);
     auto server = rousette::restconf::Server{srConn, SERVER_ADDRESS, SERVER_PORT};
-    auto guard = make_unique_resource([] {},
-                                      [&]() {
-                                          srSess.switchDatastore(sysrepo::Datastore::Running);
-
-                                          /* cleanup running DS of ietf-netconf-acm module
-                                             because it contains XPaths to other modules that we
-                                             can't uninstall because the running DS content would be invalid
-                                           */
-                                          srSess.copyConfig(sysrepo::Datastore::Startup, "ietf-netconf-acm");
-                                      });
 
     // something we can read
     srSess.switchDatastore(sysrepo::Datastore::Operational);
