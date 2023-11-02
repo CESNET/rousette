@@ -12,7 +12,7 @@ static const auto SERVER_PORT = "10081";
 #include <spdlog/spdlog.h>
 #include "restconf/Server.h"
 
-TEST_CASE("HTTP")
+TEST_CASE("reading data")
 {
     spdlog::set_level(spdlog::level::trace);
     auto srConn = sysrepo::Connection{};
@@ -61,6 +61,18 @@ TEST_CASE("HTTP")
     "contact": "contact",
     "hostname": "hostname",
     "location": "location"
+  }
+}
+)"});
+    }
+
+    DOCTEST_SUBCASE("subtree")
+    {
+        REQUIRE(get("/ietf-system:system/clock", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
+  "ietf-system:system": {
+    "clock": {
+      "timezone-utc-offset": 2
+    }
   }
 }
 )"});
