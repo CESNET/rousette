@@ -2,6 +2,7 @@
  * Copyright (C) 2023 CESNET, https://photonics.cesnet.cz/
  *
  * Written by Tomáš Pecka <tomas.pecka@cesnet.cz>
+ * Written by Jan Kundrát <jan.kundrat@cesnet.cz>
  *
  */
 
@@ -10,6 +11,8 @@
 #include <nghttp2/asio_http2_client.h>
 #include <optional>
 #include <sstream>
+#include <sysrepo-cpp/Session.hpp>
+#include "tests/UniqueResource.h"
 
 using namespace std::string_literals;
 namespace ng = nghttp2::asio_http2;
@@ -134,4 +137,22 @@ Response clientRequest(auto method, auto xpath, const std::map<std::string, std:
 Response get(auto xpath, const std::map<std::string, std::string>& headers)
 {
     return clientRequest("GET", xpath, headers);
+}
+
+auto manageNacm(sysrepo::Session session)
+{
+    return make_unique_resource(
+            [&session]() {
+                session.switchDatastore(sysrepo::Datastore::Running);
+                session.copyConfig(sysrepo::Datastore::Startup, "ietf-netconf-acm");
+            },
+            [&session]() {
+                session.switchDatastore(sysrepo::Datastore::Running);
+
+                /* cleanup running DS of ietf-netconf-acm module
+                   because it contains XPaths to other modules that we
+                   can't uninstall because the running DS content would be invalid
+                 */
+                session.copyConfig(sysrepo::Datastore::Startup, "ietf-netconf-acm");
+            });
 }
