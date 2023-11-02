@@ -87,9 +87,3 @@ fi
       ${SYSREPOCTL} ${CTL_ARGUMENTS}
   fi
 done
-
-if [[ "${MODE}" == "uninstall" ]]; then
-  for module in "${MODULE_LIST[@]}"; do
-    ${SYSREPOCTL} --uninstall "${module}"
-  done
-fi
