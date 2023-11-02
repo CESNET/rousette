@@ -66,6 +66,18 @@ TEST_CASE("HTTP")
 )"});
     }
 
+    DOCTEST_SUBCASE("subtree")
+    {
+        REQUIRE(get("/ietf-system:system/clock", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
+  "ietf-system:system": {
+    "clock": {
+      "timezone-utc-offset": 2
+    }
+  }
+}
+)"});
+    }
+
     DOCTEST_SUBCASE("Basic querying of lists")
     {
         REQUIRE(get("/ietf-system:system/radius/server=a", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
