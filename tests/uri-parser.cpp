@@ -11,6 +11,7 @@
 #include <sysrepo-cpp/Connection.hpp>
 #include "restconf/uri.h"
 #include "restconf/uri_impl.h"
+#include "tests/configure.cmake.h"
 
 namespace rousette::restconf {
 
@@ -265,11 +266,9 @@ TEST_CASE("URI path parser")
 
     SECTION("Translation to libyang path")
     {
-        auto conn = sysrepo::Connection{};
-        auto sess = conn.sessionStart();
-
-        REQUIRE(sess.getContext().getModuleImplemented("example"));
-        REQUIRE(sess.getContext().getModuleImplemented("example-augment"));
+        auto ctx = libyang::Context{std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "tests" / "yang"};
+        ctx.loadModule("example", std::nullopt, {"f1"});
+        ctx.loadModule("example-augment");
 
         SECTION("Contextually valid paths")
         {
@@ -299,7 +298,7 @@ TEST_CASE("URI path parser")
                  }) {
                 CAPTURE(uriPath);
                 REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
-                REQUIRE(rousette::restconf::asLibyangPath(sess.getContext(), uriPath) == expectedLyPath);
+                REQUIRE(rousette::restconf::asLibyangPath(ctx, uriPath) == expectedLyPath);
             }
 
             for (const auto& [uriPath, expectedLyPathParent, expectedLastSegment] : {
@@ -310,7 +309,7 @@ TEST_CASE("URI path parser")
                      {"/restconf/data/example:a/example-augment:b/c", "/example:a/example-augment:b", PathSegment({"example-augment", "c"})},
                  }) {
                 CAPTURE(uriPath);
-                auto [lyPathParent, lastSegment] = rousette::restconf::asLibyangPathSplit(sess.getContext(), uriPath);
+                auto [lyPathParent, lastSegment] = rousette::restconf::asLibyangPathSplit(ctx, uriPath);
                 REQUIRE(lyPathParent == expectedLyPathParent);
                 REQUIRE(lastSegment == expectedLastSegment);
             }
@@ -338,7 +337,7 @@ TEST_CASE("URI path parser")
                  }) {
                 CAPTURE(uriPath);
                 REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
-                REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(sess.getContext(), uriPath), rousette::restconf::InvalidURIException);
+                REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, uriPath), rousette::restconf::InvalidURIException);
             }
         }
     }

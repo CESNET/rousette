@@ -127,6 +127,7 @@ include(CTest)
 if(BUILD_TESTING)
     find_package(trompeloeil 45 REQUIRED)
     find_package(doctest 2.4.11 REQUIRED)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/configure.cmake.h.in ${CMAKE_CURRENT_BINARY_DIR}/tests/configure.cmake.h)
 
     add_library(DoctestIntegration STATIC
         tests/doctest_integration.cpp
@@ -200,6 +201,7 @@ if(BUILD_TESTING)
     endfunction()
 
     rousette_test(NAME http-utils LIBRARIES rousette-http)
+    rousette_test(NAME uri-parser LIBRARIES rousette-restconf)
     rousette_test(NAME pam LIBRARIES rousette-auth)
     wrap_test_pam(pam)
 
@@ -209,9 +211,4 @@ if(BUILD_TESTING)
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang FEATURE f1)
     rousette_test(NAME http-communication LIBRARIES rousette-restconf FIXTURE fixture-http)
     wrap_test_pam(http-communication)
-
-    set(fixture-uri-parser
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang FEATURE f1
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-augment.yang)
-    rousette_test(NAME uri-parser LIBRARIES rousette-restconf FIXTURE fixture-uri-parser)
 endif()
