@@ -145,8 +145,17 @@ if(BUILD_TESTING)
     set(TEST_PAM_WRAPPER_DB ${CMAKE_CURRENT_SOURCE_DIR}/tests/pam/users)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/pam/other.in ${CMAKE_CURRENT_BINARY_DIR}/tests/pam/other @ONLY)
 
+    function(wrap_test_pam TEST_NAME)
+        set_property(TEST test-${TEST_NAME} APPEND PROPERTY ENVIRONMENT
+            "LD_PRELOAD=${pam_wrapper_LDFLAGS}"
+            "PAM_WRAPPER_SERVICE_DIR=${CMAKE_CURRENT_BINARY_DIR}/tests/pam"
+            "PAM_WRAPPER=1"
+            "UID_WRAPPER_DISABLE_DEEPBIND=1"
+            )
+    endfunction()
+
     function(rousette_test)
-        cmake_parse_arguments(TEST "" "NAME;FIXTURE;RESOURCE_LOCK" "LIBRARIES;COMMAND" ${ARGN})
+        cmake_parse_arguments(TEST "" "NAME;FIXTURE;RESOURCE_LOCK;WRAP_PAM" "LIBRARIES;COMMAND" ${ARGN})
 
         add_executable(test-${TEST_NAME} ${CMAKE_SOURCE_DIR}/tests/${TEST_NAME}.cpp)
         target_link_libraries(test-${TEST_NAME} DoctestIntegration ${TEST_LIBRARIES})
@@ -189,15 +198,10 @@ if(BUILD_TESTING)
               "SYSREPO_SHM_PREFIX=rousette_test_${TEST_NAME}"
             )
         endif()
-    endfunction()
 
-    function(wrap_test_pam TEST_NAME)
-        set_property(TEST test-${TEST_NAME} APPEND PROPERTY ENVIRONMENT
-            "LD_PRELOAD=${pam_wrapper_LDFLAGS}"
-            "PAM_WRAPPER_SERVICE_DIR=${CMAKE_CURRENT_BINARY_DIR}/tests/pam"
-            "PAM_WRAPPER=1"
-            "UID_WRAPPER_DISABLE_DEEPBIND=1"
-            )
+        if(TEST_WRAP_PAM)
+            wrap_test_pam(${TEST_NAME})
+        endif()
     endfunction()
 
     rousette_test(NAME http-utils LIBRARIES rousette-http)
@@ -209,6 +213,5 @@ if(BUILD_TESTING)
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/ietf-system@2014-08-06.yang FEATURE radius
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang FEATURE f1)
-    rousette_test(NAME http-communication LIBRARIES rousette-restconf FIXTURE fixture-http)
-    wrap_test_pam(http-communication)
+    rousette_test(NAME http-communication LIBRARIES rousette-restconf FIXTURE fixture-http WRAP_PAM ON)
 endif()
