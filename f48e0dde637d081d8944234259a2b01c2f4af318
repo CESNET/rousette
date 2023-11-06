@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c2271b72_74d81496",
+        "filename": "tests/restconf-reading.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-06T09:56:43Z",
+      "side": 1,
+      "message": "Maybe we should also rename TEST_CASE name to \"Restconf reading\"? Also, do you prefer another test file for PUTs or do we rename once again?",
+      "range": {
+        "startLine": 15,
+        "startChar": 11,
+        "endLine": 15,
+        "endChar": 15
+      },
+      "revId": "f48e0dde637d081d8944234259a2b01c2f4af318",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
