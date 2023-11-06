@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "996ab8be_74a8139e",
+        "filename": "tests/restconf-nacm.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 250,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-06T09:11:49Z",
+      "side": 1,
+      "message": "add better comments here to explain what exactly this is testing, and how it\u0027s different from the previous one",
+      "revId": "67a7f3262fed3130d8b42c37e9f8da5225c9fdd2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
