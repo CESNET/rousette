@@ -64,6 +64,28 @@ TEST_CASE("reading data")
   }
 }
 )"});
+
+        REQUIRE(get(RESTCONF_ROOT_DS("operational"), {}) == Response{200, jsonHeaders, R"({
+  "ietf-system:system": {
+    "contact": "contact",
+    "hostname": "hostname",
+    "location": "location"
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_ROOT_DS("running"), {}) == Response{404, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "No data from sysrepo."
+      }
+    ]
+  }
+}
+)"});
     }
 
     DOCTEST_SUBCASE("subtree")
@@ -353,6 +375,29 @@ TEST_CASE("reading data")
   <hostname>hostname</hostname>
   <location>location</location>
 </system>
+)"});
+    }
+
+    SECTION("NMDA (RFC 8527)")
+    {
+        srSess.switchDatastore(sysrepo::Datastore::Startup);
+        srSess.setItem("/ietf-system:system/contact", "startup-contact");
+        srSess.applyChanges();
+
+        REQUIRE(get(RESTCONF_ROOT "/ietf-system:system", {}) == Response{200, jsonHeaders, R"({
+  "ietf-system:system": {
+    "contact": "contact",
+    "hostname": "hostname",
+    "location": "location"
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_ROOT_DS("startup") "/ietf-system:system", {}) == Response{200, jsonHeaders, R"({
+  "ietf-system:system": {
+    "contact": "startup-contact"
+  }
+}
 )"});
     }
 }
