@@ -22,6 +22,30 @@
       },
       "revId": "16d9c08983985e73117e9267a911c771792bed22",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "66e02bb3_1043b24c",
+        "filename": "tests/restconf-nacm.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-06T09:58:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e39e6e17_93175c3c",
+      "range": {
+        "startLine": 15,
+        "startChar": 11,
+        "endLine": 15,
+        "endChar": 15
+      },
+      "revId": "16d9c08983985e73117e9267a911c771792bed22",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
