@@ -1,5 +1,6 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.19)
 project(rousette LANGUAGES CXX)
+cmake_policy(SET CMP0109 NEW)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -128,6 +129,8 @@ if(BUILD_TESTING)
     find_package(trompeloeil 45 REQUIRED)
     find_package(doctest 2.4.11 REQUIRED)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/configure.cmake.h.in ${CMAKE_CURRENT_BINARY_DIR}/tests/configure.cmake.h)
+    find_program(UNSHARE_EXECUTABLE unshare REQUIRED)
+    find_program(MOUNT_EXECUTABLE mount REQUIRED)
 
     add_library(DoctestIntegration STATIC
         tests/doctest_integration.cpp
@@ -145,17 +148,12 @@ if(BUILD_TESTING)
     set(TEST_PAM_WRAPPER_DB ${CMAKE_CURRENT_SOURCE_DIR}/tests/pam/users)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/pam/other.in ${CMAKE_CURRENT_BINARY_DIR}/tests/pam/other @ONLY)
 
-    function(wrap_test_pam TEST_NAME)
-        set_property(TEST test-${TEST_NAME} APPEND PROPERTY ENVIRONMENT
-            "LD_PRELOAD=${pam_wrapper_LDFLAGS}"
-            "PAM_WRAPPER_SERVICE_DIR=${CMAKE_CURRENT_BINARY_DIR}/tests/pam"
-            "PAM_WRAPPER=1"
-            "UID_WRAPPER_DISABLE_DEEPBIND=1"
-            )
-    endfunction()
-
     function(rousette_test)
         cmake_parse_arguments(TEST "WRAP_PAM" "NAME;FIXTURE;RESOURCE_LOCK" "LIBRARIES;COMMAND" ${ARGN})
+
+        if((TEST_COMMAND) AND (TEST_WRAP_PAM))
+            message(FATAL_ERROR "Cannot combine COMMAND and WRAP_PAM options together")
+        endif()
 
         add_executable(test-${TEST_NAME} ${CMAKE_SOURCE_DIR}/tests/${TEST_NAME}.cpp)
         target_link_libraries(test-${TEST_NAME} DoctestIntegration ${TEST_LIBRARIES})
@@ -167,10 +165,16 @@ if(BUILD_TESTING)
         )
 
         if(NOT CMAKE_CROSSCOMPILING)
-            if(NOT(TEST_COMMAND))
-                add_test(test-${TEST_NAME} test-${TEST_NAME})
-            else()
+            if(TEST_COMMAND)
                 add_test(NAME test-${TEST_NAME} COMMAND ${TEST_COMMAND})
+            elseif(TEST_WRAP_PAM)
+                add_test(NAME test-${TEST_NAME}
+                    COMMAND ${UNSHARE_EXECUTABLE} -r -m sh -c "set -ex $<SEMICOLON>
+                        ${MOUNT_EXECUTABLE} -t tmpfs none /tmp $<SEMICOLON>
+                        export LD_PRELOAD=${pam_wrapper_LDFLAGS} PAM_WRAPPER_SERVICE_DIR=${CMAKE_CURRENT_BINARY_DIR}/tests/pam PAM_WRAPPER=1 UID_WRAPPER_DISABLE_DEEPBIND=1 $<SEMICOLON>
+                        $<TARGET_FILE:test-${TEST_NAME}>")
+            else()
+                add_test(NAME test-${TEST_NAME} COMMAND test-${TEST_NAME})
             endif()
         endif()
 
@@ -203,10 +207,6 @@ if(BUILD_TESTING)
                 "SYSREPO_REPOSITORY_PATH=${SYSREPO_REPOSITORY_PATH}"
                 "SYSREPO_SHM_PREFIX=${SYSREPO_SHM_PREFIX}"
             )
-        endif()
-
-        if(TEST_WRAP_PAM)
-            wrap_test_pam(${TEST_NAME})
         endif()
     endfunction()
 
