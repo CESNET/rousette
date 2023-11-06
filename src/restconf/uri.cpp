@@ -32,13 +32,14 @@ const auto apiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentif
 const auto listInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = apiIdentifier >> -('=' >> keyList);
 const auto fullyQualifiedApiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentifier"} = identifier >> ':' >> identifier;
 const auto fullyQualifiedListInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = fullyQualifiedApiIdentifier >> -('=' >> keyList);
-const auto uriGrammar = x3::rule<class grammar, std::vector<PathSegment>>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> "/" >> x3::lit("data") >>
-    -x3::lit("/") >> -(fullyQualifiedListInstance >> -("/" >> listInstance % "/")); // RFC 8040, sec 3.5.3
+const auto datastore = x3::rule<class datastore, boost::optional<ApiIdentifier>>{"datastore"} = x3::lit("data") | (x3::lit("ds") >> "/" >> fullyQualifiedApiIdentifier);
+const auto uriPath = x3::rule<class uriPath, std::vector<PathSegment>>{"uriPath"} = -x3::lit("/") >> -(fullyQualifiedListInstance >> -("/" >> listInstance % "/")); // RFC 8040, sec 3.5.3
+const auto uriGrammar = x3::rule<class grammar, ResourcePath>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> "/" >> datastore >> uriPath;
 }
 
 std::optional<ResourcePath> parseUriPath(const std::string& uriPath)
 {
-    std::vector<PathSegment> out;
+    ResourcePath out;
     auto iter = std::begin(uriPath);
     auto end = std::end(uriPath);
 
@@ -47,6 +48,14 @@ std::optional<ResourcePath> parseUriPath(const std::string& uriPath)
     }
 
     return out;
+}
+
+ResourcePath::ResourcePath() = default;
+
+ResourcePath::ResourcePath(const boost::optional<ApiIdentifier>& datastore, const std::vector<PathSegment>& segments)
+    : datastore(datastore)
+    , segments(segments)
+{
 }
 
 ResourcePath::ResourcePath(const std::vector<PathSegment>& segments)
@@ -74,6 +83,37 @@ PathSegment::PathSegment() = default;
 PathSegment::PathSegment(const ApiIdentifier& apiIdent, const std::vector<std::string>& keys)
     : apiIdent(apiIdent)
     , keys(keys)
+{
+}
+
+namespace {
+std::optional<sysrepo::Datastore> datastoreFromApiIdentifier(const boost::optional<ApiIdentifier>& datastore)
+{
+    if (!datastore) {
+        return std::nullopt;
+    }
+
+    if (*datastore->prefix == "ietf-datastores") {
+        if (datastore->identifier == "running") {
+            return sysrepo::Datastore::Running;
+        } else if (datastore->identifier == "operational") {
+            return sysrepo::Datastore::Operational;
+        } else if (datastore->identifier == "candidate") {
+            return sysrepo::Datastore::Candidate;
+        } else if (datastore->identifier == "startup") {
+            return sysrepo::Datastore::Startup;
+        } else if (datastore->identifier == "factory-default") {
+            return sysrepo::Datastore::FactoryDefault;
+        }
+    }
+
+    throw InvalidURIException("Unsupported datastore " + *datastore->prefix + ":" + datastore->identifier);
+}
+}
+
+DatastoreAndPath::DatastoreAndPath(const boost::optional<ApiIdentifier>& datastore, const std::string& path)
+    : datastore(datastoreFromApiIdentifier(datastore))
+    , path(path)
 {
 }
 
@@ -207,35 +247,37 @@ std::string asLibyangPath(const libyang::Context& ctx, const std::vector<PathSeg
 }
 }
 
-/** @brief Transforms URI path (i.e., data resource identifier) into a path that is understood by libyang
+/** @brief Transforms URI path (i.e., data resource identifier) into a path that is understood by libyang and a datastore (RFC 8527)
  *
  * @throws InvalidURIException When the path is contextually invalid
  * @throws InvalidURIException When URI cannot be parsed
  * @throws InvalidURIException When unable to properly escape YANG list key value (i.e., the list value contains both single and double quotes).
- * @return libyang path as a string
+ * @throws InvalidURIException When datastore is not implemented
+ * @return DatastoreAndPath object containing a sysrepo datastore and a libyang path as a string
  */
-std::string asLibyangPath(const libyang::Context& ctx, const std::string& uriPath)
+DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& uriPath)
 {
     auto resourcePath = impl::parseUriPath(uriPath);
     if (!resourcePath) {
         throw InvalidURIException("Syntax error");
     }
     if (resourcePath->segments.empty()) {
-        return "/*";
+        return {resourcePath->datastore, "/*"};
     }
-    return asLibyangPath(ctx, resourcePath->segments.begin(), resourcePath->segments.end());
+    return {resourcePath->datastore, asLibyangPath(ctx, resourcePath->segments.begin(), resourcePath->segments.end())};
 }
 
-/** @brief Transforms URI path (i.e., data resource identifier) into a path that is understood by libyang and
- * returns a path to the parent node (or empty if this path was a root node) and ApiIdentifier describing the last path segment.
+/** @brief Transforms URI path (i.e., data resource identifier) into a path that is understood by libyang and a datastore (RFC 8527).
+ * Returns a path to the parent node (or empty if this path was a root node) and ApiIdentifier describing the last path segment.
  * This is useful for the PUT method where we have to start editing the tree in the parent node.
  *
  * @throws InvalidURIException When the path is contextually invalid
  * @throws InvalidURIException When URI cannot be parsed
  * @throws InvalidURIException When unable to properly escape YANG list key value (i.e., the list value contains both single and double quotes).
- * @return libyang path to the parent as a string and an PathSegment instance describing the last path segment node
+ * @throws InvalidURIException When datastore is not implemented
+ * @return Pair of DatastoreAndPath object (containing a sysrepo datastore and a libyang path to the parent as a string) and PathSegment instance describing the last path segment node
  */
-std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath)
+std::pair<DatastoreAndPath, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath)
 {
     auto resourcePath = impl::parseUriPath(uriPath);
     if (!resourcePath) {
@@ -256,7 +298,7 @@ std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& c
         lastSegment.apiIdent.prefix = std::string(lastNode.module().name());
     }
 
-    return {parentPath, lastSegment};
+    return {{resourcePath->datastore, parentPath}, lastSegment};
 }
 
 }
