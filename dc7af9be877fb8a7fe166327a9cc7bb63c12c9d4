@@ -16,6 +16,24 @@
       "message": "I\u0027d prefer this to be aligned with the RFC that says that the root resource is (in our case, anyway) just \"/restconf\", not \"/restconf/data\". It\u0027s OK to have a macro for this one as well -- maybe RESTCONF_DATA_ROOT or something like that?",
       "revId": "dc7af9be877fb8a7fe166327a9cc7bb63c12c9d4",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b67f789f_217575ec",
+        "filename": "tests/aux-utils.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-06T17:08:05Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "befd08b3_16508925",
+      "revId": "dc7af9be877fb8a7fe166327a9cc7bb63c12c9d4",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
