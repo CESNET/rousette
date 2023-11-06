@@ -81,6 +81,7 @@ static const auto SERVER_ADDRESS_AND_PORT = "http://["s + SERVER_ADDRESS + "]" +
 
 #define RESTCONF_ROOT "/restconf"
 #define RESTCONF_DATA_ROOT RESTCONF_ROOT "/data"
+#define RESTCONF_ROOT_DS(NAME) RESTCONF_ROOT "/ds/ietf-datastores:" NAME
 
 const ng::header_map jsonHeaders{
     {"access-control-allow-origin", {"*", false}},
