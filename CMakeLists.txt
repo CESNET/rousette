@@ -155,7 +155,7 @@ if(BUILD_TESTING)
     endfunction()
 
     function(rousette_test)
-        cmake_parse_arguments(TEST "" "NAME;FIXTURE;RESOURCE_LOCK;WRAP_PAM" "LIBRARIES;COMMAND" ${ARGN})
+        cmake_parse_arguments(TEST "WRAP_PAM" "NAME;FIXTURE;RESOURCE_LOCK" "LIBRARIES;COMMAND" ${ARGN})
 
         add_executable(test-${TEST_NAME} ${CMAKE_SOURCE_DIR}/tests/${TEST_NAME}.cpp)
         target_link_libraries(test-${TEST_NAME} DoctestIntegration ${TEST_LIBRARIES})
@@ -212,13 +212,12 @@ if(BUILD_TESTING)
 
     rousette_test(NAME http-utils LIBRARIES rousette-http)
     rousette_test(NAME uri-parser LIBRARIES rousette-restconf)
-    rousette_test(NAME pam LIBRARIES rousette-auth)
-    wrap_test_pam(pam)
+    rousette_test(NAME pam LIBRARIES rousette-auth WRAP_PAM)
 
     set(common-models
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/ietf-system@2014-08-06.yang --enable-feature radius
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang --enable-feature f1)
-    rousette_test(NAME restconf-reading LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ON)
-    rousette_test(NAME restconf-nacm LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ON)
+    rousette_test(NAME restconf-reading LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
+    rousette_test(NAME restconf-nacm LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
 endif()
