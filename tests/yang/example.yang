@@ -12,7 +12,7 @@ module example {
     leaf name { type string; }
   }
 
-  container l {
+  container tlc {
     if-feature f1;
     list list {
       key "name";

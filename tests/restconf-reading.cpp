@@ -155,26 +155,26 @@ TEST_CASE("reading data")
 }
 )"});
 
-        REQUIRE(get("/example:l/list=eth0/example-action", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
+        REQUIRE(get("/example:tlc/list=eth0/example-action", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
         "error-type": "application",
         "error-tag": "operation-failed",
-        "error-message": "'/example:l/list/example-action' is not a data resource"
+        "error-message": "'/example:tlc/list/example-action' is not a data resource"
       }
     ]
   }
 }
 )"});
 
-        REQUIRE(get("/example:l/list=eth0/example-action/i", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
+        REQUIRE(get("/example:tlc/list=eth0/example-action/i", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
         "error-type": "application",
         "error-tag": "operation-failed",
-        "error-message": "'/example:l/list/example-action' is not a data resource"
+        "error-message": "'/example:tlc/list/example-action' is not a data resource"
       }
     ]
   }
