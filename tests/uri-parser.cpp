@@ -219,7 +219,12 @@ TEST_CASE("URI path parser")
                  {"/restconf/data/foo:list=A%25Z", ResourcePath({
                                                        {{"foo", "list"}, {"A%Z"}},
                                                    })},
-                 {"/restconf/data", ResourcePath({})}
+                 {"/restconf/data", ResourcePath({}, {})},
+
+                 // RFC 8527 uris
+                 {"/restconf/ds/hello:world", ResourcePath(ApiIdentifier{"hello", "world"}, {})},
+                 {"/restconf/ds/ietf-datastores:running/foo:bar/list1=a", ResourcePath(ApiIdentifier{"ietf-datastores", "running"}, {{{"foo", "bar"}}, {{"list1"}, {"a"}}})},
+                 {"/restconf/ds/ietf-datastores:operational", ResourcePath(ApiIdentifier{"ietf-datastores", "operational"}, {})},
              }) {
 
             CAPTURE(uriPath);
@@ -258,6 +263,12 @@ TEST_CASE("URI path parser")
                  "/restconf/ data",
                  "/restconf /data",
                  "/restconf  data",
+
+                 "/restconf/ds",
+                 "/restconf/ds/operational",
+                 "/restconf/ds/ietf-datastores",
+                 "/restconf/ds/ietf-datastores:",
+                 "/restconf/ds/ietf-datastores:operational/",
              }) {
 
             CAPTURE(uriPath);
@@ -273,45 +284,54 @@ TEST_CASE("URI path parser")
 
         SECTION("Contextually valid paths")
         {
-            for (const auto& [uriPath, expectedLyPath] : {
-                     std::pair<std::string, std::string>{"/restconf/data/example:top-level-leaf", "/example:top-level-leaf"},
-                     {"/restconf/data/example:top-level-list=hello", "/example:top-level-list[name='hello']"},
-                     {"/restconf/data/example:tlc/list=eth0", "/example:tlc/list[name='eth0']"},
-                     {R"(/restconf/data/example:tlc/list=et"h0)", R"(/example:tlc/list[name='et"h0'])"},
-                     {R"(/restconf/data/example:tlc/list=et%22h0)", R"(/example:tlc/list[name='et"h0'])"},
-                     {R"(/restconf/data/example:tlc/list=et%27h0)", R"(/example:tlc/list[name="et'h0"])"},
-                     {"/restconf/data/example:tlc/list=eth0/name", "/example:tlc/list[name='eth0']/name"},
-                     {"/restconf/data/example:tlc/list=eth0/nested=1,2,3", "/example:tlc/list[name='eth0']/nested[first='1'][second='2'][third='3']"},
-                     {"/restconf/data/example:tlc/list=eth0/nested=,2,3", "/example:tlc/list[name='eth0']/nested[first=''][second='2'][third='3']"},
-                     {"/restconf/data/example:tlc/list=eth0/nested=,2,", "/example:tlc/list[name='eth0']/nested[first=''][second='2'][third='']"},
-                     {"/restconf/data/example:tlc/list=eth0/choice1", "/example:tlc/list[name='eth0']/choice1"},
-                     {"/restconf/data/example:tlc/list=eth0/choice2", "/example:tlc/list[name='eth0']/choice2"},
-                     {"/restconf/data/example:tlc/list=eth0/collection=val", "/example:tlc/list[name='eth0']/collection[.='val']"},
-                     {"/restconf/data/example:tlc/status", "/example:tlc/status"},
+            for (const auto& [uriPath, expectedLyPath, expectedDatastore] : {
+                     std::tuple<std::string, std::string, sysrepo::Datastore>{"/restconf/data/example:top-level-leaf", "/example:top-level-leaf", sysrepo::Datastore::Operational},
+                     {"/restconf/data/example:top-level-list=hello", "/example:top-level-list[name='hello']", sysrepo::Datastore::Operational},
+                     {"/restconf/data/example:tlc/list=eth0", "/example:tlc/list[name='eth0']", sysrepo::Datastore::Operational},
+                     {R"(/restconf/data/example:tlc/list=et"h0)", R"(/example:tlc/list[name='et"h0'])", sysrepo::Datastore::Operational},
+                     {R"(/restconf/data/example:tlc/list=et%22h0)", R"(/example:tlc/list[name='et"h0'])", sysrepo::Datastore::Operational},
+                     {R"(/restconf/data/example:tlc/list=et%27h0)", R"(/example:tlc/list[name="et'h0"])", sysrepo::Datastore::Operational},
+                     {"/restconf/data/example:tlc/list=eth0/name", "/example:tlc/list[name='eth0']/name", sysrepo::Datastore::Operational},
+                     {"/restconf/data/example:tlc/list=eth0/nested=1,2,3", "/example:tlc/list[name='eth0']/nested[first='1'][second='2'][third='3']", sysrepo::Datastore::Operational},
+                     {"/restconf/data/example:tlc/list=eth0/nested=,2,3", "/example:tlc/list[name='eth0']/nested[first=''][second='2'][third='3']", sysrepo::Datastore::Operational},
+                     {"/restconf/data/example:tlc/list=eth0/nested=,2,", "/example:tlc/list[name='eth0']/nested[first=''][second='2'][third='']", sysrepo::Datastore::Operational},
+                     {"/restconf/data/example:tlc/list=eth0/choice1", "/example:tlc/list[name='eth0']/choice1", sysrepo::Datastore::Operational},
+                     {"/restconf/data/example:tlc/list=eth0/choice2", "/example:tlc/list[name='eth0']/choice2", sysrepo::Datastore::Operational},
+                     {"/restconf/data/example:tlc/list=eth0/collection=val", "/example:tlc/list[name='eth0']/collection[.='val']", sysrepo::Datastore::Operational},
+                     {"/restconf/data/example:tlc/status", "/example:tlc/status", sysrepo::Datastore::Operational},
                      // container example:a has a container b inserted locally and also via an augment. Check that we return the correct one
-                     {"/restconf/data/example:a/b", "/example:a/b"},
-                     {"/restconf/data/example:a/b/c", "/example:a/b/c"},
-                     {"/restconf/data/example:a/b/c/enabled", "/example:a/b/c/enabled"},
-                     {"/restconf/data/example:a/example-augment:b", "/example:a/example-augment:b"},
-                     {"/restconf/data/example:a/example-augment:b/c", "/example:a/example-augment:b/c"},
-                     {"/restconf/data/example:a/example-augment:b/example-augment:c", "/example:a/example-augment:b/c"},
-                     {"/restconf/data/example:a/example-augment:b/c/enabled", "/example:a/example-augment:b/c/enabled"},
+                     {"/restconf/data/example:a/b", "/example:a/b", sysrepo::Datastore::Operational},
+                     {"/restconf/data/example:a/b/c", "/example:a/b/c", sysrepo::Datastore::Operational},
+                     {"/restconf/data/example:a/b/c/enabled", "/example:a/b/c/enabled", sysrepo::Datastore::Operational},
+                     {"/restconf/data/example:a/example-augment:b", "/example:a/example-augment:b", sysrepo::Datastore::Operational},
+                     {"/restconf/data/example:a/example-augment:b/c", "/example:a/example-augment:b/c", sysrepo::Datastore::Operational},
+                     {"/restconf/data/example:a/example-augment:b/example-augment:c", "/example:a/example-augment:b/c", sysrepo::Datastore::Operational},
+                     {"/restconf/data/example:a/example-augment:b/c/enabled", "/example:a/example-augment:b/c/enabled", sysrepo::Datastore::Operational},
+                     // rfc 8527
+                     {"/restconf/ds/ietf-datastores:running/example:tlc/status", "/example:tlc/status", sysrepo::Datastore::Running},
+                     {"/restconf/ds/ietf-datastores:operational/example:tlc/status", "/example:tlc/status", sysrepo::Datastore::Operational},
+                     {"/restconf/ds/ietf-datastores:startup/example:tlc/status", "/example:tlc/status", sysrepo::Datastore::Startup},
+                     {"/restconf/ds/ietf-datastores:candidate/example:tlc/status", "/example:tlc/status", sysrepo::Datastore::Candidate},
                  }) {
                 CAPTURE(uriPath);
                 REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
-                REQUIRE(rousette::restconf::asLibyangPath(ctx, uriPath) == expectedLyPath);
+                auto datastoreAndPath = rousette::restconf::asLibyangPath(ctx, uriPath);
+                REQUIRE(datastoreAndPath.path == expectedLyPath);
+                REQUIRE(datastoreAndPath.datastore == expectedDatastore);
             }
 
-            for (const auto& [uriPath, expectedLyPathParent, expectedLastSegment] : {
-                     std::tuple<std::string, std::string, PathSegment>{"/restconf/data/example:top-level-leaf", "", PathSegment({"example", "top-level-leaf"})},
-                     {"/restconf/data/example:top-level-list=hello", "", PathSegment({"example", "top-level-list"}, {"hello"})},
-                     {"/restconf/data/example:tlc/list=eth0/collection=1", "/example:tlc/list[name='eth0']", PathSegment({"example", "collection"}, {"1"})},
-                     {"/restconf/data/example:tlc/status", "/example:tlc", PathSegment({"example", "status"})},
-                     {"/restconf/data/example:a/example-augment:b/c", "/example:a/example-augment:b", PathSegment({"example-augment", "c"})},
+            for (const auto& [uriPath, expectedLyPathParent, expectedDatastore, expectedLastSegment] : {
+                     std::tuple<std::string, std::string, sysrepo::Datastore, PathSegment>{"/restconf/data/example:top-level-leaf", "", sysrepo::Datastore::Operational, PathSegment({"example", "top-level-leaf"})},
+                     {"/restconf/data/example:top-level-list=hello", "", sysrepo::Datastore::Operational, PathSegment({"example", "top-level-list"}, {"hello"})},
+                     {"/restconf/data/example:tlc/list=eth0/collection=1", "/example:tlc/list[name='eth0']", sysrepo::Datastore::Operational, PathSegment({"example", "collection"}, {"1"})},
+                     {"/restconf/data/example:tlc/status", "/example:tlc", sysrepo::Datastore::Operational, PathSegment({"example", "status"})},
+                     {"/restconf/data/example:a/example-augment:b/c", "/example:a/example-augment:b", sysrepo::Datastore::Operational, PathSegment({"example-augment", "c"})},
+                     {"/restconf/ds/ietf-datastores:startup/example:a/example-augment:b/c", "/example:a/example-augment:b", sysrepo::Datastore::Startup, PathSegment({"example-augment", "c"})},
                  }) {
                 CAPTURE(uriPath);
-                auto [lyPathParent, lastSegment] = rousette::restconf::asLibyangPathSplit(ctx, uriPath);
-                REQUIRE(lyPathParent == expectedLyPathParent);
+                auto [datastoreAndPathParent, lastSegment] = rousette::restconf::asLibyangPathSplit(ctx, uriPath);
+                REQUIRE(datastoreAndPathParent.path == expectedLyPathParent);
+                REQUIRE(datastoreAndPathParent.datastore == expectedDatastore);
                 REQUIRE(lastSegment == expectedLastSegment);
             }
         }
@@ -335,6 +355,7 @@ TEST_CASE("URI path parser")
                      "/restconf/data/example:tlc/list=eth0/collection=br0,eth1", // wrong number of keys for a leaf-list
                      "/restconf/data/example:tlc/list=eth0/choose", // schema nodes should not be visible
                      "/restconf/data/example:tlc/list=eth0/choose/choice1", // schema nodes should not be visible
+                     "/restconf/ds/hello:world/example:tlc", // unsupported datastore
                  }) {
                 CAPTURE(uriPath);
                 REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
