@@ -22,6 +22,30 @@
       },
       "revId": "f48e0dde637d081d8944234259a2b01c2f4af318",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b6acaa72_bbd9e954",
+        "filename": "tests/restconf-reading.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-06T10:10:18Z",
+      "side": 1,
+      "message": "fixed\n\n\u003e Also, do you prefer another test file for PUTs or do we rename once again?\n\na standalone test makes sense to me -- this one is too long already, and that way it can run in parallel, be less dependant on this one, etc.",
+      "parentUuid": "c2271b72_74d81496",
+      "range": {
+        "startLine": 15,
+        "startChar": 11,
+        "endLine": 15,
+        "endChar": 15
+      },
+      "revId": "f48e0dde637d081d8944234259a2b01c2f4af318",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
