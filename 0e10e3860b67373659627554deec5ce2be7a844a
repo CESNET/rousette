@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "78882715_9850679f",
+        "filename": "tests/aux-utils.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-06T08:52:37Z",
+      "side": 1,
+      "message": "What about client-utils.h?",
+      "revId": "0e10e3860b67373659627554deec5ce2be7a844a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
