@@ -1,0 +1,78 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ef30e543_cfbdeccc",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 24
+      },
+      "lineNbr": 304,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-06T14:51:00Z",
+      "side": 1,
+      "message": "let\u0027s make this more readable, please (I was staring at the diff for some time):\n\n // replacing the whole container: since only \"c/enabled\" is provided, the \"c/l\" gets deleted",
+      "revId": "0ead07ba2bb24ed25414d9661afffb1f226fb6e8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e7ed59c0_57ac2f04",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 24
+      },
+      "lineNbr": 313,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-06T14:51:00Z",
+      "side": 1,
+      "message": "This test (actually, anything around this container) is very hard to read because it relies on the default values. So the test looks as if it was \"just\" setting a leaf, but in fact it\u0027s conflating \"replacing the target node\" with \"side effects of setting something to a default\". As a bonus, after PS24, the description on line 310 no longer matches what\u0027s being tested.",
+      "range": {
+        "startLine": 310,
+        "startChar": 0,
+        "endLine": 313,
+        "endChar": 67
+      },
+      "revId": "0ead07ba2bb24ed25414d9661afffb1f226fb6e8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "64205b12_d73c398a",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 24
+      },
+      "lineNbr": 324,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-06T14:51:00Z",
+      "side": 1,
+      "message": "Roughly at this point, my head starts to explode. These tests are complex, and I feel like I have to remember how the DS content looks like after the previous few hundreds of lines. I think it would be healthy to convert this entire test into small SECTIONs. That way, the trivial tests will be super-easy to understand because there\u0027s no previous state to think about, and those tests that are complex will stand out clearly. It\u0027s OK to have a sequence of changes in a test, but please only when it\u0027s really needed (list moves, repeated insertions, etc, are a good candidate).\n\nI\u0027m skipping the rest of these tests because my head is still spinning :).",
+      "revId": "0ead07ba2bb24ed25414d9661afffb1f226fb6e8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "84b35f8d_787a63f7",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 24
+      },
+      "lineNbr": 333,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-06T14:51:00Z",
+      "side": 1,
+      "message": "this prompted me to write https://gerrit.cesnet.cz/c/CzechLight/rousette/+/6616, please rebase this one",
+      "revId": "0ead07ba2bb24ed25414d9661afffb1f226fb6e8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
