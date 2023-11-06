@@ -73,6 +73,24 @@
       "message": "this prompted me to write https://gerrit.cesnet.cz/c/CzechLight/rousette/+/6616, please rebase this one",
       "revId": "0ead07ba2bb24ed25414d9661afffb1f226fb6e8",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "44c1967c_22efad90",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 24
+      },
+      "lineNbr": 333,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-06T17:54:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "84b35f8d_787a63f7",
+      "revId": "0ead07ba2bb24ed25414d9661afffb1f226fb6e8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
