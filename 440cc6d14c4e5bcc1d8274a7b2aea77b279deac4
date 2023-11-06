@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a8024b8c_b4faa268",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-06T17:14:19Z",
+      "side": 1,
+      "message": "I guess factory-default is missing here, so let\u0027s pick up https://gerrit.cesnet.cz/c/CzechLight/sysrepo-cpp/+/6619 first",
+      "range": {
+        "startLine": 105,
+        "startChar": 1,
+        "endLine": 105,
+        "endChar": 9
+      },
+      "revId": "440cc6d14c4e5bcc1d8274a7b2aea77b279deac4",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
