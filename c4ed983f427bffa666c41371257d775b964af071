@@ -1,0 +1,90 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1c1caa78_cdf05092",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 4
+      },
+      "lineNbr": 221,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-07T14:21:40Z",
+      "side": 1,
+      "message": "I can think can be skipped for now. The requirement to implement the ietf-yang-library is in plain old RESTCONF already (e.g. https://datatracker.ietf.org/doc/html/rfc8040#section-3.3.3 for one magic leaf, but then also the actual data that we can probably already get through sysrepo, https://datatracker.ietf.org/doc/html/rfc8040#section-3.7, and maybe also the YANG schemas), this is just a minimal version bump. Besides, it\u0027s already installed by default sysrepo setup.",
+      "revId": "c4ed983f427bffa666c41371257d775b964af071",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fe7aefb6_ab34b843",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 266,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-07T14:21:40Z",
+      "side": 1,
+      "message": "nit: if I was writing this, I would probably use structured bindings",
+      "range": {
+        "startLine": 266,
+        "startChar": 16,
+        "endLine": 266,
+        "endChar": 37
+      },
+      "revId": "c4ed983f427bffa666c41371257d775b964af071",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "356a9ad4_5e306d66",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 256,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-07T14:21:40Z",
+      "side": 1,
+      "message": "When requesting content of the operational DS explicitly, the RFC says that there are some subtle behavior changes compared to the usual /restconf/data prefix. I see that we do not implement this functionality yet, but I think it might be useful to return an std::optional\u003csysrepo::Datastore\u003e and let the caller handle the differences in behavior.",
+      "range": {
+        "startLine": 256,
+        "startChar": 0,
+        "endLine": 256,
+        "endChar": 16
+      },
+      "revId": "c4ed983f427bffa666c41371257d775b964af071",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e90be92d_b6dbc6d7",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 271,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-07T14:21:40Z",
+      "side": 1,
+      "message": "why is this one invalid? I would have thought that it\u0027s the same as \"/restconf/ds/ietf-datastores:operational\", i.e. the full DS content?",
+      "range": {
+        "startLine": 271,
+        "startChar": 17,
+        "endLine": 271,
+        "endChar": 60
+      },
+      "revId": "c4ed983f427bffa666c41371257d775b964af071",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
