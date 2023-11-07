@@ -1,0 +1,176 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "850008d6_c104ab8d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 26
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-07T16:48:13Z",
+      "side": 1,
+      "message": "I like the new tests, thanks for that.",
+      "revId": "c2a4ecba61df78a3e89c97f6e14818a75317e818",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "13f03b5f_a87b4e3e",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 26
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-07T16:48:13Z",
+      "side": 1,
+      "message": "nit: please avoid English sentences in this context, just say what it\u0027s testing in a terse form",
+      "range": {
+        "startLine": 108,
+        "startChar": 17,
+        "endLine": 108,
+        "endChar": 21
+      },
+      "revId": "c2a4ecba61df78a3e89c97f6e14818a75317e818",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "039087c6_ad1a8967",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 26
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-07T16:48:13Z",
+      "side": 1,
+      "message": "nit: redundant",
+      "range": {
+        "startLine": 124,
+        "startChar": 17,
+        "endLine": 124,
+        "endChar": 34
+      },
+      "revId": "c2a4ecba61df78a3e89c97f6e14818a75317e818",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "28d30d18_bc922682",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 26
+      },
+      "lineNbr": 205,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-07T16:48:13Z",
+      "side": 1,
+      "message": "\"delete its children\"",
+      "range": {
+        "startLine": 205,
+        "startChar": 55,
+        "endLine": 205,
+        "endChar": 61
+      },
+      "revId": "c2a4ecba61df78a3e89c97f6e14818a75317e818",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1ec102d1_f6572108",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 26
+      },
+      "lineNbr": 214,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-07T16:48:13Z",
+      "side": 1,
+      "message": "remove",
+      "range": {
+        "startLine": 214,
+        "startChar": 17,
+        "endLine": 214,
+        "endChar": 22
+      },
+      "revId": "c2a4ecba61df78a3e89c97f6e14818a75317e818",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2f8dfbd4_84424d07",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 26
+      },
+      "lineNbr": 378,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-07T16:48:13Z",
+      "side": 1,
+      "message": "nit: children",
+      "range": {
+        "startLine": 378,
+        "startChar": 29,
+        "endLine": 378,
+        "endChar": 35
+      },
+      "revId": "c2a4ecba61df78a3e89c97f6e14818a75317e818",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6c6dec84_6e01b77f",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 26
+      },
+      "lineNbr": 508,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-07T16:48:13Z",
+      "side": 1,
+      "message": "I understand why two tests are needed (the 1st one for a subtreed item, the second time for a top-levle item), it\u0027s exercising two different branches in the code. Please mention that in the comments as well.",
+      "range": {
+        "startLine": 480,
+        "startChar": 0,
+        "endLine": 508,
+        "endChar": 5
+      },
+      "revId": "c2a4ecba61df78a3e89c97f6e14818a75317e818",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "cb96a564_7c7c52e6",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 26
+      },
+      "lineNbr": 548,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-07T16:48:13Z",
+      "side": 1,
+      "message": "This is a little bit misleading, isn\u0027t it? I mean, the real cause is that there are multiple items in a list, not that there\u0027s a difference in keys.\n\nBut it\u0027s \"just\" some error reporting, so it\u0027s probably OKish the way it is implemented.",
+      "revId": "c2a4ecba61df78a3e89c97f6e14818a75317e818",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
