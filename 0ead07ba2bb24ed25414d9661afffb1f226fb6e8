@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "088edd1d_93b01132",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 24
+      },
+      "lineNbr": 304,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-07T13:54:33Z",
+      "side": 1,
+      "message": "I have completely redesigned the test.",
+      "parentUuid": "ef30e543_cfbdeccc",
+      "revId": "0ead07ba2bb24ed25414d9661afffb1f226fb6e8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e7ed59c0_57ac2f04",
@@ -41,6 +59,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "d32ef018_8a398c8d",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 24
+      },
+      "lineNbr": 313,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-07T13:54:33Z",
+      "side": 1,
+      "message": "I have redesigned the whole testcase.",
+      "parentUuid": "e7ed59c0_57ac2f04",
+      "range": {
+        "startLine": 310,
+        "startChar": 0,
+        "endLine": 313,
+        "endChar": 67
+      },
+      "revId": "0ead07ba2bb24ed25414d9661afffb1f226fb6e8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "64205b12_d73c398a",
@@ -54,6 +96,24 @@
       "writtenOn": "2023-11-06T14:51:00Z",
       "side": 1,
       "message": "Roughly at this point, my head starts to explode. These tests are complex, and I feel like I have to remember how the DS content looks like after the previous few hundreds of lines. I think it would be healthy to convert this entire test into small SECTIONs. That way, the trivial tests will be super-easy to understand because there\u0027s no previous state to think about, and those tests that are complex will stand out clearly. It\u0027s OK to have a sequence of changes in a test, but please only when it\u0027s really needed (list moves, repeated insertions, etc, are a good candidate).\n\nI\u0027m skipping the rest of these tests because my head is still spinning :).",
+      "revId": "0ead07ba2bb24ed25414d9661afffb1f226fb6e8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b13fe6be_1a476eca",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 24
+      },
+      "lineNbr": 324,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-07T13:54:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "64205b12_d73c398a",
       "revId": "0ead07ba2bb24ed25414d9661afffb1f226fb6e8",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
