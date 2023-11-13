@@ -201,6 +201,11 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
         throw std::runtime_error("Module ietf-restconf@2017-01-26 is not implemented in sysrepo");
     }
 
+    // RFC 8527, we must implement at least ietf-yang-library@2019-01-04 and support operational DS
+    if (auto mod = conn.sessionStart().getContext().getModuleImplemented("ietf-yang-library"); !mod || mod->revision() < "2019-01-04") {
+        throw std::runtime_error("Module ietf-yang-library of revision at least 2019-01-04 is not implemented");
+    }
+
     dwdmEvents->change.connect([this](const std::string& content) {
         opticsChange(as_restconf_push_update(content, std::chrono::system_clock::now()));
     });
@@ -258,9 +263,10 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
                 }
 
-                auto lyPath = asLibyangPath(sess.getContext(), req.uri().path);
+                auto [datastore_, path] = asLibyangPath(sess.getContext(), req.uri().path);
+                sess.switchDatastore(datastore_ ? datastore_.value() : sysrepo::Datastore::Operational);
 
-                if (auto data = sess.getData(lyPath); data) {
+                if (auto data = sess.getData(path); data) {
                     res.write_head(
                         200,
                         {

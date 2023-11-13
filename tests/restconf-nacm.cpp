@@ -34,7 +34,7 @@ TEST_CASE("NACM")
     DOCTEST_SUBCASE("no rules")
     {
         // anonymous access doesn't work without magic NACM rules
-        REQUIRE(get("/ietf-system:system", {}) == Response{401, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system", {}) == Response{401, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -110,7 +110,7 @@ TEST_CASE("NACM")
             srSess.applyChanges();
         }
 
-        REQUIRE(get("/ietf-system:system", {}) == Response{401, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system", {}) == Response{401, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -122,7 +122,7 @@ TEST_CASE("NACM")
   }
 }
 )"});
-        REQUIRE(get("/ietf-system:system", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -151,7 +151,7 @@ TEST_CASE("NACM")
         // setup real-like NACM
         setupRealNacm(srSess);
 
-        REQUIRE(get("/ietf-system:system", {}) == Response{200, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system", {}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -160,7 +160,7 @@ TEST_CASE("NACM")
 }
 )"});
 
-        REQUIRE(get("/ietf-interfaces:idk", {}) == Response{400, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-interfaces:idk", {}) == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -173,7 +173,7 @@ TEST_CASE("NACM")
 }
 )"});
 
-        REQUIRE(get("/ietf-system:system/clock", {}) == Response{404, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/clock", {}) == Response{404, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -186,7 +186,7 @@ TEST_CASE("NACM")
 }
 )"});
 
-        REQUIRE(get("/ietf-system:system/clock/timezone-utc-offset", {}) == Response{404, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/clock/timezone-utc-offset", {}) == Response{404, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -199,7 +199,7 @@ TEST_CASE("NACM")
 }
 )"});
 
-        REQUIRE(get("/ietf-system:system", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -226,7 +226,7 @@ TEST_CASE("NACM")
             // wrong password: the server should delay its response, so let the client wait "long enough"
             const auto start = std::chrono::steady_clock::now();
             REQUIRE(clientRequest("GET",
-                        "/ietf-system:system",
+                        RESTCONF_DATA_ROOT "/ietf-system:system",
                         {{"authorization", "Basic ZHdkbTpGQUlM"}},
                         boost::posix_time::seconds(5))
                     == Response{401, jsonHeaders, R"({
@@ -251,7 +251,7 @@ TEST_CASE("NACM")
             // request and check that the server doesn't crash
             const auto start = std::chrono::steady_clock::now();
             REQUIRE_THROWS_WITH(clientRequest("GET",
-                        "/ietf-system:system",
+                        RESTCONF_DATA_ROOT "/ietf-system:system",
                         {{"authorization", "Basic ZHdkbTpGQUlM"}},
                         boost::posix_time::milliseconds(100)),
                     "HTTP client error: Connection timed out");
@@ -259,7 +259,7 @@ TEST_CASE("NACM")
             REQUIRE(processingMS <= 500);
         }
 
-        REQUIRE(get("/ietf-interfaces:idk", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-interfaces:idk", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -272,7 +272,7 @@ TEST_CASE("NACM")
 }
 )"});
 
-        REQUIRE(get("/ietf-system:system/clock", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/clock", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "clock": {
       "timezone-utc-offset": 2
@@ -281,7 +281,7 @@ TEST_CASE("NACM")
 }
 )"});
 
-        REQUIRE(get("/ietf-system:system/radius/server", {AUTH_NORULES}) == Response{400, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/radius/server", {AUTH_NORULES}) == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -294,7 +294,7 @@ TEST_CASE("NACM")
 }
 )"});
 
-    REQUIRE(get("/ietf-system:system/radius/server=a", {AUTH_NORULES}) == Response{200, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/radius/server=a", {AUTH_NORULES}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "radius": {
       "server": [
