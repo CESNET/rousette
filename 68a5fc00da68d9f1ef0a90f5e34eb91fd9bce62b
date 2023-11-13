@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "129fb620_21af55d8",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 267,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-13T16:53:14Z",
+      "side": 1,
+      "message": "...I want my monadic or_else() :)",
+      "revId": "68a5fc00da68d9f1ef0a90f5e34eb91fd9bce62b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
