@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "78bc0288_bab67794",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 4
+      },
+      "lineNbr": 221,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-13T12:35:21Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1c1caa78_cdf05092",
+      "revId": "c4ed983f427bffa666c41371257d775b964af071",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "fe7aefb6_ab34b843",
@@ -31,6 +49,30 @@
       "writtenOn": "2023-11-07T14:21:40Z",
       "side": 1,
       "message": "nit: if I was writing this, I would probably use structured bindings",
+      "range": {
+        "startLine": 266,
+        "startChar": 16,
+        "endLine": 266,
+        "endChar": 37
+      },
+      "revId": "c4ed983f427bffa666c41371257d775b964af071",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1704aabf_78e754b1",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 266,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-13T12:35:21Z",
+      "side": 1,
+      "message": "Yeah, seems like a better idea. Done.",
+      "parentUuid": "fe7aefb6_ab34b843",
       "range": {
         "startLine": 266,
         "startChar": 16,
@@ -64,6 +106,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "da3cae51_ce946007",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 256,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-13T12:35:21Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "356a9ad4_5e306d66",
+      "range": {
+        "startLine": 256,
+        "startChar": 0,
+        "endLine": 256,
+        "endChar": 16
+      },
+      "revId": "c4ed983f427bffa666c41371257d775b964af071",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e90be92d_b6dbc6d7",
@@ -77,6 +143,30 @@
       "writtenOn": "2023-11-07T14:21:40Z",
       "side": 1,
       "message": "why is this one invalid? I would have thought that it\u0027s the same as \"/restconf/ds/ietf-datastores:operational\", i.e. the full DS content?",
+      "range": {
+        "startLine": 271,
+        "startChar": 17,
+        "endLine": 271,
+        "endChar": 60
+      },
+      "revId": "c4ed983f427bffa666c41371257d775b964af071",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5db00c6c_88a5343d",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 271,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-13T12:35:21Z",
+      "side": 1,
+      "message": "Added a new patch that allows datastore resources to end with a slash. Rebased this upon that patch.",
+      "parentUuid": "e90be92d_b6dbc6d7",
       "range": {
         "startLine": 271,
         "startChar": 17,
