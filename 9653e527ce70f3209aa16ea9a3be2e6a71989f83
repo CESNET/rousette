@@ -129,6 +129,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "00b18617_bac61ba1",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 242,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-14T13:33:51Z",
+      "side": 1,
+      "message": "Yeah, thanks. This feels a lot simpler.",
+      "parentUuid": "c5d34f2b_497b4698",
+      "range": {
+        "startLine": 209,
+        "startChar": 0,
+        "endLine": 242,
+        "endChar": 1
+      },
+      "revId": "9653e527ce70f3209aa16ea9a3be2e6a71989f83",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3234486b_c15968d5",
@@ -142,6 +166,30 @@
       "writtenOn": "2023-11-06T14:51:00Z",
       "side": 1,
       "message": "Some of these handlers duplicate what\u0027s already being checked in the generic request handler. I understand that this runs through a lambda, and therefore the \"outer\" `catch` statements in there won\u0027t take effect, but I wonder if there\u0027s a way to deduplicate this code. Can you see a way which does not suck?\n\n- macros (\"meh\")\n- a wrapper which runs a lambda that\u0027s passed in a try/catch (maybe \"meh\" a bit?)\n- something else?",
+      "range": {
+        "startLine": 313,
+        "startChar": 0,
+        "endLine": 330,
+        "endChar": 5
+      },
+      "revId": "9653e527ce70f3209aa16ea9a3be2e6a71989f83",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "df57caf6_2a36decc",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 330,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-14T13:33:51Z",
+      "side": 1,
+      "message": "To be honest, I don\u0027t know what to do about this.",
+      "parentUuid": "3234486b_c15968d5",
       "range": {
         "startLine": 313,
         "startChar": 0,

@@ -278,6 +278,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "da22b266_1851dcbf",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 26
+      },
+      "lineNbr": 508,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-14T13:33:51Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6c6dec84_6e01b77f",
+      "range": {
+        "startLine": 480,
+        "startChar": 0,
+        "endLine": 508,
+        "endChar": 5
+      },
+      "revId": "c2a4ecba61df78a3e89c97f6e14818a75317e818",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "cb96a564_7c7c52e6",
         "filename": "tests/restconf-writing.cpp",
         "patchSetId": 26
