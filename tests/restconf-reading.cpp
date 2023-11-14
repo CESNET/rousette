@@ -74,16 +74,8 @@ TEST_CASE("reading data")
 }
 )"});
 
-        REQUIRE(get(RESTCONF_ROOT_DS("running"), {}) == Response{404, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "invalid-value",
-        "error-message": "No data from sysrepo."
-      }
-    ]
-  }
+        REQUIRE(get(RESTCONF_ROOT_DS("running"), {}) == Response{200, jsonHeaders, R"({
+
 }
 )"});
     }
