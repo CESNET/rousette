@@ -1,0 +1,136 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a8f94d13_79f77fd8",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 29
+      },
+      "lineNbr": 207,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-20T14:37:03Z",
+      "side": 1,
+      "message": "since there\u0027s no post-processing of the resulting iterator and you\u0027re already using an STL algorithm as opposed to a hand-rolled foreach, I think that std::any_of is a better tool",
+      "range": {
+        "startLine": 204,
+        "startChar": 0,
+        "endLine": 207,
+        "endChar": 36
+      },
+      "revId": "33e73cc8d399a25e9d9ab23ad9e5f15c4e4eae98",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "549c75e9_721ee850",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 29
+      },
+      "lineNbr": 220,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-20T14:37:03Z",
+      "side": 1,
+      "message": "This generates an XPath that does not contain a prefix, which I think might fail to find the correct node. Can you please add a test for this (or prove me wrong throug ha test for this)?",
+      "range": {
+        "startLine": 220,
+        "startChar": 45,
+        "endLine": 220,
+        "endChar": 76
+      },
+      "revId": "33e73cc8d399a25e9d9ab23ad9e5f15c4e4eae98",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c61f8662_721438cb",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 29
+      },
+      "lineNbr": 221,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-20T14:37:03Z",
+      "side": 1,
+      "message": "I don\u0027t see a test for checking what happens when the data payload does not contain that key value. I *think* that it will throw here due to dereferencing a nullopt optional.",
+      "range": {
+        "startLine": 221,
+        "startChar": 39,
+        "endLine": 221,
+        "endChar": 52
+      },
+      "revId": "33e73cc8d399a25e9d9ab23ad9e5f15c4e4eae98",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a8343011_b37803b3",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 29
+      },
+      "lineNbr": 228,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-20T14:37:03Z",
+      "side": 1,
+      "message": "I find this initializer pattern confusing when used in this context. I guess that the intention here is to just add a name to an expression, but it\u0027s a pretty straightforward code already. If the expression said just `lastPathSegment.keys[0] !\u003d node.asTerm().valueStr()`, I think it would be a little easier to read. Please feel free to disagree.",
+      "range": {
+        "startLine": 228,
+        "startChar": 12,
+        "endLine": 228,
+        "endChar": 51
+      },
+      "revId": "33e73cc8d399a25e9d9ab23ad9e5f15c4e4eae98",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6c37e351_1d1266e4",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 29
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-20T14:37:03Z",
+      "side": 1,
+      "message": "(I\u0027m yet to finish reading this one; I have some ideas about the expectation macros that I\u0027d like to try first, also in response to https://github.com/sysrepo/sysrepo-cpp/issues/18 . Sorry for the delay.)",
+      "revId": "33e73cc8d399a25e9d9ab23ad9e5f15c4e4eae98",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "33e7dd77_450fbce0",
+        "filename": "tests/yang/example.yang",
+        "patchSetId": 29
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-20T14:37:03Z",
+      "side": 1,
+      "message": "please don\u0027t introduce `l` here, that still heavy implies a list or a leaf-list to me. Even `x` is better IMHO :), but a simple `leaf` should do the trick, or `fig` if you want to be funny.",
+      "range": {
+        "startLine": 66,
+        "startChar": 13,
+        "endLine": 66,
+        "endChar": 14
+      },
+      "revId": "33e73cc8d399a25e9d9ab23ad9e5f15c4e4eae98",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
