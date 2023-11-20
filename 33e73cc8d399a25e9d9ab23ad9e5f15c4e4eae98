@@ -97,6 +97,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "e9e54790_01a3b1ba",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 29
+      },
+      "lineNbr": 220,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-20T16:28:42Z",
+      "side": 1,
+      "message": "I do not know how to make a list key leaf to appear in another namespace.\n\nIf I am not mistaken, I can\u0027t augment a list from another module to add a key. I can only add a leaf sharing the same name as the list key.\n\nSo we thought about using `grouping` to define something in moduleA and then `uses` to use it inside a list of `moduleB`. However, RFC 7950 sec 7.13 says that nodes are copied into current schema tree. So this does not work either.\n\nSo I don\u0027t know how to create such a test where the node has a different namespace than the list.",
+      "parentUuid": "02e06760_5e63ffde",
+      "range": {
+        "startLine": 220,
+        "startChar": 45,
+        "endLine": 220,
+        "endChar": 76
+      },
+      "revId": "33e73cc8d399a25e9d9ab23ad9e5f15c4e4eae98",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "c61f8662_721438cb",
         "filename": "src/restconf/Server.cpp",
         "patchSetId": 29
