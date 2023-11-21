@@ -119,6 +119,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "be99ad95_99056aea",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 29
+      },
+      "lineNbr": 220,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-21T14:02:55Z",
+      "side": 1,
+      "message": "OK, looks like I was too pessimistic. Michal Vasko says:\n\n\u003e YANG does not allow that to my knowledge",
+      "parentUuid": "e9e54790_01a3b1ba",
+      "range": {
+        "startLine": 220,
+        "startChar": 45,
+        "endLine": 220,
+        "endChar": 76
+      },
+      "revId": "33e73cc8d399a25e9d9ab23ad9e5f15c4e4eae98",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c61f8662_721438cb",
@@ -267,6 +291,30 @@
       "side": 1,
       "message": "I tried to be funny in a different way.",
       "parentUuid": "33e7dd77_450fbce0",
+      "range": {
+        "startLine": 66,
+        "startChar": 13,
+        "endLine": 66,
+        "endChar": 14
+      },
+      "revId": "33e73cc8d399a25e9d9ab23ad9e5f15c4e4eae98",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ecce1b07_735d8db8",
+        "filename": "tests/yang/example.yang",
+        "patchSetId": 29
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-21T14:02:55Z",
+      "side": 1,
+      "message": "the best Unicode symbol that I was able to find is 😹",
+      "parentUuid": "111d6348_ffc2e9de",
       "range": {
         "startLine": 66,
         "startChar": 13,
