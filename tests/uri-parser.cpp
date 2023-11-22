@@ -25,7 +25,7 @@ std::ostream& operator<<(std::ostream& os, const ApiIdentifier& obj)
         os << "nullopt{}";
     }
 
-    return os << "ident='" << obj.identifier << "'}";
+    return os << ", ident='" << obj.identifier << "'}";
 }
 
 std::ostream& operator<<(std::ostream& os, const PathSegment& obj)
