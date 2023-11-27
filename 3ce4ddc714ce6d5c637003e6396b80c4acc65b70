@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "20d908c5_dfa703f2",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 488,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-27T22:57:42Z",
+      "side": 1,
+      "message": "this has to be checked that the XPath points to an RPC/action node because PUT on a data node is also valid, but it\u0027s doing something else.\n\nIn fact, I do not think that it makes that much sense to combine POST and PUT handling like this. 8527 says that actions can only target the operational DS, and there are not RPCs allowed under 8527-style URLs.",
+      "revId": "3ce4ddc714ce6d5c637003e6396b80c4acc65b70",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f10a0f77_4af60dbb",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 203,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-11-27T22:57:42Z",
+      "side": 1,
+      "message": "I do not think that allowing action data nodes when checking for data resources is a good idea",
+      "revId": "3ce4ddc714ce6d5c637003e6396b80c4acc65b70",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
