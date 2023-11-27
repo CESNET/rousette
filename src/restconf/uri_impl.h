@@ -15,14 +15,30 @@ namespace rousette::restconf {
 
 namespace impl {
 
+/** @brief API resource type, i.e., the path segment just after /{+restconf} */
+enum class URIPrefixType {
+    BasicRestconfData, // /{+restconf}/data (RFC 8040)
+    NMDADatastore, // /{+restconf}/ds/<datastore> (RFC 8527)
+};
+
+/** @brief Represents prefix type which is the part of the URI before that RESTCONF-encoded YANG path starts (e.g., /restconf/data). */
+struct URIPrefix {
+    URIPrefixType resourceType;
+    boost::optional<ApiIdentifier> datastore;  // /restconf/ds/ must also specify a datastore.
+
+    URIPrefix();
+    URIPrefix(URIPrefixType resourceType, const boost::optional<ApiIdentifier>& datastore);
+    bool operator==(const URIPrefix&) const = default;
+};
+
 /** @brief Represents parsed URI path split into segments delimited by a `/` separator. */
 struct URI {
-    boost::optional<ApiIdentifier> datastore;
+    URIPrefix resource;
     std::vector<PathSegment> segments;
 
     URI();
     URI(const std::vector<PathSegment>& pathSegments);
-    URI(const boost::optional<ApiIdentifier>& datastore, const std::vector<PathSegment>& pathSegments);
+    URI(const URIPrefix& resource, const std::vector<PathSegment>& pathSegments);
 
     bool operator==(const URI&) const = default;
 };
@@ -31,6 +47,7 @@ std::optional<URI> parseUriPath(const std::string& uriPath);
 }
 }
 
-BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::impl::URI, datastore, segments);
+BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::impl::URIPrefix, resourceType, datastore);
+BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::impl::URI, resource, segments);
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::PathSegment, apiIdent, keys);
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::ApiIdentifier, prefix, identifier);

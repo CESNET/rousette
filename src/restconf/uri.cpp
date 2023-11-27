@@ -32,9 +32,9 @@ const auto apiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentif
 const auto listInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = apiIdentifier >> -('=' >> keyList);
 const auto fullyQualifiedApiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentifier"} = identifier >> ':' >> identifier;
 const auto fullyQualifiedListInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = fullyQualifiedApiIdentifier >> -('=' >> keyList);
-const auto datastore = x3::rule<class datastore, boost::optional<ApiIdentifier>>{"datastore"} = x3::lit("data") >> x3::attr(boost::none) | (x3::lit("ds") >> "/" >> fullyQualifiedApiIdentifier);
+const auto uriPrefix = x3::rule<class uriPrefix, URIPrefix>{"uriPrefix"} = (x3::lit("data") >> x3::attr(URIPrefixType::BasicRestconfData) >> x3::attr(boost::none)) | (x3::lit("ds") >> x3::attr(URIPrefixType::NMDADatastore) >> "/" >> fullyQualifiedApiIdentifier);
 const auto uriPath = x3::rule<class uriPath, std::vector<PathSegment>>{"uriPath"} = -x3::lit("/") >> -(fullyQualifiedListInstance >> -("/" >> listInstance % "/")); // RFC 8040, sec 3.5.3
-const auto uriGrammar = x3::rule<class grammar, URI>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> "/" >> datastore >> uriPath;
+const auto uriGrammar = x3::rule<class grammar, URI>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> "/" >> uriPrefix >> uriPath;
 }
 
 std::optional<URI> parseUriPath(const std::string& uriPath)
@@ -50,10 +50,21 @@ std::optional<URI> parseUriPath(const std::string& uriPath)
     return out;
 }
 
+URIPrefix::URIPrefix()
+    : resourceType(URIPrefixType::BasicRestconfData)
+{
+}
+
+URIPrefix::URIPrefix(URIPrefixType resourceType, const boost::optional<ApiIdentifier>& datastore)
+    : resourceType(resourceType)
+    , datastore(datastore)
+{
+}
+
 URI::URI() = default;
 
-URI::URI(const boost::optional<ApiIdentifier>& datastore, const std::vector<PathSegment>& segments)
-    : datastore(datastore)
+URI::URI(const URIPrefix& resource, const std::vector<PathSegment>& segments)
+    : resource(resource)
     , segments(segments)
 {
 }
@@ -262,9 +273,9 @@ DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& u
         throw InvalidURIException("Syntax error");
     }
     if (resourcePath->segments.empty()) {
-        return {resourcePath->datastore, "/*"};
+        return {resourcePath->resource.datastore, "/*"};
     }
-    return {resourcePath->datastore, asLibyangPath(ctx, resourcePath->segments.begin(), resourcePath->segments.end())};
+    return {resourcePath->resource.datastore, asLibyangPath(ctx, resourcePath->segments.begin(), resourcePath->segments.end())};
 }
 
 /** @brief Transforms URI path (i.e., data resource identifier) into a path that is understood by libyang and a datastore (RFC 8527).
@@ -298,7 +309,7 @@ std::pair<DatastoreAndPath, PathSegment> asLibyangPathSplit(const libyang::Conte
         lastSegment.apiIdent.prefix = std::string(lastNode.module().name());
     }
 
-    return {{resourcePath->datastore, parentPath}, lastSegment};
+    return {{resourcePath->resource.datastore, parentPath}, lastSegment};
 }
 
 }
