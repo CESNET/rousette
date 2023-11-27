@@ -89,11 +89,14 @@ struct StringMaker<std::optional<rousette::restconf::impl::ResourcePath>> {
 };
 }
 
+
 TEST_CASE("URI path parser")
 {
     using rousette::restconf::ApiIdentifier;
     using rousette::restconf::PathSegment;
+    using rousette::restconf::impl::Resource;
     using rousette::restconf::impl::ResourcePath;
+    using rousette::restconf::impl::ResourceType;
 
     SECTION("Valid paths")
     {
@@ -223,10 +226,10 @@ TEST_CASE("URI path parser")
                  {"/restconf/data/", ResourcePath({}, {})},
 
                  // RFC 8527 uris
-                 {"/restconf/ds/hello:world", ResourcePath(ApiIdentifier{"hello", "world"}, {})},
-                 {"/restconf/ds/ietf-datastores:running/foo:bar/list1=a", ResourcePath(ApiIdentifier{"ietf-datastores", "running"}, {{{"foo", "bar"}}, {{"list1"}, {"a"}}})},
-                 {"/restconf/ds/ietf-datastores:operational", ResourcePath(ApiIdentifier{"ietf-datastores", "operational"}, {})},
-                 {"/restconf/ds/ietf-datastores:operational/", ResourcePath(ApiIdentifier{"ietf-datastores", "operational"}, {})},
+                 {"/restconf/ds/hello:world", ResourcePath(Resource(ResourceType::DATASTORE_DATA, ApiIdentifier("hello", "world")), {})},
+                 {"/restconf/ds/ietf-datastores:running/foo:bar/list1=a", ResourcePath(Resource(ResourceType::DATASTORE_DATA, ApiIdentifier{"ietf-datastores", "running"}), {{{"foo", "bar"}}, {{"list1"}, {"a"}}})},
+                 {"/restconf/ds/ietf-datastores:operational", ResourcePath(Resource(ResourceType::DATASTORE_DATA, ApiIdentifier{"ietf-datastores", "operational"}), {})},
+                 {"/restconf/ds/ietf-datastores:operational/", ResourcePath(Resource(ResourceType::DATASTORE_DATA, ApiIdentifier{"ietf-datastores", "operational"}), {})},
              }) {
 
             CAPTURE(uriPath);
