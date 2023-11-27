@@ -94,6 +94,8 @@ TEST_CASE("URI path parser")
     using rousette::restconf::ApiIdentifier;
     using rousette::restconf::PathSegment;
     using rousette::restconf::impl::URI;
+    using rousette::restconf::impl::URIPrefix;
+    using rousette::restconf::impl::URIPrefixType;
 
     SECTION("Valid paths")
     {
@@ -223,10 +225,10 @@ TEST_CASE("URI path parser")
                  {"/restconf/data/", URI({}, {})},
 
                  // RFC 8527 uris
-                 {"/restconf/ds/hello:world", URI(ApiIdentifier{"hello", "world"}, {})},
-                 {"/restconf/ds/ietf-datastores:running/foo:bar/list1=a", URI(ApiIdentifier{"ietf-datastores", "running"}, {{{"foo", "bar"}}, {{"list1"}, {"a"}}})},
-                 {"/restconf/ds/ietf-datastores:operational", URI(ApiIdentifier{"ietf-datastores", "operational"}, {})},
-                 {"/restconf/ds/ietf-datastores:operational/", URI(ApiIdentifier{"ietf-datastores", "operational"}, {})},
+                 {"/restconf/ds/hello:world", URI(URIPrefix(URIPrefixType::NMDADatastore, ApiIdentifier{"hello", "world"}), {})},
+                 {"/restconf/ds/ietf-datastores:running/foo:bar/list1=a", URI(URIPrefix(URIPrefixType::NMDADatastore, ApiIdentifier{"ietf-datastores", "running"}), {{{"foo", "bar"}}, {{"list1"}, {"a"}}})},
+                 {"/restconf/ds/ietf-datastores:operational", URI(URIPrefix(URIPrefixType::NMDADatastore, ApiIdentifier{"ietf-datastores", "operational"}), {})},
+                 {"/restconf/ds/ietf-datastores:operational/", URI(URIPrefix(URIPrefixType::NMDADatastore, ApiIdentifier{"ietf-datastores", "operational"}), {})},
              }) {
 
             CAPTURE(uriPath);
