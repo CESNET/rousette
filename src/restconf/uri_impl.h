@@ -18,6 +18,7 @@ namespace impl {
 enum class ResourceType {
     DATA,
     DATASTORE_DATA,
+    OPERATIONS,
 };
 
 struct Resource {
