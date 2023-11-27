@@ -245,6 +245,66 @@ struct RequestContext {
     std::string payload;
 };
 
+void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
+{
+    requestCtx->sess.switchDatastore(sysrepo::Datastore::Operational);
+
+    auto ctx = requestCtx->sess.getContext();
+
+    try {
+        auto [parent, rpcNode] = ctx.newPath2(requestCtx->lyPathOriginal);
+        if (!requestCtx->payload.empty()) {
+            rpcNode->parseOp(requestCtx->payload, *requestCtx->dataFormat.request, libyang::OperationType::RpcRestconf);
+        }
+
+        auto resp = requestCtx->sess.sendRPC(*rpcNode);
+        auto outputContent = !resp.immediateChildren().empty();
+
+        requestCtx->res.write_head(outputContent ? 200 : 204, {
+                                                                  {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
+                                                                  {"access-control-allow-origin", {"*", false}},
+                                                              });
+
+        if (outputContent) {
+            auto c = resp.child();
+            resp.child()->unlinkWithSiblings();
+            spdlog::error("......{}", *c->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::WithSiblings));
+            spdlog::error(".....c->parent={}", c->parent() ? "yes" : "no");
+
+            auto opaq = ctx.newOpaqueJSON("example", "output", std::nullopt);
+            spdlog::error(".....opaq->path={}", opaq->path());
+            opaq->insertChild(*c);
+
+            requestCtx->res.end(*opaq->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::WithSiblings));
+        } else {
+            requestCtx->res.end();
+        }
+
+    } catch (const libyang::ErrorWithCode& e) {
+        if (e.code() == libyang::ErrorCode::ValidationFailure) {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", "Validation failure: "s + e.what());
+        } else {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to libyang exception: "s + e.what());
+        }
+    } catch (const sysrepo::ErrorWithCode& e) {
+        if (e.code() == sysrepo::ErrorCode::Unauthorized) {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 403, "application", "access-denied", "Access denied.");
+        } else {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception: "s + e.what());
+        }
+    }
+}
+
+void processPost(std::shared_ptr<RequestContext> requestCtx)
+{
+    auto schemaNode = requestCtx->sess.getContext().findPath(requestCtx->lyPathOriginal);
+    if (schemaNode.nodeType() != libyang::NodeType::RPC && schemaNode.nodeType() != libyang::NodeType::Action) {
+        rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 405, "application", "operation-not-supported", "POST method currently only supports RPCs and actions");
+    }
+
+    processActionOrRPC(requestCtx);
+}
+
 void processPut(std::shared_ptr<RequestContext> requestCtx)
 {
     try {
@@ -415,6 +475,13 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 auto [datastore_, path] = asLibyangPath(sess.getContext(), req.uri().path);
 
                 if (req.method() == "GET") {
+                    if (path != "/*") {
+                        auto schNode = sess.getContext().findPath(path);
+                        if (schNode.nodeType() == libyang::NodeType::RPC || schNode.nodeType() == libyang::NodeType::Action) {
+                            throw ErrorResponse(405, "application", "operation-not-supported", "GET operation can not be used with RPC/Action node.");
+                        }
+                    }
+
                     sess.switchDatastore(datastore_ ? datastore_.value() : sysrepo::Datastore::Operational);
                     if (auto data = sess.getData(path); data) {
                         res.write_head(
@@ -427,7 +494,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     } else {
                         throw ErrorResponse(404, "application", "invalid-value", "No data from sysrepo.");
                     }
-                } else if (req.method() == "PUT") {
+                } else if (req.method() == "PUT" || req.method() == "POST") {
                     if (datastore_ == sysrepo::Datastore::FactoryDefault || datastore_ == sysrepo::Datastore::Operational) {
                         throw ErrorResponse(405, "application", "operation-not-supported", "Read-only datastore.");
                     }
@@ -439,11 +506,13 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
                     auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, path);
 
-                    req.on_data([requestCtx](const uint8_t* data, std::size_t length) {
+                    req.on_data([requestCtx,&req](const uint8_t* data, std::size_t length) {
                         if (length > 0) {
                             requestCtx->payload.append(reinterpret_cast<const char*>(data), length);
-                        } else {
+                        } else if (req.method() == "PUT") {
                             processPut(requestCtx);
+                        } else {
+                            processPost(requestCtx);
                         }
                     });
                 } else {

@@ -230,6 +230,14 @@ TEST_CASE("URI path parser")
                  {"/restconf/ds/ietf-datastores:running/foo:bar/list1=a", ResourcePath(Resource(ResourceType::DATASTORE_DATA, ApiIdentifier{"ietf-datastores", "running"}), {{{"foo", "bar"}}, {{"list1"}, {"a"}}})},
                  {"/restconf/ds/ietf-datastores:operational", ResourcePath(Resource(ResourceType::DATASTORE_DATA, ApiIdentifier{"ietf-datastores", "operational"}), {})},
                  {"/restconf/ds/ietf-datastores:operational/", ResourcePath(Resource(ResourceType::DATASTORE_DATA, ApiIdentifier{"ietf-datastores", "operational"}), {})},
+
+                 // RPCs and actions
+                 {"/restconf/operations/example:rpc-test", ResourcePath(Resource(ResourceType::OPERATIONS, boost::none), {{{"example", "rpc-test"}}})},
+                 {"/restconf/data/example:tlc/list=hello-world/example-action", ResourcePath({
+                                                                                    {{"example", "tlc"}},
+                                                                                    {{"list"}, {"hello-world"}},
+                                                                                    {{"example-action"}},
+                                                                                })},
              }) {
 
             CAPTURE(uriPath);
@@ -319,6 +327,9 @@ TEST_CASE("URI path parser")
                      {"/restconf/ds/ietf-datastores:startup/example:tlc/status", "/example:tlc/status", sysrepo::Datastore::Startup},
                      {"/restconf/ds/ietf-datastores:candidate/example:tlc/status", "/example:tlc/status", sysrepo::Datastore::Candidate},
                      {"/restconf/ds/ietf-datastores:factory-default/example:tlc/status", "/example:tlc/status", sysrepo::Datastore::FactoryDefault},
+                     // RPCs
+                     {"/restconf/operations/example:test-rpc", "/example:test-rpc", std::nullopt},
+                     {"/restconf/data/example:tlc/list=hello-world/example-action", "/example:tlc/list[name='hello-world']/example-action", std::nullopt},
                  }) {
                 CAPTURE(uriPath);
                 REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
@@ -354,15 +365,30 @@ TEST_CASE("URI path parser")
                      "/restconf/data/example:top-level-list", // list is not a data resource
                      "/restconf/data/example:tlc/key-less-list", // list is not a data resource
                      "/restconf/data/example:tlc/list=eth0/collection", // leaf-list is not a data resource
-                     "/restconf/data/example:test-rpc", // RPC is not a data resource
-                     "/restconf/data/example:test-rpc/i", // RPC input node is not a data resource
-                     "/restconf/data/example:test-rpc/o", // RPC output node is not a data resource
                      "/restconf/data/example:tlc=eth0", // node not a (leaf-)list
                      "/restconf/data/example:tlc/list=eth0,eth1", // wrong number of list elements
                      "/restconf/data/example:tlc/list=eth0/collection=br0,eth1", // wrong number of keys for a leaf-list
                      "/restconf/data/example:tlc/list=eth0/choose", // schema nodes should not be visible
                      "/restconf/data/example:tlc/list=eth0/choose/choice1", // schema nodes should not be visible
                      "/restconf/ds/hello:world/example:tlc", // unsupported datastore
+
+                     // RPCs and actions
+                     "/restconf/operations", // RPC missing
+                     "/restconf/data/example:test-rpc", // RPC is not a data resource
+                     "/restconf/operations/example:tlc", // not a RPC but a container
+
+                     "/restconf/operations/example:tlc/list=eth0/example-action", // actions are invoked via /restconf/data
+                     "/restconf/data/example:test-rpc", // RPCs are invoked via /restconf/operations
+
+                     "/restconf/data/example:test-rpc/i", // RPC input node is not a data resource nor operations resource
+                     "/restconf/data/example:test-rpc/o", // RPC output node is not a data resource nor operations resource
+                     "/restconf/operations/example:test-rpc/i", // RPC input node is not a data resource nor operations resource
+                     "/restconf/operations/example:test-rpc/o", // RPC output node is not a data resource nor operations resource
+
+                     "/restconf/data/example:tlc/list=eth0/example-action/i", // input node of action is not a data nor operations resource
+                     "/restconf/data/example:tlc/list=eth0/example-action/o", // output node of action is not a data nor operations resource
+                     "/restconf/operations/example:tlc/list=eth0/example-action/i", // input node of action is not a data nor operations resource
+                     "/restconf/operations/example:tlc/list=eth0/example-action/o", // output node of action is not a data nor operations resource
                  }) {
                 CAPTURE(uriPath);
                 REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
