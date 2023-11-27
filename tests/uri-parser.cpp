@@ -47,13 +47,15 @@ std::ostream& operator<<(std::ostream& os, const std::vector<PathSegment>& v)
 
 std::ostream& operator<<(std::ostream& os, const RestconfAction::Type& type)
 {
-    switch(type) {
-        case RestconfAction::Type::GET:
-            return os << "RestconfAction::Type::GET";
-        case RestconfAction::Type::REPLACE_PARENT:
-            return os << "RestconfAction::Type::REPLACE_PARENT";
-        default:
-            throw std::logic_error("Unhandled switch case");
+    switch (type) {
+    case RestconfAction::Type::GET:
+        return os << "RestconfAction::Type::GET";
+    case RestconfAction::Type::REPLACE_PARENT:
+        return os << "RestconfAction::Type::REPLACE_PARENT";
+    case RestconfAction::Type::RPC:
+        return os << "RestconfAction::Type::RPC";
+    default:
+        throw std::logic_error("Unhandled switch case");
     }
 }
 }
@@ -241,6 +243,14 @@ TEST_CASE("URI path parser")
                  {"/restconf/ds/ietf-datastores:running/foo:bar/list1=a", URI(URIPrefix(URIPrefix::Type::NMDADatastore, ApiIdentifier{"ietf-datastores", "running"}), {{{"foo", "bar"}}, {{"list1"}, {"a"}}})},
                  {"/restconf/ds/ietf-datastores:operational", URI(URIPrefix(URIPrefix::Type::NMDADatastore, ApiIdentifier{"ietf-datastores", "operational"}), {})},
                  {"/restconf/ds/ietf-datastores:operational/", URI(URIPrefix(URIPrefix::Type::NMDADatastore, ApiIdentifier{"ietf-datastores", "operational"}), {})},
+
+                 // RPCs and actions
+                 {"/restconf/operations/example:rpc-test", URI(URIPrefix(URIPrefix::Type::BasicRestconfOperations, boost::none), {{{"example", "rpc-test"}}})},
+                 {"/restconf/data/example:tlc/list=hello-world/example-action", URI({
+                                                                                    {{"example", "tlc"}},
+                                                                                    {{"list"}, {"hello-world"}},
+                                                                                    {{"example-action"}},
+                                                                                })},
              }) {
 
             CAPTURE(uriPath);
@@ -374,6 +384,30 @@ TEST_CASE("URI path parser")
                     REQUIRE(lastSegment == expectedLastSegment);
                 }
             }
+
+            SECTION("POST (RPC)")
+            {
+                std::string uri;
+                std::string expectedPath;
+
+                SECTION("RPC")
+                {
+                    uri = "/restconf/operations/example:test-rpc";
+                    expectedPath = "/example:test-rpc";
+                }
+
+                SECTION("Action")
+                {
+                    uri = "/restconf/data/example:tlc/list=hello-world/example-action";
+                    expectedPath = "/example:tlc/list[name='hello-world']/example-action";
+                }
+
+                CAPTURE(uri);
+                auto [action, datastore, path] = rousette::restconf::asLibyangPath(ctx, "POST", uri);
+                REQUIRE(path == expectedPath);
+                REQUIRE(datastore == std::nullopt);
+                REQUIRE(action == RestconfAction::Type::RPC);
+            }
         }
 
         SECTION("Contextually invalid paths")
@@ -415,6 +449,32 @@ TEST_CASE("URI path parser")
                     CAPTURE(uriPath);
                     REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
                     REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, httpMethod, uriPath), rousette::restconf::InvalidURIException);
+                }
+            }
+
+            SECTION("POST (RPC)")
+            {
+                for (const auto& uriPath : std::vector<std::string>{
+                         "/restconf/operations", // RPC missing
+                         "/restconf/data/example:test-rpc", // RPC is not a data resource
+                         "/restconf/operations/example:tlc", // not a RPC but a container
+
+                         "/restconf/operations/example:tlc/list=eth0/example-action", // actions are invoked via /restconf/data
+                         "/restconf/data/example:test-rpc", // RPCs are invoked via /restconf/operations
+
+                         "/restconf/data/example:test-rpc/i", // RPC input node is not a data resource nor operations resource
+                         "/restconf/data/example:test-rpc/o", // RPC output node is not a data resource nor operations resource
+                         "/restconf/operations/example:test-rpc/i", // RPC input node is not a data resource nor operations resource
+                         "/restconf/operations/example:test-rpc/o", // RPC output node is not a data resource nor operations resource
+
+                         "/restconf/data/example:tlc/list=eth0/example-action/i", // input node of action is not an operations resource
+                         "/restconf/data/example:tlc/list=eth0/example-action/o", // output node of action is not an operations resource
+                         "/restconf/operations/example:tlc/list=eth0/example-action/i", // input node of action is not an operations resource
+                         "/restconf/operations/example:tlc/list=eth0/example-action/o", // output node of action is not an operations resource
+                     }) {
+                    CAPTURE(uriPath);
+                    REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
+                    REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, "POST", uriPath), rousette::restconf::InvalidURIException);
                 }
             }
         }

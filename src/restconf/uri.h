@@ -50,6 +50,7 @@ struct RestconfAction {
     enum class Type {
         GET,
         REPLACE_PARENT,
+        RPC,
     };
 
     Type type;

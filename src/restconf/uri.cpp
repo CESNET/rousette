@@ -34,7 +34,7 @@ const auto apiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentif
 const auto listInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = apiIdentifier >> -('=' >> keyList);
 const auto fullyQualifiedApiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentifier"} = identifier >> ':' >> identifier;
 const auto fullyQualifiedListInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = fullyQualifiedApiIdentifier >> -('=' >> keyList);
-const auto uriPrefix = x3::rule<class uriPrefix, URIPrefix>{"uriPrefix"} = (x3::lit("data") >> x3::attr(URIPrefix::Type::BasicRestconfData) >> x3::attr(boost::none)) | (x3::lit("ds") >> x3::attr(URIPrefix::Type::NMDADatastore) >> "/" >> fullyQualifiedApiIdentifier);
+const auto uriPrefix = x3::rule<class uriPrefix, URIPrefix>{"uriPrefix"} = (x3::lit("data") >> x3::attr(URIPrefix::Type::BasicRestconfData) >> x3::attr(boost::none)) | (x3::lit("ds") >> x3::attr(URIPrefix::Type::NMDADatastore) >> "/" >> fullyQualifiedApiIdentifier) | (x3::lit("operations") >> x3::attr(URIPrefix::Type::BasicRestconfOperations) >> x3::attr(boost::none));
 const auto uriPath = x3::rule<class uriPath, std::vector<PathSegment>>{"uriPath"} = -x3::lit("/") >> -(fullyQualifiedListInstance >> -("/" >> listInstance % "/")); // RFC 8040, sec 3.5.3
 const auto uriGrammar = x3::rule<class grammar, URI>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> "/" >> uriPrefix >> uriPath;
 }
@@ -217,6 +217,8 @@ RestconfAction asLibyangPath(const libyang::Context& ctx, const impl::URIPrefix&
 
     if (httpMethod == "GET" || httpMethod == "PUT") {
         validator = DataResourceValidator();
+    } else if (httpMethod == "POST") {
+        validator = PostValidator(uriPrefix);
     } else {
         throw InvalidURIException("Unsupported HTTP method: " + httpMethod);
     }

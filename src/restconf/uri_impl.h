@@ -20,6 +20,7 @@ struct URIPrefix {
     /** @brief API resource type, i.e., the path segment just after /{+restconf} */
     enum class Type {
         BasicRestconfData, // /{+restconf}/data (RFC 8040)
+    BasicRestconfOperations, // /{+restconf}/operations (RFC 8040)
         NMDADatastore, // /{+restconf}/ds/<datastore> (RFC 8527)
     };
 
