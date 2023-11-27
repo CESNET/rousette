@@ -36,7 +36,7 @@ TEST_CASE("reading data")
     DOCTEST_SUBCASE("unsupported methods")
     {
         // we do not support these http methods yet
-        for (const auto& httpMethod : {"OPTIONS"s, "POST"s, "PATCH"s, "DELETE"s}) {
+        for (const auto& httpMethod : {"OPTIONS"s, "PATCH"s, "DELETE"s}) {
             CAPTURE(httpMethod);
             REQUIRE(clientRequest(httpMethod, RESTCONF_DATA_ROOT "/ietf-system:system", "", {AUTH_ROOT}) == Response{405, jsonHeaders, R"({
   "ietf-restconf:errors": {
@@ -169,13 +169,13 @@ TEST_CASE("reading data")
 }
 )"});
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action", {AUTH_DWDM}) == Response{405, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
         "error-type": "application",
-        "error-tag": "operation-failed",
-        "error-message": "'/example:tlc/list/example-action' is not a data resource"
+        "error-tag": "operation-not-supported",
+        "error-message": "GET operation can not be used with RPC/Action node."
       }
     ]
   }
@@ -188,7 +188,7 @@ TEST_CASE("reading data")
       {
         "error-type": "application",
         "error-tag": "operation-failed",
-        "error-message": "'/example:tlc/list/example-action' is not a data resource"
+        "error-message": "'/example:tlc/list/example-action' is a RPC/Action node. Any child is not a valid data/operations resource."
       }
     ]
   }

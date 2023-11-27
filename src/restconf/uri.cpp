@@ -32,7 +32,7 @@ const auto apiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentif
 const auto listInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = apiIdentifier >> -('=' >> keyList);
 const auto fullyQualifiedApiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentifier"} = identifier >> ':' >> identifier;
 const auto fullyQualifiedListInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = fullyQualifiedApiIdentifier >> -('=' >> keyList);
-const auto datastore = x3::rule<class datastore, Resource>{"datastore"} = (x3::lit("data") >> x3::attr(ResourceType::DATA) >> x3::attr(boost::none)) | (x3::lit("ds") >> x3::attr(ResourceType::DATASTORE_DATA) >> "/" >> fullyQualifiedApiIdentifier);
+const auto datastore = x3::rule<class datastore, Resource>{"datastore"} = (x3::lit("data") >> x3::attr(ResourceType::DATA) >> x3::attr(boost::none)) | (x3::lit("ds") >> x3::attr(ResourceType::DATASTORE_DATA) >> "/" >> fullyQualifiedApiIdentifier) | (x3::lit("operations") >> x3::attr(ResourceType::OPERATIONS) >> x3::attr(boost::none));
 const auto uriPath = x3::rule<class uriPath, std::vector<PathSegment>>{"uriPath"} = -x3::lit("/") >> -(fullyQualifiedListInstance >> -("/" >> listInstance % "/")); // RFC 8040, sec 3.5.3
 const auto uriGrammar = x3::rule<class grammar, ResourcePath>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> "/" >> datastore >> uriPath;
 }
@@ -200,13 +200,19 @@ bool isValidDataResource(libyang::SchemaNode node)
      */
     case libyang::NodeType::Leaflist:
     case libyang::NodeType::List:
+    case libyang::NodeType::Action:
         return true;
     default:
         return false;
     }
 }
 
-std::string asLibyangPath(const libyang::Context& ctx, const std::vector<PathSegment>::const_iterator& begin, const std::vector<PathSegment>::const_iterator& end)
+bool isValidOperationResource(libyang::SchemaNode node)
+{
+    return node.nodeType() == libyang::NodeType::RPC;
+}
+
+std::string asLibyangPath(const libyang::Context& ctx, impl::ResourceType resourceType, const std::vector<PathSegment>::const_iterator& begin, const std::vector<PathSegment>::const_iterator& end)
 {
     std::optional<libyang::SchemaNode> currentNode;
     std::string res;
@@ -250,8 +256,16 @@ std::string asLibyangPath(const libyang::Context& ctx, const std::vector<PathSeg
             throw InvalidURIException("No keys allowed for node '" + currentNode->path() + "'");
         }
 
-        if (!isValidDataResource(*currentNode)) {
+        if (currentNode && (resourceType == impl::ResourceType::DATA || resourceType == impl::ResourceType::DATASTORE_DATA) && !isValidDataResource(*currentNode)) {
             throw InvalidURIException("'"s + currentNode->path() + "' is not a data resource");
+        }
+
+        if (currentNode && resourceType == impl::ResourceType::OPERATIONS && !isValidOperationResource(*currentNode)) {
+            throw InvalidURIException("'"s + currentNode->path() + "' is not an operations resource");
+        }
+
+        if ((currentNode->nodeType() == libyang::NodeType::Action || currentNode->nodeType() == libyang::NodeType::RPC) && std::next(it) != end) {
+            throw InvalidURIException("'"s + currentNode->path() + "' is a RPC/Action node. Any child is not a valid data/operations resource.");
         }
     }
     return res;
@@ -272,10 +286,12 @@ DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& u
     if (!resourcePath) {
         throw InvalidURIException("Syntax error");
     }
-    if (resourcePath->segments.empty()) {
+    if (resourcePath->resource.resourceType == impl::ResourceType::OPERATIONS && resourcePath->segments.empty()) {
+        throw InvalidURIException("Operations resource URI must point to a RPC");
+    } else if (resourcePath->segments.empty()) {
         return {resourcePath->resource.datastore, "/*"};
     }
-    return {resourcePath->resource.datastore, asLibyangPath(ctx, resourcePath->segments.begin(), resourcePath->segments.end())};
+    return {resourcePath->resource.datastore, asLibyangPath(ctx, resourcePath->resource.resourceType, resourcePath->segments.begin(), resourcePath->segments.end())};
 }
 
 /** @brief Transforms URI path (i.e., data resource identifier) into a path that is understood by libyang and a datastore (RFC 8527).
@@ -300,11 +316,11 @@ std::pair<DatastoreAndPath, PathSegment> asLibyangPathSplit(const libyang::Conte
 
 
     auto lastSegment = resourcePath->segments.back();
-    auto parentPath = asLibyangPath(ctx, resourcePath->segments.begin(), resourcePath->segments.end() - 1);
+    auto parentPath = asLibyangPath(ctx, resourcePath->resource.resourceType, resourcePath->segments.begin(), resourcePath->segments.end() - 1);
 
     // we know that the path is valid so we can get last segment module from ly
     if (!lastSegment.apiIdent.prefix) {
-        auto fullPath = asLibyangPath(ctx, resourcePath->segments.begin(), resourcePath->segments.end());
+        auto fullPath = asLibyangPath(ctx, resourcePath->resource.resourceType, resourcePath->segments.begin(), resourcePath->segments.end());
         auto lastNode = ctx.findPath(fullPath);
         lastSegment.apiIdent.prefix = std::string(lastNode.module().name());
     }

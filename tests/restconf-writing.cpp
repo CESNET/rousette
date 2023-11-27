@@ -705,4 +705,9 @@ TEST_CASE("writing data")
 )"});
         }
     }
+
+    SECTION("POST")
+    {
+        /* TODO: no writes, rpc only */
+    }
 }
