@@ -64,6 +64,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "bc1b026b_9810d7b9",
+        "filename": "src/restconf/uri_impl.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-28T19:31:21Z",
+      "side": 1,
+      "message": "Done in one of the previous commits (this rebased on top of that).",
+      "parentUuid": "3a66c860_ca81f45d",
+      "range": {
+        "startLine": 33,
+        "startChar": 7,
+        "endLine": 33,
+        "endChar": 19
+      },
+      "revId": "11ae6cb079abe2bd37b77370e40196c52eb8e941",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "ebf971c4_613b84d7",
