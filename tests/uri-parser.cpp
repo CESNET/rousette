@@ -47,7 +47,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<PathSegment>& v)
 }
 
 namespace rousette::restconf::impl {
-std::ostream& operator<<(std::ostream& os, const ResourcePath& obj)
+std::ostream& operator<<(std::ostream& os, const URI& obj)
 {
     os << "[";
     std::copy(obj.segments.begin(), obj.segments.end(), std::experimental::make_ostream_joiner(os, ", "));
@@ -73,8 +73,8 @@ struct StringMaker<std::optional<std::string>> {
 };
 
 template <>
-struct StringMaker<std::optional<rousette::restconf::impl::ResourcePath>> {
-    static String convert(const std::optional<rousette::restconf::impl::ResourcePath>& obj)
+struct StringMaker<std::optional<rousette::restconf::impl::URI>> {
+    static String convert(const std::optional<rousette::restconf::impl::URI>& obj)
     {
         std::ostringstream oss;
 
@@ -93,140 +93,140 @@ TEST_CASE("URI path parser")
 {
     using rousette::restconf::ApiIdentifier;
     using rousette::restconf::PathSegment;
-    using rousette::restconf::impl::ResourcePath;
+    using rousette::restconf::impl::URI;
 
     SECTION("Valid paths")
     {
         for (const auto& [uriPath, expected] : {
-                 std::pair<std::string, ResourcePath>{"/restconf/data/x333:y666", ResourcePath({
-                                                                                      {{"x333", "y666"}},
-                                                                                  })},
-                 {"/restconf/data/foo:bar", ResourcePath(std::vector<PathSegment>{
+                 std::pair<std::string, URI>{"/restconf/data/x333:y666", URI({
+                                                                             {{"x333", "y666"}},
+                                                                         })},
+                 {"/restconf/data/foo:bar", URI(std::vector<PathSegment>{
                                                 {{"foo", "bar"}},
                                             })},
-                 {"/restconf/data/foo:bar/baz", ResourcePath({
+                 {"/restconf/data/foo:bar/baz", URI({
                                                     {{"foo", "bar"}},
                                                     {{"baz"}},
                                                 })},
-                 {"/restconf/data/foo:bar/meh:baz", ResourcePath({
+                 {"/restconf/data/foo:bar/meh:baz", URI({
                                                         {{"foo", "bar"}},
                                                         {{"meh", "baz"}},
                                                     })},
-                 {"/restconf/data/foo:bar/yay/meh:baz", ResourcePath({
+                 {"/restconf/data/foo:bar/yay/meh:baz", URI({
                                                             {{"foo", "bar"}},
                                                             {{"yay"}},
                                                             {{"meh", "baz"}},
                                                         })},
-                 {"/restconf/data/foo:bar/Y=val", ResourcePath({
+                 {"/restconf/data/foo:bar/Y=val", URI({
                                                       {{"foo", "bar"}},
                                                       {{"Y"}, {"val"}},
                                                   })},
-                 {"/restconf/data/foo:bar/Y=val-ue", ResourcePath({
+                 {"/restconf/data/foo:bar/Y=val-ue", URI({
                                                          {{"foo", "bar"}},
                                                          {{"Y"}, {"val-ue"}},
                                                      })},
-                 {"/restconf/data/foo:bar/p:lst=key1", ResourcePath({
+                 {"/restconf/data/foo:bar/p:lst=key1", URI({
                                                            {{"foo", "bar"}},
                                                            {{"p", "lst"}, {"key1"}},
                                                        })},
 
-                 {"/restconf/data/foo:bar/p:lst=key1/leaf", ResourcePath({
+                 {"/restconf/data/foo:bar/p:lst=key1/leaf", URI({
                                                                 {{"foo", "bar"}},
                                                                 {{"p", "lst"}, {"key1"}},
                                                                 {{"leaf"}},
                                                             })},
-                 {"/restconf/data/foo:bar/lst=key1,", ResourcePath({
+                 {"/restconf/data/foo:bar/lst=key1,", URI({
                                                           {{"foo", "bar"}},
                                                           {{"lst"}, {"key1", ""}},
                                                       })},
-                 {"/restconf/data/foo:bar/lst=key1,,,", ResourcePath({
+                 {"/restconf/data/foo:bar/lst=key1,,,", URI({
                                                             {{"foo", "bar"}},
                                                             {{"lst"}, {"key1", "", "", ""}},
                                                         })},
-                 {"/restconf/data/foo:bar/lst=key1,/leaf", ResourcePath({
+                 {"/restconf/data/foo:bar/lst=key1,/leaf", URI({
                                                                {{"foo", "bar"}},
                                                                {{"lst"}, {"key1", ""}},
                                                                {{"leaf"}},
                                                            })},
-                 {"/restconf/data/foo:bar/lst=key1,key2", ResourcePath({
+                 {"/restconf/data/foo:bar/lst=key1,key2", URI({
                                                               {{"foo", "bar"}},
                                                               {{"lst"}, {"key1", "key2"}},
                                                           })},
-                 {"/restconf/data/foo:bar/lst=key1,key2/leaf", ResourcePath({
+                 {"/restconf/data/foo:bar/lst=key1,key2/leaf", URI({
                                                                    {{"foo", "bar"}},
                                                                    {{"lst"}, {"key1", "key2"}},
                                                                    {{"leaf"}},
                                                                })},
-                 {"/restconf/data/foo:bar/lst=key1,key2/lst2=key1/leaf", ResourcePath({
+                 {"/restconf/data/foo:bar/lst=key1,key2/lst2=key1/leaf", URI({
                                                                              {{"foo", "bar"}},
                                                                              {{"lst"}, {"key1", "key2"}},
                                                                              {{"lst2"}, {"key1"}},
                                                                              {{"leaf"}},
                                                                          })},
-                 {"/restconf/data/foo:bar/lst=,key2/lst2=key1/leaf", ResourcePath({
+                 {"/restconf/data/foo:bar/lst=,key2/lst2=key1/leaf", URI({
                                                                          {{"foo", "bar"}},
                                                                          {{"lst"}, {"", "key2"}},
                                                                          {{"lst2"}, {"key1"}},
                                                                          {{"leaf"}},
                                                                      })},
-                 {"/restconf/data/foo:bar/lst=,/lst2=key1/leaf", ResourcePath({
+                 {"/restconf/data/foo:bar/lst=,/lst2=key1/leaf", URI({
                                                                      {{"foo", "bar"}},
                                                                      {{"lst"}, {"", ""}},
                                                                      {{"lst2"}, {"key1"}},
                                                                      {{"leaf"}},
                                                                  })},
-                 {"/restconf/data/foo:bar/lst=", ResourcePath({
+                 {"/restconf/data/foo:bar/lst=", URI({
                                                      {{"foo", "bar"}},
                                                      {{"lst"}, {""}},
                                                  })},
-                 {"/restconf/data/foo:bar/lst=/leaf", ResourcePath({
+                 {"/restconf/data/foo:bar/lst=/leaf", URI({
                                                           {{"foo", "bar"}},
                                                           {{"lst"}, {""}},
                                                           {{"leaf"}},
                                                       })},
-                 {"/restconf/data/foo:bar/prefix:lst=key1/prefix:leaf", ResourcePath({
+                 {"/restconf/data/foo:bar/prefix:lst=key1/prefix:leaf", URI({
                                                                             {{"foo", "bar"}},
                                                                             {{"prefix", "lst"}, {"key1"}},
                                                                             {{"prefix", "leaf"}},
                                                                         })},
-                 {"/restconf/data/foo:bar/lst=key1,,key3", ResourcePath({
+                 {"/restconf/data/foo:bar/lst=key1,,key3", URI({
                                                                {{"foo", "bar"}},
                                                                {{"lst"}, {"key1", "", "key3"}},
                                                            })},
-                 {"/restconf/data/foo:bar/lst=key%2CWithCommas,,key2C", ResourcePath({
+                 {"/restconf/data/foo:bar/lst=key%2CWithCommas,,key2C", URI({
                                                                             {{"foo", "bar"}},
                                                                             {{"lst"}, {"key,WithCommas", "", "key2C"}},
                                                                         })},
-                 {R"(/restconf/data/foo:bar/list1=%2C%27"%3A"%20%2F,,foo)", ResourcePath({
+                 {R"(/restconf/data/foo:bar/list1=%2C%27"%3A"%20%2F,,foo)", URI({
                                                                                 {{"foo", "bar"}},
                                                                                 {{"list1"}, {R"(,'":" /)", "", "foo"}},
                                                                             })},
-                 {"/restconf/data/foo:bar/list1= %20,%20,foo", ResourcePath({
+                 {"/restconf/data/foo:bar/list1= %20,%20,foo", URI({
                                                                    {{"foo", "bar"}},
                                                                    {{"list1"}, {"  ", " ", "foo"}},
                                                                })},
-                 {"/restconf/data/foo:bar/list1= %20,%20, ", ResourcePath({
+                 {"/restconf/data/foo:bar/list1= %20,%20, ", URI({
                                                                  {{"foo", "bar"}},
                                                                  {{"list1"}, {"  ", " ", " "}},
                                                              })},
-                 {"/restconf/data/foo:bar/list1=žluťoučkýkůň", ResourcePath({
+                 {"/restconf/data/foo:bar/list1=žluťoučkýkůň", URI({
                                                                    {{"foo", "bar"}},
                                                                    {{"list1"}, {"žluťoučkýkůň"}},
                                                                })},
-                 {"/restconf/data/foo:list=A%20Z", ResourcePath({
+                 {"/restconf/data/foo:list=A%20Z", URI({
                                                        {{"foo", "list"}, {"A Z"}},
                                                    })},
-                 {"/restconf/data/foo:list=A%25Z", ResourcePath({
+                 {"/restconf/data/foo:list=A%25Z", URI({
                                                        {{"foo", "list"}, {"A%Z"}},
                                                    })},
-                 {"/restconf/data", ResourcePath({}, {})},
-                 {"/restconf/data/", ResourcePath({}, {})},
+                 {"/restconf/data", URI({}, {})},
+                 {"/restconf/data/", URI({}, {})},
 
                  // RFC 8527 uris
-                 {"/restconf/ds/hello:world", ResourcePath(ApiIdentifier{"hello", "world"}, {})},
-                 {"/restconf/ds/ietf-datastores:running/foo:bar/list1=a", ResourcePath(ApiIdentifier{"ietf-datastores", "running"}, {{{"foo", "bar"}}, {{"list1"}, {"a"}}})},
-                 {"/restconf/ds/ietf-datastores:operational", ResourcePath(ApiIdentifier{"ietf-datastores", "operational"}, {})},
-                 {"/restconf/ds/ietf-datastores:operational/", ResourcePath(ApiIdentifier{"ietf-datastores", "operational"}, {})},
+                 {"/restconf/ds/hello:world", URI(ApiIdentifier{"hello", "world"}, {})},
+                 {"/restconf/ds/ietf-datastores:running/foo:bar/list1=a", URI(ApiIdentifier{"ietf-datastores", "running"}, {{{"foo", "bar"}}, {{"list1"}, {"a"}}})},
+                 {"/restconf/ds/ietf-datastores:operational", URI(ApiIdentifier{"ietf-datastores", "operational"}, {})},
+                 {"/restconf/ds/ietf-datastores:operational/", URI(ApiIdentifier{"ietf-datastores", "operational"}, {})},
              }) {
 
             CAPTURE(uriPath);

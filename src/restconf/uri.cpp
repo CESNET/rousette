@@ -34,12 +34,12 @@ const auto fullyQualifiedApiIdentifier = x3::rule<class identifier, ApiIdentifie
 const auto fullyQualifiedListInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = fullyQualifiedApiIdentifier >> -('=' >> keyList);
 const auto datastore = x3::rule<class datastore, boost::optional<ApiIdentifier>>{"datastore"} = x3::lit("data") | (x3::lit("ds") >> "/" >> fullyQualifiedApiIdentifier);
 const auto uriPath = x3::rule<class uriPath, std::vector<PathSegment>>{"uriPath"} = -x3::lit("/") >> -(fullyQualifiedListInstance >> -("/" >> listInstance % "/")); // RFC 8040, sec 3.5.3
-const auto uriGrammar = x3::rule<class grammar, ResourcePath>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> "/" >> datastore >> uriPath;
+const auto uriGrammar = x3::rule<class grammar, URI>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> "/" >> datastore >> uriPath;
 }
 
-std::optional<ResourcePath> parseUriPath(const std::string& uriPath)
+std::optional<URI> parseUriPath(const std::string& uriPath)
 {
-    ResourcePath out;
+    URI out;
     auto iter = std::begin(uriPath);
     auto end = std::end(uriPath);
 
@@ -50,15 +50,15 @@ std::optional<ResourcePath> parseUriPath(const std::string& uriPath)
     return out;
 }
 
-ResourcePath::ResourcePath() = default;
+URI::URI() = default;
 
-ResourcePath::ResourcePath(const boost::optional<ApiIdentifier>& datastore, const std::vector<PathSegment>& segments)
+URI::URI(const boost::optional<ApiIdentifier>& datastore, const std::vector<PathSegment>& segments)
     : datastore(datastore)
     , segments(segments)
 {
 }
 
-ResourcePath::ResourcePath(const std::vector<PathSegment>& segments)
+URI::URI(const std::vector<PathSegment>& segments)
     : segments(segments)
 {
 }
