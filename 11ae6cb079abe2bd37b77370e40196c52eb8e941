@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "01b3deb5_979ffb9a",
+        "filename": "src/restconf/uri_impl.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-28T19:33:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "13c3a4eb_6633b6fc",
+      "range": {
+        "startLine": 19,
+        "startChar": 0,
+        "endLine": 20,
+        "endChar": 19
+      },
+      "revId": "11ae6cb079abe2bd37b77370e40196c52eb8e941",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c0f8ba15_cc1b1735",
@@ -37,6 +61,24 @@
       "writtenOn": "2023-11-27T22:58:17Z",
       "side": 1,
       "message": "Please add some inline doxygen bits for all new structs.",
+      "revId": "11ae6cb079abe2bd37b77370e40196c52eb8e941",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2a2953fc_304c9da1",
+        "filename": "src/restconf/uri_impl.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-28T19:33:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c0f8ba15_cc1b1735",
       "revId": "11ae6cb079abe2bd37b77370e40196c52eb8e941",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -101,6 +143,24 @@
       "writtenOn": "2023-11-27T22:58:17Z",
       "side": 1,
       "message": "nit: whitespace noise",
+      "revId": "11ae6cb079abe2bd37b77370e40196c52eb8e941",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "eda75686_ac6d1b61",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-11-28T19:33:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ebf971c4_613b84d7",
       "revId": "11ae6cb079abe2bd37b77370e40196c52eb8e941",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
