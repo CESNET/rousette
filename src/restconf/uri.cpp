@@ -32,7 +32,7 @@ const auto apiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentif
 const auto listInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = apiIdentifier >> -('=' >> keyList);
 const auto fullyQualifiedApiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentifier"} = identifier >> ':' >> identifier;
 const auto fullyQualifiedListInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = fullyQualifiedApiIdentifier >> -('=' >> keyList);
-const auto datastore = x3::rule<class datastore, boost::optional<ApiIdentifier>>{"datastore"} = x3::lit("data") | (x3::lit("ds") >> "/" >> fullyQualifiedApiIdentifier);
+const auto datastore = x3::rule<class datastore, boost::optional<ApiIdentifier>>{"datastore"} = x3::lit("data") >> x3::attr(boost::none) | (x3::lit("ds") >> "/" >> fullyQualifiedApiIdentifier);
 const auto uriPath = x3::rule<class uriPath, std::vector<PathSegment>>{"uriPath"} = -x3::lit("/") >> -(fullyQualifiedListInstance >> -("/" >> listInstance % "/")); // RFC 8040, sec 3.5.3
 const auto uriGrammar = x3::rule<class grammar, URI>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> "/" >> datastore >> uriPath;
 }
