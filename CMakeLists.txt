@@ -122,7 +122,7 @@ install(TARGETS
     # watch-operational-ds
     rousette
     RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/)
-install(FILES ${CMAKE_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang DESTINATION ${CMAKE_INSTALL_PREFIX}/share/velia/yang)
+install(FILES ${CMAKE_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang DESTINATION ${CMAKE_INSTALL_PREFIX}/share/rousette/yang)
 
 include(CTest)
 if(BUILD_TESTING)
