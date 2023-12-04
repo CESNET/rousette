@@ -248,7 +248,7 @@ struct RequestContext {
 void processPut(std::shared_ptr<RequestContext> requestCtx)
 {
     try {
-        auto [lyDatastoreAndPathParent, lastPathSegment] = asLibyangPathSplit(requestCtx->sess.getContext(), requestCtx->req.uri().path);
+        auto [lyDatastoreAndPathParent, lastPathSegment] = asLibyangPathSplit(requestCtx->sess.getContext(), requestCtx->req.method(), requestCtx->req.uri().path);
 
         auto ctx = requestCtx->sess.getContext();
         auto mod = ctx.getModuleImplemented("ietf-netconf");
@@ -412,7 +412,11 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     throw ErrorResponse(401, "protocol", "access-denied", "Access denied.");
                 }
 
-                auto [datastore_, path] = asLibyangPath(sess.getContext(), req.uri().path);
+                if (req.method() != "GET" && req.method() != "PUT") {
+                    throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
+                }
+
+                auto [datastore_, path] = asLibyangPath(sess.getContext(), req.method(), req.uri().path);
 
                 if (req.method() == "GET") {
                     sess.switchDatastore(datastore_ ? datastore_.value() : sysrepo::Datastore::Operational);
@@ -446,8 +450,6 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                             processPut(requestCtx);
                         }
                     });
-                } else {
-                    throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
                 }
             } catch (const auth::Error& e) {
                 if (e.delay) {

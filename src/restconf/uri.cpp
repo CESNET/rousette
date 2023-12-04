@@ -4,6 +4,8 @@
  * Written by Tomáš Pecka <tomas.pecka@cesnet.cz>
  */
 
+#include <functional>
+#include <map>
 #include "restconf/uri_impl.h"
 
 using namespace std::string_literals;
@@ -187,27 +189,37 @@ std::string apiIdentName(const ApiIdentifier& apiIdent)
     return *apiIdent.prefix + ":" + apiIdent.identifier;
 }
 
-bool isValidDataResource(libyang::SchemaNode node)
-{
-    switch (node.nodeType()) {
-    case libyang::NodeType::Container:
-    case libyang::NodeType::Leaf:
-    case libyang::NodeType::AnyXML:
-    case libyang::NodeType::AnyData:
-    /* querying the actual (leaf-)list node is not a valid data resource, only (leaf-)list entries are.
-     * Yet we consider this as a valid resource here. If this function is called we already checked if the keys are specified in the caller.
-     * If they were correctly specified, then we are querying instance. If not, then the code already throwed.
-     */
-    case libyang::NodeType::Leaflist:
-    case libyang::NodeType::List:
-        return true;
-    default:
-        return false;
+struct DataResourceValidator {
+    bool operator()(const libyang::SchemaNode& node) const
+    {
+        switch (node.nodeType()) {
+        case libyang::NodeType::Container:
+        case libyang::NodeType::Leaf:
+        case libyang::NodeType::AnyXML:
+        case libyang::NodeType::AnyData:
+        /* querying the actual (leaf-)list node is not a valid data resource, only (leaf-)list entries are.
+         * Yet we consider this as a valid resource here. If this function is called we already checked if the keys are specified in the caller.
+         * If they were correctly specified, then we are querying instance. If not, then the code already throwed.
+         */
+        case libyang::NodeType::Leaflist:
+        case libyang::NodeType::List:
+            return true;
+        default:
+            return false;
+        }
     }
-}
+};
 
-std::string asLibyangPath(const libyang::Context& ctx, const std::vector<PathSegment>::const_iterator& begin, const std::vector<PathSegment>::const_iterator& end)
+DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const impl::URIPrefix& uriPrefix, const std::string& httpMethod, const std::vector<PathSegment>::const_iterator& begin, const std::vector<PathSegment>::const_iterator& end)
 {
+    std::function<bool(const libyang::SchemaNode&)> validator;
+
+    if (httpMethod == "GET" || httpMethod == "PUT") {
+        validator = DataResourceValidator();
+    } else {
+        throw InvalidURIException("Unsupported HTTP method: " + httpMethod);
+    }
+
     std::optional<libyang::SchemaNode> currentNode;
     std::string res;
 
@@ -250,11 +262,11 @@ std::string asLibyangPath(const libyang::Context& ctx, const std::vector<PathSeg
             throw InvalidURIException("No keys allowed for node '" + currentNode->path() + "'");
         }
 
-        if (!isValidDataResource(*currentNode)) {
-            throw InvalidURIException("'"s + currentNode->path() + "' is not a data resource");
+        if (!validator(*currentNode)) {
+            throw InvalidURIException("'"s + currentNode->path() + "' is not a valid resource for " + httpMethod + " method");
         }
     }
-    return res;
+    return {uriPrefix.datastore, res};
 }
 }
 
@@ -266,7 +278,7 @@ std::string asLibyangPath(const libyang::Context& ctx, const std::vector<PathSeg
  * @throws InvalidURIException When datastore is not implemented
  * @return DatastoreAndPath object containing a sysrepo datastore and a libyang path as a string
  */
-DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& uriPath)
+DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath)
 {
     auto uri = impl::parseUriPath(uriPath);
     if (!uri) {
@@ -275,7 +287,7 @@ DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& u
     if (uri->segments.empty()) {
         return {uri->prefix.datastore, "/*"};
     }
-    return {uri->prefix.datastore, asLibyangPath(ctx, uri->segments.begin(), uri->segments.end())};
+    return asLibyangPath(ctx, uri->prefix, httpMethod, uri->segments.begin(), uri->segments.end());
 }
 
 /** @brief Transforms URI path (i.e., data resource identifier) into a path that is understood by libyang and a datastore (RFC 8527).
@@ -288,7 +300,7 @@ DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& u
  * @throws InvalidURIException When datastore is not implemented
  * @return Pair of DatastoreAndPath object (containing a sysrepo datastore and a libyang path to the parent as a string) and PathSegment instance describing the last path segment node
  */
-std::pair<DatastoreAndPath, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath)
+std::pair<DatastoreAndPath, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath)
 {
     auto uri = impl::parseUriPath(uriPath);
     if (!uri) {
@@ -300,16 +312,16 @@ std::pair<DatastoreAndPath, PathSegment> asLibyangPathSplit(const libyang::Conte
 
 
     auto lastSegment = uri->segments.back();
-    auto parentPath = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end() - 1);
+    auto parentPath = asLibyangPath(ctx, uri->prefix, httpMethod, uri->segments.begin(), uri->segments.end() - 1);
 
     // we know that the path is valid so we can get last segment module from ly
     if (!lastSegment.apiIdent.prefix) {
-        auto fullPath = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
-        auto lastNode = ctx.findPath(fullPath);
+        auto fullPath = asLibyangPath(ctx, uri->prefix, httpMethod, uri->segments.begin(), uri->segments.end());
+        auto lastNode = ctx.findPath(fullPath.path);
         lastSegment.apiIdent.prefix = std::string(lastNode.module().name());
     }
 
-    return {{uri->prefix.datastore, parentPath}, lastSegment};
+    return {parentPath, lastSegment};
 }
 
 }

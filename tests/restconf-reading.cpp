@@ -162,7 +162,7 @@ TEST_CASE("reading data")
       {
         "error-type": "application",
         "error-tag": "operation-failed",
-        "error-message": "'/ietf-system:system-restart' is not a data resource"
+        "error-message": "'/ietf-system:system-restart' is not a valid resource for GET method"
       }
     ]
   }
@@ -175,7 +175,7 @@ TEST_CASE("reading data")
       {
         "error-type": "application",
         "error-tag": "operation-failed",
-        "error-message": "'/example:tlc/list/example-action' is not a data resource"
+        "error-message": "'/example:tlc/list/example-action' is not a valid resource for GET method"
       }
     ]
   }
@@ -188,7 +188,7 @@ TEST_CASE("reading data")
       {
         "error-type": "application",
         "error-tag": "operation-failed",
-        "error-message": "'/example:tlc/list/example-action' is not a data resource"
+        "error-message": "'/example:tlc/list/example-action' is not a valid resource for GET method"
       }
     ]
   }
