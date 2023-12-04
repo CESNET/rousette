@@ -124,8 +124,9 @@ std::optional<sysrepo::Datastore> datastoreFromApiIdentifier(const boost::option
 }
 }
 
-DatastoreAndPath::DatastoreAndPath(const boost::optional<ApiIdentifier>& datastore, const std::string& path)
-    : datastore(datastoreFromApiIdentifier(datastore))
+RestconfAction::RestconfAction(const Type& type, const boost::optional<ApiIdentifier>& datastore, const std::string& path)
+    : type(type)
+    , datastore(datastoreFromApiIdentifier(datastore))
     , path(path)
 {
 }
@@ -210,7 +211,7 @@ struct DataResourceValidator {
     }
 };
 
-DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const impl::URIPrefix& uriPrefix, const std::string& httpMethod, const std::vector<PathSegment>::const_iterator& begin, const std::vector<PathSegment>::const_iterator& end)
+RestconfAction asLibyangPath(const libyang::Context& ctx, const impl::URIPrefix& uriPrefix, const std::string& httpMethod, const std::vector<PathSegment>::const_iterator& begin, const std::vector<PathSegment>::const_iterator& end)
 {
     std::function<bool(const libyang::SchemaNode&)> validator;
 
@@ -266,7 +267,7 @@ DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const impl::URIPrefi
             throw InvalidURIException("'"s + currentNode->path() + "' is not a valid resource for " + httpMethod + " method");
         }
     }
-    return {uriPrefix.datastore, res};
+    return {httpMethod == "GET" ? RestconfAction::Type::GET : RestconfAction::Type::REPLACE_PARENT, uriPrefix.datastore, res};
 }
 }
 
@@ -278,15 +279,16 @@ DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const impl::URIPrefi
  * @throws InvalidURIException When datastore is not implemented
  * @return DatastoreAndPath object containing a sysrepo datastore and a libyang path as a string
  */
-DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath)
+RestconfAction asLibyangPath(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath)
 {
     auto uri = impl::parseUriPath(uriPath);
     if (!uri) {
         throw InvalidURIException("Syntax error");
     }
-    if (uri->segments.empty()) {
-        return {uri->prefix.datastore, "/*"};
+    if (httpMethod == "GET" && uri->segments.empty()) {
+        return {RestconfAction::Type::GET, uri->prefix.datastore, "/*"};
     }
+
     return asLibyangPath(ctx, uri->prefix, httpMethod, uri->segments.begin(), uri->segments.end());
 }
 
@@ -300,7 +302,7 @@ DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& h
  * @throws InvalidURIException When datastore is not implemented
  * @return Pair of DatastoreAndPath object (containing a sysrepo datastore and a libyang path to the parent as a string) and PathSegment instance describing the last path segment node
  */
-std::pair<DatastoreAndPath, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath)
+std::pair<RestconfAction, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath)
 {
     auto uri = impl::parseUriPath(uriPath);
     if (!uri) {

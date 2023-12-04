@@ -44,6 +44,18 @@ std::ostream& operator<<(std::ostream& os, const std::vector<PathSegment>& v)
     std::copy(v.begin(), v.end(), std::experimental::make_ostream_joiner(os, ", "));
     return os << "]";
 }
+
+std::ostream& operator<<(std::ostream& os, const RestconfAction::Type& type)
+{
+    switch(type) {
+        case RestconfAction::Type::GET:
+            return os << "RestconfAction::Type::GET";
+        case RestconfAction::Type::REPLACE_PARENT:
+            return os << "RestconfAction::Type::REPLACE_PARENT";
+        default:
+            throw std::logic_error("Unhandled switch case");
+    }
+}
 }
 
 namespace rousette::restconf::impl {
@@ -93,6 +105,7 @@ TEST_CASE("URI path parser")
 {
     using rousette::restconf::ApiIdentifier;
     using rousette::restconf::PathSegment;
+    using rousette::restconf::RestconfAction;
     using rousette::restconf::impl::URI;
     using rousette::restconf::impl::URIPrefix;
 
@@ -291,15 +304,18 @@ TEST_CASE("URI path parser")
             SECTION("PUT and GET")
             {
                 std::string httpMethod;
+                RestconfAction::Type expectedActionType;
 
                 SECTION("PUT")
                 {
                     httpMethod = "PUT";
+                    expectedActionType = RestconfAction::Type::REPLACE_PARENT;
                 }
 
                 SECTION("GET")
                 {
                     httpMethod = "GET";
+                    expectedActionType = RestconfAction::Type::GET;
                 }
 
                 for (const auto& [uriPath, expectedLyPath, expectedDatastore] : {
@@ -335,9 +351,10 @@ TEST_CASE("URI path parser")
                     CAPTURE(httpMethod);
                     CAPTURE(uriPath);
                     REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
-                    auto [datastore, path] = rousette::restconf::asLibyangPath(ctx, httpMethod, uriPath);
+                    auto [actionType, datastore, path] = rousette::restconf::asLibyangPath(ctx, httpMethod, uriPath);
                     REQUIRE(path == expectedLyPath);
                     REQUIRE(datastore == expectedDatastore);
+                    REQUIRE(actionType == expectedActionType);
                 }
 
                 for (const auto& [uriPath, expectedLyPathParent, expectedDatastore, expectedLastSegment] : {
@@ -353,6 +370,7 @@ TEST_CASE("URI path parser")
                     auto [datastoreAndPathParent, lastSegment] = rousette::restconf::asLibyangPathSplit(ctx, httpMethod, uriPath);
                     REQUIRE(datastoreAndPathParent.path == expectedLyPathParent);
                     REQUIRE(datastoreAndPathParent.datastore == expectedDatastore);
+                    REQUIRE(datastoreAndPathParent.type == expectedActionType);
                     REQUIRE(lastSegment == expectedLastSegment);
                 }
             }

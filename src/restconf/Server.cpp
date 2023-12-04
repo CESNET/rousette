@@ -416,9 +416,10 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
                 }
 
-                auto [datastore_, path] = asLibyangPath(sess.getContext(), req.method(), req.uri().path);
+                auto [action, datastore_, path] = asLibyangPath(sess.getContext(), req.method(), req.uri().path);
 
-                if (req.method() == "GET") {
+                switch (action) {
+                case RestconfAction::Type::GET:
                     sess.switchDatastore(datastore_ ? datastore_.value() : sysrepo::Datastore::Operational);
                     if (auto data = sess.getData(path); data) {
                         res.write_head(
@@ -431,7 +432,9 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     } else {
                         throw ErrorResponse(404, "application", "invalid-value", "No data from sysrepo.");
                     }
-                } else if (req.method() == "PUT") {
+                    break;
+
+                case RestconfAction::Type::REPLACE_PARENT:
                     if (datastore_ == sysrepo::Datastore::FactoryDefault || datastore_ == sysrepo::Datastore::Operational) {
                         throw ErrorResponse(405, "application", "operation-not-supported", "Read-only datastore.");
                     }
@@ -450,6 +453,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                             processPut(requestCtx);
                         }
                     });
+                    break;
                 }
             } catch (const auth::Error& e) {
                 if (e.delay) {

@@ -9,6 +9,7 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <sys/stat.h>
 #include <sysrepo-cpp/Enum.hpp>
 
 namespace libyang {
@@ -45,11 +46,17 @@ struct PathSegment {
     bool operator==(const PathSegment&) const = default;
 };
 
-struct DatastoreAndPath {
+struct RestconfAction {
+    enum class Type {
+        GET,
+        REPLACE_PARENT,
+    };
+
+    Type type;
     std::optional<sysrepo::Datastore> datastore;
     std::string path;
 
-    DatastoreAndPath(const boost::optional<ApiIdentifier>& datastore, const std::string& path);
+    RestconfAction(const Type& type, const boost::optional<ApiIdentifier>& datastore, const std::string& path);
 };
 
 class InvalidURIException : public std::invalid_argument {
@@ -57,6 +64,6 @@ public:
     using std::invalid_argument::invalid_argument;
 };
 
-DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath);
-std::pair<DatastoreAndPath, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath);
+RestconfAction asLibyangPath(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath);
+std::pair<RestconfAction, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath);
 }
