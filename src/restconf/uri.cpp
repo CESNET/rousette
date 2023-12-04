@@ -63,8 +63,8 @@ URIPrefix::URIPrefix(URIPrefix::Type resourceType, const boost::optional<ApiIden
 
 URI::URI() = default;
 
-URI::URI(const URIPrefix& resource, const std::vector<PathSegment>& segments)
-    : resource(resource)
+URI::URI(const URIPrefix& prefix, const std::vector<PathSegment>& segments)
+    : prefix(prefix)
     , segments(segments)
 {
 }
@@ -268,14 +268,14 @@ std::string asLibyangPath(const libyang::Context& ctx, const std::vector<PathSeg
  */
 DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& uriPath)
 {
-    auto resourcePath = impl::parseUriPath(uriPath);
-    if (!resourcePath) {
+    auto uri = impl::parseUriPath(uriPath);
+    if (!uri) {
         throw InvalidURIException("Syntax error");
     }
-    if (resourcePath->segments.empty()) {
-        return {resourcePath->resource.datastore, "/*"};
+    if (uri->segments.empty()) {
+        return {uri->prefix.datastore, "/*"};
     }
-    return {resourcePath->resource.datastore, asLibyangPath(ctx, resourcePath->segments.begin(), resourcePath->segments.end())};
+    return {uri->prefix.datastore, asLibyangPath(ctx, uri->segments.begin(), uri->segments.end())};
 }
 
 /** @brief Transforms URI path (i.e., data resource identifier) into a path that is understood by libyang and a datastore (RFC 8527).
@@ -290,26 +290,26 @@ DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& u
  */
 std::pair<DatastoreAndPath, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath)
 {
-    auto resourcePath = impl::parseUriPath(uriPath);
-    if (!resourcePath) {
+    auto uri = impl::parseUriPath(uriPath);
+    if (!uri) {
         throw InvalidURIException("Syntax error");
     }
-    if (resourcePath->segments.empty()) {
+    if (uri->segments.empty()) {
         throw InvalidURIException("Cannot split the datastore resource URI");
     }
 
 
-    auto lastSegment = resourcePath->segments.back();
-    auto parentPath = asLibyangPath(ctx, resourcePath->segments.begin(), resourcePath->segments.end() - 1);
+    auto lastSegment = uri->segments.back();
+    auto parentPath = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end() - 1);
 
     // we know that the path is valid so we can get last segment module from ly
     if (!lastSegment.apiIdent.prefix) {
-        auto fullPath = asLibyangPath(ctx, resourcePath->segments.begin(), resourcePath->segments.end());
+        auto fullPath = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
         auto lastNode = ctx.findPath(fullPath);
         lastSegment.apiIdent.prefix = std::string(lastNode.module().name());
     }
 
-    return {{resourcePath->resource.datastore, parentPath}, lastSegment};
+    return {{uri->prefix.datastore, parentPath}, lastSegment};
 }
 
 }

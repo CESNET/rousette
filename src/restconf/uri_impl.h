@@ -33,12 +33,12 @@ struct URIPrefix {
 
 /** @brief Represents parsed URI path split into segments delimited by a `/` separator. */
 struct URI {
-    URIPrefix resource;
+    URIPrefix prefix;
     std::vector<PathSegment> segments;
 
     URI();
     URI(const std::vector<PathSegment>& pathSegments);
-    URI(const URIPrefix& resource, const std::vector<PathSegment>& pathSegments);
+    URI(const URIPrefix& prefix, const std::vector<PathSegment>& pathSegments);
 
     bool operator==(const URI&) const = default;
 };
@@ -48,6 +48,6 @@ std::optional<URI> parseUriPath(const std::string& uriPath);
 }
 
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::impl::URIPrefix, resourceType, datastore);
-BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::impl::URI, resource, segments);
+BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::impl::URI, prefix, segments);
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::PathSegment, apiIdent, keys);
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::ApiIdentifier, prefix, identifier);
