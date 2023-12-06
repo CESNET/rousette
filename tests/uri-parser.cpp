@@ -333,18 +333,17 @@ TEST_CASE("URI path parser")
             }
         }
 
-        for (const auto& [uriPath, expectedLyPathParent, expectedDatastore, expectedLastSegment] : {
-                 std::tuple<std::string, std::string, std::optional<sysrepo::Datastore>, PathSegment>{"/restconf/data/example:top-level-leaf", "", std::nullopt, PathSegment({"example", "top-level-leaf"})},
-                 {"/restconf/data/example:top-level-list=hello", "", std::nullopt, PathSegment({"example", "top-level-list"}, {"hello"})},
-                 {"/restconf/data/example:tlc/list=eth0/collection=1", "/example:tlc/list[name='eth0']", std::nullopt, PathSegment({"example", "collection"}, {"1"})},
-                 {"/restconf/data/example:tlc/status", "/example:tlc", std::nullopt, PathSegment({"example", "status"})},
-                 {"/restconf/data/example:a/example-augment:b/c", "/example:a/example-augment:b", std::nullopt, PathSegment({"example-augment", "c"})},
-                 {"/restconf/ds/ietf-datastores:startup/example:a/example-augment:b/c", "/example:a/example-augment:b", sysrepo::Datastore::Startup, PathSegment({"example-augment", "c"})},
+        for (const auto& [uriPath, expectedLyPathParent, expectedLastSegment] : {
+                 std::tuple<std::string, std::string, PathSegment>{"/restconf/data/example:top-level-leaf", "", PathSegment({"example", "top-level-leaf"})},
+                 {"/restconf/data/example:top-level-list=hello", "", PathSegment({"example", "top-level-list"}, {"hello"})},
+                 {"/restconf/data/example:tlc/list=eth0/collection=1", "/example:tlc/list[name='eth0']", PathSegment({"example", "collection"}, {"1"})},
+                 {"/restconf/data/example:tlc/status", "/example:tlc", PathSegment({"example", "status"})},
+                 {"/restconf/data/example:a/example-augment:b/c", "/example:a/example-augment:b", PathSegment({"example-augment", "c"})},
+                 {"/restconf/ds/ietf-datastores:startup/example:a/example-augment:b/c", "/example:a/example-augment:b", PathSegment({"example-augment", "c"})},
              }) {
             CAPTURE(uriPath);
-            auto [datastoreAndPathParent, lastSegment] = rousette::restconf::asLibyangPathSplit(ctx, uriPath);
-            REQUIRE(datastoreAndPathParent.path == expectedLyPathParent);
-            REQUIRE(datastoreAndPathParent.datastore == expectedDatastore);
+            auto [parentPath, lastSegment] = rousette::restconf::asLibyangPathSplit(ctx, uriPath);
+            REQUIRE(parentPath == expectedLyPathParent);
             REQUIRE(lastSegment == expectedLastSegment);
         }
 
