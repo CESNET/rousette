@@ -760,4 +760,20 @@ TEST_CASE("writing data")
 )"});
         }
     }
+
+    SECTION("POST")
+    {
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:top-level-leaf", R"({"example:top-level-leaf": "str"})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{405, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-not-supported",
+        "error-message": "POST for data and datastore resources is not yet implemented"
+      }
+    ]
+  }
+}
+)"});
+    }
 }

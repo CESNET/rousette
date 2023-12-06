@@ -81,6 +81,7 @@ static const auto SERVER_ADDRESS_AND_PORT = "http://["s + SERVER_ADDRESS + "]" +
 
 #define RESTCONF_ROOT "/restconf"
 #define RESTCONF_DATA_ROOT RESTCONF_ROOT "/data"
+#define RESTCONF_OPER_ROOT RESTCONF_ROOT "/operations"
 #define RESTCONF_ROOT_DS(NAME) RESTCONF_ROOT "/ds/ietf-datastores:" NAME
 
 const ng::header_map jsonHeaders{
@@ -91,6 +92,10 @@ const ng::header_map jsonHeaders{
 const ng::header_map xmlHeaders{
     {"access-control-allow-origin", {"*", false}},
     {"content-type", {"application/yang-data+xml", false}},
+};
+
+const ng::header_map noContentTypeHeaders{
+    {"access-control-allow-origin", {"*", false}},
 };
 
 Response clientRequest(auto method,
@@ -150,6 +155,11 @@ Response get(auto uri, const std::map<std::string, std::string>& headers)
 Response put(auto xpath, const std::string& data, const std::map<std::string, std::string>& headers)
 {
     return clientRequest("PUT", xpath, data, headers);
+}
+
+Response post(auto xpath, const std::string& data, const std::map<std::string, std::string>& headers)
+{
+    return clientRequest("POST", xpath, data, headers);
 }
 
 auto manageNacm(sysrepo::Session session)

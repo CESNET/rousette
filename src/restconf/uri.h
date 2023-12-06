@@ -50,6 +50,7 @@ struct RestconfRequest {
     enum class Type {
         GetData, // GET datastore or data resource
         CreateOrUpdate, // PUT data resource
+        RPC, // POST operations resource
     };
 
     Type type;
