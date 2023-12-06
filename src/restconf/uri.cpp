@@ -4,7 +4,9 @@
  * Written by Tomáš Pecka <tomas.pecka@cesnet.cz>
  */
 
+#include <libyang-cpp/Enum.hpp>
 #include "restconf/Exceptions.h"
+#include "restconf/uri.h"
 #include "restconf/uri_impl.h"
 
 using namespace std::string_literals;
@@ -14,6 +16,8 @@ namespace impl {
 
 namespace {
 namespace x3 = boost::spirit::x3;
+
+// clang-format off
 
 auto set_zero = [](auto& ctx) { _val(ctx) = 0u; };
 auto add = [](auto& ctx) {
@@ -33,9 +37,14 @@ const auto apiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentif
 const auto listInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = apiIdentifier >> -('=' >> keyList);
 const auto fullyQualifiedApiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentifier"} = identifier >> ':' >> identifier;
 const auto fullyQualifiedListInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = fullyQualifiedApiIdentifier >> -('=' >> keyList);
-const auto uriPrefix = x3::rule<class uriPrefix, URIPrefix>{"uriPrefix"} = (x3::lit("data") >> x3::attr(URIPrefix::Type::BasicRestconfData) >> x3::attr(boost::none)) | (x3::lit("ds") >> x3::attr(URIPrefix::Type::NMDADatastore) >> "/" >> fullyQualifiedApiIdentifier);
+const auto uriPrefix = x3::rule<class uriPrefix, URIPrefix>{"uriPrefix"} =
+    (x3::lit("data") >> x3::attr(URIPrefix::Type::BasicRestconfData) >> x3::attr(boost::none)) |
+    (x3::lit("ds") >> x3::attr(URIPrefix::Type::NMDADatastore) >> "/" >> fullyQualifiedApiIdentifier) |
+    (x3::lit("operations") >> x3::attr(URIPrefix::Type::BasicRestconfOperations) >> x3::attr(boost::none));
 const auto uriPath = x3::rule<class uriPath, std::vector<PathSegment>>{"uriPath"} = -x3::lit("/") >> -(fullyQualifiedListInstance >> -("/" >> listInstance % "/")); // RFC 8040, sec 3.5.3
 const auto uriGrammar = x3::rule<class grammar, URI>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> "/" >> uriPrefix >> uriPath;
+
+// clang-format on
 }
 
 std::optional<URI> parseUriPath(const std::string& uriPath)
@@ -220,12 +229,40 @@ void checkValidDataResource(const std::optional<libyang::SchemaNode>& node, cons
     }
 }
 
+/** @brief checks if provided schema node is valid for POST resource */
+void checkValidPostResource(const std::optional<libyang::SchemaNode>& node, const impl::URIPrefix& prefix)
+{
+    if (!node) {
+        if (prefix.resourceType == impl::URIPrefix::Type::BasicRestconfOperations) {
+            throw ErrorResponse(400, "protocol", "operation-failed", "'/' is not an operation resource");
+        } else {
+            throw ErrorResponse(405, "application", "operation-not-supported", "POST method for a complete-datastore resource is not yet implemented");
+        }
+    }
+
+    if (node->nodeType() != libyang::NodeType::RPC && node->nodeType() != libyang::NodeType::Action) {
+        throw ErrorResponse(405, "application", "operation-not-supported", "POST method for a data resource is not yet implemented");
+    }
+
+    if (node->nodeType() == libyang::NodeType::RPC && prefix.resourceType != impl::URIPrefix::Type::BasicRestconfOperations) {
+        throw ErrorResponse(400, "protocol", "operation-failed", "RPC '"s + node->path() + "' must be requested using operation prefix");
+    }
+
+    if (node->nodeType() == libyang::NodeType::Action && prefix.resourceType != impl::URIPrefix::Type::BasicRestconfData) {
+        throw ErrorResponse(400, "protocol", "operation-failed", "Action '"s + node->path() + "' must be requested using data prefix");
+    }
+}
+
 /** @brief Validates whether SchemaNode is valid for this HTTP method and prefix. If not, throws with ErrorResponse.
  *
  * @throw ErrorResponse If node is invalid for this httpMethod and URI prefix */
-void validateRequestSchemaNode(const std::optional<libyang::SchemaNode>& node, const std::string&, const impl::URIPrefix& prefix)
+void validateRequestSchemaNode(const std::optional<libyang::SchemaNode>& node, const std::string& httpMethod, const impl::URIPrefix& prefix)
 {
-    checkValidDataResource(node, prefix);
+    if (httpMethod == "GET" || httpMethod == "PUT") {
+        checkValidDataResource(node, prefix);
+    } else {
+        checkValidPostResource(node, prefix);
+    }
 }
 
 /** @brief Wrapper for a libyang path and a corresponding SchemaNode. SchemaNode is nullopt for datastore resource */
@@ -299,7 +336,7 @@ SchemaNodeAndPath asLibyangPath(const libyang::Context& ctx, const std::vector<P
  */
 RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath)
 {
-    if (httpMethod != "GET" && httpMethod != "PUT") {
+    if (httpMethod != "GET" && httpMethod != "PUT" && httpMethod != "POST") {
         throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
     }
 
@@ -314,7 +351,13 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
 
     auto [lyPath, schemaNode] = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
     validateRequestSchemaNode(schemaNode, httpMethod, uri->prefix);
-    return {httpMethod == "GET" ? RestconfRequest::Type::GetData : RestconfRequest::Type::CreateOrReplaceThisNode, uri->prefix.datastore, lyPath};
+    if (httpMethod == "GET") {
+        return {RestconfRequest::Type::GetData, uri->prefix.datastore, lyPath};
+    } else if (httpMethod == "PUT") {
+        return {RestconfRequest::Type::CreateOrReplaceThisNode, uri->prefix.datastore, lyPath};
+    } else {
+        return {RestconfRequest::Type::Execute, uri->prefix.datastore, lyPath};
+    }
 }
 
 /** @brief Transforms URI path into a libyang path to the parent node (or empty if this path was a root node) and PathSegment describing the last path segment.

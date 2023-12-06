@@ -6,6 +6,7 @@
 */
 
 #include <boost/algorithm/string.hpp>
+#include <libyang-cpp/Enum.hpp>
 #include <nghttp2/asio_http2_server.h>
 #include <regex>
 #include <spdlog/spdlog.h>
@@ -245,6 +246,75 @@ struct RequestContext {
     std::string payload;
 };
 
+void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
+{
+    requestCtx->sess.switchDatastore(sysrepo::Datastore::Operational);
+    auto ctx = requestCtx->sess.getContext();
+
+    try {
+        auto rpcSchemaNode = ctx.findPath(requestCtx->lyPathOriginal);
+        if (!requestCtx->dataFormat.request && static_cast<bool>(rpcSchemaNode.asActionRpc().input().child())) {
+            throw ErrorResponse(400, "protocol", "invalid-value", "Content-type header missing.");
+        }
+
+        // validate if action node's parent is present
+        if (rpcSchemaNode.nodeType() == libyang::NodeType::Action) {
+            // FIXME: This is race-prone: we check for existing action data node but before we send the RPC the node may be gone
+            auto [pathToParent, pathSegment] = asLibyangPathSplit(ctx, requestCtx->req.uri().path);
+            if (!dataExists(requestCtx->sess, pathToParent)) {
+                throw ErrorResponse(400, "application", "operation-failed", "Action data node '" + requestCtx->lyPathOriginal + "' does not exist.");
+            }
+        }
+
+        auto [parent, rpcNode] = ctx.newPath2(requestCtx->lyPathOriginal);
+
+        if (!requestCtx->payload.empty()) {
+            rpcNode->parseOp(requestCtx->payload, *requestCtx->dataFormat.request, libyang::OperationType::RpcRestconf);
+        }
+
+        auto rpcReply = requestCtx->sess.sendRPC(*rpcNode);
+
+        if (rpcReply.immediateChildren().empty()) {
+            requestCtx->res.write_head(204, {{"access-control-allow-origin", {"*", false}}});
+            requestCtx->res.end();
+            return;
+        }
+
+        auto responseNode = rpcReply.child();
+        responseNode->unlinkWithSiblings();
+
+        auto envelope = ctx.newOpaqueJSON(std::string{rpcNode->schema().module().name()}, "output", std::nullopt);
+        envelope->insertChild(*responseNode);
+
+        requestCtx->res.write_head(200, {
+                                            {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
+                                            {"access-control-allow-origin", {"*", false}},
+                                        });
+        requestCtx->res.end(*envelope->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::WithSiblings));
+    } catch (const ErrorResponse& e) {
+        rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath);
+    } catch (const libyang::ErrorWithCode& e) {
+        if (e.code() == libyang::ErrorCode::ValidationFailure) {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", "Validation failure: "s + e.what());
+        } else {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to libyang exception: "s + e.what());
+        }
+    } catch (const sysrepo::ErrorWithCode& e) {
+        if (e.code() == sysrepo::ErrorCode::Unauthorized) {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 403, "application", "access-denied", "Access denied.");
+        } else if (e.code() == sysrepo::ErrorCode::ValidationFailed) {
+            /*
+             * FIXME: This happens on invalid input data (e.g., missing mandatory nodes) or missing action data node.
+             * The former input should probably be validated by libyang's parseOp but it only parses. Is there better way? At least somehow extract logs?
+             * We check on the missing action data node, but it is racy.
+             */
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "application", "operation-failed", "Input data validation failed");
+        } else {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception: "s + e.what());
+        }
+    }
+}
+
 void processPut(std::shared_ptr<RequestContext> requestCtx)
 {
     try {
@@ -444,6 +514,19 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                             requestCtx->payload.append(reinterpret_cast<const char*>(data), length);
                         } else {
                             processPut(requestCtx);
+                        }
+                    });
+                    break;
+                }
+
+                case RestconfRequest::Type::Execute: {
+                    auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, restconfRequest.path);
+
+                    req.on_data([requestCtx](const uint8_t* data, std::size_t length) {
+                        if (length > 0) {
+                            requestCtx->payload.append(reinterpret_cast<const char*>(data), length);
+                        } else {
+                            processActionOrRPC(requestCtx);
                         }
                     });
                     break;
