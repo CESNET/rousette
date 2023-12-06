@@ -323,7 +323,7 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
         }
     } catch (const InvalidURIException& e) {
         spdlog::error("URI parser exception: {}", e.what());
-        rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "operation-not-supported", "Invalid URI for PUT request");
+        rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "application", "operation-failed", "Invalid URI for PUT request");
     }
 }
 }
