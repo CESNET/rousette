@@ -747,4 +747,20 @@ TEST_CASE("writing data")
 )"});
         }
     }
+
+    SECTION("POST")
+    {
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:top-level-leaf", R"({"example:top-level-leaf": "str"})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{405, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-not-supported",
+        "error-message": "POST method on data resources is not currently supported"
+      }
+    ]
+  }
+}
+)"});
+    }
 }

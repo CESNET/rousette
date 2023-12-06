@@ -50,6 +50,7 @@ struct RestconfRequest {
     enum class Action {
         GetData, // GET datastore resorce or data resource
         CreateUpdateInParent, // PUT data resource
+        RPC, // POST on operations resource
     };
 
     Action action;

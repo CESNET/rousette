@@ -230,6 +230,14 @@ TEST_CASE("URI path parser")
                  {"/restconf/ds/ietf-datastores:running/foo:bar/list1=a", URI(URIPrefix(URIPrefix::Type::NMDADatastore, ApiIdentifier{"ietf-datastores", "running"}), {{{"foo", "bar"}}, {{"list1"}, {"a"}}})},
                  {"/restconf/ds/ietf-datastores:operational", URI(URIPrefix(URIPrefix::Type::NMDADatastore, ApiIdentifier{"ietf-datastores", "operational"}), {})},
                  {"/restconf/ds/ietf-datastores:operational/", URI(URIPrefix(URIPrefix::Type::NMDADatastore, ApiIdentifier{"ietf-datastores", "operational"}), {})},
+
+                 // RPCs and actions
+                 {"/restconf/operations/example:rpc-test", URI(URIPrefix(URIPrefix::Type::BasicRestconfOperations, boost::none), {{{"example", "rpc-test"}}})},
+                 {"/restconf/data/example:tlc/list=hello-world/example-action", URI({
+                                                                                    {{"example", "tlc"}},
+                                                                                    {{"list"}, {"hello-world"}},
+                                                                                    {{"example-action"}},
+                                                                                })},
              }) {
 
             CAPTURE(uriPath);
@@ -298,6 +306,7 @@ TEST_CASE("URI path parser")
                 httpMethod = "GET";
                 expectedAction = RestconfRequest::Action::GetData;
             }
+
             SECTION("PUT")
             {
                 httpMethod = "PUT";
@@ -357,54 +366,127 @@ TEST_CASE("URI path parser")
             auto [parentPath, lastSegment] = rousette::restconf::asLibyangPathSplit(ctx, uriPath);
             REQUIRE(parentPath == expectedLyPathParent);
             REQUIRE(lastSegment == expectedLastSegment);
+
+            SECTION("POST (RPC)")
+            {
+                std::string uri;
+                std::string expectedPath;
+
+                SECTION("RPC")
+                {
+                    uri = "/restconf/operations/example:test-rpc";
+                    expectedPath = "/example:test-rpc";
+                }
+
+                SECTION("Action")
+                {
+                    uri = "/restconf/data/example:tlc/list=hello-world/example-action";
+                    expectedPath = "/example:tlc/list[name='hello-world']/example-action";
+                }
+
+                CAPTURE(uri);
+                auto [action, datastore, path] = rousette::restconf::asRestconfRequest(ctx, "POST", uri);
+                REQUIRE(path == expectedPath);
+                REQUIRE(datastore == std::nullopt);
+                REQUIRE(action == RestconfRequest::Action::RPC);
+            }
         }
 
         SECTION("Contextually invalid paths")
         {
-            std::string httpMethod;
-            SECTION("GET") { httpMethod = "GET"; }
-            SECTION("PUT") { httpMethod = "PUT"; }
+            SECTION("GET and PUT")
+            {
+                std::string httpMethod;
+                SECTION("GET") { httpMethod = "GET"; }
+                SECTION("PUT") { httpMethod = "PUT"; }
 
-            for (const auto& uriPath : std::vector<std::string>{
-                     "/restconf/data/hello:world", // nonexistent module
-                     "/restconf/data/example:foo", // nonexistent top-level node
-                     "/restconf/data/example-augment:b", // nonexistent top-level node
-                     "/restconf/data/example:tlc/hello-world", // nonexistent node
-                     "/restconf/data/example:f", // feature not enabled
-                     "/restconf/data/example:top-level-list", // list is not a data resource
-                     "/restconf/data/example:tlc/key-less-list", // list is not a data resource
-                     "/restconf/data/example:tlc/list=eth0/collection", // leaf-list is not a data resource
-                     "/restconf/data/example:test-rpc/i", // RPC input node is not a data resource
-                     "/restconf/data/example:test-rpc/o", // RPC output node is not a data resource
-                     "/restconf/data/example:tlc=eth0", // node not a (leaf-)list
-                     "/restconf/data/example:tlc/list=eth0,eth1", // wrong number of list elements
-                     "/restconf/data/example:tlc/list=eth0/collection=br0,eth1", // wrong number of keys for a leaf-list
-                     "/restconf/data/example:tlc/list=eth0/choose", // schema nodes should not be visible
-                     "/restconf/data/example:tlc/list=eth0/choose/choice1", // schema nodes should not be visible
-                     "/restconf/ds/hello:world/example:tlc", // unsupported datastore
-                 }) {
-                CAPTURE(uriPath);
-                CAPTURE(httpMethod);
-                REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
-                REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, httpMethod, uriPath), rousette::restconf::InvalidURIException);
+                for (const auto& uriPath : std::vector<std::string>{
+                         "/restconf/data/hello:world", // nonexistent module
+                         "/restconf/data/example:foo", // nonexistent top-level node
+                         "/restconf/data/example-augment:b", // nonexistent top-level node
+                         "/restconf/data/example:tlc/hello-world", // nonexistent node
+                         "/restconf/data/example:f", // feature not enabled
+                         "/restconf/data/example:top-level-list", // list is not a data resource
+                         "/restconf/data/example:tlc/key-less-list", // list is not a data resource
+                         "/restconf/data/example:tlc/list=eth0/collection", // leaf-list is not a data resource
+                         "/restconf/data/example:test-rpc/i", // RPC input node is not a data resource
+                         "/restconf/data/example:test-rpc/o", // RPC output node is not a data resource
+                         "/restconf/data/example:tlc=eth0", // node not a (leaf-)list
+                         "/restconf/data/example:tlc/list=eth0,eth1", // wrong number of list elements
+                         "/restconf/data/example:tlc/list=eth0/collection=br0,eth1", // wrong number of keys for a leaf-list
+                         "/restconf/data/example:tlc/list=eth0/choose", // schema nodes should not be visible
+                         "/restconf/data/example:tlc/list=eth0/choose/choice1", // schema nodes should not be visible
+                         "/restconf/ds/hello:world/example:tlc", // unsupported datastore
+                     }) {
+                    CAPTURE(uriPath);
+                    CAPTURE(httpMethod);
+                    REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
+                    REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, httpMethod, uriPath), rousette::restconf::InvalidURIException);
+                }
+
+                for (const auto& uriPath : std::vector<std::string>{
+                         "/restconf/data/example:test-rpc", // RPC is not a data resource
+                         "/restconf/data/example:tlc/list=eth0/example-action", // Action is not a data resource
+                     }) {
+                    CAPTURE(uriPath);
+                    CAPTURE(httpMethod);
+                    REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
+                    REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, httpMethod, uriPath), rousette::restconf::ErrorResponse);
+                }
             }
 
-            for (const auto& uriPath : std::vector<std::string>{
-                     "/restconf/data/example:test-rpc", // RPC is not a data resource
-                     "/restconf/data/example:tlc/list=eth0/example-action", // Action is not a data resource
-                 }) {
-                CAPTURE(uriPath);
-                CAPTURE(httpMethod);
-                REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
-                REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, httpMethod, uriPath), rousette::restconf::ErrorResponse);
+            SECTION("POST")
+            {
+                SECTION("RPC")
+                {
+                    for (const auto& uriPath : std::vector<std::string>{
+                             "/restconf/operations", // RPC node missing
+                             "/restconf/data/example:test-rpc", // RPC is not a data resource
+
+                             "/restconf/operations/example:tlc/list=eth0/example-action", // actions are invoked via /restconf/data
+                             "/restconf/data/example:test-rpc", // RPCs are invoked via /restconf/operations
+
+                             "/restconf/data/example:test-rpc/i", // RPC input node is not a data resource nor operations resource
+                             "/restconf/data/example:test-rpc/o", // RPC output node is not a data resource nor operations resource
+                             "/restconf/operations/example:test-rpc/i", // RPC input node is not a data resource nor operations resource
+                             "/restconf/operations/example:test-rpc/o", // RPC output node is not a data resource nor operations resource
+
+                             "/restconf/data/example:tlc/list=eth0/example-action/i", // input node of action is not an operations resource
+                             "/restconf/data/example:tlc/list=eth0/example-action/o", // output node of action is not an operations resource
+                             "/restconf/operations/example:tlc/list=eth0/example-action/i", // input node of action is not an operations resource
+                             "/restconf/operations/example:tlc/list=eth0/example-action/o", // output node of action is not an operations resource
+                         }) {
+                        CAPTURE(uriPath);
+                        REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
+                        REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, "POST", uriPath), rousette::restconf::InvalidURIException);
+                    }
+                }
+
+                SECTION("write")
+                {
+                    for (const auto& uriPath : std::vector<std::string>{
+                             "/restconf/data",
+                             "/restconf/operations",
+                         }) {
+                        CAPTURE(uriPath);
+                        REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
+                        REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, "POST", uriPath), rousette::restconf::InvalidURIException);
+                    }
+
+                    for (const auto& uriPath : std::vector<std::string>{
+                             "/restconf/data/example:tlc",
+                             "/restconf/data/example:top-level-leaf",
+                         }) {
+                        CAPTURE(uriPath);
+                        REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
+                        REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, "POST", uriPath), rousette::restconf::ErrorResponse);
+                    }
+                }
             }
         }
 
         SECTION("Unsupported HTTP methods")
         {
-            REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, "POST", "/restconf/operations/example:test-rpc"), rousette::restconf::ErrorResponse);
-            REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, "POST", "/restconf/data/example:tlc"), rousette::restconf::ErrorResponse);
-            REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, "POST", "/restconf/data/example:tlc/list=eth0/example-action"), rousette::restconf::ErrorResponse);
             REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, "HEAD", "/restconf/data/example:top-level-leaf"), rousette::restconf::ErrorResponse);
             REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, "OPTIONS", "/restconf/data/example:top-level-leaf"), rousette::restconf::ErrorResponse);
             REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, "PATCH", "/restconf/data"), rousette::restconf::ErrorResponse);

@@ -34,7 +34,7 @@ const auto apiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentif
 const auto listInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = apiIdentifier >> -('=' >> keyList);
 const auto fullyQualifiedApiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentifier"} = identifier >> ':' >> identifier;
 const auto fullyQualifiedListInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = fullyQualifiedApiIdentifier >> -('=' >> keyList);
-const auto uriPrefix = x3::rule<class uriPrefix, URIPrefix>{"uriPrefix"} = (x3::lit("data") >> x3::attr(URIPrefix::Type::BasicRestconfData) >> x3::attr(boost::none)) | (x3::lit("ds") >> x3::attr(URIPrefix::Type::NMDADatastore) >> "/" >> fullyQualifiedApiIdentifier);
+const auto uriPrefix = x3::rule<class uriPrefix, URIPrefix>{"uriPrefix"} = (x3::lit("data") >> x3::attr(URIPrefix::Type::BasicRestconfData) >> x3::attr(boost::none)) | (x3::lit("ds") >> x3::attr(URIPrefix::Type::NMDADatastore) >> "/" >> fullyQualifiedApiIdentifier) | (x3::lit("operations") >> x3::attr(URIPrefix::Type::BasicRestconfOperations) >> x3::attr(boost::none));
 const auto uriPath = x3::rule<class uriPath, std::vector<PathSegment>>{"uriPath"} = -x3::lit("/") >> -(fullyQualifiedListInstance >> -("/" >> listInstance % "/")); // RFC 8040, sec 3.5.3
 const auto uriGrammar = x3::rule<class grammar, URI>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> "/" >> uriPrefix >> uriPath;
 }
@@ -230,6 +230,20 @@ bool isValidDataResource(libyang::SchemaNode node)
     }
 }
 
+/** @brief checks if provided schema node is valid as a target of operation resource request */
+bool isValidOperationsResource(libyang::SchemaNode node, const impl::URIPrefix& uriPrefix)
+{
+    if (uriPrefix.resourceType == impl::URIPrefix::Type::BasicRestconfData && node.nodeType() == libyang::NodeType::Action) {
+        return true;
+    }
+
+    if (uriPrefix.resourceType == impl::URIPrefix::Type::BasicRestconfOperations && node.nodeType() == libyang::NodeType::RPC) {
+        return true;
+    }
+
+    return false;
+}
+
 std::pair<std::optional<libyang::SchemaNode>, std::string> asLibyangPath(const libyang::Context& ctx, const std::vector<PathSegment>::const_iterator& begin, const std::vector<PathSegment>::const_iterator& end)
 {
     std::optional<libyang::SchemaNode> currentNode;
@@ -289,7 +303,7 @@ std::pair<std::optional<libyang::SchemaNode>, std::string> asLibyangPath(const l
  */
 RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath)
 {
-    if (httpMethod != "GET" && httpMethod != "PUT") {
+    if (httpMethod != "GET" && httpMethod != "PUT" && httpMethod != "POST") {
         throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
     }
 
@@ -300,15 +314,28 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
 
     auto [schemaNode, lyPath] = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
 
-    if (schemaNode && !isValidDataResource(*schemaNode) && (schemaNode->nodeType() == libyang::NodeType::RPC || schemaNode->nodeType() == libyang::NodeType::Action)) {
-        throw ErrorResponse(405, "protocol", "operation-not-supported", "'"s + schemaNode->path() + "' is not a data resource", std::nullopt);
-    } else if (httpMethod == "GET" && uri->segments.empty()) {
-        return {RestconfRequest::Action::GetData, uri->prefix.datastore, "/*"};
-    } else if (!schemaNode || !isValidDataResource(*schemaNode)) {
-        throw InvalidURIException("'"s + schemaNode->path() + "' is not a data resource");
-    }
+    if (httpMethod == "GET" || httpMethod == "PUT") {
+        if (schemaNode && !isValidDataResource(*schemaNode) && (schemaNode->nodeType() == libyang::NodeType::RPC || schemaNode->nodeType() == libyang::NodeType::Action)) {
+            throw ErrorResponse(405, "protocol", "operation-not-supported", "'"s + schemaNode->path() + "' is not a data resource", std::nullopt);
+        } else if (httpMethod == "GET" && uri->segments.empty()) {
+            return {RestconfRequest::Action::GetData, uri->prefix.datastore, "/*"};
+        } else if (!schemaNode || !isValidDataResource(*schemaNode)) {
+            throw InvalidURIException("'"s + schemaNode->path() + "' is not a data resource");
+        }
 
-    return {httpMethod == "GET" ? RestconfRequest::Action::GetData : RestconfRequest::Action::CreateUpdateInParent, uri->prefix.datastore, lyPath};
+        return {httpMethod == "GET" ? RestconfRequest::Action::GetData : RestconfRequest::Action::CreateUpdateInParent, uri->prefix.datastore, lyPath};
+    } else {
+        bool isDataResource = schemaNode && isValidDataResource(*schemaNode);
+        bool isOperationResource = schemaNode && isValidOperationsResource(*schemaNode, uri->prefix);
+
+        if (!schemaNode || (!isDataResource && !isOperationResource)) {
+            throw InvalidURIException("'/' is neither an operation resource nor data resource");
+        } else if (isDataResource) {
+            throw ErrorResponse(405, "application", "operation-not-supported", "POST method on data resources is not currently supported");
+        }
+
+        return {RestconfRequest::Action::RPC, uri->prefix.datastore, lyPath};
+    }
 }
 
 /** @brief Transforms URI path into a libyang path to the parent node (or empty if this path was a root node) and ApiIdentifier describing the last path segment.

@@ -77,10 +77,25 @@ module example {
 
   rpc test-rpc {
     input {
-      leaf i { type string; }
+      leaf i {
+        type string;
+        mandatory true;
+      }
     }
     output {
-      leaf o { type string; }
+      leaf out1 { type string; }
+      leaf out2 { type string; }
     }
+  }
+
+  rpc test-rpc-no-output {
+    input {
+      leaf number { type int32; }
+      leaf string { type string; }
+    }
+  }
+
+  rpc test-rpc-no-input-no-output {
+
   }
 }
