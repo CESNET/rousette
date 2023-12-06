@@ -58,5 +58,5 @@ public:
 };
 
 DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& uriPath);
-std::pair<DatastoreAndPath, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath);
+std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath);
 }

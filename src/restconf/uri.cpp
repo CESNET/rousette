@@ -281,17 +281,16 @@ DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& u
     return {uri->prefix.datastore, asLibyangPath(ctx, uri->segments.begin(), uri->segments.end())};
 }
 
-/** @brief Transforms URI path (i.e., data resource identifier) into a path that is understood by libyang and a datastore (RFC 8527).
- * Returns a path to the parent node (or empty if this path was a root node) and ApiIdentifier describing the last path segment.
+/** @brief Transforms URI path into a libyang path to the parent node (or empty if this path was a root node) and PathSegment describing the last path segment.
  * This is useful for the PUT method where we have to start editing the tree in the parent node.
  *
  * @throws InvalidURIException When the path is contextually invalid
  * @throws InvalidURIException When URI cannot be parsed
  * @throws InvalidURIException When unable to properly escape YANG list key value (i.e., the list value contains both single and double quotes).
  * @throws InvalidURIException When datastore is not implemented
- * @return Pair of DatastoreAndPath object (containing a sysrepo datastore and a libyang path to the parent as a string) and PathSegment instance describing the last path segment node
+ * @return Pair of a libyang path to the parent as a string and a PathSegment instance describing the last path segment node
  */
-std::pair<DatastoreAndPath, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath)
+std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath)
 {
     auto uri = impl::parseUriPath(uriPath);
     if (!uri) {
@@ -312,7 +311,7 @@ std::pair<DatastoreAndPath, PathSegment> asLibyangPathSplit(const libyang::Conte
         lastSegment.apiIdent.prefix = std::string(lastNode.module().name());
     }
 
-    return {{uri->prefix.datastore, parentPath}, lastSegment};
+    return {parentPath, lastSegment};
 }
 
 }

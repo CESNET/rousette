@@ -248,7 +248,7 @@ struct RequestContext {
 void processPut(std::shared_ptr<RequestContext> requestCtx)
 {
     try {
-        auto [lyDatastoreAndPathParent, lastPathSegment] = asLibyangPathSplit(requestCtx->sess.getContext(), requestCtx->req.uri().path);
+        auto [lyParentPath, lastPathSegment] = asLibyangPathSplit(requestCtx->sess.getContext(), requestCtx->req.uri().path);
 
         auto ctx = requestCtx->sess.getContext();
         auto mod = ctx.getModuleImplemented("ietf-netconf");
@@ -256,8 +256,8 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
         std::optional<libyang::DataNode> edit;
         std::optional<libyang::DataNode> replacementNode;
 
-        if (!lyDatastoreAndPathParent.path.empty()) {
-            auto [parent, node] = ctx.newPath2(lyDatastoreAndPathParent.path, std::nullopt);
+        if (!lyParentPath.empty()) {
+            auto [parent, node] = ctx.newPath2(lyParentPath, std::nullopt);
             node->parseSubtree(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
 
             for (const auto& child : node->immediateChildren()) {
