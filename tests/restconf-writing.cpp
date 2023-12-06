@@ -251,7 +251,7 @@ TEST_CASE("writing data")
       {
         "error-type": "application",
         "error-tag": "operation-failed",
-        "error-message": "Invalid URI for PUT request"
+        "error-message": "'/' is not a data resource"
       }
     ]
   }
@@ -712,7 +712,7 @@ TEST_CASE("writing data")
       {
         "error-type": "application",
         "error-tag": "operation-failed",
-        "error-message": "Invalid URI for PUT request"
+        "error-message": "'/' is not a data resource"
       }
     ]
   }

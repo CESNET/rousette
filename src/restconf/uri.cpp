@@ -297,17 +297,14 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
     if (!uri) {
         throw InvalidURIException("Syntax error");
     }
-    if (httpMethod == "GET" && uri->segments.empty()) {
-        return {RestconfRequest::Action::GetData, uri->prefix.datastore, "/*"};
-    } else if (uri->segments.empty()) {
-        throw InvalidURIException("Invalid URI for PUT request");
-    }
 
     auto [schemaNode, lyPath] = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
 
-    if (!isValidDataResource(*schemaNode) && (schemaNode->nodeType() == libyang::NodeType::RPC || schemaNode->nodeType() == libyang::NodeType::Action)) {
+    if (schemaNode && !isValidDataResource(*schemaNode) && (schemaNode->nodeType() == libyang::NodeType::RPC || schemaNode->nodeType() == libyang::NodeType::Action)) {
         throw ErrorResponse(405, "protocol", "operation-not-supported", "'"s + schemaNode->path() + "' is not a data resource", std::nullopt);
-    } else if (!isValidDataResource(*schemaNode)) {
+    } else if (httpMethod == "GET" && uri->segments.empty()) {
+        return {RestconfRequest::Action::GetData, uri->prefix.datastore, "/*"};
+    } else if (!schemaNode || !isValidDataResource(*schemaNode)) {
         throw InvalidURIException("'"s + schemaNode->path() + "' is not a data resource");
     }
 
