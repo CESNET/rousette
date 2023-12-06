@@ -245,6 +245,57 @@ struct RequestContext {
     std::string payload;
 };
 
+void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
+{
+    auto ctx = requestCtx->sess.getContext();
+
+    try {
+        auto [parent, rpcNode] = ctx.newPath2(requestCtx->lyPathOriginal);
+
+        if (!requestCtx->payload.empty()) {
+            rpcNode->parseOp(requestCtx->payload, *requestCtx->dataFormat.request, libyang::OperationType::RpcRestconf);
+        }
+
+        auto rpcReply = requestCtx->sess.sendRPC(*rpcNode);
+
+        if (!rpcReply.immediateChildren().empty()) {
+            auto responseNode = rpcReply.child();
+            responseNode->unlinkWithSiblings();
+
+            std::optional<libyang::DataNode> envelope;
+            if (requestCtx->dataFormat.response == libyang::DataFormat::JSON) {
+                envelope = ctx.newOpaqueJSON(std::string{rpcNode->schema().module().name()}, "output", std::nullopt);
+            } else {
+                envelope = ctx.newOpaqueXML(std::string{rpcNode->schema().module().ns()}, "output", std::nullopt);
+            }
+
+            envelope->insertChild(*responseNode);
+            requestCtx->res.write_head(200, {
+                                                {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
+                                                {"access-control-allow-origin", {"*", false}},
+                                            });
+            requestCtx->res.end(*envelope->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::WithSiblings));
+        } else {
+            requestCtx->res.write_head(204, {{"access-control-allow-origin", {"*", false}}});
+            requestCtx->res.end();
+        }
+
+
+    } catch (const libyang::ErrorWithCode& e) {
+        if (e.code() == libyang::ErrorCode::ValidationFailure) {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", "Validation failure: "s + e.what());
+        } else {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to libyang exception: "s + e.what());
+        }
+    } catch (const sysrepo::ErrorWithCode& e) {
+        if (e.code() == sysrepo::ErrorCode::Unauthorized) {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 403, "application", "access-denied", "Access denied.");
+        } else {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception: "s + e.what());
+        }
+    }
+}
+
 void processPut(std::shared_ptr<RequestContext> requestCtx)
 {
     try {
@@ -444,6 +495,31 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                             requestCtx->payload.append(reinterpret_cast<const char*>(data), length);
                         } else {
                             processPut(requestCtx);
+                        }
+                    });
+                    break;
+                }
+
+                case RestconfRequest::Type::RPC: {
+                    sess.switchDatastore(sysrepo::Datastore::Operational);
+
+                    try {
+                        auto rpcNode = sess.getContext().findPath(restconfRequest.path);
+                        bool hasInputNodes = static_cast<bool>(rpcNode.asActionRpc().input().child());
+                        if (!dataFormat.request && hasInputNodes) {
+                            throw ErrorResponse(400, "protocol", "invalid-value", "Content-type header missing.");
+                        }
+                    } catch (const libyang::Error& e) {
+                        throw ErrorResponse(500, "application", "operation-failed", "RPC schema node not found ("s + e.what() + ")");
+                    }
+
+                    auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, restconfRequest.path);
+
+                    req.on_data([requestCtx](const uint8_t* data, std::size_t length) {
+                        if (length > 0) {
+                            requestCtx->payload.append(reinterpret_cast<const char*>(data), length);
+                        } else {
+                            processActionOrRPC(requestCtx);
                         }
                     });
                     break;

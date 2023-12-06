@@ -245,6 +245,15 @@ TEST_CASE("URI path parser")
                  {"/restconf/ds/ietf-datastores:running/foo:bar/list1=a", URI(URIPrefix(URIPrefix::Type::NMDADatastore, ApiIdentifier{"ietf-datastores", "running"}), {{{"foo", "bar"}}, {{"list1"}, {"a"}}})},
                  {"/restconf/ds/ietf-datastores:operational", URI(URIPrefix(URIPrefix::Type::NMDADatastore, ApiIdentifier{"ietf-datastores", "operational"}), {})},
                  {"/restconf/ds/ietf-datastores:operational/", URI(URIPrefix(URIPrefix::Type::NMDADatastore, ApiIdentifier{"ietf-datastores", "operational"}), {})},
+
+                 // RPCs and actions
+                 {"/restconf/operations/example:rpc-test", URI(URIPrefix(URIPrefix::Type::BasicRestconfOperations, boost::none), {{{"example", "rpc-test"}}})},
+                 {"/restconf/data/example:tlc/list=hello-world/example-action", URI({
+                                                                                    {{"example", "tlc"}},
+                                                                                    {{"list"}, {"hello-world"}},
+                                                                                    {{"example-action"}},
+                                                                                })}
+
              }) {
 
             CAPTURE(uriPath);
@@ -305,7 +314,7 @@ TEST_CASE("URI path parser")
 
         SECTION("Contextually valid paths")
         {
-            SECTION("Common")
+            SECTION("GET and PUT")
             {
                 std::string httpMethod;
                 RestconfRequest::Type expectedRequestType;
@@ -394,17 +403,42 @@ TEST_CASE("URI path parser")
                 REQUIRE(path == "/*");
                 REQUIRE(datastore == expectedDatastore);
             }
+
+            SECTION("POST (RPC)")
+            {
+                std::string uri;
+                std::string expectedPath;
+                SECTION("RPC")
+                {
+                    uri = "/restconf/operations/example:test-rpc";
+                    expectedPath = "/example:test-rpc";
+                }
+                SECTION("Action")
+                {
+                    uri = "/restconf/data/example:tlc/list=hello-world/example-action";
+                    expectedPath = "/example:tlc/list[name='hello-world']/example-action";
+                }
+                CAPTURE(uri);
+                auto [action, datastore, path] = rousette::restconf::asRestconfRequest(ctx, "POST", uri);
+                REQUIRE(path == expectedPath);
+                REQUIRE(datastore == std::nullopt);
+                REQUIRE(action == RestconfRequest::Type::RPC);
+            }
         }
 
         SECTION("Contextually invalid paths")
         {
-            SECTION("Common")
+            int expectedCode;
+            std::string expectedErrorType;
+            std::string expectedErrorTag;
+            std::string expectedErrorMessage;
+            std::string uriPath;
+
+            SECTION("GET and PUT")
             {
-                int expectedCode = 400;
-                std::string expectedErrorType = "application";
-                std::string expectedErrorTag = "operation-failed";
-                std::string expectedErrorMessage;
-                std::string uriPath;
+                expectedCode = 400;
+                expectedErrorType = "application";
+                expectedErrorTag = "operation-failed";
 
                 SECTION("Unparseable URI")
                 {
@@ -539,14 +573,96 @@ TEST_CASE("URI path parser")
                                        serializeErrorResponse(400, "application", "operation-failed", "'/' is not a data resource").c_str(),
                                        rousette::restconf::ErrorResponse);
             }
+
+            SECTION("POST")
+            {
+                expectedCode = 400;
+                expectedErrorType = "protocol";
+                expectedErrorTag = "operation-failed";
+
+                SECTION("Operation resource")
+                {
+                    SECTION("RPC node missing")
+                    {
+                        uriPath = "/restconf/operations";
+                        expectedErrorMessage = "'/' is not an operation resource";
+                    }
+                    SECTION("RPC must be invoked via /restconf/operations")
+                    {
+                        uriPath = "/restconf/data/example:test-rpc";
+                        expectedErrorMessage = "RPC '/example:test-rpc' must be requested using operation prefix";
+                    }
+                    SECTION("actions must be invoked via /restconf/data")
+                    {
+                        uriPath = "/restconf/operations/example:tlc/list=eth0/example-action";
+                        expectedErrorMessage = "Action '/example:tlc/list/example-action' must be requested using data prefix";
+                    }
+
+                    SECTION("RPC and action input/output nodes")
+                    {
+                        expectedErrorType = "application";
+                        SECTION("RPC")
+                        {
+                            expectedErrorMessage = "'/example:test-rpc' is an RPC/Action node, any child of it can't be requested";
+
+                            SECTION("Input node")
+                            {
+                                uriPath = "/restconf/operations/example:test-rpc/i";
+                            }
+                            SECTION("Output node")
+                            {
+                                uriPath = "/restconf/operations/example:test-rpc/o";
+                            }
+                        }
+                        SECTION("Action")
+                        {
+                            expectedErrorMessage = "'/example:tlc/list/example-action' is an RPC/Action node, any child of it can't be requested";
+
+                            SECTION("Input node")
+                            {
+                                uriPath = "/restconf/data/example:tlc/list=eth0/example-action/i";
+                            }
+                            SECTION("Output node")
+                            {
+                                uriPath = "/restconf/data/example:tlc/list=eth0/example-action/o";
+                            }
+                        }
+                    }
+                }
+
+                SECTION("Data(store) resources")
+                {
+                    expectedCode = 405;
+                    expectedErrorType = "application";
+                    expectedErrorTag = "operation-not-supported";
+
+                    SECTION("Data")
+                    {
+                        uriPath = "/restconf/data/example:tlc";
+                    }
+                    SECTION("Datastore")
+                    {
+                        SECTION("Basic datastore")
+                        {
+                            uriPath = "/restconf/data/";
+                        }
+                        SECTION("NMDA")
+                        {
+                            uriPath = "/restconf/ds/ietf-datastores:running";
+                        }
+                    }
+                    expectedErrorMessage = "POST for data and datastore resources is not yet implemented";
+                }
+
+                REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "POST", uriPath),
+                                       serializeErrorResponse(expectedCode, expectedErrorType, expectedErrorTag, expectedErrorMessage).c_str(),
+                                       rousette::restconf::ErrorResponse);
+            }
         }
 
         SECTION("Unsupported HTTP methods")
         {
             auto exc = serializeErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
-            REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "POST", "/restconf/operations/example:test-rpc"), exc.c_str(), rousette::restconf::ErrorResponse);
-            REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "POST", "/restconf/data/example:tlc"), exc.c_str(), rousette::restconf::ErrorResponse);
-            REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "POST", "/restconf/data/example:tlc/list=eth0/example-action"), exc.c_str(), rousette::restconf::ErrorResponse);
             REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "HEAD", "/restconf/data/example:top-level-leaf"), exc.c_str(), rousette::restconf::ErrorResponse);
             REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "OPTIONS", "/restconf/data/example:top-level-leaf"), exc.c_str(), rousette::restconf::ErrorResponse);
             REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "PATCH", "/restconf/data"), exc.c_str(), rousette::restconf::ErrorResponse);
