@@ -272,6 +272,10 @@ std::string asLibyangPath(const libyang::Context& ctx, const std::vector<PathSeg
  */
 DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath)
 {
+    if (httpMethod != "GET" && httpMethod != "PUT") {
+        throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
+    }
+
     auto uri = impl::parseUriPath(uriPath);
     if (!uri) {
         throw ErrorResponse(400, "application", "operation-failed", "Syntax error");
