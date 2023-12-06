@@ -123,8 +123,9 @@ std::optional<sysrepo::Datastore> datastoreFromApiIdentifier(const boost::option
 }
 }
 
-DatastoreAndPath::DatastoreAndPath(const boost::optional<ApiIdentifier>& datastore, const std::string& path)
-    : datastore(datastoreFromApiIdentifier(datastore))
+RestconfRequest::RestconfRequest(Type type, const boost::optional<ApiIdentifier>& datastore, const std::string& path)
+    : type(type)
+    , datastore(datastoreFromApiIdentifier(datastore))
     , path(path)
 {
 }
@@ -277,12 +278,13 @@ SchemaNodeAndPath asLibyangPath(const libyang::Context& ctx, const std::vector<P
 }
 }
 
-/** @brief Transforms URI path (i.e., data resource identifier) into a path that is understood by libyang and a datastore (RFC 8527)
+/** @brief Transforms URI path (i.e., data resource identifier) into a action that is supposed to be performed upon a libyang path and a sysrepo datastore (RFC 8527)
  *
  * @throws ErrorResponse On invalid URI
  * @return DatastoreAndPath object containing a sysrepo datastore and a libyang path as a string
+ * @return RestconfRequest object
  */
-DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath)
+RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath)
 {
     if (httpMethod != "GET" && httpMethod != "PUT") {
         throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
@@ -294,12 +296,12 @@ DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& h
     }
 
     if (httpMethod == "GET" && uri->segments.empty()) {
-        return {uri->prefix.datastore, "/*"};
+        return {RestconfRequest::Type::GetData, uri->prefix.datastore, "/*"};
     }
 
     auto [lyPath, schemaNode] = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
     checkValidDataResource(schemaNode);
-    return {uri->prefix.datastore, lyPath};
+    return {httpMethod == "GET" ? RestconfRequest::Type::GetData : RestconfRequest::Type::CreateOrUpdate, uri->prefix.datastore, lyPath};
 }
 
 /** @brief Transforms URI path into a libyang path to the parent node (or empty if this path was a root node) and PathSegment describing the last path segment.
