@@ -288,6 +288,10 @@ std::pair<std::optional<libyang::SchemaNode>, std::string> asLibyangPath(const l
  */
 DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath)
 {
+    if (httpMethod != "GET" && httpMethod != "PUT") {
+        throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
+    }
+
     auto uri = impl::parseUriPath(uriPath);
     if (!uri) {
         throw InvalidURIException("Syntax error");
