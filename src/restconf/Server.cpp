@@ -443,8 +443,6 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                             processPut(requestCtx);
                         }
                     });
-                } else {
-                    throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
                 }
             } catch (const auth::Error& e) {
                 if (e.delay) {

@@ -528,5 +528,16 @@ TEST_CASE("URI path parser")
                                        rousette::restconf::ErrorResponse);
             }
         }
+
+        SECTION("Unsupported HTTP methods")
+        {
+            REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, "POST", "/restconf/operations/example:test-rpc"), rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, "POST", "/restconf/data/example:tlc"), rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, "POST", "/restconf/data/example:tlc/list=eth0/example-action"), rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, "HEAD", "/restconf/data/example:top-level-leaf"), rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, "OPTIONS", "/restconf/data/example:top-level-leaf"), rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, "PATCH", "/restconf/data"), rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, "DELETE", "/restconf/data/example:top-level-leaf"), rousette::restconf::ErrorResponse);
+        }
     }
 }
