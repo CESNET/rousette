@@ -45,13 +45,20 @@ struct PathSegment {
     bool operator==(const PathSegment&) const = default;
 };
 
-struct DatastoreAndPath {
+/** @brief Specifies request type and target as determined from URI */
+struct RestconfRequest {
+    enum class Type {
+        GetData, // GET datastore or data resource
+        CreateOrUpdate, // PUT data resource
+    };
+
+    Type type;
     std::optional<sysrepo::Datastore> datastore;
     std::string path;
 
-    DatastoreAndPath(const boost::optional<ApiIdentifier>& datastore, const std::string& path);
+    RestconfRequest(Type type, const boost::optional<ApiIdentifier>& datastore, const std::string& path);
 };
 
-DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath);
+RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath);
 std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath);
 }
