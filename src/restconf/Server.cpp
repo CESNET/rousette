@@ -409,32 +409,37 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     throw ErrorResponse(401, "protocol", "access-denied", "Access denied.");
                 }
 
-                auto [datastore_, path] = asLibyangPath(sess.getContext(), req.method(), req.uri().path);
+                auto restconfRequest = asRestconfRequest(sess.getContext(), req.method(), req.uri().path);
 
-                if (req.method() == "GET") {
-                    sess.switchDatastore(datastore_ ? datastore_.value() : sysrepo::Datastore::Operational);
-                    if (auto data = sess.getData(path); data) {
-                        res.write_head(
-                            200,
-                            {
-                                {"content-type", {asMimeType(dataFormat.response), false}},
-                                {"access-control-allow-origin", {"*", false}},
-                            });
-                        res.end(*data->printStr(dataFormat.response, libyang::PrintFlags::WithSiblings));
-                    } else {
-                        throw ErrorResponse(404, "application", "invalid-value", "No data from sysrepo.");
+                switch (restconfRequest.action) {
+                case RestconfRequest::Action::GetData: {
+                    if (req.method() == "GET") {
+                        sess.switchDatastore(restconfRequest.datastore ? restconfRequest.datastore.value() : sysrepo::Datastore::Operational);
+                        if (auto data = sess.getData(restconfRequest.path); data) {
+                            res.write_head(
+                                200,
+                                {
+                                    {"content-type", {asMimeType(dataFormat.response), false}},
+                                    {"access-control-allow-origin", {"*", false}},
+                                });
+                            res.end(*data->printStr(dataFormat.response, libyang::PrintFlags::WithSiblings));
+                        } else {
+                            throw ErrorResponse(404, "application", "invalid-value", "No data from sysrepo.");
+                        }
                     }
-                } else if (req.method() == "PUT") {
-                    if (datastore_ == sysrepo::Datastore::FactoryDefault || datastore_ == sysrepo::Datastore::Operational) {
+                } break;
+
+                case RestconfRequest::Action::CreateUpdateInParent: {
+                    if (restconfRequest.datastore == sysrepo::Datastore::FactoryDefault || restconfRequest.datastore == sysrepo::Datastore::Operational) {
                         throw ErrorResponse(405, "application", "operation-not-supported", "Read-only datastore.");
                     }
 
-                    sess.switchDatastore(datastore_ ? datastore_.value() : sysrepo::Datastore::Running);
+                    sess.switchDatastore(restconfRequest.datastore ? restconfRequest.datastore.value() : sysrepo::Datastore::Running);
                     if (!dataFormat.request) {
                         throw ErrorResponse(400, "protocol", "invalid-value", "Content-type header missing.");
                     }
 
-                    auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, path);
+                    auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, restconfRequest.path);
 
                     req.on_data([requestCtx](const uint8_t* data, std::size_t length) {
                         if (length > 0) {
@@ -443,6 +448,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                             processPut(requestCtx);
                         }
                     });
+                } break;
                 }
             } catch (const auth::Error& e) {
                 if (e.delay) {

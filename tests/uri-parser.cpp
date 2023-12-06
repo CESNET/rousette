@@ -94,6 +94,7 @@ TEST_CASE("URI path parser")
 {
     using rousette::restconf::ApiIdentifier;
     using rousette::restconf::PathSegment;
+    using rousette::restconf::RestconfRequest;
     using rousette::restconf::impl::URI;
     using rousette::restconf::impl::URIPrefix;
 
@@ -290,8 +291,18 @@ TEST_CASE("URI path parser")
         SECTION("Contextually valid paths")
         {
             std::string httpMethod;
-            SECTION("GET") { httpMethod = "GET"; }
-            SECTION("PUT") { httpMethod = "PUT"; }
+            RestconfRequest::Action expectedAction;
+
+            SECTION("GET")
+            {
+                httpMethod = "GET";
+                expectedAction = RestconfRequest::Action::GetData;
+            }
+            SECTION("PUT")
+            {
+                httpMethod = "PUT";
+                expectedAction = RestconfRequest::Action::CreateUpdateInParent;
+            }
 
             for (const auto& [uriPath, expectedLyPath, expectedDatastore] : {
                      std::tuple<std::string, std::string, std::optional<sysrepo::Datastore>>{"/restconf/data/example:top-level-leaf", "/example:top-level-leaf", std::nullopt},
@@ -327,9 +338,10 @@ TEST_CASE("URI path parser")
                 CAPTURE(httpMethod);
                 REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
 
-                auto [datastore, path] = rousette::restconf::asLibyangPath(ctx, httpMethod, uriPath);
+                auto [action, datastore, path] = rousette::restconf::asRestconfRequest(ctx, httpMethod, uriPath);
                 REQUIRE(path == expectedLyPath);
                 REQUIRE(datastore == expectedDatastore);
+                REQUIRE(action == expectedAction);
             }
         }
 
@@ -374,7 +386,7 @@ TEST_CASE("URI path parser")
                 CAPTURE(uriPath);
                 CAPTURE(httpMethod);
                 REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
-                REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, httpMethod, uriPath), rousette::restconf::InvalidURIException);
+                REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, httpMethod, uriPath), rousette::restconf::InvalidURIException);
             }
 
             for (const auto& uriPath : std::vector<std::string>{
@@ -384,19 +396,19 @@ TEST_CASE("URI path parser")
                 CAPTURE(uriPath);
                 CAPTURE(httpMethod);
                 REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
-                REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, httpMethod, uriPath), rousette::restconf::ErrorResponse);
+                REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, httpMethod, uriPath), rousette::restconf::ErrorResponse);
             }
         }
 
         SECTION("Unsupported HTTP methods")
         {
-            REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, "POST", "/restconf/operations/example:test-rpc"), rousette::restconf::ErrorResponse);
-            REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, "POST", "/restconf/data/example:tlc"), rousette::restconf::ErrorResponse);
-            REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, "POST", "/restconf/data/example:tlc/list=eth0/example-action"), rousette::restconf::ErrorResponse);
-            REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, "HEAD", "/restconf/data/example:top-level-leaf"), rousette::restconf::ErrorResponse);
-            REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, "OPTIONS", "/restconf/data/example:top-level-leaf"), rousette::restconf::ErrorResponse);
-            REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, "PATCH", "/restconf/data"), rousette::restconf::ErrorResponse);
-            REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, "DELETE", "/restconf/data/example:top-level-leaf"), rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, "POST", "/restconf/operations/example:test-rpc"), rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, "POST", "/restconf/data/example:tlc"), rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, "POST", "/restconf/data/example:tlc/list=eth0/example-action"), rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, "HEAD", "/restconf/data/example:top-level-leaf"), rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, "OPTIONS", "/restconf/data/example:top-level-leaf"), rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, "PATCH", "/restconf/data"), rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_AS(rousette::restconf::asRestconfRequest(ctx, "DELETE", "/restconf/data/example:top-level-leaf"), rousette::restconf::ErrorResponse);
         }
     }
 }

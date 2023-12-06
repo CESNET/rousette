@@ -124,8 +124,9 @@ std::optional<sysrepo::Datastore> datastoreFromApiIdentifier(const boost::option
 }
 }
 
-DatastoreAndPath::DatastoreAndPath(const boost::optional<ApiIdentifier>& datastore, const std::string& path)
-    : datastore(datastoreFromApiIdentifier(datastore))
+RestconfRequest::RestconfRequest(Action action, const boost::optional<ApiIdentifier>& datastore, const std::string& path)
+    : action(action)
+    , datastore(datastoreFromApiIdentifier(datastore))
     , path(path)
 {
 }
@@ -278,15 +279,15 @@ std::pair<std::optional<libyang::SchemaNode>, std::string> asLibyangPath(const l
 }
 }
 
-/** @brief Transforms URI path (i.e., data resource identifier) into a path that is understood by libyang and a datastore (RFC 8527)
+/** @brief Transforms URI path (i.e., data resource identifier) into a action that is supposed to be performed upon a libyang path and a sysrepo datastore (RFC 8527)
  *
  * @throws InvalidURIException When the path is contextually invalid
  * @throws InvalidURIException When URI cannot be parsed
  * @throws InvalidURIException When unable to properly escape YANG list key value (i.e., the list value contains both single and double quotes).
  * @throws InvalidURIException When datastore is not implemented
- * @return DatastoreAndPath object containing a sysrepo datastore and a libyang path as a string
+ * @return RestconfRequest object
  */
-DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath)
+RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath)
 {
     if (httpMethod != "GET" && httpMethod != "PUT") {
         throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
@@ -297,7 +298,7 @@ DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& h
         throw InvalidURIException("Syntax error");
     }
     if (httpMethod == "GET" && uri->segments.empty()) {
-        return {uri->prefix.datastore, "/*"};
+        return {RestconfRequest::Action::GetData, uri->prefix.datastore, "/*"};
     } else if (uri->segments.empty()) {
         throw InvalidURIException("Invalid URI for PUT request");
     }
@@ -310,7 +311,7 @@ DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& h
         throw InvalidURIException("'"s + schemaNode->path() + "' is not a data resource");
     }
 
-    return {uri->prefix.datastore, lyPath};
+    return {httpMethod == "GET" ? RestconfRequest::Action::GetData : RestconfRequest::Action::CreateUpdateInParent, uri->prefix.datastore, lyPath};
 }
 
 /** @brief Transforms URI path into a libyang path to the parent node (or empty if this path was a root node) and ApiIdentifier describing the last path segment.

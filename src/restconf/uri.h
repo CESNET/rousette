@@ -45,11 +45,18 @@ struct PathSegment {
     bool operator==(const PathSegment&) const = default;
 };
 
-struct DatastoreAndPath {
+/** @brief Specifies request type and target as determined from URI */
+struct RestconfRequest {
+    enum class Action {
+        GetData, // GET datastore resorce or data resource
+        CreateUpdateInParent, // PUT data resource
+    };
+
+    Action action;
     std::optional<sysrepo::Datastore> datastore;
     std::string path;
 
-    DatastoreAndPath(const boost::optional<ApiIdentifier>& datastore, const std::string& path);
+    RestconfRequest(Action action, const boost::optional<ApiIdentifier>& datastore, const std::string& path);
 };
 
 class InvalidURIException : public std::invalid_argument {
@@ -57,6 +64,6 @@ public:
     using std::invalid_argument::invalid_argument;
 };
 
-DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath);
+RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath);
 std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath);
 }
