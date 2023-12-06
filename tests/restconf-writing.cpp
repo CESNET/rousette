@@ -760,4 +760,46 @@ TEST_CASE("writing data")
 )"});
         }
     }
+
+    SECTION("POST")
+    {
+            REQUIRE(post(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "str"})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{405, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-not-supported",
+        "error-message": "POST method for a complete-datastore resource is not yet implemented"
+      }
+    ]
+  }
+}
+)"});
+
+            REQUIRE(post(RESTCONF_ROOT_DS("running"), R"({"example:top-level-leaf": "str"})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{405, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-not-supported",
+        "error-message": "POST method for a complete-datastore resource is not yet implemented"
+      }
+    ]
+  }
+}
+)"});
+
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:a": "a-value"}")", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{405, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-not-supported",
+        "error-message": "POST method for a data resource is not yet implemented"
+      }
+    ]
+  }
+}
+)"});
+    }
 }
