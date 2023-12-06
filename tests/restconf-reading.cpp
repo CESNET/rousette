@@ -188,7 +188,7 @@ TEST_CASE("reading data")
       {
         "error-type": "application",
         "error-tag": "operation-failed",
-        "error-message": "'/example:tlc/list/example-action' is not a data resource"
+        "error-message": "'/example:tlc/list/example-action/i' is not a data resource"
       }
     ]
   }

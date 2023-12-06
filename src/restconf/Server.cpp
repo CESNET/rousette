@@ -321,9 +321,6 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
         } else {
             rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception: "s + e.what());
         }
-    } catch (const InvalidURIException& e) {
-        spdlog::error("URI parser exception: {}", e.what());
-        rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "application", "operation-failed", "Invalid URI for PUT request");
     }
 }
 }
@@ -412,7 +409,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     throw ErrorResponse(401, "protocol", "access-denied", "Access denied.");
                 }
 
-                auto [datastore_, path] = asLibyangPath(sess.getContext(), req.uri().path);
+                auto [datastore_, path] = asLibyangPath(sess.getContext(), req.method(), req.uri().path);
 
                 if (req.method() == "GET") {
                     sess.switchDatastore(datastore_ ? datastore_.value() : sysrepo::Datastore::Operational);

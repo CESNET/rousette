@@ -289,6 +289,10 @@ TEST_CASE("URI path parser")
 
         SECTION("Contextually valid paths")
         {
+            std::string httpMethod;
+            SECTION("GET") { httpMethod = "GET"; }
+            SECTION("PUT") { httpMethod = "PUT"; }
+
             for (const auto& [uriPath, expectedLyPath, expectedDatastore] : {
                      std::tuple<std::string, std::string, std::optional<sysrepo::Datastore>>{"/restconf/data/example:top-level-leaf", "/example:top-level-leaf", std::nullopt},
                      {"/restconf/data/example:top-level-list=hello", "/example:top-level-list[name='hello']", std::nullopt},
@@ -320,30 +324,36 @@ TEST_CASE("URI path parser")
                      {"/restconf/ds/ietf-datastores:factory-default/example:tlc/status", "/example:tlc/status", sysrepo::Datastore::FactoryDefault},
                  }) {
                 CAPTURE(uriPath);
+                CAPTURE(httpMethod);
                 REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
-                auto [datastore, path] = rousette::restconf::asLibyangPath(ctx, uriPath);
+
+                auto [datastore, path] = rousette::restconf::asLibyangPath(ctx, httpMethod, uriPath);
                 REQUIRE(path == expectedLyPath);
                 REQUIRE(datastore == expectedDatastore);
             }
+        }
 
-            for (const auto& [uriPath, expectedLyPathParent, expectedDatastore, expectedLastSegment] : {
-                     std::tuple<std::string, std::string, std::optional<sysrepo::Datastore>, PathSegment>{"/restconf/data/example:top-level-leaf", "", std::nullopt, PathSegment({"example", "top-level-leaf"})},
-                     {"/restconf/data/example:top-level-list=hello", "", std::nullopt, PathSegment({"example", "top-level-list"}, {"hello"})},
-                     {"/restconf/data/example:tlc/list=eth0/collection=1", "/example:tlc/list[name='eth0']", std::nullopt, PathSegment({"example", "collection"}, {"1"})},
-                     {"/restconf/data/example:tlc/status", "/example:tlc", std::nullopt, PathSegment({"example", "status"})},
-                     {"/restconf/data/example:a/example-augment:b/c", "/example:a/example-augment:b", std::nullopt, PathSegment({"example-augment", "c"})},
-                     {"/restconf/ds/ietf-datastores:startup/example:a/example-augment:b/c", "/example:a/example-augment:b", sysrepo::Datastore::Startup, PathSegment({"example-augment", "c"})},
-                 }) {
-                CAPTURE(uriPath);
-                auto [datastoreAndPathParent, lastSegment] = rousette::restconf::asLibyangPathSplit(ctx, uriPath);
-                REQUIRE(datastoreAndPathParent.path == expectedLyPathParent);
-                REQUIRE(datastoreAndPathParent.datastore == expectedDatastore);
-                REQUIRE(lastSegment == expectedLastSegment);
-            }
+        for (const auto& [uriPath, expectedLyPathParent, expectedDatastore, expectedLastSegment] : {
+                 std::tuple<std::string, std::string, std::optional<sysrepo::Datastore>, PathSegment>{"/restconf/data/example:top-level-leaf", "", std::nullopt, PathSegment({"example", "top-level-leaf"})},
+                 {"/restconf/data/example:top-level-list=hello", "", std::nullopt, PathSegment({"example", "top-level-list"}, {"hello"})},
+                 {"/restconf/data/example:tlc/list=eth0/collection=1", "/example:tlc/list[name='eth0']", std::nullopt, PathSegment({"example", "collection"}, {"1"})},
+                 {"/restconf/data/example:tlc/status", "/example:tlc", std::nullopt, PathSegment({"example", "status"})},
+                 {"/restconf/data/example:a/example-augment:b/c", "/example:a/example-augment:b", std::nullopt, PathSegment({"example-augment", "c"})},
+                 {"/restconf/ds/ietf-datastores:startup/example:a/example-augment:b/c", "/example:a/example-augment:b", sysrepo::Datastore::Startup, PathSegment({"example-augment", "c"})},
+             }) {
+            CAPTURE(uriPath);
+            auto [datastoreAndPathParent, lastSegment] = rousette::restconf::asLibyangPathSplit(ctx, uriPath);
+            REQUIRE(datastoreAndPathParent.path == expectedLyPathParent);
+            REQUIRE(datastoreAndPathParent.datastore == expectedDatastore);
+            REQUIRE(lastSegment == expectedLastSegment);
         }
 
         SECTION("Contextually invalid paths")
         {
+            std::string httpMethod;
+            SECTION("GET") { httpMethod = "GET"; }
+            SECTION("PUT") { httpMethod = "PUT"; }
+
             for (const auto& uriPath : std::vector<std::string>{
                      "/restconf/data/hello:world", // nonexistent module
                      "/restconf/data/example:foo", // nonexistent top-level node
@@ -363,8 +373,9 @@ TEST_CASE("URI path parser")
                      "/restconf/ds/hello:world/example:tlc", // unsupported datastore
                  }) {
                 CAPTURE(uriPath);
+                CAPTURE(httpMethod);
                 REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
-                REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, uriPath), rousette::restconf::InvalidURIException);
+                REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, httpMethod, uriPath), rousette::restconf::InvalidURIException);
             }
 
             for (const auto& uriPath : std::vector<std::string>{
@@ -372,8 +383,9 @@ TEST_CASE("URI path parser")
                      "/restconf/data/example:tlc/list=eth0/example-action", // Action is not a data resource
                  }) {
                 CAPTURE(uriPath);
+                CAPTURE(httpMethod);
                 REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
-                REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, uriPath), rousette::restconf::ErrorResponse);
+                REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, httpMethod, uriPath), rousette::restconf::ErrorResponse);
             }
         }
     }
