@@ -249,8 +249,8 @@ TEST_CASE("writing data")
   "ietf-restconf:errors": {
     "error": [
       {
-        "error-type": "protocol",
-        "error-tag": "operation-not-supported",
+        "error-type": "application",
+        "error-tag": "operation-failed",
         "error-message": "Invalid URI for PUT request"
       }
     ]
@@ -710,8 +710,8 @@ TEST_CASE("writing data")
   "ietf-restconf:errors": {
     "error": [
       {
-        "error-type": "protocol",
-        "error-tag": "operation-not-supported",
+        "error-type": "application",
+        "error-tag": "operation-failed",
         "error-message": "Invalid URI for PUT request"
       }
     ]
