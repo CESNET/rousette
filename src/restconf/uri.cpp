@@ -188,9 +188,14 @@ std::string apiIdentName(const ApiIdentifier& apiIdent)
     return *apiIdent.prefix + ":" + apiIdent.identifier;
 }
 
-bool isValidDataResource(const libyang::SchemaNode& node)
+/** @brief checks if provided schema node is valid for this HTTP method */
+void isValidDataResource(const std::optional<libyang::SchemaNode>& node)
 {
-    switch (node.nodeType()) {
+    if (!node) {
+        throw ErrorResponse(400, "application", "operation-failed", "'/' is not a data resource");
+    }
+
+    switch (node->nodeType()) {
     case libyang::NodeType::Container:
     case libyang::NodeType::Leaf:
     case libyang::NodeType::AnyXML:
@@ -201,17 +206,26 @@ bool isValidDataResource(const libyang::SchemaNode& node)
      */
     case libyang::NodeType::Leaflist:
     case libyang::NodeType::List:
-        return true;
+        return;
+    case libyang::NodeType::RPC:
+    case libyang::NodeType::Action:
+        throw ErrorResponse(405, "protocol", "operation-not-supported", "'"s + node->path() + "' is an RPC/Action node");
     default:
-        return false;
+        throw ErrorResponse(400, "protocol", "operation-failed", "'"s + node->path() + "' is not a data resource");
     }
 }
+
+/** @brief Wrapper for a libyang path and a corresponding SchemaNode. SchemaNode is nullopt for datastore resource */
+struct SchemaNodeAndPath {
+    std::string dataPath;
+    std::optional<libyang::SchemaNode> schemaNode;
+};
 
 /** @brief Translates PathSegment sequence to a path understood by libyang
  * @return libyang path to a data node
  * @throws ErrorResponse On invalid URI which can mean that, e.g, a node is not found, wrong number of list keys provided, list key could not be properly escaped.
  */
-std::string asLibyangPath(const libyang::Context& ctx, const std::vector<PathSegment>::const_iterator& begin, const std::vector<PathSegment>::const_iterator& end)
+SchemaNodeAndPath asLibyangPath(const libyang::Context& ctx, const std::vector<PathSegment>::const_iterator& begin, const std::vector<PathSegment>::const_iterator& end)
 {
     std::optional<libyang::SchemaNode> currentNode;
     std::string res;
@@ -255,17 +269,11 @@ std::string asLibyangPath(const libyang::Context& ctx, const std::vector<PathSeg
             throw ErrorResponse(400, "application", "operation-failed", "No keys allowed for node '" + currentNode->path() + "'");
         }
 
-        if (currentNode->nodeType() == libyang::NodeType::RPC || currentNode->nodeType() == libyang::NodeType::Action) {
-            if (std::next(it) == end) {
-                throw ErrorResponse(405, "protocol", "operation-not-supported", "'"s + currentNode->path() + "' is an RPC/Action node", std::nullopt);
-            } else {
-                throw ErrorResponse(400, "application", "operation-failed", "'"s + currentNode->path() + "' is an RPC/Action node, any child of it can't be requested", std::nullopt);
-            }
-        } else if (!isValidDataResource(*currentNode)) {
-            throw ErrorResponse(400, "application", "operation-failed", "'"s + currentNode->path() + "' is not a data resource");
+        if (std::next(it) != end && (currentNode->nodeType() == libyang::NodeType::RPC || currentNode->nodeType() == libyang::NodeType::Action)) {
+            throw ErrorResponse(400, "application", "operation-failed", "'"s + currentNode->path() + "' is an RPC/Action node, any child of it can't be requested", std::nullopt);
         }
     }
-    return res;
+    return {res, currentNode};
 }
 }
 
@@ -287,11 +295,11 @@ DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& h
 
     if (httpMethod == "GET" && uri->segments.empty()) {
         return {uri->prefix.datastore, "/*"};
-    } else if (uri->segments.empty()) {
-        throw ErrorResponse(400, "application", "operation-failed", "'/' is not a data resource");
     }
 
-    return {uri->prefix.datastore, asLibyangPath(ctx, uri->segments.begin(), uri->segments.end())};
+    auto [lyPath, schemaNode] = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
+    isValidDataResource(schemaNode);
+    return {uri->prefix.datastore, lyPath};
 }
 
 /** @brief Transforms URI path into a libyang path to the parent node (or empty if this path was a root node) and PathSegment describing the last path segment.
@@ -312,16 +320,14 @@ std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& c
 
 
     auto lastSegment = uri->segments.back();
-    auto parentPath = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end() - 1);
+    auto [parentLyPath, schemaNodeParent] = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end() - 1);
 
-    // we know that the path is valid so we can get last segment module from ly
+    // we know that the path is valid so we can get last segment module from the returned SchemaNode
     if (!lastSegment.apiIdent.prefix) {
-        auto fullPath = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
-        auto lastNode = ctx.findPath(fullPath);
-        lastSegment.apiIdent.prefix = std::string(lastNode.module().name());
+        auto [fullLyPath, schemaNode] = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
+        lastSegment.apiIdent.prefix = std::string(schemaNode->module().name());
     }
 
-    return {parentPath, lastSegment};
+    return {parentLyPath, lastSegment};
 }
-
 }
