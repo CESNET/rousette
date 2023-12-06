@@ -9,6 +9,7 @@
 #include "trompeloeil_doctest.h"
 #include <experimental/iterator>
 #include <sysrepo-cpp/Connection.hpp>
+#include "restconf/Exceptions.h"
 #include "restconf/uri.h"
 #include "restconf/uri_impl.h"
 #include "tests/configure.cmake.h"
@@ -352,7 +353,6 @@ TEST_CASE("URI path parser")
                      "/restconf/data/example:top-level-list", // list is not a data resource
                      "/restconf/data/example:tlc/key-less-list", // list is not a data resource
                      "/restconf/data/example:tlc/list=eth0/collection", // leaf-list is not a data resource
-                     "/restconf/data/example:test-rpc", // RPC is not a data resource
                      "/restconf/data/example:test-rpc/i", // RPC input node is not a data resource
                      "/restconf/data/example:test-rpc/o", // RPC output node is not a data resource
                      "/restconf/data/example:tlc=eth0", // node not a (leaf-)list
@@ -365,6 +365,15 @@ TEST_CASE("URI path parser")
                 CAPTURE(uriPath);
                 REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
                 REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, uriPath), rousette::restconf::InvalidURIException);
+            }
+
+            for (const auto& uriPath : std::vector<std::string>{
+                     "/restconf/data/example:test-rpc", // RPC is not a data resource
+                     "/restconf/data/example:tlc/list=eth0/example-action", // Action is not a data resource
+                 }) {
+                CAPTURE(uriPath);
+                REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
+                REQUIRE_THROWS_AS(rousette::restconf::asLibyangPath(ctx, uriPath), rousette::restconf::ErrorResponse);
             }
         }
     }

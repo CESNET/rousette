@@ -4,6 +4,7 @@
  * Written by Tomáš Pecka <tomas.pecka@cesnet.cz>
  */
 
+#include "restconf/Exceptions.h"
 #include "restconf/uri_impl.h"
 
 using namespace std::string_literals;
@@ -250,7 +251,9 @@ std::string asLibyangPath(const libyang::Context& ctx, const std::vector<PathSeg
             throw InvalidURIException("No keys allowed for node '" + currentNode->path() + "'");
         }
 
-        if (!isValidDataResource(*currentNode)) {
+        if (!isValidDataResource(*currentNode) && (currentNode->nodeType() == libyang::NodeType::RPC || currentNode->nodeType() == libyang::NodeType::Action) && std::next(it) == end) {
+            throw ErrorResponse(405, "protocol", "operation-not-supported", "'"s + currentNode->path() + "' is not a data resource", std::nullopt);
+        } else if (!isValidDataResource(*currentNode)) {
             throw InvalidURIException("'"s + currentNode->path() + "' is not a data resource");
         }
     }

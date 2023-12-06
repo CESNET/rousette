@@ -156,12 +156,12 @@ TEST_CASE("reading data")
 
     DOCTEST_SUBCASE("RPCs")
     {
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system-restart", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system-restart", {AUTH_DWDM}) == Response{405, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
-        "error-type": "application",
-        "error-tag": "operation-failed",
+        "error-type": "protocol",
+        "error-tag": "operation-not-supported",
         "error-message": "'/ietf-system:system-restart' is not a data resource"
       }
     ]
@@ -169,12 +169,12 @@ TEST_CASE("reading data")
 }
 )"});
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action", {AUTH_DWDM}) == Response{405, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
-        "error-type": "application",
-        "error-tag": "operation-failed",
+        "error-type": "protocol",
+        "error-tag": "operation-not-supported",
         "error-message": "'/example:tlc/list/example-action' is not a data resource"
       }
     ]
