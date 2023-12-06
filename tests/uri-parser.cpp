@@ -528,5 +528,17 @@ TEST_CASE("URI path parser")
                                        rousette::restconf::ErrorResponse);
             }
         }
+
+        SECTION("Unsupported HTTP methods")
+        {
+            auto exc = serializeErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
+            REQUIRE_THROWS_WITH_AS(rousette::restconf::asLibyangPath(ctx, "POST", "/restconf/operations/example:test-rpc"), exc.c_str(), rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_WITH_AS(rousette::restconf::asLibyangPath(ctx, "POST", "/restconf/data/example:tlc"), exc.c_str(), rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_WITH_AS(rousette::restconf::asLibyangPath(ctx, "POST", "/restconf/data/example:tlc/list=eth0/example-action"), exc.c_str(), rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_WITH_AS(rousette::restconf::asLibyangPath(ctx, "HEAD", "/restconf/data/example:top-level-leaf"), exc.c_str(), rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_WITH_AS(rousette::restconf::asLibyangPath(ctx, "OPTIONS", "/restconf/data/example:top-level-leaf"), exc.c_str(), rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_WITH_AS(rousette::restconf::asLibyangPath(ctx, "PATCH", "/restconf/data"), exc.c_str(), rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_WITH_AS(rousette::restconf::asLibyangPath(ctx, "DELETE", "/restconf/data/example:top-level-leaf"), exc.c_str(), rousette::restconf::ErrorResponse);
+        }
     }
 }
