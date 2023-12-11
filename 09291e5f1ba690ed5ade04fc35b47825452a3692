@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8cb06ade_95ef81ea",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 288,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T09:53:10Z",
+      "side": 1,
+      "message": "this needs a test for what happens when the path is empty and the method is PUT (and also something else)",
+      "revId": "09291e5f1ba690ed5ade04fc35b47825452a3692",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b50acac1_74a01d9e",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T09:53:10Z",
+      "side": 1,
+      "message": "nit: noise",
+      "revId": "09291e5f1ba690ed5ade04fc35b47825452a3692",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
