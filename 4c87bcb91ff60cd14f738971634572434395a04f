@@ -1,0 +1,136 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e84c5c2d_425b056b",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 272,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T11:19:52Z",
+      "side": 1,
+      "message": "I think it\u0027s cleaner to make the decision based on the children count of the `responseNode`, not on a string being empty or not.",
+      "range": {
+        "startLine": 272,
+        "startChar": 35,
+        "endLine": 272,
+        "endChar": 55
+      },
+      "revId": "4c87bcb91ff60cd14f738971634572434395a04f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e6da114e_c5939fea",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 510,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T11:19:52Z",
+      "side": 1,
+      "message": "extra line",
+      "range": {
+        "startLine": 510,
+        "startChar": 18,
+        "endLine": 510,
+        "endChar": 23
+      },
+      "revId": "4c87bcb91ff60cd14f738971634572434395a04f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "04ff3a4d_2ff6d884",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T11:19:52Z",
+      "side": 1,
+      "message": "this needs line wrapping",
+      "revId": "4c87bcb91ff60cd14f738971634572434395a04f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "709440fb_e6a349fe",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 326,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T11:19:52Z",
+      "side": 1,
+      "message": "I\u0027d prefer one block per method, with the last `else` doing the reject instead of the check at the beginning of this function.\n\nThe, the conditions can be easily simplified, like this for GET:\n\n if (uriSegments.empty()) {\n   throw ...\n } else if (!schemaNode || !isValidDataResource(*schemaNode)) {\n   throw ...\n } else if (schemaNode-\u003enodeType() \u003d\u003d RPC || schemaNode-\u003enodeType() \u003d\u003d Action) {\n   throw ...\n } else {\n   return ...\n }",
+      "range": {
+        "startLine": 317,
+        "startChar": 0,
+        "endLine": 326,
+        "endChar": 151
+      },
+      "revId": "4c87bcb91ff60cd14f738971634572434395a04f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a193c403_2d97cecb",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 337,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T11:19:52Z",
+      "side": 1,
+      "message": "...and also here:\n\n if (!schemaNode) {\n   throw \"something about invalid path\";\n } else if (isValidOperationsResource(*schemaNode, uri-\u003eprefix)) {\n   return {Action::RPC, ...};\n } else {\n   throw ...\n }",
+      "range": {
+        "startLine": 328,
+        "startChar": 0,
+        "endLine": 337,
+        "endChar": 77
+      },
+      "revId": "4c87bcb91ff60cd14f738971634572434395a04f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f14d653e_db477f93",
+        "filename": "tests/restconf-rpc.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T11:19:52Z",
+      "side": 1,
+      "message": "Does this work? I thought that you need a subscription before you can edit data in running, don\u0027t you?",
+      "range": {
+        "startLine": 54,
+        "startChar": 2,
+        "endLine": 56,
+        "endChar": 26
+      },
+      "revId": "4c87bcb91ff60cd14f738971634572434395a04f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
