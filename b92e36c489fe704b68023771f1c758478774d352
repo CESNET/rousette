@@ -1,0 +1,78 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cc1f533a_b47bb10f",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 416,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T09:53:03Z",
+      "side": 1,
+      "message": "I was thinking why not use enums for all these HTTP methods in uri.h/cpp, but in the end I think this is a nice design. By using strings, it is not necessary to have this checking for valid HTTP method at two places; just let the URI parser throw about an unexpected/unsupported HTTP method based on the combination of (method, path).\n\nBut in that case I suggest to get rid of this explicit throwing here; just let the URI parser throw an \"appropriate\" exception. I\u0027m OK with a small translator in the catch block, but let\u0027s not add this method whitelist here, please.",
+      "revId": "b92e36c489fe704b68023771f1c758478774d352",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bc2a7b2c_206db70c",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 193,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T09:53:03Z",
+      "side": 1,
+      "message": "Is this needed at this step already? I understand that the `action` validator will have to be stateful, but I think it will be cleaner to split this into an extra commit and do it later, if it\u0027s needed at all (I see you\u0027re using a detour via std::function within asLibyangPath())",
+      "revId": "b92e36c489fe704b68023771f1c758478774d352",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3e16f260_adf5bd93",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 215,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T09:53:03Z",
+      "side": 1,
+      "message": "nit: add a typedef for this please",
+      "range": {
+        "startLine": 215,
+        "startChar": 4,
+        "endLine": 215,
+        "endChar": 51
+      },
+      "revId": "b92e36c489fe704b68023771f1c758478774d352",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6418d3cd_c1b555ef",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T09:53:03Z",
+      "side": 1,
+      "message": "FIXME: it is not clear to me why this file is changed in this commit, but maybe I\u0027ll understand later :)",
+      "revId": "b92e36c489fe704b68023771f1c758478774d352",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
