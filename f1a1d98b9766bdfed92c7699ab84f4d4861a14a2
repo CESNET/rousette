@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "6a4c3cb5_9d55d97e",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 254,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-11T12:22:59Z",
+      "side": 1,
+      "message": "Yes, you are right. Fixed.",
+      "parentUuid": "7dffc9e2_3f0889f7",
+      "range": {
+        "startLine": 254,
+        "startChar": 12,
+        "endLine": 254,
+        "endChar": 49
+      },
+      "revId": "f1a1d98b9766bdfed92c7699ab84f4d4861a14a2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "61f8d15b_850bf4b9",
@@ -37,6 +61,30 @@
       "writtenOn": "2023-12-11T09:59:34Z",
       "side": 1,
       "message": "This was throwing before already (wasn\u0027t it?), this fix \"only\" changes some details in actual error reply. It might make sense to check that the reply has the correct details. Maybe REQUIRE_THROWS_AS_WITH will help you because it allows you to check the exception string as well as the exception type (but maybe it will be easier to check the JSON serialization only, or something like that).",
+      "range": {
+        "startLine": 376,
+        "startChar": 16,
+        "endLine": 376,
+        "endChar": 33
+      },
+      "revId": "f1a1d98b9766bdfed92c7699ab84f4d4861a14a2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ec0faa19_54c6c79f",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 376,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-11T12:22:59Z",
+      "side": 1,
+      "message": "Yeah I can check that in restconf-* tests (and I do - see other files). However I also wanted to test that uriparser correctly throws ErrorResponse here.",
+      "parentUuid": "61f8d15b_850bf4b9",
       "range": {
         "startLine": 376,
         "startChar": 16,
