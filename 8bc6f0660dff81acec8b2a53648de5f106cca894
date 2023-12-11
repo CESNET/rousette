@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "203808a3_0f68d8f1",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T11:10:45Z",
+      "side": 1,
+      "message": "I\u0027m not sure this is an improvement; these conditions are rather busy already. I would prefer to split this handling by HTTP request\u0027s method at the top level, and then do the rest of the checking.",
+      "revId": "8bc6f0660dff81acec8b2a53648de5f106cca894",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
