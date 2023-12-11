@@ -1,0 +1,130 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a497eca3_5e8b098c",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T11:11:15Z",
+      "side": 1,
+      "message": "I did not understand this part until I read the attached test. So this is about a change that the code will now include the path from the request as-is, whereas previously it would stop at the first node that was \"wrong\". To be honest, I\u0027m not sure this is an improvement (the previous error message had a nice hint inside which suggested where the problem was first detected). I\u0027m not suggesting to keep the previous behavior at all, I\u0027m just questioning the importance of this thing.\n\nTL;DR: just say here that the code reports the original path from the request",
+      "range": {
+        "startLine": 18,
+        "startChar": 43,
+        "endLine": 20,
+        "endChar": 61
+      },
+      "revId": "d38dd67c29bd8e5ad271fd04a730cf2ac0265902",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "16e214d3_0b984264",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 193,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T11:11:15Z",
+      "side": 1,
+      "message": "nit: const, but maybe let\u0027s fix it in a different commit for the existing ones as well",
+      "range": {
+        "startLine": 193,
+        "startChar": 15,
+        "endLine": 193,
+        "endChar": 34
+      },
+      "revId": "d38dd67c29bd8e5ad271fd04a730cf2ac0265902",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "39057c7f_678cd848",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 232,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T11:11:15Z",
+      "side": 1,
+      "message": "this needs some docs about the return type (or a named struct so that it\u0027s self-describing)",
+      "revId": "d38dd67c29bd8e5ad271fd04a730cf2ac0265902",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "36448a6a_08dd4977",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 298,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T11:11:15Z",
+      "side": 1,
+      "message": "httpMethod",
+      "range": {
+        "startLine": 298,
+        "startChar": 51,
+        "endLine": 298,
+        "endChar": 54
+      },
+      "revId": "d38dd67c29bd8e5ad271fd04a730cf2ac0265902",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0eee1b62_714da650",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 303,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T11:11:15Z",
+      "side": 1,
+      "message": "this is redundant, isn\u0027t it?",
+      "range": {
+        "startLine": 303,
+        "startChar": 8,
+        "endLine": 303,
+        "endChar": 45
+      },
+      "revId": "d38dd67c29bd8e5ad271fd04a730cf2ac0265902",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f8f6498b_995422ca",
+        "filename": "tests/aux-utils.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T11:11:15Z",
+      "side": 1,
+      "message": "nit: you might want to fix that :)",
+      "revId": "d38dd67c29bd8e5ad271fd04a730cf2ac0265902",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}

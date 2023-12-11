@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e6742049_eb4c366b",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 324,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-11T11:11:15Z",
+      "side": 0,
+      "message": "+1 for removing a special exception type, but are you sure that this branch is not needed anymore? Please explain in the commit message what part of the code catches these exceptions now, and how they are translated into something which produces valid RESTCONF output.",
+      "revId": "b7615a2145ba5d906cde40e8b52b13cf428274b7",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
