@@ -16,6 +16,24 @@
       "message": "This should also check that the error response says \"Method not allowed\", IMHO",
       "revId": "a381290420474aaece442cfb31d073ecf3fd9271",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2d828be1_d77fb1ca",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 391,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-12T19:26:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e4dac6e7_3b38ad42",
+      "revId": "a381290420474aaece442cfb31d073ecf3fd9271",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
