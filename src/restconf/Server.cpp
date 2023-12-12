@@ -412,7 +412,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     throw ErrorResponse(401, "protocol", "access-denied", "Access denied.");
                 }
 
-                auto [datastore_, path] = asLibyangPath(sess.getContext(), req.uri().path);
+                auto [datastore_, path] = asLibyangPath(sess.getContext(), req.method(), req.uri().path);
 
                 if (req.method() == "GET") {
                     sess.switchDatastore(datastore_ ? datastore_.value() : sysrepo::Datastore::Operational);
