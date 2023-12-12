@@ -273,15 +273,19 @@ std::string asLibyangPath(const libyang::Context& ctx, const std::vector<PathSeg
  * @throws InvalidURIException When datastore is not implemented
  * @return DatastoreAndPath object containing a sysrepo datastore and a libyang path as a string
  */
-DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& uriPath)
+DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath)
 {
     auto uri = impl::parseUriPath(uriPath);
     if (!uri) {
         throw InvalidURIException("Syntax error");
     }
-    if (uri->segments.empty()) {
+
+    if (httpMethod == "GET" && uri->segments.empty()) {
         return {uri->prefix.datastore, "/*"};
+    } else if (uri->segments.empty()) {
+        throw InvalidURIException("Invalid URI for " + httpMethod + " request");
     }
+
     return {uri->prefix.datastore, asLibyangPath(ctx, uri->segments.begin(), uri->segments.end())};
 }
 
