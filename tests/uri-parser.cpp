@@ -8,6 +8,7 @@
 
 #include "trompeloeil_doctest.h"
 #include <experimental/iterator>
+#include <string>
 #include <sysrepo-cpp/Connection.hpp>
 #include "restconf/Exceptions.h"
 #include "restconf/uri.h"
@@ -16,7 +17,19 @@
 
 using namespace std::string_literals;
 
+namespace {
+std::string serializeErrorResponse(int code, const std::string& errorType, const std::string& errorTag, const std::string& errorMessage)
+{
+    return "("s + std::to_string(code) + ", \"" + errorType + "\", \"" + errorTag + "\", \"" + errorMessage + "\")";
+}
+}
+
 namespace rousette::restconf {
+
+REGISTER_EXCEPTION_TRANSLATOR(const ErrorResponse& e)
+{
+    return serializeErrorResponse(e.code, e.errorType, e.errorTag, e.errorMessage).c_str();
+}
 
 std::ostream& operator<<(std::ostream& os, const ApiIdentifier& obj)
 {
@@ -407,7 +420,9 @@ TEST_CASE("URI path parser")
                         CAPTURE(uriPath);
                         CAPTURE(httpMethod);
                         REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
-                        REQUIRE_THROWS_WITH_AS(rousette::restconf::asLibyangPath(ctx, httpMethod, uriPath), ("'" + err + "' is not a data resource").c_str(), rousette::restconf::ErrorResponse);
+                        REQUIRE_THROWS_WITH_AS(rousette::restconf::asLibyangPath(ctx, httpMethod, uriPath),
+                                               serializeErrorResponse(405, "protocol", "operation-not-supported", "'" + err + "' is not a data resource").c_str(),
+                                               rousette::restconf::ErrorResponse);
                     }
                 }
 
