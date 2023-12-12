@@ -52,11 +52,6 @@ struct DatastoreAndPath {
     DatastoreAndPath(const boost::optional<ApiIdentifier>& datastore, const std::string& path);
 };
 
-class InvalidURIException : public std::invalid_argument {
-public:
-    using std::invalid_argument::invalid_argument;
-};
-
 DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath);
 std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath);
 }

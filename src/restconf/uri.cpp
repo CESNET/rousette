@@ -119,7 +119,7 @@ std::optional<sysrepo::Datastore> datastoreFromApiIdentifier(const boost::option
         }
     }
 
-    throw InvalidURIException("Unsupported datastore " + *datastore->prefix + ":" + datastore->identifier);
+    throw ErrorResponse(400, "application", "operation-failed", "Unsupported datastore " + *datastore->prefix + ":" + datastore->identifier);
 }
 }
 
@@ -164,7 +164,7 @@ std::string maybeQualified(const libyang::SchemaNode& currentNode)
 
 /** @brief Escapes key with the other type of quotes than found in the string.
  *
- *  @throws InvalidURIException if both single and double quotes used in the input
+ *  @throws ErrorResponse if both single and double quotes used in the input
  * */
 std::string escapeListKey(const std::string& str)
 {
@@ -172,7 +172,7 @@ std::string escapeListKey(const std::string& str)
     auto doubleQuotes = str.find('\"') != std::string::npos;
 
     if (singleQuotes && doubleQuotes) {
-        throw InvalidURIException("Encountered mixed single and double quotes in XPath. Can't properly escape.");
+        throw ErrorResponse(400, "application", "operation-failed", "Encountered mixed single and double quotes in XPath. Can't properly escape.");
     } else if (singleQuotes) {
         return '\"' + str + '\"';
     } else {
@@ -219,13 +219,13 @@ std::string asLibyangPath(const libyang::Context& ctx, const std::vector<PathSeg
     for (auto it = begin; it != end; ++it) {
         if (auto prevNode = currentNode) {
             if (!(currentNode = findChildSchemaNode(*currentNode, it->apiIdent))) {
-                throw InvalidURIException("Node '" + apiIdentName(it->apiIdent) + "' is not a child of '" + prevNode->path() + "'");
+                throw ErrorResponse(400, "application", "operation-failed", "Node '" + apiIdentName(it->apiIdent) + "' is not a child of '" + prevNode->path() + "'");
             }
         } else { // we are starting at root (no parent)
             try {
                 currentNode = ctx.findPath("/" + *it->apiIdent.prefix + ":" + it->apiIdent.identifier);
             } catch (const libyang::Error& e) {
-                throw InvalidURIException(""s + e.what());
+                throw ErrorResponse(400, "application", "operation-failed", e.what());
             }
         }
 
@@ -235,9 +235,9 @@ std::string asLibyangPath(const libyang::Context& ctx, const std::vector<PathSeg
             const auto& listKeys = currentNode->asList().keys();
 
             if (listKeys.size() == 0) {
-                throw InvalidURIException("List '" + currentNode->path() + "' has no keys. It can not be accessed directly");
+                throw ErrorResponse(400, "application", "operation-failed", "List '" + currentNode->path() + "' has no keys. It can not be accessed directly");
             } else if (it->keys.size() != listKeys.size()) {
-                throw InvalidURIException("List '" + currentNode->path() + "' requires " + std::to_string(listKeys.size()) + " keys");
+                throw ErrorResponse(400, "application", "operation-failed", "List '" + currentNode->path() + "' requires " + std::to_string(listKeys.size()) + " keys");
             }
 
             // FIXME: use std::views::zip in C++23
@@ -247,18 +247,18 @@ std::string asLibyangPath(const libyang::Context& ctx, const std::vector<PathSeg
             }
         } else if (currentNode->nodeType() == libyang::NodeType::Leaflist) {
             if (it->keys.size() != 1) {
-                throw InvalidURIException("Leaf-list '" + currentNode->path() + "' requires exactly one key");
+                throw ErrorResponse(400, "application", "operation-failed", "Leaf-list '" + currentNode->path() + "' requires exactly one key");
             }
 
             res += "[.=" + escapeListKey(it->keys.front()) + ']';
         } else if (it->keys.size() > 0) {
-            throw InvalidURIException("No keys allowed for node '" + currentNode->path() + "'");
+            throw ErrorResponse(400, "application", "operation-failed", "No keys allowed for node '" + currentNode->path() + "'");
         }
 
         if (std::next(it) == end && (currentNode->nodeType() == libyang::NodeType::RPC || currentNode->nodeType() == libyang::NodeType::Action)) {
             throw ErrorResponse(405, "protocol", "operation-not-supported", "'"s + currentNode->path() + "' is not a data resource", std::nullopt);
         } else if (!isValidDataResource(*currentNode)) {
-            throw InvalidURIException("'"s + currentNode->path() + "' is not a data resource");
+            throw ErrorResponse(400, "application", "operation-failed", "'"s + currentNode->path() + "' is not a data resource");
         }
     }
     return res;
@@ -267,24 +267,21 @@ std::string asLibyangPath(const libyang::Context& ctx, const std::vector<PathSeg
 
 /** @brief Transforms URI path (i.e., data resource identifier) into a path that is understood by libyang and a datastore (RFC 8527)
  *
- * @throws InvalidURIException When the path is contextually invalid
- * @throws InvalidURIException When URI cannot be parsed
- * @throws InvalidURIException When unable to properly escape YANG list key value (i.e., the list value contains both single and double quotes).
- * @throws InvalidURIException When datastore is not implemented
+ * @throws ErrorResponse On invalid URI
  * @return DatastoreAndPath object containing a sysrepo datastore and a libyang path as a string
  */
 DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath)
 {
     auto uri = impl::parseUriPath(uriPath);
     if (!uri) {
-        throw InvalidURIException("Syntax error");
+        throw ErrorResponse(400, "application", "operation-failed", "Syntax error");
     }
 
     if (uri->segments.empty()) {
         if (httpMethod == "GET") {
             return {uri->prefix.datastore, "/*"};
         }
-        throw InvalidURIException("Invalid URI for " + httpMethod + " request");
+        throw ErrorResponse(400, "application", "operation-failed", "Invalid URI for " + httpMethod + " request");
     }
 
     return {uri->prefix.datastore, asLibyangPath(ctx, uri->segments.begin(), uri->segments.end())};
@@ -293,20 +290,17 @@ DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& h
 /** @brief Transforms URI path into a libyang path to the parent node (or empty if this path was a root node) and PathSegment describing the last path segment.
  * This is useful for the PUT method where we have to start editing the tree in the parent node.
  *
- * @throws InvalidURIException When the path is contextually invalid
- * @throws InvalidURIException When URI cannot be parsed
- * @throws InvalidURIException When unable to properly escape YANG list key value (i.e., the list value contains both single and double quotes).
- * @throws InvalidURIException When datastore is not implemented
+ * @throws ErrorResponse On invalid URI
  * @return Pair of a libyang path to the parent as a string and a PathSegment instance describing the last path segment node
  */
 std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath)
 {
     auto uri = impl::parseUriPath(uriPath);
     if (!uri) {
-        throw InvalidURIException("Syntax error");
+        throw ErrorResponse(400, "application", "operation-failed", "Syntax error");
     }
     if (uri->segments.empty()) {
-        throw InvalidURIException("Cannot split the datastore resource URI");
+        throw ErrorResponse(400, "application", "operation-failed", "Cannot split the datastore resource URI");
     }
 
 
