@@ -394,6 +394,12 @@ TEST_CASE("URI path parser")
                 std::string expectedErrorMessage;
                 std::string uriPath;
 
+                SECTION("Unparseable URI")
+                {
+                    uriPath = "/restconf/data///!/@akjsaosdasdlasd";
+                    expectedErrorMessage = "Syntax error";
+                }
+
                 SECTION("Nonexistent modules and nodes")
                 {
                     SECTION("Nonexistent module")
@@ -506,7 +512,6 @@ TEST_CASE("URI path parser")
 
                 for (const auto& httpMethod : {"GET"s, "PUT"s}) {
                     CAPTURE(httpMethod);
-                    REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
                     REQUIRE_THROWS_WITH_AS(rousette::restconf::asLibyangPath(ctx, httpMethod, uriPath),
                                            serializeErrorResponse(expectedCode, expectedErrorType, expectedErrorTag, expectedErrorMessage).c_str(),
                                            rousette::restconf::ErrorResponse);
