@@ -207,6 +207,10 @@ bool isValidDataResource(const libyang::SchemaNode& node)
     }
 }
 
+/** @brief Translates PathSegment sequence to a path understood by libyang
+ * @return libyang path to a data node
+ * @throws ErrorResponse On invalid URI which can mean that, e.g, a node is not found, wrong number of list keys provided, list key could not be properly escaped.
+ */
 std::string asLibyangPath(const libyang::Context& ctx, const std::vector<PathSegment>::const_iterator& begin, const std::vector<PathSegment>::const_iterator& end)
 {
     std::optional<libyang::SchemaNode> currentNode;
