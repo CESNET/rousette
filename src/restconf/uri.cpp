@@ -130,7 +130,7 @@ DatastoreAndPath::DatastoreAndPath(const boost::optional<ApiIdentifier>& datasto
 }
 
 namespace {
-std::optional<libyang::SchemaNode> findChildSchemaNode(libyang::SchemaNode node, const ApiIdentifier& childIdentifier)
+std::optional<libyang::SchemaNode> findChildSchemaNode(const libyang::SchemaNode& node, const ApiIdentifier& childIdentifier)
 {
     for (const auto& child : node.childInstantiables()) {
         if (child.name() == childIdentifier.identifier) {
@@ -149,7 +149,7 @@ std::optional<libyang::SchemaNode> findChildSchemaNode(libyang::SchemaNode node,
  *
  * @return string in the form <module>:<nodeName> if the parent module does not exist or is different from module of @p node else return only name of @p node.
  */
-std::string maybeQualified(libyang::SchemaNode currentNode)
+std::string maybeQualified(const libyang::SchemaNode& currentNode)
 {
     using namespace std::string_literals;
 
@@ -188,7 +188,7 @@ std::string apiIdentName(const ApiIdentifier& apiIdent)
     return *apiIdent.prefix + ":" + apiIdent.identifier;
 }
 
-bool isValidDataResource(libyang::SchemaNode node)
+bool isValidDataResource(const libyang::SchemaNode& node)
 {
     switch (node.nodeType()) {
     case libyang::NodeType::Container:
