@@ -189,10 +189,14 @@ std::string apiIdentName(const ApiIdentifier& apiIdent)
     return *apiIdent.prefix + ":" + apiIdent.identifier;
 }
 
-/** @brief checks if provided schema node is valid for this HTTP method */
-void isValidDataResource(const std::optional<libyang::SchemaNode>& node)
+/** @brief checks if provided schema node is valid for HTTP GET or PUT */
+void isValidDataResource(const std::optional<libyang::SchemaNode>& node, const impl::URIPrefix& prefix)
 {
     if (!node) {
+        throw ErrorResponse(400, "application", "operation-failed", "'/' is not a data resource");
+    }
+
+    if (prefix.resourceType != impl::URIPrefix::Type::BasicRestconfData && prefix.resourceType != impl::URIPrefix::Type::NMDADatastore) {
         throw ErrorResponse(400, "application", "operation-failed", "'/' is not a data resource");
     }
 
@@ -214,6 +218,14 @@ void isValidDataResource(const std::optional<libyang::SchemaNode>& node)
     default:
         throw ErrorResponse(400, "protocol", "operation-failed", "'"s + node->path() + "' is not a data resource");
     }
+}
+
+/** @brief Validates whether SchemaNode is valid for this HTTP method and prefix. If not, throws with ErrorResponse.
+ *
+ * @throw If node is invalid for this httpMethod and prefix */
+void validateRequestSchemaNode(const std::optional<libyang::SchemaNode>& node, const std::string&, const impl::URIPrefix& prefix)
+{
+    isValidDataResource(node, prefix);
 }
 
 /** @brief Wrapper for a libyang path and a corresponding SchemaNode. SchemaNode is nullopt for datastore resource */
@@ -300,7 +312,7 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
     }
 
     auto [lyPath, schemaNode] = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
-    isValidDataResource(schemaNode);
+    validateRequestSchemaNode(schemaNode, httpMethod, uri->prefix);
     return {httpMethod == "GET" ? RestconfRequest::Type::GetData : RestconfRequest::Type::CreateOrUpdate, uri->prefix.datastore, lyPath};
 }
 
