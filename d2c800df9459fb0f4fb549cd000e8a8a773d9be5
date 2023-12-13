@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c37941cc_18ef1f1c",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 416,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-13T14:52:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "95c7fcb7_b413603b",
+      "range": {
+        "startLine": 416,
+        "startChar": 20,
+        "endLine": 416,
+        "endChar": 48
+      },
+      "revId": "d2c800df9459fb0f4fb549cd000e8a8a773d9be5",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "009d06f1_b02f9757",
@@ -37,6 +61,30 @@
       "writtenOn": "2023-12-11T11:11:37Z",
       "side": 1,
       "message": "on a separate line, please (and also the other case below)",
+      "range": {
+        "startLine": 430,
+        "startChar": 18,
+        "endLine": 430,
+        "endChar": 23
+      },
+      "revId": "d2c800df9459fb0f4fb549cd000e8a8a773d9be5",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "89b72e9b_394b6969",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 430,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-13T14:52:11Z",
+      "side": 1,
+      "message": "I moved the break statement into the compound statement; the break outside the curly braces looked weird and I was not sure about its indentation.",
+      "parentUuid": "009d06f1_b02f9757",
       "range": {
         "startLine": 430,
         "startChar": 18,
