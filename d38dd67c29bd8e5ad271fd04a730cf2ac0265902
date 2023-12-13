@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "bf8c07e9_c9acdd26",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-13T14:52:11Z",
+      "side": 1,
+      "message": "This is a major rewrite; some changes were off-loaded to parent commits, something was removed. Thanks for your comment but now I am closing this.",
+      "parentUuid": "a497eca3_5e8b098c",
+      "range": {
+        "startLine": 18,
+        "startChar": 43,
+        "endLine": 20,
+        "endChar": 61
+      },
+      "revId": "d38dd67c29bd8e5ad271fd04a730cf2ac0265902",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "16e214d3_0b984264",
@@ -37,6 +61,30 @@
       "writtenOn": "2023-12-11T11:11:15Z",
       "side": 1,
       "message": "nit: const, but maybe let\u0027s fix it in a different commit for the existing ones as well",
+      "range": {
+        "startLine": 193,
+        "startChar": 15,
+        "endLine": 193,
+        "endChar": 34
+      },
+      "revId": "d38dd67c29bd8e5ad271fd04a730cf2ac0265902",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a059306b_ad39e2cc",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 193,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-13T14:52:11Z",
+      "side": 1,
+      "message": "This is a major rewrite, this was resolved in one of the parent commits.",
+      "parentUuid": "16e214d3_0b984264",
       "range": {
         "startLine": 193,
         "startChar": 15,
@@ -64,6 +112,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "419f6dc5_3c1418f7",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 232,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-13T14:52:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "39057c7f_678cd848",
+      "revId": "d38dd67c29bd8e5ad271fd04a730cf2ac0265902",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "36448a6a_08dd4977",
@@ -77,6 +143,30 @@
       "writtenOn": "2023-12-11T11:11:15Z",
       "side": 1,
       "message": "httpMethod",
+      "range": {
+        "startLine": 298,
+        "startChar": 51,
+        "endLine": 298,
+        "endChar": 54
+      },
+      "revId": "d38dd67c29bd8e5ad271fd04a730cf2ac0265902",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ca831d84_912dbb1c",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 298,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-13T14:52:11Z",
+      "side": 1,
+      "message": "This is a major rewrite, this was resolved in one of the parent commits.",
+      "parentUuid": "36448a6a_08dd4977",
       "range": {
         "startLine": 298,
         "startChar": 51,
@@ -110,6 +200,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4215c9ed_4f378562",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 303,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-13T14:52:11Z",
+      "side": 1,
+      "message": "This is a major rewrite, this was resolved in one of the parent commits.",
+      "parentUuid": "0eee1b62_714da650",
+      "range": {
+        "startLine": 303,
+        "startChar": 8,
+        "endLine": 303,
+        "endChar": 45
+      },
+      "revId": "d38dd67c29bd8e5ad271fd04a730cf2ac0265902",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f8f6498b_995422ca",
@@ -123,6 +237,24 @@
       "writtenOn": "2023-12-11T11:11:15Z",
       "side": 1,
       "message": "nit: you might want to fix that :)",
+      "revId": "d38dd67c29bd8e5ad271fd04a730cf2ac0265902",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6e73cd63_91e7a118",
+        "filename": "tests/aux-utils.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-13T14:52:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f8f6498b_995422ca",
       "revId": "d38dd67c29bd8e5ad271fd04a730cf2ac0265902",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }

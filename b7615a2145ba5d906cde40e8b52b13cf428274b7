@@ -16,6 +16,24 @@
       "message": "+1 for removing a special exception type, but are you sure that this branch is not needed anymore? Please explain in the commit message what part of the code catches these exceptions now, and how they are translated into something which produces valid RESTCONF output.",
       "revId": "b7615a2145ba5d906cde40e8b52b13cf428274b7",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "05965e88_eea3a380",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 324,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-13T14:52:11Z",
+      "side": 0,
+      "message": "This is a major rewrite, this was resolved in one of the parent commits.",
+      "parentUuid": "e6742049_eb4c366b",
+      "revId": "b7615a2145ba5d906cde40e8b52b13cf428274b7",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
