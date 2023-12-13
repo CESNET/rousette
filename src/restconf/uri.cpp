@@ -255,8 +255,12 @@ std::string asLibyangPath(const libyang::Context& ctx, const std::vector<PathSeg
             throw ErrorResponse(400, "application", "operation-failed", "No keys allowed for node '" + currentNode->path() + "'");
         }
 
-        if (std::next(it) == end && (currentNode->nodeType() == libyang::NodeType::RPC || currentNode->nodeType() == libyang::NodeType::Action)) {
-            throw ErrorResponse(405, "protocol", "operation-not-supported", "'"s + currentNode->path() + "' is not a data resource", std::nullopt);
+        if (currentNode->nodeType() == libyang::NodeType::RPC || currentNode->nodeType() == libyang::NodeType::Action) {
+            if (std::next(it) == end) {
+                throw ErrorResponse(405, "protocol", "operation-not-supported", "'"s + currentNode->path() + "' is an RPC/Action node", std::nullopt);
+            } else {
+                throw ErrorResponse(400, "application", "operation-failed", "'"s + currentNode->path() + "' is an RPC/Action node, any child of it can't be requested", std::nullopt);
+            }
         } else if (!isValidDataResource(*currentNode)) {
             throw ErrorResponse(400, "application", "operation-failed", "'"s + currentNode->path() + "' is not a data resource");
         }

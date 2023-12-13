@@ -162,7 +162,7 @@ TEST_CASE("reading data")
       {
         "error-type": "protocol",
         "error-tag": "operation-not-supported",
-        "error-message": "'/ietf-system:system-restart' is not a data resource"
+        "error-message": "'/ietf-system:system-restart' is an RPC/Action node"
       }
     ]
   }
@@ -175,7 +175,7 @@ TEST_CASE("reading data")
       {
         "error-type": "protocol",
         "error-tag": "operation-not-supported",
-        "error-message": "'/example:tlc/list/example-action' is not a data resource"
+        "error-message": "'/example:tlc/list/example-action' is an RPC/Action node"
       }
     ]
   }
@@ -188,7 +188,20 @@ TEST_CASE("reading data")
       {
         "error-type": "application",
         "error-tag": "operation-failed",
-        "error-message": "'/example:tlc/list/example-action' is not a data resource"
+        "error-message": "'/example:tlc/list/example-action' is an RPC/Action node, any child of it can't be requested"
+      }
+    ]
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action/o", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-failed",
+        "error-message": "'/example:tlc/list/example-action' is an RPC/Action node, any child of it can't be requested"
       }
     ]
   }

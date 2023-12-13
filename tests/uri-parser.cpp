@@ -465,23 +465,23 @@ TEST_CASE("URI path parser")
                         SECTION("RPC node")
                         {
                             uriPath = "/restconf/data/example:test-rpc";
-                            expectedErrorMessage = "'/example:test-rpc' is not a data resource";
+                            expectedErrorMessage = "'/example:test-rpc' is an RPC/Action node";
                         }
                         SECTION("Action node")
                         {
                             uriPath = "/restconf/data/example:tlc/list=eth0/example-action";
-                            expectedErrorMessage = "'/example:tlc/list/example-action' is not a data resource";
+                            expectedErrorMessage = "'/example:tlc/list/example-action' is an RPC/Action node";
                         }
                     }
                     SECTION("RPC input node")
                     {
                         uriPath = "/restconf/data/example:test-rpc/i";
-                        expectedErrorMessage = "'/example:test-rpc' is not a data resource";
+                        expectedErrorMessage = "'/example:test-rpc' is an RPC/Action node, any child of it can't be requested";
                     }
                     SECTION("RPC output node")
                     {
                         uriPath = "/restconf/data/example:test-rpc/o";
-                        expectedErrorMessage = "'/example:test-rpc' is not a data resource";
+                        expectedErrorMessage = "'/example:test-rpc' is an RPC/Action node, any child of it can't be requested";
                     }
                 }
 
