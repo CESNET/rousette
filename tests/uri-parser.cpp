@@ -523,7 +523,7 @@ TEST_CASE("URI path parser")
                 SECTION("/restconf/data") { uriPath = "/restconf/data"; }
                 SECTION("/restconf/ds/") { uriPath = "/restconf/ds/ietf-datastores:running"; }
                 REQUIRE_THROWS_WITH_AS(rousette::restconf::asLibyangPath(ctx, "PUT", uriPath),
-                                       serializeErrorResponse(400, "application", "operation-failed", "Invalid URI for PUT request").c_str(),
+                                       serializeErrorResponse(400, "application", "operation-failed", "'/' is not a data resource").c_str(),
                                        rousette::restconf::ErrorResponse);
             }
         }

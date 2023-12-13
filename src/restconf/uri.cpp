@@ -289,7 +289,7 @@ DatastoreAndPath asLibyangPath(const libyang::Context& ctx, const std::string& h
         if (httpMethod == "GET") {
             return {uri->prefix.datastore, "/*"};
         }
-        throw ErrorResponse(400, "application", "operation-failed", "Invalid URI for " + httpMethod + " request");
+        throw ErrorResponse(400, "application", "operation-failed", "'/' is not a data resource");
     }
 
     return {uri->prefix.datastore, asLibyangPath(ctx, uri->segments.begin(), uri->segments.end())};
