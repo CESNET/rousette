@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b97269af_039b0b9c",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 287,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T11:56:16Z",
+      "side": 1,
+      "message": "I think that this pattern with nested ifs is cleaner because it avoids repeating of some conditions:\n \nif (uri-\u003esegments.empty()) {\n  if (httpMethod \u003d\u003d \"GET\") {\n    return ...\n  }\n  throw ...\n}",
+      "range": {
+        "startLine": 283,
+        "startChar": 0,
+        "endLine": 287,
+        "endChar": 5
+      },
+      "revId": "a04d2007a1d55422d87c870234f042c3bd72d0ac",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "70150892_3f2b0944",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 299,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T11:56:16Z",
+      "side": 1,
+      "message": "I prefer a manual for loop here, I think that doctest\u0027s special constructs add little value here (and there\u0027s already a second explicit loop below). The only added cost will be one CAPTURE(httpMethod) I guess. And I see that you\u0027re already doing this on line 378.",
+      "range": {
+        "startLine": 298,
+        "startChar": 0,
+        "endLine": 299,
+        "endChar": 54
+      },
+      "revId": "a04d2007a1d55422d87c870234f042c3bd72d0ac",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
