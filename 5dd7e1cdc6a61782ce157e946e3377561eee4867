@@ -1,0 +1,192 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e3e83a50_8fa33483",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 269,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T16:44:09Z",
+      "side": 1,
+      "message": "There\u0027s a test in libyang-cpp which checks that it doesn\u0027t matter whether that opaque node is instantiated as a \"JSON thing with the module\u0027s prefix\" as a parameter, or as a \"XML thing with the namespace\". No matter which of these is used, the resulting node can still be serialized to both JSON and XML, and the result will be correct. It\u0027s enough to do a newOpaqueJSON() here.",
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8a7bfab6_bb766e9e",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 504,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T16:44:09Z",
+      "side": 1,
+      "message": "This is not needed AFAICT; sysrepo\u0027s own testsuite executes RPCs against `running`. I understand that the YANG/RESTCONF standards say that RPCs can be only executed against the `operational` DS, but that\u0027s mainly about concepts and validation of the input data and also XPaths of actions.",
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "40f7b6b2_22ca3782",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T16:44:09Z",
+      "side": 1,
+      "message": "please wrap this line :)",
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "29f14930_2045c378",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 236,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T16:44:09Z",
+      "side": 1,
+      "message": "I cannot tell whether `node` can be actually nullopt here. Can it?\n\nConsider refactoring this code, like this:\n \nif (!node) {\n  // some checks here\n} else {\n  if (node-\u003enodeType() \u003d\u003d libyang::NodeType::RPC \u0026\u0026 prefix.resourceType !\u003d impl::URIPrefix::Type::BasicRestconfOperations) {\n    throw ...\n  }\n  if (.. \u003d\u003d Action ...) {\n    throw ...\n  }\n}",
+      "range": {
+        "startLine": 236,
+        "startChar": 8,
+        "endLine": 236,
+        "endChar": 14
+      },
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f22130fd_b4ef6a55",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 342,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T16:44:09Z",
+      "side": 1,
+      "message": "please split this into two if branches, that ternary operator below only makes this more complex IMHO",
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8435977c_a885804d",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 7
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T16:44:09Z",
+      "side": 1,
+      "message": "\"Execute\"?",
+      "range": {
+        "startLine": 53,
+        "startChar": 8,
+        "endLine": 53,
+        "endChar": 11
+      },
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6a0f1e00_010705f8",
+        "filename": "tests/restconf-reading.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 214,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T16:44:09Z",
+      "side": 1,
+      "message": "nit: this is now in `tests/aux-utils.h`, `noContentTypeHeaders`",
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6fa0cc9f_572ffee9",
+        "filename": "tests/restconf-rpc.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T16:44:09Z",
+      "side": 1,
+      "message": "JSON -\u003e XML is missing",
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cd7b8c99_1ee077ef",
+        "filename": "tests/restconf-rpc.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 249,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T16:44:09Z",
+      "side": 1,
+      "message": "I would prefer the RESTCONF server to validate this on its own. That way you can provide some \"reasonable\" error output from libyang, and even if not, at least it won\u0027t say \"internal sysrepo error\" when it\u0027s 100% client error.",
+      "range": {
+        "startLine": 219,
+        "startChar": 0,
+        "endLine": 249,
+        "endChar": 9
+      },
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cb84700e_de19e0c6",
+        "filename": "tests/restconf-rpc.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 312,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T16:44:09Z",
+      "side": 1,
+      "message": "Can you validate this on an application level? (With a FIXME about locking because of the classic TOCTOU race)",
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
