@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2f599974_fc24517d",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 260,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-18T10:06:22Z",
+      "side": 1,
+      "message": "It would be nice to check for netconf errors here. And if any are set, then response should be according to those.\n\nIf there are no netconf errors set then we respond with a sysrepo error code and message.",
+      "revId": "8cd9c31f93163b2245c41a8cf615dae8dcdc0eb0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
