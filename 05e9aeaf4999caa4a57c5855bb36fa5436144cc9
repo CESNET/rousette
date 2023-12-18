@@ -22,6 +22,30 @@
       },
       "revId": "05e9aeaf4999caa4a57c5855bb36fa5436144cc9",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e1702a1d_00a14e84",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 262,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-18T12:18:10Z",
+      "side": 1,
+      "message": "The RFC explicitly states that GET with RPC/Action node returns 405 with operation-not-supported.\n\nWe respond with 400 operation-failed for any other invalid URI so I left it like this (for now).",
+      "parentUuid": "6e5e65d1_64da9048",
+      "range": {
+        "startLine": 260,
+        "startChar": 0,
+        "endLine": 262,
+        "endChar": 182
+      },
+      "revId": "05e9aeaf4999caa4a57c5855bb36fa5436144cc9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
