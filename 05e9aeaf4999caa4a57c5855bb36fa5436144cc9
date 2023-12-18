@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6e5e65d1_64da9048",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 262,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T12:09:14Z",
+      "side": 1,
+      "message": "any reason for a different error code?",
+      "range": {
+        "startLine": 260,
+        "startChar": 0,
+        "endLine": 262,
+        "endChar": 182
+      },
+      "revId": "05e9aeaf4999caa4a57c5855bb36fa5436144cc9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
