@@ -39,6 +39,30 @@
       },
       "revId": "43557bf5ea2984e508c53fc1623e1242d04354d0",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0f028bc9_bc59c71f",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 167,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-18T12:46:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4e2b5f39_d48c4321",
+      "range": {
+        "startLine": 167,
+        "startChar": 12,
+        "endLine": 167,
+        "endChar": 31
+      },
+      "revId": "43557bf5ea2984e508c53fc1623e1242d04354d0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
