@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "eb98d7d9_2fd4af1a",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 287,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-18T12:46:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b97269af_039b0b9c",
+      "range": {
+        "startLine": 283,
+        "startChar": 0,
+        "endLine": 287,
+        "endChar": 5
+      },
+      "revId": "a04d2007a1d55422d87c870234f042c3bd72d0ac",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "70150892_3f2b0944",
@@ -37,6 +61,30 @@
       "writtenOn": "2023-12-18T11:56:16Z",
       "side": 1,
       "message": "I prefer a manual for loop here, I think that doctest\u0027s special constructs add little value here (and there\u0027s already a second explicit loop below). The only added cost will be one CAPTURE(httpMethod) I guess. And I see that you\u0027re already doing this on line 378.",
+      "range": {
+        "startLine": 298,
+        "startChar": 0,
+        "endLine": 299,
+        "endChar": 54
+      },
+      "revId": "a04d2007a1d55422d87c870234f042c3bd72d0ac",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5a124cc4_c6e9b2c7",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 299,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-18T12:46:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "70150892_3f2b0944",
       "range": {
         "startLine": 298,
         "startChar": 0,
