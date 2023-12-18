@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b97ce462_0aaa401f",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 281,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T16:11:33Z",
+      "side": 1,
+      "message": "Let\u0027s split this into a truly short description and \"the rest\":\n \n@brief Parse requested URL as a RESTCONF request\n \nThe URI path (i.e., a resource identifier) will be parsed into an action that is supposed to be performed,\nthe target datastore, and a libyang path over which the operation will be performed.",
+      "range": {
+        "startLine": 281,
+        "startChar": 4,
+        "endLine": 281,
+        "endChar": 165
+      },
+      "revId": "38eac6b068821c223512797656b71f39ae310e92",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "927838c4_df30369c",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 285,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T16:11:33Z",
+      "side": 1,
+      "message": "This is already visible in the signature that\u0027s shown in the docs, so this line doesn\u0027t add any new info. Also, please remove the @return above which is no longer true.",
+      "range": {
+        "startLine": 285,
+        "startChar": 3,
+        "endLine": 285,
+        "endChar": 33
+      },
+      "revId": "38eac6b068821c223512797656b71f39ae310e92",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c0c31b02_b7d0c4bd",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T16:11:33Z",
+      "side": 1,
+      "message": "I would prefer this name to somehow refer to the PUT method name, or to indicate that it\u0027s about a request which \"duplicates\" the top-level node info in the URL. For example, `PutData` works for me better.",
+      "range": {
+        "startLine": 52,
+        "startChar": 8,
+        "endLine": 52,
+        "endChar": 22
+      },
+      "revId": "38eac6b068821c223512797656b71f39ae310e92",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}

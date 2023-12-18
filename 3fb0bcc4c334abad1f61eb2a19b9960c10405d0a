@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b43af96a_793c5290",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T16:11:33Z",
+      "side": 1,
+      "message": "- \"GET on a data resource, or on a complete-datastore resource\" looks more readable to me\n- please make this doxygen-readable, the shortest path is probable `///\u003c blah blah blah` (also below)",
+      "range": {
+        "startLine": 51,
+        "startChar": 20,
+        "endLine": 51,
+        "endChar": 50
+      },
+      "revId": "3fb0bcc4c334abad1f61eb2a19b9960c10405d0a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
