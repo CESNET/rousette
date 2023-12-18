@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "73210a67_008f0482",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T12:05:07Z",
+      "side": 1,
+      "message": "just one missing string replacement, otherwise a huge +666",
+      "revId": "43557bf5ea2984e508c53fc1623e1242d04354d0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4e2b5f39_d48c4321",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 167,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T12:05:07Z",
+      "side": 1,
+      "message": "ErrorResponse",
+      "range": {
+        "startLine": 167,
+        "startChar": 12,
+        "endLine": 167,
+        "endChar": 31
+      },
+      "revId": "43557bf5ea2984e508c53fc1623e1242d04354d0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
