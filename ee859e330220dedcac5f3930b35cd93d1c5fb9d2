@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "79b33fad_1fac4ffb",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 192,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T12:38:58Z",
+      "side": 1,
+      "message": "Since this no longer returns a boolean, please do not use the `isFoo` naming pattern. What about something like `checkValidDataResource()`?",
+      "range": {
+        "startLine": 191,
+        "startChar": 0,
+        "endLine": 192,
+        "endChar": 72
+      },
+      "revId": "ee859e330220dedcac5f3930b35cd93d1c5fb9d2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7e05f08c_e6483472",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 218,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T12:38:58Z",
+      "side": 1,
+      "message": "can you please call this seomthing like `for the complete-datastore resource`?",
+      "range": {
+        "startLine": 218,
+        "startChar": 92,
+        "endLine": 218,
+        "endChar": 114
+      },
+      "revId": "ee859e330220dedcac5f3930b35cd93d1c5fb9d2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
