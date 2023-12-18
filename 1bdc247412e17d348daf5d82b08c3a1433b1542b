@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7ddc7638_851f2693",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 532,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-18T12:07:08Z",
+      "side": 1,
+      "message": "I think it makes sense to still check these for the \"full stack\" in tests/restconf-reading.cpp, OK.",
+      "revId": "1bdc247412e17d348daf5d82b08c3a1433b1542b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
