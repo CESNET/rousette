@@ -102,6 +102,7 @@ TEST_CASE("writing data")
 
     SECTION("PUT")
     {
+        auto changesIetfNetconfAcm = datastoreChangesSubscription(srSess, dsChangesMock, "ietf-netconf-acm");
         auto changesIetfSystem = datastoreChangesSubscription(srSess, dsChangesMock, "ietf-system");
         auto changesExample = datastoreChangesSubscription(srSess, dsChangesMock, "example");
 
@@ -244,20 +245,6 @@ TEST_CASE("writing data")
 
         SECTION("Invalid requests")
         {
-            // PUT on datastore resource (/restconf/data, /restconf/ds/ietf-datastores:*) is not a valid operation
-            REQUIRE(put(RESTCONF_DATA_ROOT, "", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{400, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "operation-failed",
-        "error-message": "'/' is not a data resource"
-      }
-    ]
-  }
-}
-)"});
-
             // Invalid path, this throws in the uri parser
             // FIXME: add error-path reporting for wrong URIs according to https://datatracker.ietf.org/doc/html/rfc8040#page-78
             REQUIRE(put(RESTCONF_DATA_ROOT "/example:nonsense", R"({"example:nonsense": "other-str"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
@@ -628,6 +615,134 @@ TEST_CASE("writing data")
             }
         }
 
+        SECTION("Complete datastore")
+        {
+            SECTION("Replace all")
+            {
+                EXPECT_CHANGE(
+                    MODIFIED("/ietf-netconf-acm:nacm/enable-external-groups", "true"),
+                    DELETED("/ietf-netconf-acm:nacm/groups/group[name='optics']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/groups/group[name='optics']/name", "optics"),
+                    DELETED("/ietf-netconf-acm:nacm/groups/group[name='optics']/user-name[.='dwdm']", "dwdm"),
+                    DELETED("/ietf-netconf-acm:nacm/groups/group[name='yangnobody']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/groups/group[name='yangnobody']/name", "yangnobody"),
+                    DELETED("/ietf-netconf-acm:nacm/groups/group[name='yangnobody']/user-name[.='yangnobody']", "yangnobody"),
+                    DELETED("/ietf-netconf-acm:nacm/groups/group[name='norules']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/groups/group[name='norules']/name", "norules"),
+                    DELETED("/ietf-netconf-acm:nacm/groups/group[name='norules']/user-name[.='norules']", "norules"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/name", "anon rule"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/group[.='yangnobody']", "yangnobody"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='10']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='10']/name", "10"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='10']/module-name", "ietf-system"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='10']/path", "/ietf-system:system/contact"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='10']/access-operations", "read"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='10']/action", "permit"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='11']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='11']/name", "11"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='11']/module-name", "ietf-system"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='11']/path", "/ietf-system:system/hostname"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='11']/access-operations", "read"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='11']/action", "permit"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='12']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='12']/name", "12"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='12']/module-name", "ietf-system"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='12']/path", "/ietf-system:system/location"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='12']/access-operations", "read"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='12']/action", "permit"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='13']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='13']/name", "13"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='13']/module-name", "example"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='13']/access-operations", "read"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='13']/action", "permit"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='99']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='99']/name", "99"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='99']/module-name", "*"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='99']/access-operations", "*"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='99']/action", "deny"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/name", "dwdm rule"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/group[.='optics']", "optics"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/rule[name='1']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/rule[name='1']/name", "1"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/rule[name='1']/module-name", "ietf-system"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/rule[name='1']/access-operations", "*"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/rule[name='1']/action", "permit"));
+                EXPECT_CHANGE(
+                    CREATED("/example:top-level-leaf", "str"),
+                    CREATED("/example:tlc/list[name='libyang']", std::nullopt),
+                    CREATED("/example:tlc/list[name='libyang']/name", "libyang"),
+                    CREATED("/example:tlc/list[name='libyang']/choice1", "libyang"));
+                REQUIRE(put(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "str", "example:tlc": {"list": [{"name": "libyang", "choice1": "libyang"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{201, jsonHeaders, ""});
+
+                EXPECT_CHANGE(
+                    MODIFIED("/example:top-level-leaf", "other-str"),
+                    DELETED("/example:tlc/list[name='libyang']", std::nullopt),
+                    DELETED("/example:tlc/list[name='libyang']/name", "libyang"),
+                    DELETED("/example:tlc/list[name='libyang']/choice1", "libyang"),
+                    CREATED("/example:tlc/list[name='sysrepo']", std::nullopt),
+                    CREATED("/example:tlc/list[name='sysrepo']/name", "sysrepo"),
+                    CREATED("/example:tlc/list[name='sysrepo']/choice1", "sysrepo"));
+                REQUIRE(put(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "other-str", "example:tlc": {"list": [{"name": "sysrepo", "choice1": "sysrepo"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{201, jsonHeaders, ""});
+            }
+
+            SECTION("Remove all")
+            {
+                EXPECT_CHANGE(
+                    MODIFIED("/ietf-netconf-acm:nacm/enable-external-groups", "true"),
+                    DELETED("/ietf-netconf-acm:nacm/groups/group[name='optics']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/groups/group[name='optics']/name", "optics"),
+                    DELETED("/ietf-netconf-acm:nacm/groups/group[name='optics']/user-name[.='dwdm']", "dwdm"),
+                    DELETED("/ietf-netconf-acm:nacm/groups/group[name='yangnobody']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/groups/group[name='yangnobody']/name", "yangnobody"),
+                    DELETED("/ietf-netconf-acm:nacm/groups/group[name='yangnobody']/user-name[.='yangnobody']", "yangnobody"),
+                    DELETED("/ietf-netconf-acm:nacm/groups/group[name='norules']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/groups/group[name='norules']/name", "norules"),
+                    DELETED("/ietf-netconf-acm:nacm/groups/group[name='norules']/user-name[.='norules']", "norules"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/name", "anon rule"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/group[.='yangnobody']", "yangnobody"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='10']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='10']/name", "10"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='10']/module-name", "ietf-system"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='10']/path", "/ietf-system:system/contact"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='10']/access-operations", "read"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='10']/action", "permit"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='11']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='11']/name", "11"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='11']/module-name", "ietf-system"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='11']/path", "/ietf-system:system/hostname"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='11']/access-operations", "read"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='11']/action", "permit"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='12']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='12']/name", "12"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='12']/module-name", "ietf-system"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='12']/path", "/ietf-system:system/location"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='12']/access-operations", "read"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='12']/action", "permit"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='13']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='13']/name", "13"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='13']/module-name", "example"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='13']/access-operations", "read"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='13']/action", "permit"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='99']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='99']/name", "99"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='99']/module-name", "*"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='99']/access-operations", "*"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='99']/action", "deny"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/name", "dwdm rule"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/group[.='optics']", "optics"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/rule[name='1']", std::nullopt),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/rule[name='1']/name", "1"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/rule[name='1']/module-name", "ietf-system"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/rule[name='1']/access-operations", "*"),
+                    DELETED("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/rule[name='1']/action", "permit"));
+                REQUIRE(put(RESTCONF_DATA_ROOT, "{}", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{204, jsonHeaders, ""});
+            }
+        }
+
         DOCTEST_SUBCASE("RPCs")
         {
             REQUIRE(put(RESTCONF_DATA_ROOT "/ietf-system:system-restart", "", {AUTH_DWDM}) == Response{405, jsonHeaders, R"({
@@ -691,46 +806,77 @@ TEST_CASE("writing data")
             sysrepo::Datastore ds = sysrepo::Datastore::Running;
             std::string uri;
 
-            SECTION("startup")
+            SECTION("Complete datastore")
             {
-                ds = sysrepo::Datastore::Startup;
-                uri = RESTCONF_ROOT_DS("startup");
+                SECTION("startup")
+                {
+                    ds = sysrepo::Datastore::Startup;
+                    uri = RESTCONF_ROOT_DS("startup");
+                }
+
+                SECTION("candidate")
+                {
+                    ds = sysrepo::Datastore::Candidate;
+                    uri = RESTCONF_ROOT_DS("candidate");
+                }
+
+                SECTION("running")
+                {
+                    ds = sysrepo::Datastore::Running;
+                    uri = RESTCONF_ROOT_DS("running");
+                }
+
+                auto sess = srConn.sessionStart(ds);
+
+                auto sub = datastoreChangesSubscription(sess, dsChangesMock, "example");
+
+                EXPECT_CHANGE(
+                    CREATED("/example:top-level-leaf", "str"),
+                    CREATED("/example:tlc/list[name='libyang']", std::nullopt),
+                    CREATED("/example:tlc/list[name='libyang']/name", "libyang"),
+                    CREATED("/example:tlc/list[name='libyang']/choice1", "libyang"));
+                REQUIRE(put(uri, R"({"example:top-level-leaf": "str", "example:tlc": {"list": [{"name": "libyang", "choice1": "libyang"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{201, jsonHeaders, ""});
+
+                EXPECT_CHANGE(
+                    MODIFIED("/example:top-level-leaf", "other-str"),
+                    DELETED("/example:tlc/list[name='libyang']", std::nullopt),
+                    DELETED("/example:tlc/list[name='libyang']/name", "libyang"),
+                    DELETED("/example:tlc/list[name='libyang']/choice1", "libyang"),
+                    CREATED("/example:tlc/list[name='sysrepo']", std::nullopt),
+                    CREATED("/example:tlc/list[name='sysrepo']/name", "sysrepo"),
+                    CREATED("/example:tlc/list[name='sysrepo']/choice1", "sysrepo"));
+                REQUIRE(put(uri, R"({"example:top-level-leaf": "other-str", "example:tlc": {"list": [{"name": "sysrepo", "choice1": "sysrepo"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{201, jsonHeaders, ""});
             }
 
-            SECTION("candidate")
+            SECTION("Inner resources")
             {
-                ds = sysrepo::Datastore::Candidate;
-                uri = RESTCONF_ROOT_DS("candidate");
+                SECTION("startup")
+                {
+                    ds = sysrepo::Datastore::Startup;
+                    uri = RESTCONF_ROOT_DS("startup");
+                }
+
+                SECTION("candidate")
+                {
+                    ds = sysrepo::Datastore::Candidate;
+                    uri = RESTCONF_ROOT_DS("candidate");
+                }
+
+                SECTION("running")
+                {
+                    ds = sysrepo::Datastore::Running;
+                    uri = RESTCONF_ROOT_DS("running");
+                }
+
+                auto sess = srConn.sessionStart(ds);
+                auto sub = datastoreChangesSubscription(sess, dsChangesMock, "example");
+
+                EXPECT_CHANGE(CREATED("/example:two-leafs/a", "hello"));
+                REQUIRE(put(uri + "/example:two-leafs/a", R"({"example:a":"hello"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                EXPECT_CHANGE(MODIFIED("/example:two-leafs/a", "hello world"));
+                REQUIRE(put(uri + "/example:two-leafs/a", R"({"example:a":"hello world"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
             }
-
-            SECTION("running")
-            {
-                ds = sysrepo::Datastore::Running;
-                uri = RESTCONF_ROOT_DS("running");
-            }
-
-            auto sess = srConn.sessionStart(ds);
-            auto sub = datastoreChangesSubscription(sess, dsChangesMock, "example");
-
-            EXPECT_CHANGE(CREATED("/example:two-leafs/a", "hello")).IN_SEQUENCE(seq1);
-            REQUIRE(put(uri + "/example:two-leafs/a", R"({"example:a":"hello"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
-
-            EXPECT_CHANGE(MODIFIED("/example:two-leafs/a", "hello world")).IN_SEQUENCE(seq1);
-            REQUIRE(put(uri + "/example:two-leafs/a", R"({"example:a":"hello world"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
-
-            // can't PUT on root uri
-            REQUIRE(put(uri, "", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{400, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "operation-failed",
-        "error-message": "'/' is not a data resource"
-      }
-    ]
-  }
-}
-)"});
         }
 
         SECTION("Read-only datastores")
