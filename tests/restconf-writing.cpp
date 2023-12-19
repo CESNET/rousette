@@ -19,7 +19,7 @@ static const auto SERVER_PORT = "10083";
 #define CREATED(KEY, VAL) _CHANGE(sysrepo::ChangeOperation::Created, KEY, VAL)
 #define MODIFIED(KEY, VAL) _CHANGE(sysrepo::ChangeOperation::Modified, KEY, VAL)
 #define DELETED(KEY, VAL) _CHANGE(sysrepo::ChangeOperation::Deleted, KEY, VAL)
-#define EXPECT_CHANGE(...) REQUIRE_CALL(dsChangesMock, change((std::vector<SrChange>{__VA_ARGS__}))).IN_SEQUENCE(seq1).TIMES(1);
+#define EXPECT_CHANGE(...) REQUIRE_CALL(dsChangesMock, change((std::vector<SrChange>{__VA_ARGS__}))).IN_SEQUENCE(seq1).TIMES(1)
 
 #define CONTENT_TYPE_JSON                            \
     {                                                \
@@ -52,6 +52,7 @@ struct printer<SrChange> {
 
 struct DatastoreChangesMock {
     MAKE_MOCK1(change, void(const std::vector<SrChange>&));
+    MAKE_MOCK1(contentAfterChange, void(const std::optional<std::string>&));
 };
 
 void datastoreChanges(auto session, auto& dsChangesMock, auto path)
@@ -71,12 +72,30 @@ void datastoreChanges(auto session, auto& dsChangesMock, auto path)
     dsChangesMock.change(changes);
 }
 
+void datastoreNewState(auto session, auto& dsChangesMock, auto path)
+{
+    dsChangesMock.contentAfterChange(session.getData(path)->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings));
+}
+
 sysrepo::Subscription datastoreChangesSubscription(auto session, auto& dsChangesMock, const std::string& moduleName)
 {
     return session.onModuleChange(
         moduleName,
         [moduleName, &dsChangesMock](auto session, auto, auto, auto, auto, auto) {
             datastoreChanges(session, dsChangesMock, "/" + moduleName + ":*//.");
+            return sysrepo::ErrorCode::Ok;
+        },
+        std::nullopt,
+        0,
+        sysrepo::SubscribeOptions::DoneOnly);
+}
+
+sysrepo::Subscription datastoreNewStateSubscription(auto session, auto& dsChangesMock, const std::string& moduleName)
+{
+    return session.onModuleChange(
+        moduleName,
+        [moduleName, &dsChangesMock](auto session, auto, auto, auto, auto, auto) {
+            datastoreNewState(session, dsChangesMock, "/" + moduleName + ":*");
             return sysrepo::ErrorCode::Ok;
         },
         std::nullopt,
@@ -102,6 +121,7 @@ TEST_CASE("writing data")
 
     SECTION("PUT")
     {
+        auto changesIetfNetconfAcm = datastoreNewStateSubscription(srSess, dsChangesMock, "ietf-netconf-acm");
         auto changesIetfSystem = datastoreChangesSubscription(srSess, dsChangesMock, "ietf-system");
         auto changesExample = datastoreChangesSubscription(srSess, dsChangesMock, "example");
 
@@ -244,20 +264,6 @@ TEST_CASE("writing data")
 
         SECTION("Invalid requests")
         {
-            // PUT on datastore resource (/restconf/data, /restconf/ds/ietf-datastores:*) is not a valid operation
-            REQUIRE(put(RESTCONF_DATA_ROOT, "", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{400, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "operation-failed",
-        "error-message": "'/' is not a data resource"
-      }
-    ]
-  }
-}
-)"});
-
             // Invalid path, this throws in the uri parser
             // FIXME: add error-path reporting for wrong URIs according to https://datatracker.ietf.org/doc/html/rfc8040#page-78
             REQUIRE(put(RESTCONF_DATA_ROOT "/example:nonsense", R"({"example:nonsense": "other-str"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
@@ -628,6 +634,36 @@ TEST_CASE("writing data")
             }
         }
 
+        SECTION("Complete datastore")
+        {
+            SECTION("Replace all")
+            {
+                REQUIRE_CALL(dsChangesMock, contentAfterChange("{\n\n}\n"));
+                EXPECT_CHANGE(
+                    CREATED("/example:top-level-leaf", "str"),
+                    CREATED("/example:tlc/list[name='libyang']", std::nullopt),
+                    CREATED("/example:tlc/list[name='libyang']/name", "libyang"),
+                    CREATED("/example:tlc/list[name='libyang']/choice1", "libyang"));
+                REQUIRE(put(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "str", "example:tlc": {"list": [{"name": "libyang", "choice1": "libyang"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{201, jsonHeaders, ""});
+
+                EXPECT_CHANGE(
+                    MODIFIED("/example:top-level-leaf", "other-str"),
+                    DELETED("/example:tlc/list[name='libyang']", std::nullopt),
+                    DELETED("/example:tlc/list[name='libyang']/name", "libyang"),
+                    DELETED("/example:tlc/list[name='libyang']/choice1", "libyang"),
+                    CREATED("/example:tlc/list[name='sysrepo']", std::nullopt),
+                    CREATED("/example:tlc/list[name='sysrepo']/name", "sysrepo"),
+                    CREATED("/example:tlc/list[name='sysrepo']/choice1", "sysrepo"));
+                REQUIRE(put(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "other-str", "example:tlc": {"list": [{"name": "sysrepo", "choice1": "sysrepo"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{201, jsonHeaders, ""});
+            }
+
+            SECTION("Remove all")
+            {
+                REQUIRE_CALL(dsChangesMock, contentAfterChange("{\n\n}\n"));
+                REQUIRE(put(RESTCONF_DATA_ROOT, "{}", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{204, jsonHeaders, ""});
+            }
+        }
+
         DOCTEST_SUBCASE("RPCs")
         {
             REQUIRE(put(RESTCONF_DATA_ROOT "/ietf-system:system-restart", "", {AUTH_DWDM}) == Response{405, jsonHeaders, R"({
@@ -691,46 +727,77 @@ TEST_CASE("writing data")
             sysrepo::Datastore ds = sysrepo::Datastore::Running;
             std::string uri;
 
-            SECTION("startup")
+            SECTION("Complete datastore")
             {
-                ds = sysrepo::Datastore::Startup;
-                uri = RESTCONF_ROOT_DS("startup");
+                SECTION("startup")
+                {
+                    ds = sysrepo::Datastore::Startup;
+                    uri = RESTCONF_ROOT_DS("startup");
+                }
+
+                SECTION("candidate")
+                {
+                    ds = sysrepo::Datastore::Candidate;
+                    uri = RESTCONF_ROOT_DS("candidate");
+                }
+
+                SECTION("running")
+                {
+                    ds = sysrepo::Datastore::Running;
+                    uri = RESTCONF_ROOT_DS("running");
+                }
+
+                auto sess = srConn.sessionStart(ds);
+
+                auto sub = datastoreChangesSubscription(sess, dsChangesMock, "example");
+
+                EXPECT_CHANGE(
+                    CREATED("/example:top-level-leaf", "str"),
+                    CREATED("/example:tlc/list[name='libyang']", std::nullopt),
+                    CREATED("/example:tlc/list[name='libyang']/name", "libyang"),
+                    CREATED("/example:tlc/list[name='libyang']/choice1", "libyang"));
+                REQUIRE(put(uri, R"({"example:top-level-leaf": "str", "example:tlc": {"list": [{"name": "libyang", "choice1": "libyang"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{201, jsonHeaders, ""});
+
+                EXPECT_CHANGE(
+                    MODIFIED("/example:top-level-leaf", "other-str"),
+                    DELETED("/example:tlc/list[name='libyang']", std::nullopt),
+                    DELETED("/example:tlc/list[name='libyang']/name", "libyang"),
+                    DELETED("/example:tlc/list[name='libyang']/choice1", "libyang"),
+                    CREATED("/example:tlc/list[name='sysrepo']", std::nullopt),
+                    CREATED("/example:tlc/list[name='sysrepo']/name", "sysrepo"),
+                    CREATED("/example:tlc/list[name='sysrepo']/choice1", "sysrepo"));
+                REQUIRE(put(uri, R"({"example:top-level-leaf": "other-str", "example:tlc": {"list": [{"name": "sysrepo", "choice1": "sysrepo"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{201, jsonHeaders, ""});
             }
 
-            SECTION("candidate")
+            SECTION("Inner resources")
             {
-                ds = sysrepo::Datastore::Candidate;
-                uri = RESTCONF_ROOT_DS("candidate");
+                SECTION("startup")
+                {
+                    ds = sysrepo::Datastore::Startup;
+                    uri = RESTCONF_ROOT_DS("startup");
+                }
+
+                SECTION("candidate")
+                {
+                    ds = sysrepo::Datastore::Candidate;
+                    uri = RESTCONF_ROOT_DS("candidate");
+                }
+
+                SECTION("running")
+                {
+                    ds = sysrepo::Datastore::Running;
+                    uri = RESTCONF_ROOT_DS("running");
+                }
+
+                auto sess = srConn.sessionStart(ds);
+                auto sub = datastoreChangesSubscription(sess, dsChangesMock, "example");
+
+                EXPECT_CHANGE(CREATED("/example:two-leafs/a", "hello"));
+                REQUIRE(put(uri + "/example:two-leafs/a", R"({"example:a":"hello"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                EXPECT_CHANGE(MODIFIED("/example:two-leafs/a", "hello world"));
+                REQUIRE(put(uri + "/example:two-leafs/a", R"({"example:a":"hello world"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
             }
-
-            SECTION("running")
-            {
-                ds = sysrepo::Datastore::Running;
-                uri = RESTCONF_ROOT_DS("running");
-            }
-
-            auto sess = srConn.sessionStart(ds);
-            auto sub = datastoreChangesSubscription(sess, dsChangesMock, "example");
-
-            EXPECT_CHANGE(CREATED("/example:two-leafs/a", "hello"));
-            REQUIRE(put(uri + "/example:two-leafs/a", R"({"example:a":"hello"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
-
-            EXPECT_CHANGE(MODIFIED("/example:two-leafs/a", "hello world"));
-            REQUIRE(put(uri + "/example:two-leafs/a", R"({"example:a":"hello world"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
-
-            // can't PUT on root uri
-            REQUIRE(put(uri, "", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{400, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "operation-failed",
-        "error-message": "'/' is not a data resource"
-      }
-    ]
-  }
-}
-)"});
         }
 
         SECTION("Read-only datastores")
@@ -763,7 +830,7 @@ TEST_CASE("writing data")
 
     SECTION("POST")
     {
-            REQUIRE(post(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "str"})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{405, jsonHeaders, R"({
+        REQUIRE(post(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "str"})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{405, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -776,7 +843,7 @@ TEST_CASE("writing data")
 }
 )"});
 
-            REQUIRE(post(RESTCONF_ROOT_DS("running"), R"({"example:top-level-leaf": "str"})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{405, jsonHeaders, R"({
+        REQUIRE(post(RESTCONF_ROOT_DS("running"), R"({"example:top-level-leaf": "str"})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{405, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -789,7 +856,7 @@ TEST_CASE("writing data")
 }
 )"});
 
-            REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:a": "a-value"}")", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{405, jsonHeaders, R"({
+        REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:a": "a-value"}")", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{405, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {

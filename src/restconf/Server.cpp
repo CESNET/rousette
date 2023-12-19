@@ -318,13 +318,28 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
 void processPut(std::shared_ptr<RequestContext> requestCtx)
 {
     try {
-        auto [lyParentPath, lastPathSegment] = asLibyangPathSplit(requestCtx->sess.getContext(), requestCtx->req.uri().path);
-
         auto ctx = requestCtx->sess.getContext();
+
+        // PUT / means replace everything
+        if (requestCtx->lyPathOriginal == "/") {
+            auto edit = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+            requestCtx->sess.replaceConfig(edit);
+
+            requestCtx->res.write_head(edit ? 201 : 204,
+                                       {
+                                           {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
+                                           {"access-control-allow-origin", {"*", false}},
+                                       });
+            requestCtx->res.end();
+            return;
+        }
+
         auto mod = ctx.getModuleImplemented("ietf-netconf");
         bool nodeExisted = dataExists(requestCtx->sess, requestCtx->lyPathOriginal);
         std::optional<libyang::DataNode> edit;
         std::optional<libyang::DataNode> replacementNode;
+
+        auto [lyParentPath, lastPathSegment] = asLibyangPathSplit(requestCtx->sess.getContext(), requestCtx->req.uri().path);
 
         if (!lyParentPath.empty()) {
             auto [parent, node] = ctx.newPath2(lyParentPath, std::nullopt);
