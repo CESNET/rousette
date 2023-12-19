@@ -347,6 +347,8 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
 
     if (httpMethod == "GET" && uri->segments.empty()) {
         return {RestconfRequest::Type::GetData, uri->prefix.datastore, "/*"};
+    } else if (httpMethod == "PUT" && uri->segments.empty()) {
+        return {RestconfRequest::Type::CreateOrReplaceThisNode, uri->prefix.datastore, "/"};
     }
 
     auto [lyPath, schemaNode] = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
