@@ -68,6 +68,30 @@
       },
       "revId": "38eac6b068821c223512797656b71f39ae310e92",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6048db6b_09e61429",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-19T09:59:48Z",
+      "side": 1,
+      "message": "During the call Tomas said that this is actually a \"create or replace this node\", so the name is gonna be `CreateOrReplaceThisNode`. That way the \"HTTP method\" is not reflected in the name (because it isn\u0027t relevant anymore), and the name indicates what resource the action operates on.\n\nOther methods, for future reference:\n\n- POST on an RPC or action: Execute\n- POST on a data resource: CreateChild\n- PATCH with the XML or JSON data: PlainPatch\n- PATCH with \"application/yang-patch+xml\" or \"application/yang-patch+json\": YangPatch (to be implemented in future depending on libyang support)\n- DELETE: Delete",
+      "parentUuid": "c0c31b02_b7d0c4bd",
+      "range": {
+        "startLine": 52,
+        "startChar": 8,
+        "endLine": 52,
+        "endChar": 22
+      },
+      "revId": "38eac6b068821c223512797656b71f39ae310e92",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
