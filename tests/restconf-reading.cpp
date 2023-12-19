@@ -211,10 +211,6 @@ TEST_CASE("reading data")
 
     DOCTEST_SUBCASE("Test data formats preference")
     {
-        const ng::header_map onlyCorsHeader{
-            {"access-control-allow-origin", {"*", false}},
-        };
-
         REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system", {}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "contact": "contact",
