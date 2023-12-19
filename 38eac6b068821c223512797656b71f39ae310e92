@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "7eb5e3ff_ff685ddc",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 281,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T11:21:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b97ce462_0aaa401f",
+      "range": {
+        "startLine": 281,
+        "startChar": 4,
+        "endLine": 281,
+        "endChar": 165
+      },
+      "revId": "38eac6b068821c223512797656b71f39ae310e92",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "927838c4_df30369c",
@@ -37,6 +61,30 @@
       "writtenOn": "2023-12-18T16:11:33Z",
       "side": 1,
       "message": "This is already visible in the signature that\u0027s shown in the docs, so this line doesn\u0027t add any new info. Also, please remove the @return above which is no longer true.",
+      "range": {
+        "startLine": 285,
+        "startChar": 3,
+        "endLine": 285,
+        "endChar": 33
+      },
+      "revId": "38eac6b068821c223512797656b71f39ae310e92",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d3b3c977_8b999fe8",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 285,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T11:21:14Z",
+      "side": 1,
+      "message": "Done.",
+      "parentUuid": "927838c4_df30369c",
       "range": {
         "startLine": 285,
         "startChar": 3,
@@ -84,6 +132,30 @@
       "side": 1,
       "message": "During the call Tomas said that this is actually a \"create or replace this node\", so the name is gonna be `CreateOrReplaceThisNode`. That way the \"HTTP method\" is not reflected in the name (because it isn\u0027t relevant anymore), and the name indicates what resource the action operates on.\n\nOther methods, for future reference:\n\n- POST on an RPC or action: Execute\n- POST on a data resource: CreateChild\n- PATCH with the XML or JSON data: PlainPatch\n- PATCH with \"application/yang-patch+xml\" or \"application/yang-patch+json\": YangPatch (to be implemented in future depending on libyang support)\n- DELETE: Delete",
       "parentUuid": "c0c31b02_b7d0c4bd",
+      "range": {
+        "startLine": 52,
+        "startChar": 8,
+        "endLine": 52,
+        "endChar": 22
+      },
+      "revId": "38eac6b068821c223512797656b71f39ae310e92",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9603552b_ff4c8934",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T11:21:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6048db6b_09e61429",
       "range": {
         "startLine": 52,
         "startChar": 8,
