@@ -318,57 +318,62 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
 void processPut(std::shared_ptr<RequestContext> requestCtx)
 {
     try {
-        auto [lyParentPath, lastPathSegment] = asLibyangPathSplit(requestCtx->sess.getContext(), requestCtx->req.uri().path);
-
         auto ctx = requestCtx->sess.getContext();
         auto mod = ctx.getModuleImplemented("ietf-netconf");
         bool nodeExisted = dataExists(requestCtx->sess, requestCtx->lyPathOriginal);
         std::optional<libyang::DataNode> edit;
         std::optional<libyang::DataNode> replacementNode;
 
-        if (!lyParentPath.empty()) {
-            auto [parent, node] = ctx.newPath2(lyParentPath, std::nullopt);
-            node->parseSubtree(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+        if (requestCtx->lyPathOriginal == "/") {
+            edit = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+            requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Replace);
+        } else {
+            auto [lyParentPath, lastPathSegment] = asLibyangPathSplit(requestCtx->sess.getContext(), requestCtx->req.uri().path);
 
-            for (const auto& child : node->immediateChildren()) {
-                /* everything that is under node is either
-                 *  - a list key that was created by newPath2 call
-                 *  - a single child that is created by parseSubtree with the name of lastPathSegment (which can be a list, then we need to check if the keys in provided data match the keys in URI)
-                 * anything else is an error (either too many children provided or invalid name)
-                 */
-                if (isSameNode(child, lastPathSegment)) {
-                    if (auto offendingNode = checkKeysMismatch(child, lastPathSegment)) {
+            if (lyParentPath.empty()) {
+                if (auto parent = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly); parent) {
+                    edit = parent;
+                    replacementNode = parent;
+                    if (!isSameNode(*replacementNode, lastPathSegment)) {
+                        throw ErrorResponse(400, "protocol", "invalid-value", "Invalid data for PUT (data contains invalid node).", replacementNode->path());
+                    }
+                    if (auto offendingNode = checkKeysMismatch(*parent, lastPathSegment)) {
                         throw ErrorResponse(400, "protocol", "invalid-value", "Invalid data for PUT (list key mismatch between URI path and data).", offendingNode->path());
                     }
-                    replacementNode = child;
-                } else if (isKeyNode(*node, child)) {
-                    // do nothing here; key values are checked elsewhere
-                } else {
-                    throw ErrorResponse(400, "protocol", "invalid-value", "Invalid data for PUT (data contains invalid node).", child.path());
                 }
-            }
+            } else {
+                auto [parent, node] = ctx.newPath2(lyParentPath, std::nullopt);
+                node->parseSubtree(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
 
-            edit = parent;
-        } else {
-            if (auto parent = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly); parent) {
+                for (const auto& child : node->immediateChildren()) {
+                    /* everything that is under node is either
+                     *  - a list key that was created by newPath2 call
+                     *  - a single child that is created by parseSubtree with the name of lastPathSegment (which can be a list, then we need to check if the keys in provided data match the keys in URI)
+                     * anything else is an error (either too many children provided or invalid name)
+                     */
+                    if (isSameNode(child, lastPathSegment)) {
+                        if (auto offendingNode = checkKeysMismatch(child, lastPathSegment)) {
+                            throw ErrorResponse(400, "protocol", "invalid-value", "Invalid data for PUT (list key mismatch between URI path and data).", offendingNode->path());
+                        }
+                        replacementNode = child;
+                    } else if (isKeyNode(*node, child)) {
+                        // do nothing here; key values are checked elsewhere
+                    } else {
+                        throw ErrorResponse(400, "protocol", "invalid-value", "Invalid data for PUT (data contains invalid node).", child.path());
+                    }
+                }
+
                 edit = parent;
-                replacementNode = parent;
-                if (!isSameNode(*replacementNode, lastPathSegment)) {
-                    throw ErrorResponse(400, "protocol", "invalid-value", "Invalid data for PUT (data contains invalid node).", replacementNode->path());
-                }
-                if (auto offendingNode = checkKeysMismatch(*parent, lastPathSegment)) {
-                    throw ErrorResponse(400, "protocol", "invalid-value", "Invalid data for PUT (list key mismatch between URI path and data).", offendingNode->path());
-                }
             }
+
+            if (!replacementNode) {
+                throw ErrorResponse(400, "protocol", "invalid-value", "Invalid data for PUT (node indicated by URI is missing).");
+            }
+
+            replacementNode->newMeta(*mod, "operation", "replace"); // FIXME: check no other nc:operations in the tree
+            requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
         }
 
-        if (!replacementNode) {
-            throw ErrorResponse(400, "protocol", "invalid-value", "Invalid data for PUT (node indicated by URI is missing).");
-        }
-
-        replacementNode->newMeta(*mod, "operation", "replace"); // FIXME: check no other nc:operations in the tree
-
-        requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
         requestCtx->sess.applyChanges();
 
         requestCtx->res.write_head(nodeExisted ? 204 : 201,

@@ -371,7 +371,7 @@ TEST_CASE("URI path parser")
                     }
                 }
 
-                SECTION("GET datastore resource")
+                SECTION("Datastore resource")
                 {
                     std::string uriPath;
                     std::optional<sysrepo::Datastore> expectedDatastore;
@@ -386,10 +386,18 @@ TEST_CASE("URI path parser")
                         expectedDatastore = sysrepo::Datastore::Running;
                     }
 
-                    auto [requestType, datastore, path] = rousette::restconf::asRestconfRequest(ctx, "GET", uriPath);
-                    REQUIRE(requestType == RestconfRequest::Type::GetData);
-                    REQUIRE(path == "/*");
-                    REQUIRE(datastore == expectedDatastore);
+                    {
+                        auto [requestType, datastore, path] = rousette::restconf::asRestconfRequest(ctx, "GET", uriPath);
+                        REQUIRE(requestType == RestconfRequest::Type::GetData);
+                        REQUIRE(path == "/*");
+                        REQUIRE(datastore == expectedDatastore);
+                    }
+                    {
+                        auto [requestType, datastore, path] = rousette::restconf::asRestconfRequest(ctx, "PUT", uriPath);
+                        REQUIRE(requestType == RestconfRequest::Type::CreateOrReplaceThisNode);
+                        REQUIRE(path == "/");
+                        REQUIRE(datastore == expectedDatastore);
+                    }
                 }
             }
 
@@ -552,16 +560,6 @@ TEST_CASE("URI path parser")
                                                serializeErrorResponse(expectedCode, expectedErrorType, expectedErrorTag, expectedErrorMessage).c_str(),
                                                rousette::restconf::ErrorResponse);
                     }
-                }
-
-                SECTION("PUT on datastore resource")
-                {
-                    std::string uriPath;
-                    SECTION("/restconf/data") { uriPath = "/restconf/data"; }
-                    SECTION("/restconf/ds/") { uriPath = "/restconf/ds/ietf-datastores:running"; }
-                    REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "PUT", uriPath),
-                                           serializeErrorResponse(400, "application", "operation-failed", "'/' is not a data resource").c_str(),
-                                           rousette::restconf::ErrorResponse);
                 }
 
                 SECTION("POST")
