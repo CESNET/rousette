@@ -26,6 +26,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "c0b58024_9e020393",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 256,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T14:32:19Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d63319f1_12aa11cb",
+      "range": {
+        "startLine": 256,
+        "startChar": 12,
+        "endLine": 256,
+        "endChar": 120
+      },
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "6e3ca4ab_87e43617",
         "filename": "src/restconf/Server.cpp",
         "patchSetId": 7
@@ -376,6 +400,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "d2023e22_34fe47a2",
+        "filename": "tests/restconf-rpc.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 249,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T14:32:19Z",
+      "side": 1,
+      "message": "I dont know how to validate this. The underlying call to lyd_parse_op does not validate the input, only parses.\nSo I have added at least a check that if RPC call returns ErrorCode::ValidationFailure, we report something that is not an internal error",
+      "parentUuid": "cd7b8c99_1ee077ef",
+      "range": {
+        "startLine": 219,
+        "startChar": 0,
+        "endLine": 249,
+        "endChar": 9
+      },
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "cb84700e_de19e0c6",
         "filename": "tests/restconf-rpc.cpp",
         "patchSetId": 7
@@ -387,6 +435,24 @@
       "writtenOn": "2023-12-18T16:44:09Z",
       "side": 1,
       "message": "Can you validate this on an application level? (With a FIXME about locking because of the classic TOCTOU race)",
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e1851543_743daf03",
+        "filename": "tests/restconf-rpc.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 312,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T14:32:19Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cb84700e_de19e0c6",
       "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }

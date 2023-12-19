@@ -245,6 +245,30 @@
       },
       "revId": "4c87bcb91ff60cd14f738971634572434395a04f",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "98c7a808_1317fa6a",
+        "filename": "tests/restconf-rpc.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T14:32:19Z",
+      "side": 1,
+      "message": "It is subscribed above :)",
+      "parentUuid": "f14d653e_db477f93",
+      "range": {
+        "startLine": 54,
+        "startChar": 2,
+        "endLine": 56,
+        "endChar": 26
+      },
+      "revId": "4c87bcb91ff60cd14f738971634572434395a04f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
