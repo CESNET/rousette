@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "acfabc71_d6725d52",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 272,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T12:16:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e84c5c2d_425b056b",
+      "range": {
+        "startLine": 272,
+        "startChar": 35,
+        "endLine": 272,
+        "endChar": 55
+      },
+      "revId": "4c87bcb91ff60cd14f738971634572434395a04f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e6da114e_c5939fea",
@@ -37,6 +61,30 @@
       "writtenOn": "2023-12-11T11:19:52Z",
       "side": 1,
       "message": "extra line",
+      "range": {
+        "startLine": 510,
+        "startChar": 18,
+        "endLine": 510,
+        "endChar": 23
+      },
+      "revId": "4c87bcb91ff60cd14f738971634572434395a04f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "349d243d_6f6c4eae",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 510,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T12:16:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e6da114e_c5939fea",
       "range": {
         "startLine": 510,
         "startChar": 18,
@@ -64,6 +112,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "62205713_4a9ada70",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T12:16:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "04ff3a4d_2ff6d884",
+      "revId": "4c87bcb91ff60cd14f738971634572434395a04f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "709440fb_e6a349fe",
@@ -87,6 +153,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "055df5e0_051c002f",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 326,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T12:16:38Z",
+      "side": 1,
+      "message": "old comment; since then the code was rewritten",
+      "parentUuid": "709440fb_e6a349fe",
+      "range": {
+        "startLine": 317,
+        "startChar": 0,
+        "endLine": 326,
+        "endChar": 151
+      },
+      "revId": "4c87bcb91ff60cd14f738971634572434395a04f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "a193c403_2d97cecb",
@@ -100,6 +190,30 @@
       "writtenOn": "2023-12-11T11:19:52Z",
       "side": 1,
       "message": "...and also here:\n\n if (!schemaNode) {\n   throw \"something about invalid path\";\n } else if (isValidOperationsResource(*schemaNode, uri-\u003eprefix)) {\n   return {Action::RPC, ...};\n } else {\n   throw ...\n }",
+      "range": {
+        "startLine": 328,
+        "startChar": 0,
+        "endLine": 337,
+        "endChar": 77
+      },
+      "revId": "4c87bcb91ff60cd14f738971634572434395a04f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "04d0c91c_996a7f42",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 337,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T12:16:38Z",
+      "side": 1,
+      "message": "old comment; since then the code was rewritten",
+      "parentUuid": "a193c403_2d97cecb",
       "range": {
         "startLine": 328,
         "startChar": 0,

@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "ff38c7e3_c725cc56",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 488,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T12:16:38Z",
+      "side": 1,
+      "message": "old comment; this was almost completely rewritten. Closing",
+      "parentUuid": "20d908c5_dfa703f2",
+      "revId": "3ce4ddc714ce6d5c637003e6396b80c4acc65b70",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f10a0f77_4af60dbb",
@@ -31,6 +49,24 @@
       "writtenOn": "2023-11-27T22:57:42Z",
       "side": 1,
       "message": "I do not think that allowing action data nodes when checking for data resources is a good idea",
+      "revId": "3ce4ddc714ce6d5c637003e6396b80c4acc65b70",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c0179ad5_f1b081a6",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 203,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T12:16:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f10a0f77_4af60dbb",
       "revId": "3ce4ddc714ce6d5c637003e6396b80c4acc65b70",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }

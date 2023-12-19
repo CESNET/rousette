@@ -3,6 +3,52 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "d63319f1_12aa11cb",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 256,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T12:16:38Z",
+      "side": 1,
+      "message": "We cannot validate if user provided all the mandatory input nodes so sendRPC can fail when validating the input. Check for SR_VALIDATION_ERR",
+      "range": {
+        "startLine": 256,
+        "startChar": 12,
+        "endLine": 256,
+        "endChar": 120
+      },
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6e3ca4ab_87e43617",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 261,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T12:16:38Z",
+      "side": 1,
+      "message": "I think I should inverse the condition and use early-return here",
+      "range": {
+        "startLine": 261,
+        "startChar": 8,
+        "endLine": 261,
+        "endChar": 52
+      },
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "e3e83a50_8fa33483",
         "filename": "src/restconf/Server.cpp",
         "patchSetId": 7
@@ -14,6 +60,24 @@
       "writtenOn": "2023-12-18T16:44:09Z",
       "side": 1,
       "message": "There\u0027s a test in libyang-cpp which checks that it doesn\u0027t matter whether that opaque node is instantiated as a \"JSON thing with the module\u0027s prefix\" as a parameter, or as a \"XML thing with the namespace\". No matter which of these is used, the resulting node can still be serialized to both JSON and XML, and the result will be correct. It\u0027s enough to do a newOpaqueJSON() here.",
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "955bded1_3b402da2",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 269,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T12:16:38Z",
+      "side": 1,
+      "message": "Alright. So that \"get namespace\" patch for ly-cpp was not necessary :(",
+      "parentUuid": "e3e83a50_8fa33483",
       "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -35,6 +99,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c2feb62d_d9c7dd27",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 504,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T12:16:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8a7bfab6_bb766e9e",
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "40f7b6b2_22ca3782",
@@ -48,6 +130,24 @@
       "writtenOn": "2023-12-18T16:44:09Z",
       "side": 1,
       "message": "please wrap this line :)",
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5b03393c_3ecdcc82",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T12:16:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "40f7b6b2_22ca3782",
       "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -75,6 +175,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c841ae2b_d07f64ad",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 236,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T12:16:38Z",
+      "side": 1,
+      "message": "It can\u0027t be nullopt. The previous IF condition handles such situation.\n\nRefactored anyway.",
+      "parentUuid": "29f14930_2045c378",
+      "range": {
+        "startLine": 236,
+        "startChar": 8,
+        "endLine": 236,
+        "endChar": 14
+      },
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f22130fd_b4ef6a55",
@@ -88,6 +212,24 @@
       "writtenOn": "2023-12-18T16:44:09Z",
       "side": 1,
       "message": "please split this into two if branches, that ternary operator below only makes this more complex IMHO",
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e225cf6d_2572f81d",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 342,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T12:16:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f22130fd_b4ef6a55",
       "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -115,6 +257,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "cecd38f6_3f10e60e",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 7
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T12:16:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8435977c_a885804d",
+      "range": {
+        "startLine": 53,
+        "startChar": 8,
+        "endLine": 53,
+        "endChar": 11
+      },
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "6a0f1e00_010705f8",
@@ -132,6 +298,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "a85045b2_ddb25575",
+        "filename": "tests/restconf-reading.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 214,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T12:16:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6a0f1e00_010705f8",
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "6fa0cc9f_572ffee9",
@@ -145,6 +329,24 @@
       "writtenOn": "2023-12-18T16:44:09Z",
       "side": 1,
       "message": "JSON -\u003e XML is missing",
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9f029fbe_ef10ccc1",
+        "filename": "tests/restconf-rpc.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-12-19T12:16:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6fa0cc9f_572ffee9",
       "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
