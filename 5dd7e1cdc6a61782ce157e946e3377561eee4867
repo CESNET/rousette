@@ -422,6 +422,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "cc6da76c_6ab9c1ff",
+        "filename": "tests/restconf-rpc.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 249,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-20T10:54:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d2023e22_34fe47a2",
+      "range": {
+        "startLine": 219,
+        "startChar": 0,
+        "endLine": 249,
+        "endChar": 9
+      },
+      "revId": "5dd7e1cdc6a61782ce157e946e3377561eee4867",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "cb84700e_de19e0c6",

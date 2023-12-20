@@ -16,6 +16,24 @@
       "message": "It would be nice to check for netconf errors here. And if any are set, then response should be according to those.\n\nIf there are no netconf errors set then we respond with a sysrepo error code and message.",
       "revId": "8cd9c31f93163b2245c41a8cf615dae8dcdc0eb0",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5d588cb2_6d2a4029",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 260,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-12-20T10:54:43Z",
+      "side": 1,
+      "message": "let\u0027s track this one at https://github.com/CESNET/rousette/issues/4 , it affects all CBs anyway",
+      "parentUuid": "2f599974_fc24517d",
+      "revId": "8cd9c31f93163b2245c41a8cf615dae8dcdc0eb0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
