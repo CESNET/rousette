@@ -16,6 +16,24 @@
       "message": "so, how come that this was passing in the first place?",
       "revId": "3bda98afdad5ee3dbee190259faf773cadb51e8f",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1ed66f0f_6d144436",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-01-02T17:04:42Z",
+      "side": 1,
+      "message": "After factory reset, the NACM data gets correctly deleted. But the callback that {dis,en}ables the anonymous access is not triggered after the DS changes. https://github.com/sysrepo/sysrepo/issues/3220",
+      "parentUuid": "428e1f21_39b39ecb",
+      "revId": "3bda98afdad5ee3dbee190259faf773cadb51e8f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
