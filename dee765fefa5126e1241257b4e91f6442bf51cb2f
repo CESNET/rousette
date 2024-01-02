@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "5e255b0b_c3542162",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 329,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-01-02T19:20:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1ddbeeb9_014bb5a2",
+      "revId": "dee765fefa5126e1241257b4e91f6442bf51cb2f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e61f8f26_c79cb466",
@@ -31,6 +49,24 @@
       "writtenOn": "2023-12-19T18:18:07Z",
       "side": 1,
       "message": "Add a subscription to another module here and verify that it also receives changes, even if the data in the payload do not contain any nodes from that module.",
+      "revId": "dee765fefa5126e1241257b4e91f6442bf51cb2f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c4baa10c_649d8440",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 618,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-01-02T19:20:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e61f8f26_c79cb466",
       "revId": "dee765fefa5126e1241257b4e91f6442bf51cb2f",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
