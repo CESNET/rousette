@@ -13,7 +13,7 @@
 
 namespace trompeloeil {
 template <>
-struct printer<std::optional<std::string_view>> {
+struct printer<std::optional<std::string>> {
     static void print(std::ostream& os, const std::optional<std::string>& o)
     {
         if (o) {
