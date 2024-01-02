@@ -19,7 +19,7 @@ static const auto SERVER_PORT = "10083";
 #define CREATED(KEY, VAL) _CHANGE(sysrepo::ChangeOperation::Created, KEY, VAL)
 #define MODIFIED(KEY, VAL) _CHANGE(sysrepo::ChangeOperation::Modified, KEY, VAL)
 #define DELETED(KEY, VAL) _CHANGE(sysrepo::ChangeOperation::Deleted, KEY, VAL)
-#define EXPECT_CHANGE(...) REQUIRE_CALL(dsChangesMock, change((std::vector<SrChange>{__VA_ARGS__}))).IN_SEQUENCE(seq1).TIMES(1);
+#define EXPECT_CHANGE(...) REQUIRE_CALL(dsChangesMock, change((std::vector<SrChange>{__VA_ARGS__}))).TIMES(1)
 
 #define CONTENT_TYPE_JSON                            \
     {                                                \
@@ -157,19 +157,19 @@ TEST_CASE("writing data")
         {
             SECTION("Top-level leaf")
             {
-                EXPECT_CHANGE(CREATED("/example:top-level-leaf", "str"));
+                EXPECT_CHANGE(CREATED("/example:top-level-leaf", "str")).IN_SEQUENCE(seq1);
                 REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-leaf", R"({"example:top-level-leaf": "str"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
 
-                EXPECT_CHANGE(MODIFIED("/example:top-level-leaf", "other-str"));
+                EXPECT_CHANGE(MODIFIED("/example:top-level-leaf", "other-str")).IN_SEQUENCE(seq1);
                 REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-leaf", R"({"example:top-level-leaf": "other-str"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
             }
 
             SECTION("Leaf in a container")
             {
-                EXPECT_CHANGE(CREATED("/example:two-leafs/a", "a-value"));
+                EXPECT_CHANGE(CREATED("/example:two-leafs/a", "a-value")).IN_SEQUENCE(seq1);
                 REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs/a", R"({"example:a": "a-value"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
 
-                EXPECT_CHANGE(MODIFIED("/example:two-leafs/a", "another-a-value"));
+                EXPECT_CHANGE(MODIFIED("/example:two-leafs/a", "another-a-value")).IN_SEQUENCE(seq1);
                 REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs/a", R"({"example:a": "another-a-value"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
             }
 
@@ -367,10 +367,10 @@ TEST_CASE("writing data")
             // no change here: enabled leaf has default value true
             REQUIRE(put(RESTCONF_DATA_ROOT "/example:a", R"({"example:a":{"b":{"c":{"enabled":true}}}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
 
-            EXPECT_CHANGE(MODIFIED("/example:a/b/c/enabled", "false"));
+            EXPECT_CHANGE(MODIFIED("/example:a/b/c/enabled", "false")).IN_SEQUENCE(seq1);
             REQUIRE(put(RESTCONF_DATA_ROOT "/example:a/b/c", R"({"example:c":{"enabled":false}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
 
-            EXPECT_CHANGE(MODIFIED("/example:a/b/c/enabled", "true"));
+            EXPECT_CHANGE(MODIFIED("/example:a/b/c/enabled", "true")).IN_SEQUENCE(seq1);
             REQUIRE(put(RESTCONF_DATA_ROOT "/example:a/b", R"({"example:b": {}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
         }
 
@@ -402,13 +402,13 @@ TEST_CASE("writing data")
             // two inserts so we have something to operate on
             EXPECT_CHANGE(
                 CREATED("/example:top-level-list[name='sysrepo']", std::nullopt),
-                CREATED("/example:top-level-list[name='sysrepo']/name", "sysrepo"));
+                CREATED("/example:top-level-list[name='sysrepo']/name", "sysrepo")).IN_SEQUENCE(seq1);
             REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-list=sysrepo", R"({"example:top-level-list":[{"name": "sysrepo"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
 
             EXPECT_CHANGE(
                 CREATED("/example:tlc/list[name='libyang']", std::nullopt),
                 CREATED("/example:tlc/list[name='libyang']/name", "libyang"),
-                CREATED("/example:tlc/list[name='libyang']/choice1", "libyang"));
+                CREATED("/example:tlc/list[name='libyang']/choice1", "libyang")).IN_SEQUENCE(seq1);
             REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang", R"({"example:list":[{"name": "libyang", "choice1": "libyang"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
 
             SECTION("New insert does not modify other list entries")
@@ -452,7 +452,7 @@ TEST_CASE("writing data")
             SECTION("Overwrite a list entry")
             {
                 // insert something in the leaf-list first so we can test that the leaf-list collection was overwritten later
-                EXPECT_CHANGE(CREATED("/example:tlc/list[name='libyang']/collection[.='4']", "4"));
+                EXPECT_CHANGE(CREATED("/example:tlc/list[name='libyang']/collection[.='4']", "4")).IN_SEQUENCE(seq1);
                 REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang/collection=4", R"({"example:collection": [4]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
 
                 EXPECT_CHANGE(
@@ -460,19 +460,19 @@ TEST_CASE("writing data")
                     CREATED("/example:tlc/list[name='libyang']/collection[.='1']", "1"),
                     CREATED("/example:tlc/list[name='libyang']/collection[.='2']", "2"),
                     CREATED("/example:tlc/list[name='libyang']/collection[.='3']", "3"),
-                    MODIFIED("/example:tlc/list[name='libyang']/choice1", "idk"));
+                    MODIFIED("/example:tlc/list[name='libyang']/choice1", "idk")).IN_SEQUENCE(seq1);
                 REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang", R"({"example:list":[{"name": "libyang", "choice1": "idk", "collection": [1,2,3]}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
             }
 
             SECTION("Insert into leaf-lists")
             {
-                EXPECT_CHANGE(CREATED("/example:top-level-leaf-list[.='4']", "4"));
+                EXPECT_CHANGE(CREATED("/example:top-level-leaf-list[.='4']", "4")).IN_SEQUENCE(seq1);
                 REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-leaf-list=4", R"({"example:top-level-leaf-list":[4]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
 
-                EXPECT_CHANGE(CREATED("/example:top-level-leaf-list[.='1']", "1"));
+                EXPECT_CHANGE(CREATED("/example:top-level-leaf-list[.='1']", "1")).IN_SEQUENCE(seq1);
                 REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-leaf-list=1", R"({"example:top-level-leaf-list":[1]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
 
-                EXPECT_CHANGE(CREATED("/example:tlc/list[name='libyang']/collection[.='4']", "4"));
+                EXPECT_CHANGE(CREATED("/example:tlc/list[name='libyang']/collection[.='4']", "4")).IN_SEQUENCE(seq1);
                 REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang/collection=4", R"({"example:collection": [4]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
             }
 
@@ -712,10 +712,10 @@ TEST_CASE("writing data")
             auto sess = srConn.sessionStart(ds);
             auto sub = datastoreChangesSubscription(sess, dsChangesMock, "example");
 
-            EXPECT_CHANGE(CREATED("/example:two-leafs/a", "hello"));
+            EXPECT_CHANGE(CREATED("/example:two-leafs/a", "hello")).IN_SEQUENCE(seq1);
             REQUIRE(put(uri + "/example:two-leafs/a", R"({"example:a":"hello"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
 
-            EXPECT_CHANGE(MODIFIED("/example:two-leafs/a", "hello world"));
+            EXPECT_CHANGE(MODIFIED("/example:two-leafs/a", "hello world")).IN_SEQUENCE(seq1);
             REQUIRE(put(uri + "/example:two-leafs/a", R"({"example:a":"hello world"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
 
             // can't PUT on root uri
