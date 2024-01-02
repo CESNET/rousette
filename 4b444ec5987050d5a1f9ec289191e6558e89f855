@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "744870d9_067ddf3d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-01-02T13:01:58Z",
+      "side": 1,
+      "message": "This change doesn\u0027t touch all the places where `EXPECT_CHANGE` is invoked, and the commit message doesn\u0027t tell me why that\u0027s the case.\n\nI would prefer a different approach -- add a new macro EXPECT_CHANGE_UNORDERED, and switch the EXPECT_CHANGE to use that.",
+      "revId": "4b444ec5987050d5a1f9ec289191e6558e89f855",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
