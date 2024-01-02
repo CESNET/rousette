@@ -92,11 +92,11 @@ TEST_CASE("writing data")
     auto nacmGuard = manageNacm(srSess);
     auto server = rousette::restconf::Server{srConn, SERVER_ADDRESS, SERVER_PORT};
 
-    setupRealNacm(srSess);
-
     trompeloeil::sequence seq1;
 
     srSess.sendRPC(srSess.getContext().newPath("/ietf-factory-default:factory-reset"));
+
+    setupRealNacm(srSess);
 
     DatastoreChangesMock dsChangesMock;
 
