@@ -34,6 +34,24 @@
       "parentUuid": "428e1f21_39b39ecb",
       "revId": "3bda98afdad5ee3dbee190259faf773cadb51e8f",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "259f1c58_6be22625",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-01-03T09:43:04Z",
+      "side": 1,
+      "message": "...and I guess that the actual NACM implementation does not refresh its idea about the NACM rules, either, because of a lack of that module_change CB trigger. Thanks, now I understand why our code works.",
+      "parentUuid": "1ed66f0f_6d144436",
+      "revId": "3bda98afdad5ee3dbee190259faf773cadb51e8f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
