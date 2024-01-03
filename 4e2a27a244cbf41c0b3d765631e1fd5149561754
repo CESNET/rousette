@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "83689b58_46d17968",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 325,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-01-03T12:40:19Z",
+      "side": 1,
+      "message": "technically, the code could have run validation as well because this thing is supposed to be the entire DS content. But sysrepo will do it anyway, and I guess that we\u0027re getting the exact same error reporting about validation errors from sysrepo anyway, so let\u0027s keep this as-is",
+      "range": {
+        "startLine": 325,
+        "startChar": 154,
+        "endLine": 325,
+        "endChar": 189
+      },
+      "revId": "4e2a27a244cbf41c0b3d765631e1fd5149561754",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "27bfd21d_8122a75d",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 327,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-01-03T12:40:19Z",
+      "side": 1,
+      "message": "this is not needed, sr_replace_config does not build an edit, it changes stuff directly. Fixed.",
+      "range": {
+        "startLine": 327,
+        "startChar": 29,
+        "endLine": 327,
+        "endChar": 41
+      },
+      "revId": "4e2a27a244cbf41c0b3d765631e1fd5149561754",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0e524204_eb7df9f4",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 672,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-01-03T12:40:19Z",
+      "side": 1,
+      "message": "I simplified this thing a bit.",
+      "range": {
+        "startLine": 623,
+        "startChar": 0,
+        "endLine": 672,
+        "endChar": 115
+      },
+      "revId": "4e2a27a244cbf41c0b3d765631e1fd5149561754",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}

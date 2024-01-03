@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b5645f52_3a2673a9",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-01-03T12:40:19Z",
+      "side": 0,
+      "message": "technically speaking, yeah, I see that it\u0027s noise, but there\u0027s other noise here and I\u0027d like to avoid another useless commit just to remove that",
+      "range": {
+        "startLine": 22,
+        "startChar": 127,
+        "endLine": 22,
+        "endChar": 128
+      },
+      "revId": "3bda98afdad5ee3dbee190259faf773cadb51e8f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
