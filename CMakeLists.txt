@@ -183,26 +183,30 @@ if(BUILD_TESTING)
         endif()
 
         if(TEST_FIXTURE)
+            set(test_name_preinit sysrepo:preinit:${TEST_NAME})
             set(test_name_init sysrepo:prep:${TEST_NAME})
             set(test_name_cleanup sysrepo:clean:${TEST_NAME})
             set(fixture_name sysrepo:env:${TEST_NAME})
             set(SYSREPO_REPOSITORY_PATH ${CMAKE_CURRENT_BINARY_DIR}/test_repositories/test_${TEST_NAME})
             set(SYSREPO_SHM_PREFIX rousette_test_${TEST_NAME})
-
-            add_test(NAME ${test_name_init}
-                COMMAND ${SYSREPOCTL}
-                --search-dirs ${CMAKE_CURRENT_SOURCE_DIR}/yang:${CMAKE_CURRENT_SOURCE_DIR}/tests/yang
-                ${${TEST_FIXTURE}})
-
-            add_test(NAME ${test_name_cleanup}
-                COMMAND ${CMAKE_COMMAND}
+            set(test_cleanup_command ${CMAKE_COMMAND}
                     -DTHIS_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}
                     -DTEST_NAME=${TEST_NAME}
                     -DSYSREPO_SHM_PREFIX=${SYSREPO_SHM_PREFIX}
                     -P ${PROJECT_SOURCE_DIR}/cmake/SysrepoClean.cmake
                     )
 
-            set_tests_properties(${test_name_init} PROPERTIES FIXTURES_SETUP ${fixture_name})
+            add_test(NAME ${test_name_preinit} COMMAND ${test_cleanup_command})
+
+            add_test(NAME ${test_name_init}
+                COMMAND ${SYSREPOCTL}
+                --search-dirs ${CMAKE_CURRENT_SOURCE_DIR}/yang:${CMAKE_CURRENT_SOURCE_DIR}/tests/yang
+                ${${TEST_FIXTURE}})
+
+            add_test(NAME ${test_name_cleanup} COMMAND ${test_cleanup_command})
+
+            set_tests_properties(${test_name_preinit} PROPERTIES FIXTURES_SETUP ${fixture_name})
+            set_tests_properties(${test_name_init} PROPERTIES FIXTURES_SETUP ${fixture_name} DEPENDS ${test_name_preinit})
             set_tests_properties(${test_name_cleanup} PROPERTIES FIXTURES_CLEANUP ${fixture_name})
             set_tests_properties(test-${TEST_NAME} PROPERTIES FIXTURES_REQUIRED ${fixture_name})
 
