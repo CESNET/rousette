@@ -131,6 +131,7 @@ if(BUILD_TESTING)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/configure.cmake.h.in ${CMAKE_CURRENT_BINARY_DIR}/tests/configure.cmake.h)
     find_program(UNSHARE_EXECUTABLE unshare REQUIRED)
     find_program(MOUNT_EXECUTABLE mount REQUIRED)
+    include(cmake/SysrepoTest.cmake)
 
     add_library(DoctestIntegration STATIC
         tests/doctest_integration.cpp
@@ -141,80 +142,30 @@ if(BUILD_TESTING)
     target_link_libraries(DoctestIntegration doctest::doctest spdlog::spdlog)
     target_compile_definitions(DoctestIntegration PUBLIC DOCTEST_CONFIG_SUPER_FAST_ASSERTS)
 
-    find_program(SYSREPOCTL sysrepoctl)
-    find_program(SYSREPOCFG sysrepocfg)
     pkg_check_modules(pam_wrapper REQUIRED IMPORTED_TARGET pam_wrapper)
     pkg_get_variable(PAM_WRAPPER_MODULES_DIR pam_wrapper modules)
     set(TEST_PAM_WRAPPER_DB ${CMAKE_CURRENT_SOURCE_DIR}/tests/pam/users)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/pam/other.in ${CMAKE_CURRENT_BINARY_DIR}/tests/pam/other @ONLY)
 
     function(rousette_test)
-        cmake_parse_arguments(TEST "WRAP_PAM" "NAME;FIXTURE;RESOURCE_LOCK" "LIBRARIES;COMMAND" ${ARGN})
+        cmake_parse_arguments(TEST "WRAP_PAM" "NAME" "COMMAND" ${ARGN})
 
         if((TEST_COMMAND) AND (TEST_WRAP_PAM))
             message(FATAL_ERROR "Cannot combine COMMAND and WRAP_PAM options together")
         endif()
 
-        add_executable(test-${TEST_NAME} ${CMAKE_SOURCE_DIR}/tests/${TEST_NAME}.cpp)
-        target_link_libraries(test-${TEST_NAME} DoctestIntegration ${TEST_LIBRARIES})
-        target_include_directories(test-${TEST_NAME}
-            PUBLIC
-                ${CMAKE_CURRENT_SOURCE_DIR}
-            PRIVATE
-                ${CMAKE_BINARY_DIR}
-        )
-
-        if(NOT CMAKE_CROSSCOMPILING)
-            if(TEST_COMMAND)
-                add_test(NAME test-${TEST_NAME} COMMAND ${TEST_COMMAND})
-            elseif(TEST_WRAP_PAM)
-                add_test(NAME test-${TEST_NAME}
-                    COMMAND ${UNSHARE_EXECUTABLE} -r -m sh -c "set -ex $<SEMICOLON>
-                        ${MOUNT_EXECUTABLE} -t tmpfs none /tmp $<SEMICOLON>
-                        export LD_PRELOAD=${pam_wrapper_LDFLAGS} PAM_WRAPPER_SERVICE_DIR=${CMAKE_CURRENT_BINARY_DIR}/tests/pam PAM_WRAPPER=1 UID_WRAPPER_DISABLE_DEEPBIND=1 $<SEMICOLON>
-                        $<TARGET_FILE:test-${TEST_NAME}>")
-            else()
-                add_test(NAME test-${TEST_NAME} COMMAND test-${TEST_NAME})
-            endif()
+        if(TEST_WRAP_PAM)
+            set(TEST_COMMAND
+                ${UNSHARE_EXECUTABLE} -r -m sh -c "set -ex $<SEMICOLON>
+                    ${MOUNT_EXECUTABLE} -t tmpfs none /tmp $<SEMICOLON>
+                    export LD_PRELOAD=${pam_wrapper_LDFLAGS} PAM_WRAPPER_SERVICE_DIR=${CMAKE_CURRENT_BINARY_DIR}/tests/pam PAM_WRAPPER=1 UID_WRAPPER_DISABLE_DEEPBIND=1 $<SEMICOLON>
+                    $<TARGET_FILE:test-${TEST_NAME}>")
+        else()
+            set(TEST_COMMAND test-${TEST_NAME})
         endif()
 
-        if(TEST_RESOURCE_LOCK)
-            set_tests_properties(test-${TEST_NAME} PROPERTIES RESOURCE_LOCK "${TEST_RESOURCE_LOCK}")
-        endif()
-
-        if(TEST_FIXTURE)
-            set(test_name_preinit sysrepo:preinit:${TEST_NAME})
-            set(test_name_init sysrepo:prep:${TEST_NAME})
-            set(test_name_cleanup sysrepo:clean:${TEST_NAME})
-            set(fixture_name sysrepo:env:${TEST_NAME})
-            set(SYSREPO_REPOSITORY_PATH ${CMAKE_CURRENT_BINARY_DIR}/test_repositories/test_${TEST_NAME})
-            set(SYSREPO_SHM_PREFIX ${CMAKE_PROJECT_NAME}_${TEST_NAME}_)
-            set(test_cleanup_command ${CMAKE_COMMAND}
-                    -DTHIS_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}
-                    -DTEST_NAME=${TEST_NAME}
-                    -DSYSREPO_SHM_PREFIX=${SYSREPO_SHM_PREFIX}
-                    -P ${PROJECT_SOURCE_DIR}/cmake/SysrepoClean.cmake
-                    )
-
-            add_test(NAME ${test_name_preinit} COMMAND ${test_cleanup_command})
-
-            add_test(NAME ${test_name_init}
-                COMMAND ${SYSREPOCTL}
-                --search-dirs ${CMAKE_CURRENT_SOURCE_DIR}/yang:${CMAKE_CURRENT_SOURCE_DIR}/tests/yang
-                ${${TEST_FIXTURE}})
-
-            add_test(NAME ${test_name_cleanup} COMMAND ${test_cleanup_command})
-
-            set_tests_properties(${test_name_preinit} PROPERTIES FIXTURES_SETUP ${fixture_name})
-            set_tests_properties(${test_name_init} PROPERTIES FIXTURES_SETUP ${fixture_name} DEPENDS ${test_name_preinit})
-            set_tests_properties(${test_name_cleanup} PROPERTIES FIXTURES_CLEANUP ${fixture_name})
-            set_tests_properties(test-${TEST_NAME} PROPERTIES FIXTURES_REQUIRED ${fixture_name})
-
-            set_property(TEST test-${TEST_NAME} ${test_name_init} APPEND PROPERTY ENVIRONMENT
-                "SYSREPO_REPOSITORY_PATH=${SYSREPO_REPOSITORY_PATH}"
-                "SYSREPO_SHM_PREFIX=${SYSREPO_SHM_PREFIX}"
-            )
-        endif()
+        sysrepo_test(NAME ${TEST_NAME} COMMAND ${TEST_COMMAND} ${TEST_UNPARSED_ARGUMENTS})
+        target_link_libraries(test-${TEST_NAME} DoctestIntegration)
     endfunction()
 
     rousette_test(NAME http-utils LIBRARIES rousette-http)
