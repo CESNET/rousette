@@ -188,7 +188,7 @@ if(BUILD_TESTING)
             set(test_name_cleanup sysrepo:clean:${TEST_NAME})
             set(fixture_name sysrepo:env:${TEST_NAME})
             set(SYSREPO_REPOSITORY_PATH ${CMAKE_CURRENT_BINARY_DIR}/test_repositories/test_${TEST_NAME})
-            set(SYSREPO_SHM_PREFIX rousette_test_${TEST_NAME})
+            set(SYSREPO_SHM_PREFIX ${CMAKE_PROJECT_NAME}_${TEST_NAME}_)
             set(test_cleanup_command ${CMAKE_COMMAND}
                     -DTHIS_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}
                     -DTEST_NAME=${TEST_NAME}
