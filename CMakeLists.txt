@@ -178,22 +178,22 @@ if(BUILD_TESTING)
             endif()
         endif()
 
-        set(test_name_init sysrepo:prep:${TEST_NAME})
-        set(test_name_cleanup sysrepo:clean:${TEST_NAME})
-        set(fixture_name sysrepo:env:${TEST_NAME})
-
         if(TEST_RESOURCE_LOCK)
             set_tests_properties(test-${TEST_NAME} PROPERTIES RESOURCE_LOCK "${TEST_RESOURCE_LOCK}")
         endif()
 
         if(TEST_FIXTURE)
+            set(test_name_init sysrepo:prep:${TEST_NAME})
+            set(test_name_cleanup sysrepo:clean:${TEST_NAME})
+            set(fixture_name sysrepo:env:${TEST_NAME})
             set(SYSREPO_REPOSITORY_PATH ${CMAKE_CURRENT_BINARY_DIR}/test_repositories/test_${TEST_NAME})
             set(SYSREPO_SHM_PREFIX rousette_test_${TEST_NAME})
+
             add_test(NAME ${test_name_init}
                 COMMAND ${SYSREPOCTL}
                 --search-dirs ${CMAKE_CURRENT_SOURCE_DIR}/yang:${CMAKE_CURRENT_SOURCE_DIR}/tests/yang
                 ${${TEST_FIXTURE}})
-            set_tests_properties(${test_name_init} PROPERTIES FIXTURES_SETUP ${fixture_name})
+
             add_test(NAME ${test_name_cleanup}
                 COMMAND ${CMAKE_COMMAND}
                     -DTHIS_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}
@@ -201,8 +201,11 @@ if(BUILD_TESTING)
                     -DSYSREPO_SHM_PREFIX=${SYSREPO_SHM_PREFIX}
                     -P ${PROJECT_SOURCE_DIR}/cmake/SysrepoClean.cmake
                     )
+
+            set_tests_properties(${test_name_init} PROPERTIES FIXTURES_SETUP ${fixture_name})
             set_tests_properties(${test_name_cleanup} PROPERTIES FIXTURES_CLEANUP ${fixture_name})
             set_tests_properties(test-${TEST_NAME} PROPERTIES FIXTURES_REQUIRED ${fixture_name})
+
             set_property(TEST test-${TEST_NAME} ${test_name_init} APPEND PROPERTY ENVIRONMENT
                 "SYSREPO_REPOSITORY_PATH=${SYSREPO_REPOSITORY_PATH}"
                 "SYSREPO_SHM_PREFIX=${SYSREPO_SHM_PREFIX}"
