@@ -4,7 +4,7 @@ foreach(var THIS_BINARY_DIR TEST_NAME SYSREPO_SHM_PREFIX)
     endif()
 endforeach()
 
-set(shm_files_pattern "/dev/shm/${SYSREPO_SHM_PREFIX}_*")
+set(shm_files_pattern "/dev/shm/${SYSREPO_SHM_PREFIX}*")
 file(GLOB shm_files ${shm_files_pattern})
 set(dummy_nonexisting_file_to_silence_warnings ${CMAKE_CURRENT_BUILD_DIR}/sysrepo-dummy-non-existing-file-for-cleanup)
 
