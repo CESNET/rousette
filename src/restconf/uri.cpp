@@ -41,8 +41,12 @@ const auto uriPrefix = x3::rule<class uriPrefix, URIPrefix>{"uriPrefix"} =
     (x3::lit("data") >> x3::attr(URIPrefix::Type::BasicRestconfData) >> x3::attr(boost::none)) |
     (x3::lit("ds") >> x3::attr(URIPrefix::Type::NMDADatastore) >> "/" >> fullyQualifiedApiIdentifier) |
     (x3::lit("operations") >> x3::attr(URIPrefix::Type::BasicRestconfOperations) >> x3::attr(boost::none));
+const auto uriPrefixYangLibraryVersion = x3::rule<class uriPrefixYangLibraryVersion, URIPrefix>{"uriPrefixYangLibraryVersion"} =
+    (x3::lit("yang-library-version") >> x3::attr(URIPrefix::Type::YangLibraryVersion) >> x3::attr(boost::none));
 const auto uriPath = x3::rule<class uriPath, std::vector<PathSegment>>{"uriPath"} = -x3::lit("/") >> -(fullyQualifiedListInstance >> -("/" >> listInstance % "/")); // RFC 8040, sec 3.5.3
-const auto uriGrammar = x3::rule<class grammar, URI>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> "/" >> uriPrefix >> uriPath;
+const auto uriGrammar = x3::rule<class grammar, URI>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> "/" >>
+    ((uriPrefix >> uriPath) |
+     (uriPrefixYangLibraryVersion >> -x3::lit("/") >> x3::attr(std::vector<PathSegment>{})));
 
 // clang-format on
 }
@@ -343,6 +347,14 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
     auto uri = impl::parseUriPath(uriPath);
     if (!uri) {
         throw ErrorResponse(400, "application", "operation-failed", "Syntax error");
+    }
+
+    if (uri->prefix.resourceType == impl::URIPrefix::Type::YangLibraryVersion) {
+        if (httpMethod == "GET") {
+            return {RestconfRequest::Type::YangLibraryVersion, boost::none, ""s};
+        } else {
+            throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
+        }
     }
 
     if (httpMethod == "GET" && uri->segments.empty()) {

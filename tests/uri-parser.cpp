@@ -252,7 +252,11 @@ TEST_CASE("URI path parser")
                                                                                     {{"example", "tlc"}},
                                                                                     {{"list"}, {"hello-world"}},
                                                                                     {{"example-action"}},
-                                                                                })}}) {
+                                                                                })},
+
+                 {"/restconf/yang-library-version", URI(URIPrefix(URIPrefix::Type::YangLibraryVersion, boost::none), {})},
+                 {"/restconf/yang-library-version/", URI(URIPrefix(URIPrefix::Type::YangLibraryVersion, boost::none), {})},
+             }) {
             CAPTURE(uriPath);
             auto path = rousette::restconf::impl::parseUriPath(uriPath);
             REQUIRE(path == expected);
@@ -296,6 +300,9 @@ TEST_CASE("URI path parser")
                  "/restconf/ds/ietf-datastores",
                  "/restconf/ds/ietf-datastores:",
                  "/restconf/ds/ietf-datastores:operational/foo:bar/",
+
+                 "/restconf/yang-library",
+                 "/restconf/yang-library-version/foo:list",
              }) {
 
             CAPTURE(uriPath);
@@ -647,6 +654,16 @@ TEST_CASE("URI path parser")
                     REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "POST", uriPath),
                                            serializeErrorResponse(expectedCode, expectedErrorType, expectedErrorTag, expectedErrorMessage).c_str(),
                                            rousette::restconf::ErrorResponse);
+                }
+
+                SECTION("yang-library-version")
+                {
+                    for (const std::string& httpMethod : {"PUT", "POST", "PATCH", "DELETE"}) {
+                        CAPTURE(httpMethod);
+                        REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, httpMethod, "/restconf/yang-library-version"),
+                                               serializeErrorResponse(405, "application", "operation-not-supported", "Method not allowed.").c_str(),
+                                               rousette::restconf::ErrorResponse);
+                    }
                 }
             }
 

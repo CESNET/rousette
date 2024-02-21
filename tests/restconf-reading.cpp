@@ -401,4 +401,16 @@ TEST_CASE("reading data")
 }
 )"});
     }
+
+    SECTION("yang-library-version")
+    {
+        REQUIRE(get(RESTCONF_ROOT "/yang-library-version", {}) == Response{200, jsonHeaders, R"({
+  "ietf-restconf:yang-library-version": "2019-01-04"
+}
+)"});
+
+        REQUIRE(get(RESTCONF_ROOT "/yang-library-version", {{"accept", "application/yang-data+xml"}}) == Response{200, xmlHeaders,
+                R"(<yang-library-version xmlns="urn:ietf:params:xml:ns:yang:ietf-restconf">2019-01-04</yang-library-version>
+)"});
+    }
 }
