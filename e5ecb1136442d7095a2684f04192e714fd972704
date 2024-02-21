@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f479171c_8421f59c",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 264,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-02-21T15:01:56Z",
+      "side": 1,
+      "message": "looks like GCC dislikes a const-ref; either make this a `const std::string`, or use string literals everywhere",
+      "revId": "e5ecb1136442d7095a2684f04192e714fd972704",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
