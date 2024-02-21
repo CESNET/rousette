@@ -18,6 +18,7 @@
 #include "restconf/PAM.h"
 #include "restconf/Server.h"
 #include "restconf/uri.h"
+#include "restconf/uri_yang_schema.h"
 #include "restconf/utils.h"
 #include "sr/OpticalEvents.h"
 #include "NacmIdentities.h"
@@ -41,6 +42,7 @@ auto as_restconf_push_update(const std::string& content, const T& time)
 }
 
 constexpr auto restconfRoot = "/restconf/";
+constexpr auto yangSchemaRoot = "/yang/";
 
 std::string asMimeType(libyang::DataFormat dataFormat)
 {
@@ -468,6 +470,36 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     server->handle("/telemetry/optics", [this](const auto& req, const auto& res) {
         auto client = std::make_shared<http::EventStream>(req, res);
         client->activate(opticsChange, as_restconf_push_update(dwdmEvents->currentData(), std::chrono::system_clock::now()));
+    });
+
+    server->handle(yangSchemaRoot, [conn /* intentional copy */](const auto& req, const auto& res) mutable {
+        const auto& peer = http::peer_from_request(req);
+        spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
+
+        if (req.method() != "GET") {
+            res.write_head(405, {{"access-control-allow-origin", {"*", false}}});
+            res.end();
+            return;
+        }
+
+        auto sess = conn.sessionStart(sysrepo::Datastore::Operational);
+
+        // TODO: Perhaps authorize users before providing the schemas so they could not scan for "known vulnerabilities"?
+
+        auto mod = asYangModule(sess.getContext(), req.uri().path);
+        if (!mod) {
+            res.write_head(404, {{"access-control-allow-origin", {"*", false}}});
+            res.end();
+            return;
+        }
+
+        res.write_head(
+            200,
+            {
+                {"content-type", {"application/yang", false}},
+                {"access-control-allow-origin", {"*", false}},
+            });
+        res.end(mod->printStr(libyang::SchemaOutputFormat::Yang));
     });
 
     server->handle(restconfRoot,
