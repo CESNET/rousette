@@ -45,11 +45,21 @@ struct URI {
     bool operator==(const URI&) const = default;
 };
 
+/** @brief Represents parsed YANG module name and revision from YANG schema URI */
+struct YangModule {
+    std::string name;
+    boost::optional<std::string> revision;
+
+    bool operator==(const YangModule&) const = default;
+};
+
 std::optional<URI> parseUriPath(const std::string& uriPath);
+std::optional<YangModule> parseModuleWithRevision(const std::string& uriPath);
 }
 }
 
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::impl::URIPrefix, resourceType, datastore);
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::impl::URI, prefix, segments);
+BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::impl::YangModule, name, revision);
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::PathSegment, apiIdent, keys);
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::ApiIdentifier, prefix, identifier);
