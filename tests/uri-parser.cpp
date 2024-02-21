@@ -261,7 +261,7 @@ TEST_CASE("URI path parser")
 
     SECTION("Invalid URIs")
     {
-        for (const auto& uriPath : {
+        for (const std::string& uriPath : {
                  "/restconf/foo",
                  "/restconf/foo/foo:bar",
                  "/restconf/data/foo",
