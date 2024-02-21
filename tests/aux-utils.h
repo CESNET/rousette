@@ -23,7 +23,7 @@ struct Response {
     ng::header_map headers;
     std::string data;
 
-    bool operator==(const Response& o) const
+    bool equalStatusCodeAndHeaders(const Response& o) const
     {
         // Skipping 'date' header. Its value will not be reproducible in simple tests
         ng::header_map myHeaders(headers);
@@ -31,9 +31,14 @@ struct Response {
         myHeaders.erase("date");
         otherHeaders.erase("date");
 
-        return statusCode == o.statusCode && data == o.data && std::equal(myHeaders.begin(), myHeaders.end(), otherHeaders.begin(), otherHeaders.end(), [](const auto& a, const auto& b) {
+        return statusCode == o.statusCode && std::equal(myHeaders.begin(), myHeaders.end(), otherHeaders.begin(), otherHeaders.end(), [](const auto& a, const auto& b) {
                    return a.first == b.first && a.second.value == b.second.value; // Skipping 'sensitive' field from ng::header_value which does not seem important for us.
                });
+    }
+
+    bool operator==(const Response& o) const
+    {
+        return equalStatusCodeAndHeaders(o) && data == o.data;
     }
 };
 
