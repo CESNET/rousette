@@ -84,6 +84,7 @@ static const auto SERVER_ADDRESS_AND_PORT = "http://["s + SERVER_ADDRESS + "]" +
 #define AUTH_NORULES {"authorization", "Basic bm9ydWxlczplbXB0eQ=="}
 #define AUTH_ROOT {"authorization", "Basic cm9vdDpzZWtyaXQ="}
 
+#define YANG_ROOT "/yang"
 #define RESTCONF_ROOT "/restconf"
 #define RESTCONF_DATA_ROOT RESTCONF_ROOT "/data"
 #define RESTCONF_OPER_ROOT RESTCONF_ROOT "/operations"
@@ -101,6 +102,11 @@ const ng::header_map xmlHeaders{
 
 const ng::header_map noContentTypeHeaders{
     {"access-control-allow-origin", {"*", false}},
+};
+
+const ng::header_map yangHeaders{
+    {"access-control-allow-origin", {"*", false}},
+    {"content-type", {"application/yang", false}},
 };
 
 Response clientRequest(auto method,
