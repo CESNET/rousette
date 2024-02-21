@@ -22,6 +22,7 @@ struct URIPrefix {
         BasicRestconfData, // /{+restconf}/data (RFC 8040)
         BasicRestconfOperations, // /{+restconf}/operations (RFC 8040)
         NMDADatastore, // /{+restconf}/ds/<datastore> (RFC 8527)
+        YangLibraryVersion, // /{+restconf}/yang-library-version (RFC 8040, sec 3.3)
     };
 
     Type resourceType;
