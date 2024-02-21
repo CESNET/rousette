@@ -497,6 +497,26 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 auto restconfRequest = asRestconfRequest(sess.getContext(), req.method(), req.uri().path);
 
                 switch (restconfRequest.type) {
+                case RestconfRequest::Type::YangLibraryVersion: {
+                    auto ctx = sess.getContext();
+
+                    if (auto mod = ctx.getModuleLatest("ietf-yang-library"); mod && mod->revision()) {
+                        auto yangExt = ctx.getModuleImplemented("ietf-restconf")->extensionInstance("yang-api");
+                        auto data = ctx.newExtPath("/ietf-restconf:restconf/yang-library-version", std::string{mod->revision().value()}, yangExt);
+                        res.write_head(
+                            200,
+                            {
+                                {"content-type", {asMimeType(dataFormat.response), false}},
+                                {"access-control-allow-origin", {"*", false}},
+                            });
+                        res.end(*data->child()->printStr(dataFormat.response, libyang::PrintFlags::WithSiblings));
+                    } else {
+                        // this should be unreachable as ietf-yang-library should always be there; just to be sure...
+                        throw ErrorResponse(500, "application", "operation-failed", "Module ietf-yang-library not implemented or has no revision.");
+                    }
+                    break;
+                }
+
                 case RestconfRequest::Type::GetData:
                     sess.switchDatastore(restconfRequest.datastore ? restconfRequest.datastore.value() : sysrepo::Datastore::Operational);
                     if (auto data = sess.getData(restconfRequest.path); data) {
