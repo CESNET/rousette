@@ -13,6 +13,7 @@
 #include "restconf/Exceptions.h"
 #include "restconf/uri.h"
 #include "restconf/uri_impl.h"
+#include "restconf/uri_yang_schema.h"
 #include "tests/configure.cmake.h"
 
 using namespace std::string_literals;
@@ -96,6 +97,22 @@ struct StringMaker<std::optional<rousette::restconf::impl::URI>> {
 
         if (obj) {
             oss << "optional{" << obj->segments << "}";
+        } else {
+            oss << "nullopt{}";
+        }
+
+        return oss.str().c_str();
+    }
+};
+
+template <>
+struct StringMaker<std::optional<rousette::restconf::impl::YangModule>> {
+    static String convert(const std::optional<rousette::restconf::impl::YangModule>& obj)
+    {
+        std::ostringstream oss;
+
+        if (obj) {
+            oss << "YangModule{" << obj->name << ", " << (obj->revision ? obj->revision.value() : "nullopt{}") << "}";
         } else {
             oss << "nullopt{}";
         }
@@ -674,6 +691,86 @@ TEST_CASE("URI path parser")
                 REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "OPTIONS", "/restconf/data/example:top-level-leaf"), exc.c_str(), rousette::restconf::ErrorResponse);
                 REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "PATCH", "/restconf/data"), exc.c_str(), rousette::restconf::ErrorResponse);
                 REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "DELETE", "/restconf/data/example:top-level-leaf"), exc.c_str(), rousette::restconf::ErrorResponse);
+            }
+        }
+    }
+
+    SECTION("YANG schema uri paths")
+    {
+        SECTION("Parser")
+        {
+            for (const auto& [uriPath, expected] : {
+                     std::pair<std::string, rousette::restconf::impl::YangModule>{"/yang/module_mod", {"module_mod", boost::none}},
+                     {"/yang/module_mod", {"module_mod", boost::none}},
+                     {"/yang/_mo1-dule.yang", {"_mo1-dule.yang", boost::none}},
+                     {"/yang/mod123@2020-02-21", {"mod123", "2020-02-21"s}},
+                     {"/yang/mod123@66666-12-31", {"mod123", "66666-12-31"s}},
+                 }) {
+                CAPTURE(uriPath);
+                REQUIRE(rousette::restconf::impl::parseModuleWithRevision(uriPath) == expected);
+            }
+
+            for (const std::string uriPath : {
+                     "/yang",
+                     "/yang/",
+                     "/yang/module@a",
+                     "/yang/.yang",
+                     "/yang/1.yang",
+                     "/yang/module@aaaa-bb-cc",
+                     "yang/module@2024-02-27", /* intentional missing leading slash */
+                     "/yang/module@1234-123-12",
+                     "/yang/module@1234-12",
+                     "/yang/module@123-12-12",
+                     "/yang/module@1234",
+                     "/yang/@2020-02-02",
+                     "/yang/@1234",
+                 }) {
+                CAPTURE(uriPath);
+                REQUIRE(!rousette::restconf::impl::parseModuleWithRevision(uriPath));
+            }
+        }
+
+        SECTION("Get modules")
+        {
+            auto ctx = libyang::Context{std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "tests" / "yang"};
+            auto mod = ctx.loadModule("example", std::nullopt, {"f1"});
+            ctx.loadModule("ietf-netconf-acm", "2018-02-14");
+
+            SECTION("Module without revision")
+            {
+                SECTION("No revision in URI")
+                {
+                    auto mod = rousette::restconf::asYangModule(ctx, "/yang/example");
+                    REQUIRE(mod);
+                    REQUIRE(mod->name() == "example");
+                    REQUIRE(!mod->revision());
+                }
+
+                SECTION("Revision in URI")
+                {
+                    REQUIRE(!rousette::restconf::asYangModule(ctx, "/yang/example@2020-02-02"));
+                }
+            }
+
+            SECTION("Module with revision")
+            {
+                SECTION("Correct revision in URI")
+                {
+                    auto mod = rousette::restconf::asYangModule(ctx, "/yang/ietf-netconf-acm@2018-02-14");
+                    REQUIRE(mod);
+                    REQUIRE(mod->name() == "ietf-netconf-acm");
+                    REQUIRE(mod->revision() == "2018-02-14");
+                }
+
+                SECTION("Incorrect revision in URI")
+                {
+                    REQUIRE(!rousette::restconf::asYangModule(ctx, "/yang/ietf-netconf-acm@2020-02-02"));
+                }
+
+                SECTION("No revision in URI")
+                {
+                    REQUIRE(!rousette::restconf::asYangModule(ctx, "/yang/ietf-netconf-acm"));
+                }
             }
         }
     }

@@ -100,6 +100,7 @@ add_library(rousette-restconf STATIC
     src/restconf/Server.cpp
     src/restconf/uri.cpp
     src/restconf/utils.cpp
+    src/restconf/uri_yang_schema.cpp
 )
 target_link_libraries(rousette-restconf PUBLIC rousette-http rousette-sysrepo rousette-auth Boost::system Threads::Threads)
 
