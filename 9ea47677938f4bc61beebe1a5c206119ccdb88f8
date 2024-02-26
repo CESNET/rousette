@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "883c4d08_c9a1df00",
+        "filename": "src/restconf/uri_yang_schema.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-02-26T07:43:31Z",
+      "side": 1,
+      "message": "Remember me well -- this will come and bite someone on December 31st, 9999.",
+      "range": {
+        "startLine": 23,
+        "startChar": 85,
+        "endLine": 23,
+        "endChar": 86
+      },
+      "revId": "9ea47677938f4bc61beebe1a5c206119ccdb88f8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bf9b7173_5de71b49",
+        "filename": "src/restconf/uri_yang_schema.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-02-26T07:43:31Z",
+      "side": 1,
+      "message": "I think that this trailing slash is less useful than accepting a trailing `.yang`. Neither is needed, but \"nobody\" would send a slash, but I think that lazy people might code with the .yang suffix.",
+      "range": {
+        "startLine": 24,
+        "startChar": 163,
+        "endLine": 24,
+        "endChar": 179
+      },
+      "revId": "9ea47677938f4bc61beebe1a5c206119ccdb88f8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "35c7500d_2ebace5f",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 716,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-02-26T07:43:31Z",
+      "side": 1,
+      "message": "Is the missing leading slash intentional? If so, I\u0027d prefer to have it as the only \"failing reason\" on that particular string, not with an invalid date like it\u0027s done here",
+      "range": {
+        "startLine": 716,
+        "startChar": 21,
+        "endLine": 716,
+        "endChar": 26
+      },
+      "revId": "9ea47677938f4bc61beebe1a5c206119ccdb88f8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
