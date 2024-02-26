@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "568e2a26_90cbbaac",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-02-26T07:53:03Z",
+      "side": 1,
+      "message": "Last week I got stuck on the possible issue of access management. As it is, this code would allow anonymous users to fetch any YANG schemas, which, IMHO, might be problematic in several ways:\n\n- an attacker can check if a potentially \"vulnerable\" schema is enabled,\n- the server might divulge confidential information.\n\nSince the NACM cannot help directly (this is not about access to a data tree after all), I was wondering if we can somehow map these requests to \"regular\" RESTCONF data requests. That way, any schema request can perform an internal lookup of the data (subject to the usual NACM runtime checking). If that passes, we return the YANG model\u0027s content to the external client, and if it fails, we return an error.\n\nAt first, I was thinking about introducing a new model for this, and then it occurred to me that the ietf-yang-library can be probably used for this as well. If we want to be fancy, we might add a simple augment to put an empty leaf below each `/ietf-yang-library:yang-library/module-set[name\u003d...]/module` (or `import-only-module`), and perform the NACM check on its value.\n\nWhat do you think?",
+      "revId": "0169505f96e9a793591aa4a2efc268c011740496",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
