@@ -97,6 +97,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "35cd04d1_cce34989",
+        "filename": "src/restconf/uri_yang_schema.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-02-27T14:22:57Z",
+      "side": 1,
+      "message": "Nice catch. Let\u0027s only allow the trailing .yang when the revision is present, then.",
+      "parentUuid": "27ed9a2f_c4affa57",
+      "range": {
+        "startLine": 24,
+        "startChar": 163,
+        "endLine": 24,
+        "endChar": 179
+      },
+      "revId": "9ea47677938f4bc61beebe1a5c206119ccdb88f8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "35c7500d_2ebace5f",
         "filename": "tests/uri-parser.cpp",
         "patchSetId": 1
