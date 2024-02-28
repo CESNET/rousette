@@ -12,6 +12,8 @@ static const auto SERVER_PORT = "10085";
 #include "restconf/Server.h"
 #include "tests/aux-utils.h"
 
+#define FORWARDED {"forward", "proto=http;host=example.net"}
+
 TEST_CASE("obtaining YANG schemas")
 {
     spdlog::set_level(spdlog::level::trace);
@@ -20,50 +22,131 @@ TEST_CASE("obtaining YANG schemas")
     auto nacmGuard = manageNacm(srSess);
     auto server = rousette::restconf::Server{srConn, SERVER_ADDRESS, SERVER_PORT};
 
-    SECTION("unsupported methods")
+    SECTION("Locations are overwritten")
     {
-        for (const std::string httpMethod : {"POST", "PUT", "OPTIONS", "PATCH", "DELETE"}) {
-            CAPTURE(httpMethod);
-            REQUIRE(clientRequest(httpMethod, YANG_ROOT "/ietf-yang-library@2019-01-04", "", {}) == Response{405, noContentTypeHeaders, ""});
-        }
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-yang-library:yang-library/module-set=complete/module=ietf-yang-library", {AUTH_ROOT, FORWARDED}) == Response{200, jsonHeaders, R"({
+  "ietf-yang-library:yang-library": {
+    "module-set": [
+      {
+        "name": "complete",
+        "module": [
+          {
+            "name": "ietf-yang-library",
+            "revision": "2019-01-04",
+            "namespace": "urn:ietf:params:xml:ns:yang:ietf-yang-library",
+            "location": [
+              "http://example.net/yang/ietf-yang-library@2019-01-04"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-yang-library:yang-library/module-set=complete/import-only-module=ietf-inet-types,2013-07-15", {AUTH_ROOT, FORWARDED}) == Response{200, jsonHeaders, R"({
+  "ietf-yang-library:yang-library": {
+    "module-set": [
+      {
+        "name": "complete",
+        "import-only-module": [
+          {
+            "name": "ietf-inet-types",
+            "revision": "2013-07-15",
+            "namespace": "urn:ietf:params:xml:ns:yang:ietf-inet-types",
+            "location": [
+              "http://example.net/yang/ietf-inet-types@2013-07-15"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-yang-library:modules-state/module=ietf-yang-library,2019-01-04", {AUTH_ROOT, FORWARDED}) == Response{200, jsonHeaders, R"({
+  "ietf-yang-library:modules-state": {
+    "module": [
+      {
+        "name": "ietf-yang-library",
+        "revision": "2019-01-04",
+        "schema": "http://example.net/yang/ietf-yang-library@2019-01-04",
+        "namespace": "urn:ietf:params:xml:ns:yang:ietf-yang-library",
+        "conformance-type": "implement"
+      }
+    ]
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-yang-library:modules-state/module=example,", {AUTH_ROOT, FORWARDED}) == Response{200, jsonHeaders, R"({
+  "ietf-yang-library:modules-state": {
+    "module": [
+      {
+        "name": "example",
+        "revision": "",
+        "schema": "http://example.net/yang/example",
+        "namespace": "http://example.tld/example",
+        "feature": [
+          "f1"
+        ],
+        "conformance-type": "implement"
+      }
+    ]
+  }
+}
+)"});
     }
 
-    SECTION("loaded modules")
+    SECTION("get YANG schema")
     {
-        SECTION("module with revision")
+        SECTION("unsupported methods")
         {
-            SECTION("no revision in uri")
-            {
-                REQUIRE(get(YANG_ROOT "/ietf-system", {}) == Response{404, noContentTypeHeaders, ""});
-            }
-            SECTION("correct revision in uri")
-            {
-                auto resp = get(YANG_ROOT "/ietf-system@2014-08-06", {});
-                auto expectedShortenedResp = Response{200, yangHeaders, "module ietf-system {\n  namespa"};
-
-                REQUIRE(resp.equalStatusCodeAndHeaders(expectedShortenedResp));
-                REQUIRE(resp.data.substr(0, 30) == expectedShortenedResp.data);
-            }
-            SECTION("wrong revision in uri")
-            {
-                REQUIRE(get(YANG_ROOT "/ietf-system@1999-12-13", {}) == Response{404, noContentTypeHeaders, ""});
-                REQUIRE(get(YANG_ROOT "/ietf-system@abcd-ef-gh", {}) == Response{404, noContentTypeHeaders, ""});
+            for (const std::string httpMethod : {"POST", "PUT", "OPTIONS", "PATCH", "DELETE"}) {
+                CAPTURE(httpMethod);
+                REQUIRE(clientRequest(httpMethod, YANG_ROOT "/ietf-yang-library@2019-01-04", "", {}) == Response{405, noContentTypeHeaders, ""});
             }
         }
 
-        SECTION("module without revision")
+        SECTION("loaded modules")
         {
-            SECTION("no revision in uri")
+            SECTION("module with revision")
             {
-                auto resp = get(YANG_ROOT "/example", {});
-                auto expectedShortenedResp = Response{200, yangHeaders, "module example {\n  yang-versio"};
+                SECTION("no revision in uri")
+                {
+                    REQUIRE(get(YANG_ROOT "/ietf-system", {}) == Response{404, noContentTypeHeaders, ""});
+                }
+                SECTION("correct revision in uri")
+                {
+                    auto resp = get(YANG_ROOT "/ietf-system@2014-08-06", {});
+                    auto expectedShortenedResp = Response{200, yangHeaders, "module ietf-system {\n  namespa"};
 
-                REQUIRE(resp.equalStatusCodeAndHeaders(expectedShortenedResp));
-                REQUIRE(resp.data.substr(0, 30) == expectedShortenedResp.data);
+                    REQUIRE(resp.equalStatusCodeAndHeaders(expectedShortenedResp));
+                    REQUIRE(resp.data.substr(0, 30) == expectedShortenedResp.data);
+                }
+                SECTION("wrong revision in uri")
+                {
+                    REQUIRE(get(YANG_ROOT "/ietf-system@1999-12-13", {}) == Response{404, noContentTypeHeaders, ""});
+                    REQUIRE(get(YANG_ROOT "/ietf-system@abcd-ef-gh", {}) == Response{404, noContentTypeHeaders, ""});
+                }
             }
-            SECTION("revision in uri")
+
+            SECTION("module without revision")
             {
-                REQUIRE(get(YANG_ROOT "/example@2020-02-02", {}) == Response{404, noContentTypeHeaders, ""});
+                SECTION("no revision in uri")
+                {
+                    auto resp = get(YANG_ROOT "/example", {});
+                    auto expectedShortenedResp = Response{200, yangHeaders, "module example {\n  yang-versio"};
+
+                    REQUIRE(resp.equalStatusCodeAndHeaders(expectedShortenedResp));
+                    REQUIRE(resp.data.substr(0, 30) == expectedShortenedResp.data);
+                }
+                SECTION("revision in uri")
+                {
+                    REQUIRE(get(YANG_ROOT "/example@2020-02-02", {}) == Response{404, noContentTypeHeaders, ""});
+                }
             }
         }
     }
