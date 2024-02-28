@@ -10,6 +10,7 @@
 #include <sysrepo-cpp/Subscription.hpp>
 #include "http/EventStream.h"
 #include "restconf/Nacm.h"
+#include "restconf/YangSchemaLocations.h"
 
 namespace nghttp2::asio_http2::server {
 class http2;
@@ -33,6 +34,7 @@ public:
 
 private:
     Nacm nacm;
+    YangSchemaLocations yangSchemaLocations;
     std::unique_ptr<nghttp2::asio_http2::server::http2> server;
     std::unique_ptr<sr::OpticalEvents> dwdmEvents;
     using JsonDiffSignal = boost::signals2::signal<void(const std::string& json)>;

@@ -98,6 +98,7 @@ target_link_libraries(rousette-auth PUBLIC spdlog::spdlog PkgConfig::SYSREPO-CPP
 
 add_library(rousette-restconf STATIC
     src/restconf/Server.cpp
+    src/restconf/YangSchemaLocations.cpp
     src/restconf/uri.cpp
     src/restconf/utils.cpp
 )

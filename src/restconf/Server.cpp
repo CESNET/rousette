@@ -428,6 +428,7 @@ Server::~Server()
 
 Server::Server(sysrepo::Connection conn, const std::string& address, const std::string& port)
     : nacm(conn)
+    , yangSchemaLocations(conn, yangSchemaRoot)
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
