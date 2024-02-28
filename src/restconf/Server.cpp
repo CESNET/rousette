@@ -17,6 +17,7 @@
 #include "restconf/Nacm.h"
 #include "restconf/PAM.h"
 #include "restconf/Server.h"
+#include "restconf/YangSchemaLocations.h"
 #include "restconf/uri.h"
 #include "restconf/utils.h"
 #include "sr/OpticalEvents.h"
@@ -125,6 +126,19 @@ std::optional<std::string> getHeaderValue(const nghttp2::asio_http2::header_map&
     }
 
     return it->second.value;
+}
+
+std::optional<std::string> parseUrlPrefix(const nghttp2::asio_http2::header_map& headers) {
+    if (auto forward = getHeaderValue(headers, "forward")) {
+        auto [proto, host] = http::parseForwardedHeader(*forward);
+        if (!proto || !host) {
+            return std::nullopt;
+        }
+
+        return *proto + "://" + *host;
+    }
+
+    return std::nullopt;
 }
 
 struct DataFormat {
@@ -557,7 +571,8 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                                 {"content-type", {asMimeType(dataFormat.response), false}},
                                 {"access-control-allow-origin", {"*", false}},
                             });
-                        res.end(*data->printStr(dataFormat.response, libyang::PrintFlags::WithSiblings));
+
+                        res.end(*replaceYangLibraryLocations(parseUrlPrefix(req.header()), yangSchemaRoot, *data).printStr(dataFormat.response, libyang::PrintFlags::WithSiblings));
                     } else {
                         throw ErrorResponse(404, "application", "invalid-value", "No data from sysrepo.");
                     }
