@@ -164,6 +164,30 @@
       },
       "revId": "9ea47677938f4bc61beebe1a5c206119ccdb88f8",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1e678f5b_e0b4850f",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 716,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-02-28T19:43:24Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "35c7500d_2ebace5f",
+      "range": {
+        "startLine": 716,
+        "startChar": 21,
+        "endLine": 716,
+        "endChar": 26
+      },
+      "revId": "9ea47677938f4bc61beebe1a5c206119ccdb88f8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
