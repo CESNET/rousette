@@ -34,6 +34,24 @@
       "parentUuid": "568e2a26_90cbbaac",
       "revId": "0169505f96e9a793591aa4a2efc268c011740496",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "62bacd72_5bd2d582",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-03-04T09:34:08Z",
+      "side": 1,
+      "message": "Since the NETCONF protocol uses a custom RPC, the `\u003cget-schema\u003e` (https://datatracker.ietf.org/doc/html/rfc6022#section-3.1), for YANG schema retrieval, I think that the simplest solution is to internally check whether this RPC is NACM-allowed or NACM-blocked. If it\u0027s allowed, then return the YANG schema, if it is not allowed, reply with an error.",
+      "parentUuid": "568e2a26_90cbbaac",
+      "revId": "0169505f96e9a793591aa4a2efc268c011740496",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
