@@ -52,6 +52,24 @@
       "parentUuid": "568e2a26_90cbbaac",
       "revId": "0169505f96e9a793591aa4a2efc268c011740496",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f0d95635_73557d9d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-03-05T14:06:45Z",
+      "side": 1,
+      "message": "(we talked about this in person, this is just my note to capture what was discussed)\n\nIn NETCONF, there\u0027s no concept of anonymous users, but we have an \"extension\" for this in our RESTCONF implementation. So, compared to authenticated NETCONF, our code exposes another path where users might \"fingerprint\" the YANG models that are implemented on a server. In order to prevent divulging info about some implemented modules to anonymous users (while still allowing some other operations), it\u0027s already possible to set up some fine-grained NACM ACLs which filter out parts of the ietf-yang-library module. By doing that, it\u0027s possible to say that an anonymous users should have access to data about module A, but not about module B. IMHO, it makes sense to use this mechanism also for allowing schema retrieval.\n\nTL;DR: I like the approach where the schema-retrieval endpoint performs the NACM auth in the exact same manner as any other data request. Once the identity is known, an internal request to the /ietf-yang-library:.../location will be performed. If it\u0027s NACM-blocked, return back an error. If it succeeds, return the YANG schema. This way, there\u0027s no need to have fancy augments or to perform a dummy RPC; it\u0027s just a simple data retrieval that\u0027s going to be checked for NACM access rules by sysrepo.",
+      "parentUuid": "62bacd72_5bd2d582",
+      "revId": "0169505f96e9a793591aa4a2efc268c011740496",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
