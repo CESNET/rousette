@@ -128,4 +128,37 @@ std::vector<std::string> parseAcceptHeader(const std::string& headerValue)
     });
     return res;
 }
+
+ProtoAndHost parseForwardedHeader(const std::string& headerValue)
+{
+    namespace x3 = boost::spirit::x3;
+
+    const auto token = x3::rule<class token, std::string>{"token"} = +(x3::alnum | x3::char_("-") | x3::char_("."));
+    const auto quotedString = x3::rule<class quotedString, std::string>{"quotedString"} = '"' >> *('\\' >> x3::char_ | ~x3::char_('"')) >> '"';
+    const auto value = x3::rule<class value, std::string>{"value"} = token | quotedString;
+
+    const auto forwardedPair = x3::rule<class forwardedPair, std::pair<std::string, std::string>>{"forwardedPair"} = token >> '=' >> value;
+    const auto forwarded = x3::rule<class singleForwarded, std::map<std::string, std::string>>{"forwarded"} = forwardedPair % ";";
+    const auto forwardedList = x3::rule<class grammar, std::vector<std::map<std::string, std::string>>>{"forwardedList"} = forwarded % (x3::omit[*x3::space] >> ',' >> x3::omit[*x3::space]);
+
+    std::string str;
+    std::transform(headerValue.begin(), headerValue.end(), std::back_inserter(str), [](const auto& c) { return std::tolower(c); });
+
+    std::vector<std::map<std::string, std::string>> forwardedKvPairs;
+    if (!x3::parse(std::begin(headerValue), std::end(headerValue), forwardedList >> x3::eoi, forwardedKvPairs)) {
+        return {};
+    }
+
+    ProtoAndHost res;
+
+    // The first entry should win; this is the one that contains what user requested. (Other proxies in the chain append to this value or add another Forwarded header entry)
+    if (auto it = forwardedKvPairs.front().find("proto"); it != forwardedKvPairs.front().end()) {
+        res.proto = it->second;
+    }
+    if (auto it = forwardedKvPairs.front().find("host"); it != forwardedKvPairs.front().end()) {
+        res.host = it->second;
+    }
+
+    return res;
+}
 }
