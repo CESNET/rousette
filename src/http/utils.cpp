@@ -9,6 +9,7 @@
 #include <boost/fusion/adapted/struct/adapt_struct.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/spirit/home/x3.hpp>
+#include <regex>
 #include "http/utils.hpp"
 
 namespace {
@@ -126,6 +127,32 @@ std::vector<std::string> parseAcceptHeader(const std::string& headerValue)
     std::transform(mediaTypes.begin(), mediaTypes.end(), std::back_inserter(res), [](const auto& e) {
         return e.mime.mediaType + "/" + e.mime.mediaSubtype;
     });
+    return res;
+}
+
+ProtoAndHost getProtoAndHost(const std::string& forwardedHeaderValue)
+{
+    static const std::regex regexpHost("host=(.+?(?=(;|$|,| )))");
+    static const std::regex regexpProto("proto=(https|http)");
+
+    ProtoAndHost res;
+    std::string str;
+    std::transform(forwardedHeaderValue.begin(), forwardedHeaderValue.end(), std::back_inserter(str), [](const auto& c) { return std::tolower(c); });
+
+    for (std::sregex_iterator i = std::sregex_iterator(str.begin(), str.end(), regexpHost); i != std::sregex_iterator(); ++i) {
+        if (std::next(i) == std::sregex_iterator()) {
+            res.host = (*i)[1];
+            break;
+        }
+    }
+
+    for (std::sregex_iterator i = std::sregex_iterator(str.begin(), str.end(), regexpProto); i != std::sregex_iterator(); ++i) {
+        if (std::next(i) == std::sregex_iterator()) {
+            res.proto = (*i)[1];
+            break;
+        }
+    }
+
     return res;
 }
 }

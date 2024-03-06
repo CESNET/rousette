@@ -8,6 +8,7 @@
 #include "trompeloeil_doctest.h"
 #include <experimental/iterator>
 #include "http/utils.hpp"
+#include "tests/pretty_printers.h"
 
 using namespace std::string_literals;
 
@@ -22,6 +23,14 @@ struct StringMaker<std::vector<std::string>> {
         std::copy(obj.begin(), obj.end(), std::experimental::make_ostream_joiner(oss, ", "));
         oss << ']';
         return oss.str().c_str();
+    }
+};
+
+template <>
+struct StringMaker<rousette::http::ProtoAndHost> {
+    static String convert(const rousette::http::ProtoAndHost& obj)
+    {
+        return ("ProtoAndHost{"s + obj.proto.value_or("nullopt") + ", " + obj.host.value_or("nullopt") + "}").c_str();
     }
 };
 }
@@ -75,4 +84,15 @@ TEST_CASE("Accept header")
         CAPTURE(input);
         REQUIRE(rousette::http::parseAcceptHeader(input) == expected);
     };
+}
+
+TEST_CASE("Get Host from forwarded")
+{
+    using rousette::http::ProtoAndHost;
+    REQUIRE(rousette::http::getProtoAndHost("for=192.0.2.60;proto=https;by=203.0.113.43") == ProtoAndHost{"https", std::nullopt});
+    REQUIRE(rousette::http::getProtoAndHost("for=192.0.2.60;proto=http;host=example.net;by=203.0.113.43") == ProtoAndHost{"http"s, "example.net"s});
+    REQUIRE(rousette::http::getProtoAndHost("for=192.0.2.60;proto=https;by=203.0.113.43;host=example.net") == ProtoAndHost{"https"s, "example.net"s});
+    REQUIRE(rousette::http::getProtoAndHost("for=192.0.2.60;by=203.0.113.43;host=192.0.2.1") == ProtoAndHost{std::nullopt, "192.0.2.1"s});
+    REQUIRE(rousette::http::getProtoAndHost("for=192.0.2.60;proto=http;by=203.0.113.43;host=::1") == ProtoAndHost{"http", "::1"s});
+    REQUIRE(rousette::http::getProtoAndHost("for=192.0.2.60;proto=https;by=203.0.113.43;host=::1, proto=http,host=192.0.2.1,for=182.0.2.61") == ProtoAndHost{"http"s, "192.0.2.1"s});
 }

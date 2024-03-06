@@ -7,9 +7,9 @@
 
 #pragma once
 
+#include "trompeloeil_doctest.h"
 #include <optional>
 #include <sstream>
-#include <trompeloeil.hpp>
 
 namespace trompeloeil {
 template <>
@@ -21,6 +21,19 @@ struct printer<std::optional<std::string>> {
         } else {
             os << "std::nullopt";
         }
+    }
+};
+}
+
+namespace doctest {
+template <>
+struct StringMaker<std::optional<std::string>> {
+    static String convert(const std::optional<std::string>& value)
+    {
+        if (value) {
+            return value->c_str();
+        }
+        return "std::nullopt";
     }
 };
 }
