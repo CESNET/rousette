@@ -546,7 +546,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
         client->activate(opticsChange, as_restconf_push_update(dwdmEvents->currentData(), std::chrono::system_clock::now()));
     });
 
-    server->handle(yangSchemaRoot, [conn /* intentional copy */](const auto& req, const auto& res) mutable {
+    server->handle(yangSchemaRoot, [this, conn /* intentional copy */](const auto& req, const auto& res) mutable {
         const auto& peer = http::peer_from_request(req);
         spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
 
@@ -558,22 +558,34 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
         auto sess = conn.sessionStart(sysrepo::Datastore::Operational);
 
-        // TODO: Perhaps authorize users before providing the schemas so they could not scan for "known vulnerabilities"?
+        try {
+            authorizeRequest(nacm, sess, req);
 
-        auto mod = asYangModule(sess.getContext(), req.uri().path);
-        if (!mod) {
-            res.write_head(404, {{"access-control-allow-origin", {"*", false}}});
-            res.end();
-            return;
-        }
-
-        res.write_head(
-            200,
-            {
-                {"content-type", {"application/yang", false}},
-                {"access-control-allow-origin", {"*", false}},
+            if (auto mod = asYangModule(sess.getContext(), req.uri().path); mod && hasAccessToYangSchema(sess, *mod)) {
+                res.write_head(
+                    200,
+                    {
+                        {"content-type", {"application/yang", false}},
+                        {"access-control-allow-origin", {"*", false}},
+                    });
+                res.end(std::visit([](auto&& arg) { return arg.printStr(libyang::SchemaOutputFormat::Yang); }, *mod));
+                return;
+            } else {
+                res.write_head(404, {
+                                        {"content-type", {"text/plain", false}},
+                                        {"access-control-allow-origin", {"*", false}},
+                                    });
+                res.end("YANG schema not found");
+            }
+        } catch (const auth::Error& e) {
+            processAuthError(req, res, e, [&res]() {
+                res.write_head(401, {
+                                        {"content-type", {"text/plain", false}},
+                                        {"access-control-allow-origin", {"*", false}},
+                                    });
+                res.end("Access denied.");
             });
-        res.end(std::visit([](auto&& arg) { return arg.printStr(libyang::SchemaOutputFormat::Yang); }, *mod));
+        }
     });
 
     server->handle(restconfRoot,
