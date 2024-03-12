@@ -423,6 +423,31 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
         }
     }
 }
+
+void processAuthError(const request& req, const response& res, const auth::Error& error, const std::function<void()>& errorResponseCb)
+{
+    if (error.delay) {
+        spdlog::info("{}: Authentication failed (delay {}us): {}", http::peer_from_request(req), error.delay->count(), error.what());
+        auto timer = std::make_shared<boost::asio::steady_timer>(res.io_service(), *error.delay);
+        res.on_close([timer](uint32_t code) {
+            (void)code;
+            // Signal that the timer should be cancelled, so that its completion callback knows that
+            // a conneciton is gone already.
+            timer->cancel();
+        });
+        timer->async_wait([timer, errorResponseCb](const boost::system::error_code& ec) {
+            if (ec.failed()) {
+                // The `req` request has been already freed at this point and it's a dangling reference.
+                // There's nothing else to do at this point.
+            } else {
+                errorResponseCb();
+            }
+        });
+    } else {
+        spdlog::error("{}: Authentication failed: {}", http::peer_from_request(req), error.what());
+        errorResponseCb();
+    }
+}
 }
 
 Server::~Server()
@@ -485,7 +510,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
         client->activate(opticsChange, as_restconf_push_update(dwdmEvents->currentData(), std::chrono::system_clock::now()));
     });
 
-    server->handle(yangSchemaRoot, [conn /* intentional copy */](const auto& req, const auto& res) mutable {
+    server->handle(yangSchemaRoot, [this, conn /* intentional copy */](const auto& req, const auto& res) mutable {
         const auto& peer = http::peer_from_request(req);
         spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
 
@@ -497,22 +522,48 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
         auto sess = conn.sessionStart(sysrepo::Datastore::Operational);
 
-        // TODO: Perhaps authorize users before providing the schemas so they could not scan for "known vulnerabilities"?
+        try {
+            std::string nacmUser;
+            if (auto authHeader = getHeaderValue(req.header(), "authorization")) {
+                nacmUser = rousette::auth::authenticate_pam(*authHeader, peer);
+            } else {
+                nacmUser = ANONYMOUS_USER;
+            }
+            if (!nacm.authorize(sess, nacmUser)) {
+                throw ErrorResponse(404, "protocol", "access-denied", "Access denied.");
+            }
 
-        auto mod = asYangModule(sess.getContext(), req.uri().path);
-        if (!mod) {
-            res.write_head(404, {{"access-control-allow-origin", {"*", false}}});
-            res.end();
-            return;
-        }
+            auto mod = asYangModule(sess.getContext(), req.uri().path);
+            if (!mod) {
+                throw ErrorResponse(404, "protocol", "access-denied", "Access denied.");
+            }
 
-        res.write_head(
-            200,
-            {
-                {"content-type", {"application/yang", false}},
-                {"access-control-allow-origin", {"*", false}},
+            if (hasAccessToYangSchema(sess, *mod)) {
+                res.write_head(
+                    200,
+                    {
+                        {"content-type", {"application/yang", false}},
+                        {"access-control-allow-origin", {"*", false}},
+                    });
+                res.end(std::visit([](auto&& arg) { return arg.printStr(libyang::SchemaOutputFormat::Yang); }, *mod));
+            }
+
+            throw ErrorResponse(404, "protocol", "access-denied", "Access denied.");
+        } catch (const auth::Error& e) {
+            processAuthError(req, res, e, [&res]() {
+                res.write_head(404, {
+                                        {"content-type", {"text/plain", false}},
+                                        {"access-control-allow-origin", {"*", false}},
+                                    });
+                res.end("YANG schema not found");
             });
-        res.end(std::visit([](auto&& arg) { return arg.printStr(libyang::SchemaOutputFormat::Yang); }, *mod));
+        } catch (const ErrorResponse& e) {
+            res.write_head(404, {
+                                    {"content-type", {"text/plain", false}},
+                                    {"access-control-allow-origin", {"*", false}},
+                                });
+            res.end("YANG schema not found");
+        }
     });
 
     server->handle(restconfRoot,
@@ -614,27 +665,9 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 }
                 }
             } catch (const auth::Error& e) {
-                if (e.delay) {
-                    spdlog::info("{}: Authentication failed (delay {}us): {}", http::peer_from_request(req), e.delay->count(), e.what());
-                    auto timer = std::make_shared<boost::asio::steady_timer>(res.io_service(), *e.delay);
-                    res.on_close([timer](uint32_t code) {
-                        (void)code;
-                        // Signal that the timer should be cancelled, so that its completion callback knows that
-                        // a conneciton is gone already.
-                        timer->cancel();
-                    });
-                    timer->async_wait([timer, &req, &res, sess, dataFormat](const boost::system::error_code& ec) {
-                        if (ec.failed()) {
-                            // The `req` request has been already freed at this point and it's a dangling reference.
-                            // There's nothing else to do at this point.
-                        } else {
-                            rejectWithError(sess.getContext(), dataFormat.response, req, res, 401, "protocol", "access-denied", "Access denied.", std::nullopt);
-                        }
-                    });
-                } else {
-                    spdlog::error("{}: Authentication failed: {}", http::peer_from_request(req), e.what());
+                processAuthError(req, res, e, [sess, dataFormat, &req, &res]() {
                     rejectWithError(sess.getContext(), dataFormat.response, req, res, 401, "protocol", "access-denied", "Access denied.", std::nullopt);
-                }
+                });
             } catch (const ErrorResponse& e) {
                 rejectWithError(sess.getContext(), dataFormat.response, req, res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath);
             } catch (const sysrepo::ErrorWithCode& e) {
