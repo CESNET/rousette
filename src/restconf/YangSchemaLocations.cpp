@@ -7,6 +7,8 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <libyang-cpp/Collection.hpp>
 #include <libyang-cpp/Set.hpp>
+#include <sysrepo-cpp/Session.hpp>
+#include <sysrepo-cpp/utils/exception.hpp>
 #include "YangSchemaLocations.h"
 
 namespace {
@@ -70,5 +72,18 @@ libyang::DataNode replaceYangLibraryLocations(const std::optional<std::string>& 
     }
 
     return node;
+}
+
+bool hasAccessToYangSchema(const sysrepo::Session& session, const std::variant<libyang::Module, libyang::SubmoduleParsed>& module)
+{
+    const bool isRootModule = std::holds_alternative<libyang::Module>(module);
+    const auto moduleName = std::visit([](auto&& arg) { return std::string{arg.name()}; }, module);
+    const std::string prefix = "/ietf-yang-library:yang-library/module-set[name='complete']/";
+
+    std::string xpath = isRootModule ?
+        prefix + "module[name='" + moduleName + "']/location | " + prefix + "import-only-module[name='" + moduleName + "']/location"
+        : prefix + "module/submodule[name='" + moduleName + "']/location | " + prefix + "import-only-module/submodule[name='" + moduleName + "']/location";
+
+    return !!session.getData(xpath);
 }
 }
