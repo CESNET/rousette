@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "37c9a6a2_bc75adf5",
+        "filename": "tests/restconf-yang-schema.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-03-12T11:45:44Z",
+      "side": 1,
+      "message": "a fixup for the previous commit?",
+      "revId": "67dca79ab2cafe4e7be8c0d5897c2b323e31496b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
