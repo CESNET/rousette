@@ -112,6 +112,11 @@ const ng::header_map yangHeaders{
     {"content-type", {"application/yang", false}},
 };
 
+const ng::header_map plaintextHeaders{
+    {"access-control-allow-origin", {"*", false}},
+    {"content-type", {"text/plain", false}},
+};
+
 Response clientRequest(auto method,
         auto uri,
         const std::string& data,
