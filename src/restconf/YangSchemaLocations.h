@@ -6,7 +6,12 @@
 
 #include <libyang-cpp/DataNode.hpp>
 
+namespace sysrepo {
+class Session;
+}
+
 namespace rousette::restconf {
 
 libyang::DataNode replaceYangLibraryLocations(const std::optional<std::string>& schemeAndHost, const std::string& urlPrefix, libyang::DataNode& node);
+bool hasAccessToYangSchema(const sysrepo::Session& session, const std::variant<libyang::Module, libyang::Submodule>& module);
 }
