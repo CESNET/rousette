@@ -12,13 +12,18 @@ static const auto SERVER_PORT = "10085";
 #include "restconf/Server.h"
 #include "tests/aux-utils.h"
 
-#define FORWARDED {"forward", "proto=http,host=example.net"}
+#define FORWARDED                                \
+    {                                            \
+        "forward", "proto=http,host=example.net" \
+    }
 
 TEST_CASE("obtaining YANG schemas")
 {
     spdlog::set_level(spdlog::level::trace);
     auto srConn = sysrepo::Connection{};
     auto srSess = srConn.sessionStart(sysrepo::Datastore::Running);
+    srSess.sendRPC(srSess.getContext().newPath("/ietf-factory-default:factory-reset"));
+
     auto nacmGuard = manageNacm(srSess);
     auto server = rousette::restconf::Server{srConn, SERVER_ADDRESS, SERVER_PORT};
 
@@ -149,5 +154,43 @@ TEST_CASE("obtaining YANG schemas")
                 }
             }
         }
+    }
+
+    SECTION("NACM filters ietf-yang-library nodes")
+    {
+        srSess.switchDatastore(sysrepo::Datastore::Running);
+        srSess.setItem("/ietf-netconf-acm:nacm/enable-external-groups", "false");
+        srSess.setItem("/ietf-netconf-acm:nacm/groups/group[name='norules']/user-name[.='norules']", "");
+
+        srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/group[.='norules']", "");
+        srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='10']/module-name", "ietf-yang-library");
+        srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='10']/action", "permit");
+        srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='10']/access-operations", "read");
+        srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='10']/path", "/ietf-yang-library:yang-library/module-set[name='complete']/module[name='ietf-yang-library']");
+        srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='99']/module-name", "ietf-yang-library");
+        srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='99']/action", "deny");
+        srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='99']/path", "/ietf-yang-library:yang-library/module-set[name='complete']");
+        srSess.applyChanges();
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-yang-library:yang-library/module-set=complete", {AUTH_NORULES, FORWARDED}) == Response{200, jsonHeaders, R"({
+  "ietf-yang-library:yang-library": {
+    "module-set": [
+      {
+        "name": "complete",
+        "module": [
+          {
+            "name": "ietf-yang-library",
+            "revision": "2019-01-04",
+            "namespace": "urn:ietf:params:xml:ns:yang:ietf-yang-library",
+            "location": [
+              "http://example.net/yang/ietf-yang-library@2019-01-04"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+)"});
     }
 }
