@@ -1,0 +1,113 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "23a0b78f_6990032a",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-03-12T11:28:36Z",
+      "side": 1,
+      "message": "can you please add a reference to where these headers are defined?",
+      "revId": "6127d42828af57b5af37cef51ec2da604c135468",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "10c71212_1c00e5d9",
+        "filename": "src/http/utils.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 133,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-03-12T11:28:36Z",
+      "side": 1,
+      "message": "why not just `forwarded`?",
+      "range": {
+        "startLine": 133,
+        "startChar": 48,
+        "endLine": 133,
+        "endChar": 68
+      },
+      "revId": "6127d42828af57b5af37cef51ec2da604c135468",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "91f60819_183c68b7",
+        "filename": "src/http/utils.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 140,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-03-12T11:28:36Z",
+      "side": 1,
+      "message": "If this function took a `std::string` instead of a `const std::string\u0026`, this could be done in-place with \"less\" visible code.",
+      "range": {
+        "startLine": 140,
+        "startChar": 77,
+        "endLine": 140,
+        "endChar": 100
+      },
+      "revId": "6127d42828af57b5af37cef51ec2da604c135468",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b396415c_f2d0ea62",
+        "filename": "src/http/utils.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-03-12T11:28:36Z",
+      "side": 1,
+      "message": "- The other parsers use spirit x3; I would prefer to use that here as well.\n\n- It looks like it will say that the proto is HTTPS for, say, `host\u003dproto\u003dhttp`, which looks like a malformed header to me (but I haven\u0027t seen the RFC).\n\n- The last value wins, which is probably a good thing to do, but there\u0027s no documentation and no comment that explains what it expected.",
+      "range": {
+        "startLine": 133,
+        "startChar": 0,
+        "endLine": 157,
+        "endChar": 1
+      },
+      "revId": "6127d42828af57b5af37cef51ec2da604c135468",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "86838d27_a5bf17e2",
+        "filename": "src/http/utils.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-03-12T11:28:36Z",
+      "side": 1,
+      "message": "I would prefer this to be named `parseForwardedHeader` for consistency with the function above",
+      "range": {
+        "startLine": 21,
+        "startChar": 13,
+        "endLine": 21,
+        "endChar": 28
+      },
+      "revId": "6127d42828af57b5af37cef51ec2da604c135468",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
