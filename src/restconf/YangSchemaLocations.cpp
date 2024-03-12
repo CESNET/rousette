@@ -6,6 +6,8 @@
 
 #include <libyang-cpp/Collection.hpp>
 #include <libyang-cpp/Set.hpp>
+#include <sysrepo-cpp/Session.hpp>
+#include <sysrepo-cpp/utils/exception.hpp>
 #include "YangSchemaLocations.h"
 
 namespace {
@@ -71,5 +73,29 @@ libyang::DataNode replaceYangLibraryLocations(const std::optional<std::string>& 
     }
 
     return node;
+}
+
+bool hasAccessToYangSchema(const sysrepo::Session& session, const std::variant<libyang::Module, libyang::SubmoduleParsed>& module)
+{
+    const bool isSubmodule = std::holds_alternative<libyang::SubmoduleParsed>(module);
+    const auto moduleName = std::visit([](auto&& arg) { return std::string{arg.name()}; }, module);
+
+    try {
+        std::string xpath;
+        if (!isSubmodule) {
+            xpath = "/ietf-yang-library:yang-library/module-set[name='complete']/module[name='" + moduleName + "'] |" + "/ietf-yang-library:yang-library/module-set[name='complete']/import-only-module[name='" + moduleName + "']";
+        } else {
+            xpath = "/ietf-yang-library:yang-library/module-set[name='complete']/module/submodule[name='" + moduleName + "'] |" + "/ietf-yang-library:yang-library/module-set[name='complete']/import-only-module/submodule[name='" + moduleName + "']";
+        }
+
+        if (auto data = session.getData(xpath)) {
+            return true;
+        }
+        return false;
+    } catch (const sysrepo::ErrorWithCode& e) {
+        return false;
+    }
+
+    return false;
 }
 }
