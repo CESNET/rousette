@@ -111,7 +111,7 @@ TEST_CASE("obtaining YANG schemas")
         {
             for (const std::string httpMethod : {"POST", "PUT", "OPTIONS", "PATCH", "DELETE"}) {
                 CAPTURE(httpMethod);
-                REQUIRE(clientRequest(httpMethod, YANG_ROOT "/ietf-yang-library@2019-01-04", "", {}) == Response{405, noContentTypeHeaders, ""});
+                REQUIRE(clientRequest(httpMethod, YANG_ROOT "/ietf-yang-library@2019-01-04", "", {AUTH_ROOT}) == Response{405, noContentTypeHeaders, ""});
             }
         }
 
@@ -121,11 +121,11 @@ TEST_CASE("obtaining YANG schemas")
             {
                 SECTION("no revision in uri")
                 {
-                    REQUIRE(get(YANG_ROOT "/ietf-system", {}) == Response{404, noContentTypeHeaders, ""});
+                    REQUIRE(get(YANG_ROOT "/ietf-system", {AUTH_ROOT}) == Response{404, noContentTypeHeaders, ""});
                 }
                 SECTION("correct revision in uri")
                 {
-                    auto resp = get(YANG_ROOT "/ietf-system@2014-08-06", {});
+                    auto resp = get(YANG_ROOT "/ietf-system@2014-08-06", {AUTH_ROOT});
                     auto expectedShortenedResp = Response{200, yangHeaders, "module ietf-system {\n  namespa"};
 
                     REQUIRE(resp.equalStatusCodeAndHeaders(expectedShortenedResp));
@@ -133,8 +133,8 @@ TEST_CASE("obtaining YANG schemas")
                 }
                 SECTION("wrong revision in uri")
                 {
-                    REQUIRE(get(YANG_ROOT "/ietf-system@1999-12-13", {}) == Response{404, noContentTypeHeaders, ""});
-                    REQUIRE(get(YANG_ROOT "/ietf-system@abcd-ef-gh", {}) == Response{404, noContentTypeHeaders, ""});
+                    REQUIRE(get(YANG_ROOT "/ietf-system@1999-12-13", {AUTH_ROOT}) == Response{404, noContentTypeHeaders, ""});
+                    REQUIRE(get(YANG_ROOT "/ietf-system@abcd-ef-gh", {AUTH_ROOT}) == Response{404, noContentTypeHeaders, ""});
                 }
             }
 
@@ -142,7 +142,7 @@ TEST_CASE("obtaining YANG schemas")
             {
                 SECTION("no revision in uri")
                 {
-                    auto resp = get(YANG_ROOT "/example", {});
+                    auto resp = get(YANG_ROOT "/example", {AUTH_ROOT});
                     auto expectedShortenedResp = Response{200, yangHeaders, "module example {\n  yang-versio"};
 
                     REQUIRE(resp.equalStatusCodeAndHeaders(expectedShortenedResp));
@@ -150,7 +150,7 @@ TEST_CASE("obtaining YANG schemas")
                 }
                 SECTION("revision in uri")
                 {
-                    REQUIRE(get(YANG_ROOT "/example@2020-02-02", {}) == Response{404, noContentTypeHeaders, ""});
+                    REQUIRE(get(YANG_ROOT "/example@2020-02-02", {AUTH_ROOT}) == Response{404, noContentTypeHeaders, ""});
                 }
             }
         }
@@ -192,5 +192,14 @@ TEST_CASE("obtaining YANG schemas")
   }
 }
 )"});
+
+        REQUIRE(get(YANG_ROOT "/ietf-system@2014-08-06", {AUTH_NORULES}) == Response{404, noContentTypeHeaders, ""});
+        REQUIRE(get(YANG_ROOT "/ietf-system@2014-08-06", {AUTH_NORULES, FORWARDED}) == Response{404, noContentTypeHeaders, ""});
+
+        {
+            auto resp = get(YANG_ROOT "/ietf-yang-library@2019-01-04", {AUTH_NORULES, FORWARDED});
+            REQUIRE(resp.equalStatusCodeAndHeaders(Response{200, yangHeaders, ""}));
+            REQUIRE(resp.data.substr(0, 26) == "module ietf-yang-library {");
+        }
     }
 }
