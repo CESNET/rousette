@@ -1,0 +1,61 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2195bcac_4eb1d1fe",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 530,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-03-13T12:44:46Z",
+      "side": 1,
+      "message": "I don\u0027t think this is correct, and in fact it seems that the usual error formatting rules doesn\u0027t apply here. The client is not requesting YANG-described data after all, it\u0027s asking for application/yang (or *maybe* application/yin+xml which is not supported by this code, and I\u0027m more than OK with that crap not being supported). The Accept header is therefore very likely not set to either JSON-data or XML-data, so I don\u0027t think it\u0027s a good idea to send back JSON or XML with the usual RESTCONF-formatted error code.\n\nI suggest to just send back an error code with a textual error message; that might simplify the code as well.",
+      "revId": "c4976fc2dd1d5e42ba5dde89c51dd62f966aee41",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f20cde72_6dd8faa5",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 539,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-03-13T12:44:46Z",
+      "side": 1,
+      "message": "please unify this with other strings so that \"the attacker\" doesn\u0027t obtain any extra information",
+      "range": {
+        "startLine": 539,
+        "startChar": 84,
+        "endLine": 539,
+        "endChar": 90
+      },
+      "revId": "c4976fc2dd1d5e42ba5dde89c51dd62f966aee41",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cd1f899a_5b6ab39c",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 549,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-03-13T12:44:46Z",
+      "side": 1,
+      "message": "This will be more complex because of import-only modules (which are in a different subtree) and submodules (which are stored below a module\u0027s own list entry, so that\u0027s even more complex).",
+      "revId": "c4976fc2dd1d5e42ba5dde89c51dd62f966aee41",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
