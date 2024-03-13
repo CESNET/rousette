@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "a157682b_31a44c3b",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-03-13T14:50:53Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6fb3a7b2_0e1c52ee",
+      "range": {
+        "startLine": 20,
+        "startChar": 0,
+        "endLine": 22,
+        "endChar": 61
+      },
+      "revId": "79a3bf48f2bd67304e0994c839e7bcfcf3406ec2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "35909720_46c7aaaf",
@@ -37,6 +61,24 @@
       "writtenOn": "2024-03-12T11:44:33Z",
       "side": 1,
       "message": "The current implementation performs 12 XPath lookups for any data tree that goes through the server. I have not profiled this, but it looks like this might cause some extra work might be costly. Can you please try whether a single lookup for an \"OR-like\" XPath works better?\n\n /ietf-yang-library:yang-library/module-set/module\n | /ietf-yang-library:yang-library/module-set/module/submodule\n | /ietf-yang-library:yang-library/module-set/import-only-module\n | /ietf-yang-library:yang-library/module-set/import-only-module/submodule\n | /ietf-yang-library:modules-state/module/schema\n | /ietf-yang-library:modules-state/module/submodule\n\nOnce you get these (and store them into a `std::vector\u003clibyang::DataNode\u003e` to avoid iterator invalidation, as you mentioned last week), it should be straightforward to iterate over this resulting vector, unlinking the `location` and `schema` child nodes in place, and then adding the new nodes with a new, corrected value. All that can be done in one pass, and I have a feeling that the resulting code will be easier to read (e.g., just one place for extracting the name/revision pair, etc).\n\nDoes that sound OK?",
+      "revId": "79a3bf48f2bd67304e0994c839e7bcfcf3406ec2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "858682b8_bf4dc736",
+        "filename": "src/restconf/YangSchemaLocations.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-03-13T14:50:53Z",
+      "side": 1,
+      "message": "The code is actually much simpler that way. Done, thanks.",
+      "parentUuid": "35909720_46c7aaaf",
       "revId": "79a3bf48f2bd67304e0994c839e7bcfcf3406ec2",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
