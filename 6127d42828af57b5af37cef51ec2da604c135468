@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "81b0c32c_52adc517",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-03-13T13:15:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "23a0b78f_6990032a",
+      "revId": "6127d42828af57b5af37cef51ec2da604c135468",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "10c71212_1c00e5d9",
@@ -31,6 +49,30 @@
       "writtenOn": "2024-03-12T11:28:36Z",
       "side": 1,
       "message": "why not just `forwarded`?",
+      "range": {
+        "startLine": 133,
+        "startChar": 48,
+        "endLine": 133,
+        "endChar": 68
+      },
+      "revId": "6127d42828af57b5af37cef51ec2da604c135468",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b3560ced_8ba5a54b",
+        "filename": "src/http/utils.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 133,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-03-13T13:15:14Z",
+      "side": 1,
+      "message": "I used \u0027headerValue\u0027 for consistency with other functions",
+      "parentUuid": "10c71212_1c00e5d9",
       "range": {
         "startLine": 133,
         "startChar": 48,
@@ -87,6 +129,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "66936193_262bdbc2",
+        "filename": "src/http/utils.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-03-13T13:15:14Z",
+      "side": 1,
+      "message": "1, 2 done.\n\n3: I thought about it and I think the first one should win. The proxies can only append to the header value, so the first entry is the one user requested, isn\u0027t it?",
+      "parentUuid": "b396415c_f2d0ea62",
+      "range": {
+        "startLine": 133,
+        "startChar": 0,
+        "endLine": 157,
+        "endChar": 1
+      },
+      "revId": "6127d42828af57b5af37cef51ec2da604c135468",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "86838d27_a5bf17e2",
@@ -100,6 +166,30 @@
       "writtenOn": "2024-03-12T11:28:36Z",
       "side": 1,
       "message": "I would prefer this to be named `parseForwardedHeader` for consistency with the function above",
+      "range": {
+        "startLine": 21,
+        "startChar": 13,
+        "endLine": 21,
+        "endChar": 28
+      },
+      "revId": "6127d42828af57b5af37cef51ec2da604c135468",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "da98b3d1_1aabaf21",
+        "filename": "src/http/utils.hpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-03-13T13:15:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "86838d27_a5bf17e2",
       "range": {
         "startLine": 21,
         "startChar": 13,
