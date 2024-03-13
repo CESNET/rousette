@@ -1,0 +1,6 @@
+module imp-mod {
+  namespace "im";
+  prefix "im";
+  include imp-submod;
+  identity foo;
+}
