@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f792c62a_abc07d50",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 530,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-03-19T11:10:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2195bcac_4eb1d1fe",
+      "revId": "c4976fc2dd1d5e42ba5dde89c51dd62f966aee41",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f20cde72_6dd8faa5",
@@ -31,6 +49,30 @@
       "writtenOn": "2024-03-13T12:44:46Z",
       "side": 1,
       "message": "please unify this with other strings so that \"the attacker\" doesn\u0027t obtain any extra information",
+      "range": {
+        "startLine": 539,
+        "startChar": 84,
+        "endLine": 539,
+        "endChar": 90
+      },
+      "revId": "c4976fc2dd1d5e42ba5dde89c51dd62f966aee41",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "aa669770_b9dd274e",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 539,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-03-19T11:10:32Z",
+      "side": 1,
+      "message": "oops. Done.",
+      "parentUuid": "f20cde72_6dd8faa5",
       "range": {
         "startLine": 539,
         "startChar": 84,
