@@ -1,0 +1,21 @@
+module root-mod {
+  namespace "rm";
+  prefix "rm";
+  import imp-mod {
+    prefix "im";
+  }
+  include root-submod;
+  leaf r {
+    type string;
+  }
+  leaf i1 {
+    type identityref {
+      base im:foo;
+    }
+  }
+  leaf i2 {
+    type identityref {
+      base im:bar;
+    }
+  }
+}

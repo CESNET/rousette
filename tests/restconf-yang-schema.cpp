@@ -137,17 +137,41 @@ TEST_CASE("obtaining YANG schemas")
 
             SECTION("module without revision")
             {
-                SECTION("no revision in uri")
-                {
-                    auto resp = get(YANG_ROOT "/example", {});
-                    auto expectedShortenedResp = Response{200, yangHeaders, "module example {\n  yang-versio"};
-
-                    REQUIRE(resp.equalStatusCodeAndHeaders(expectedShortenedResp));
-                    REQUIRE(resp.data.substr(0, 30) == expectedShortenedResp.data);
-                }
                 SECTION("revision in uri")
                 {
                     REQUIRE(get(YANG_ROOT "/example@2020-02-02", {}) == Response{404, noContentTypeHeaders, ""});
+                }
+                SECTION("no revision in uri")
+                {
+                    std::string moduleName;
+                    std::string expectedResponseStart;
+
+                    SECTION("loaded module")
+                    {
+                        moduleName = "example";
+                        expectedResponseStart = "module example {";
+                    }
+                    SECTION("loaded submodule")
+                    {
+                        moduleName = "root-submod";
+                        expectedResponseStart = "submodule root-submod {";
+                    }
+                    SECTION("imported module")
+                    {
+                        moduleName = "imp-mod";
+                        expectedResponseStart = "module imp-mod {";
+                    }
+                    SECTION("imported submodule")
+                    {
+                        moduleName = "imp-submod";
+                        expectedResponseStart = "submodule imp-submod {";
+                    }
+
+                    auto resp = get(YANG_ROOT "/" + moduleName, {});
+                    auto expectedShortenedResp = Response{200, yangHeaders, expectedResponseStart};
+
+                    REQUIRE(resp.equalStatusCodeAndHeaders(expectedShortenedResp));
+                    REQUIRE(resp.data.substr(0, expectedResponseStart.size()) == expectedShortenedResp.data);
                 }
             }
         }
