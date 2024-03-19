@@ -70,6 +70,24 @@
       "parentUuid": "62bacd72_5bd2d582",
       "revId": "0169505f96e9a793591aa4a2efc268c011740496",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "15d01359_80df9365",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-03-19T14:30:15Z",
+      "side": 1,
+      "message": "done via https://gerrit.cesnet.cz/c/CzechLight/rousette/+/6991",
+      "parentUuid": "f0d95635_73557d9d",
+      "revId": "0169505f96e9a793591aa4a2efc268c011740496",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
