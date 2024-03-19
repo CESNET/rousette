@@ -1,0 +1,8 @@
+submodule imp-submod {
+  belongs-to "imp-mod" {
+    prefix "im";
+  }
+  identity bar {
+    base foo;
+  }
+}

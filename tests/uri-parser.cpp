@@ -737,20 +737,54 @@ TEST_CASE("URI path parser")
             auto ctx = libyang::Context{std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "tests" / "yang"};
             auto mod = ctx.loadModule("example", std::nullopt, {"f1"});
             ctx.loadModule("ietf-netconf-acm", "2018-02-14");
+            ctx.loadModule("root-mod", std::nullopt);
+
+            auto modName = [](auto&& mod) { return std::visit([](auto&& arg) { return std::string{arg.name()}; }, mod); };
 
             SECTION("Module without revision")
             {
-                SECTION("No revision in URI")
-                {
-                    auto mod = rousette::restconf::asYangModule(ctx, "/yang/example");
-                    REQUIRE(mod);
-                    REQUIRE(mod->name() == "example");
-                    REQUIRE(!mod->revision());
-                }
-
                 SECTION("Revision in URI")
                 {
                     REQUIRE(!rousette::restconf::asYangModule(ctx, "/yang/example@2020-02-02"));
+                }
+
+                SECTION("No revision in URI") {
+                    std::string uri;
+                    std::string expectedModuleName;
+
+                    SECTION("Module")
+                    {
+                        uri = "/yang/example";
+                        expectedModuleName = "example";
+                    }
+
+                    SECTION("Module with imports and submodules")
+                    {
+                        uri = "/yang/root-mod";
+                        expectedModuleName = "root-mod";
+                    }
+
+                    SECTION("Submodule")
+                    {
+                        uri = "/yang/root-submod";
+                        expectedModuleName = "root-submod";
+                    }
+
+                    SECTION("Imported module")
+                    {
+                        uri = "/yang/imp-mod";
+                        expectedModuleName = "imp-mod";
+                    }
+
+                    SECTION("Imported submodule")
+                    {
+                        uri = "/yang/imp-submod";
+                        expectedModuleName = "imp-submod";
+                    }
+
+                    auto mod = rousette::restconf::asYangModule(ctx, uri);
+                    REQUIRE(mod);
+                    REQUIRE(modName(*mod) == expectedModuleName);
                 }
             }
 
@@ -760,8 +794,7 @@ TEST_CASE("URI path parser")
                 {
                     auto mod = rousette::restconf::asYangModule(ctx, "/yang/ietf-netconf-acm@2018-02-14");
                     REQUIRE(mod);
-                    REQUIRE(mod->name() == "ietf-netconf-acm");
-                    REQUIRE(mod->revision() == "2018-02-14");
+                    REQUIRE(modName(*mod) == "ietf-netconf-acm");
                 }
 
                 SECTION("Incorrect revision in URI")
