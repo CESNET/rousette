@@ -10,10 +10,12 @@
 #include <stdexcept>
 #include <string>
 #include <sysrepo-cpp/Enum.hpp>
+#include <variant>
 
 namespace libyang {
 class Context;
 class Module;
+class Submodule;
 }
 
 namespace rousette::restconf {
@@ -64,5 +66,5 @@ struct RestconfRequest {
 
 RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath);
 std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath);
-std::optional<libyang::Module> asYangModule(const libyang::Context& ctx, const std::string& uriPath);
+std::optional<std::variant<libyang::Module, libyang::Submodule>> asYangModule(const libyang::Context& ctx, const std::string& uriPath);
 }

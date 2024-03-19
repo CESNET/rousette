@@ -160,6 +160,17 @@ std::optional<sysrepo::Datastore> datastoreFromApiIdentifier(const boost::option
 
     throw ErrorResponse(400, "application", "operation-failed", "Unsupported datastore " + *datastore->prefix + ":" + datastore->identifier);
 }
+
+std::optional<std::variant<libyang::Module, libyang::Submodule>> getModuleOrSubmodule(const libyang::Context& ctx, const std::string& name, const std::optional<std::string>& revision)
+{
+    if (auto mod = ctx.getModule(name, revision)) {
+        return *mod;
+    }
+    if (auto mod = ctx.getSubmodule(name, revision)) {
+        return *mod;
+    }
+    return std::nullopt;
+}
 }
 
 RestconfRequest::RestconfRequest(Type type, const boost::optional<ApiIdentifier>& datastore, const std::string& path)
@@ -429,14 +440,14 @@ std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& c
     return {parentLyPath, lastSegment};
 }
 
-std::optional<libyang::Module> asYangModule(const libyang::Context& ctx, const std::string& uriPath)
+std::optional<std::variant<libyang::Module, libyang::Submodule>> asYangModule(const libyang::Context& ctx, const std::string& uriPath)
 {
     if (auto parsedModule = impl::parseModuleWithRevision(uriPath)) {
         // Converting between boost::optional and std::optional is not trivial
         if (parsedModule->revision) {
-            return ctx.getModule(parsedModule->name, *parsedModule->revision);
+            return getModuleOrSubmodule(ctx, parsedModule->name, *parsedModule->revision);
         } else {
-            return ctx.getModule(parsedModule->name, std::nullopt);
+            return getModuleOrSubmodule(ctx, parsedModule->name, std::nullopt);
         }
     }
     return std::nullopt;
