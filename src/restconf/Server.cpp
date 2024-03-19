@@ -512,7 +512,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 {"content-type", {"application/yang", false}},
                 {"access-control-allow-origin", {"*", false}},
             });
-        res.end(mod->printStr(libyang::SchemaOutputFormat::Yang));
+        res.end(std::visit([](auto&& arg) { return arg.printStr(libyang::SchemaOutputFormat::Yang); }, *mod));
     });
 
     server->handle(restconfRoot,
