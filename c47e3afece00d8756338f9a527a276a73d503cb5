@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "70d32996_1743c186",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-03-20T08:35:39Z",
+      "side": 1,
+      "message": "Please abandon this. I am not the author so I can\u0027t. I used it in https://gerrit.cesnet.cz/c/CzechLight/rousette/+/6996/4",
+      "revId": "c47e3afece00d8756338f9a527a276a73d503cb5",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
