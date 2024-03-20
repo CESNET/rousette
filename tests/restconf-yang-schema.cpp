@@ -100,6 +100,58 @@ TEST_CASE("obtaining YANG schemas")
   }
 }
 )"});
+
+        SECTION("Every node of the leaf-list is deleted")
+        {
+            // overwrite location leaf-list with our three values
+            auto sub = srSess.onOperGet(
+                "ietf-yang-library", [](auto, auto, auto, auto, auto, auto, auto& parent) {
+                    REQUIRE(!!parent);
+                    parent->newPath("location", "hello1");
+                    parent->newPath("location", "hello2");
+                    parent->newPath("location", "hello3");
+                    return sysrepo::ErrorCode::Ok;
+                },
+                "/ietf-yang-library:yang-library/module-set/module/location");
+
+            // check that direct fetch of data via sysrepo really returns these three location nodes
+            static const auto locationLeafsXPath = "/ietf-yang-library:yang-library/module-set[name='complete']/module[name='ietf-yang-library']/location";
+            std::map<std::string, std::string> dataFromSysrepo;
+            auto client = sysrepo::Connection{}.sessionStart(sysrepo::Datastore::Operational);
+            auto data = client.getData(locationLeafsXPath);
+            REQUIRE(!!data);
+            for (const auto& node : data->findXPath(locationLeafsXPath)) {
+                dataFromSysrepo.emplace(node.path(), node.asTerm().valueStr());
+            }
+
+            REQUIRE(dataFromSysrepo == std::map<std::string, std::string>({
+                        {"/ietf-yang-library:yang-library/module-set[name='complete']/module[name='ietf-yang-library']/location[1]", "hello1"},
+                        {"/ietf-yang-library:yang-library/module-set[name='complete']/module[name='ietf-yang-library']/location[2]", "hello2"},
+                        {"/ietf-yang-library:yang-library/module-set[name='complete']/module[name='ietf-yang-library']/location[3]", "hello3"},
+                    }));
+
+            // but all of this does not affect the restconf data
+            REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-yang-library:yang-library/module-set=complete/module=ietf-yang-library", {AUTH_ROOT, FORWARDED}) == Response{200, jsonHeaders, R"({
+  "ietf-yang-library:yang-library": {
+    "module-set": [
+      {
+        "name": "complete",
+        "module": [
+          {
+            "name": "ietf-yang-library",
+            "revision": "2019-01-04",
+            "namespace": "urn:ietf:params:xml:ns:yang:ietf-yang-library",
+            "location": [
+              "http://example.net/yang/ietf-yang-library@2019-01-04"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+)"});
+        }
     }
 
     SECTION("get YANG schema")
