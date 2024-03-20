@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0722a426_48d7d265",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 566,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-03-20T12:15:30Z",
+      "side": 1,
+      "message": "I think that the error handling was a bit misleading because it would return 404 when authenticated with a wrong password, and that there was an extra layer of exception indirection, so I refactored this.",
+      "range": {
+        "startLine": 525,
+        "startChar": 0,
+        "endLine": 566,
+        "endChar": 9
+      },
+      "revId": "8810eb6ee23101521b742100d73fc3c7e658191b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3a2d1071_0258b3c7",
+        "filename": "src/restconf/YangSchemaLocations.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-03-20T12:15:30Z",
+      "side": 1,
+      "message": "This is not triggered by the test suite, and I think it can only happen on internal sysrepo errors, so I removed that (and refactored the XPaths while I was editing that file).",
+      "revId": "8810eb6ee23101521b742100d73fc3c7e658191b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
