@@ -153,6 +153,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4ae8e37f_42a37631",
+        "filename": "src/http/utils.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-03-20T08:47:23Z",
+      "side": 1,
+      "message": "\u003e 3: I thought about it and I think the first one should win. The proxies can only append to the header value, so the first entry is the one user requested, isn\u0027t it?\n\nNice catch, I think you\u0027re right -- the entire goal here is to make sure that the client has something \"useful\", and that \"useful\" thing is very likely whatever the first proxy along the way put in.",
+      "parentUuid": "66936193_262bdbc2",
+      "range": {
+        "startLine": 133,
+        "startChar": 0,
+        "endLine": 157,
+        "endChar": 1
+      },
+      "revId": "6127d42828af57b5af37cef51ec2da604c135468",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "86838d27_a5bf17e2",

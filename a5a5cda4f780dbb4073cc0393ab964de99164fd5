@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ef7f2455_dcc3c7c1",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-03-20T08:47:23Z",
+      "side": 1,
+      "message": "(a week-fogotten comment, sorry)",
+      "revId": "a5a5cda4f780dbb4073cc0393ab964de99164fd5",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "760a5353_acd4d98f",
+        "filename": "src/http/utils.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-03-20T08:47:23Z",
+      "side": 1,
+      "message": "this can be removed now",
+      "revId": "a5a5cda4f780dbb4073cc0393ab964de99164fd5",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
