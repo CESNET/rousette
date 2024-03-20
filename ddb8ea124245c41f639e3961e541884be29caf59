@@ -16,6 +16,29 @@
       "message": "(I\u0027d like to wait for your CR on this patch as well since I made some substantial changes.)",
       "revId": "ddb8ea124245c41f639e3961e541884be29caf59",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d20c4cc2_77b1d34a",
+        "filename": "README.md",
+        "patchSetId": 5
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-03-20T16:14:33Z",
+      "side": 1,
+      "message": "I am checking against parent of the location leaf, i.e., the module/submodule list entry.",
+      "range": {
+        "startLine": 38,
+        "startChar": 78,
+        "endLine": 38,
+        "endChar": 86
+      },
+      "revId": "ddb8ea124245c41f639e3961e541884be29caf59",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
