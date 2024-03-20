@@ -181,9 +181,9 @@ TEST_CASE("obtaining YANG schemas")
     {
         srSess.switchDatastore(sysrepo::Datastore::Running);
         srSess.setItem("/ietf-netconf-acm:nacm/enable-external-groups", "false");
-        srSess.setItem("/ietf-netconf-acm:nacm/groups/group[name='norules']/user-name[.='norules']", "");
+        srSess.setItem("/ietf-netconf-acm:nacm/groups/group[name='dwdm']/user-name[.='dwdm']", "");
 
-        srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/group[.='norules']", "");
+        srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/group[.='dwdm']", "");
         srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='10']/module-name", "ietf-yang-library");
         srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='10']/action", "permit");
         srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='10']/access-operations", "read");
@@ -193,7 +193,7 @@ TEST_CASE("obtaining YANG schemas")
         srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='99']/path", "/ietf-yang-library:yang-library/module-set[name='complete']");
         srSess.applyChanges();
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-yang-library:yang-library/module-set=complete", {AUTH_NORULES, FORWARDED}) == Response{200, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-yang-library:yang-library/module-set=complete", {AUTH_DWDM, FORWARDED}) == Response{200, jsonHeaders, R"({
   "ietf-yang-library:yang-library": {
     "module-set": [
       {
