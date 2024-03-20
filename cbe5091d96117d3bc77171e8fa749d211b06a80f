@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1713e5e6_5a1b6ec2",
+        "filename": "src/restconf/YangSchemaLocations.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-03-20T08:58:23Z",
+      "side": 1,
+      "message": "just `val`",
+      "range": {
+        "startLine": 57,
+        "startChar": 27,
+        "endLine": 57,
+        "endChar": 60
+      },
+      "revId": "cbe5091d96117d3bc77171e8fa749d211b06a80f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
