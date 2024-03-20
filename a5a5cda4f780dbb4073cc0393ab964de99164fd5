@@ -33,6 +33,24 @@
       "message": "this can be removed now",
       "revId": "a5a5cda4f780dbb4073cc0393ab964de99164fd5",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9629277a_a2d53f79",
+        "filename": "src/http/utils.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-03-20T12:15:30Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "760a5353_acd4d98f",
+      "revId": "a5a5cda4f780dbb4073cc0393ab964de99164fd5",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
