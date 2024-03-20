@@ -423,6 +423,20 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
         }
     }
 }
+
+void authorizeRequest(const Nacm& nacm, sysrepo::Session& sess, const request& req)
+{
+    std::string nacmUser;
+    if (auto authHeader = getHeaderValue(req.header(), "authorization")) {
+        nacmUser = rousette::auth::authenticate_pam(*authHeader, http::peer_from_request(req));
+    } else {
+        nacmUser = ANONYMOUS_USER;
+    }
+
+    if (!nacm.authorize(sess, nacmUser)) {
+        throw ErrorResponse(401, "protocol", "access-denied", "Access denied.");
+    }
+}
 }
 
 Server::~Server()
@@ -527,17 +541,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
             try {
                 dataFormat = chooseDataEncoding(req.header());
-
-                std::string nacmUser;
-                if (auto authHeader = getHeaderValue(req.header(), "authorization")) {
-                    nacmUser = rousette::auth::authenticate_pam(*authHeader, peer);
-                } else {
-                    nacmUser = ANONYMOUS_USER;
-                }
-
-                if (!nacm.authorize(sess, nacmUser)) {
-                    throw ErrorResponse(401, "protocol", "access-denied", "Access denied.");
-                }
+                authorizeRequest(nacm, sess, req);
 
                 auto restconfRequest = asRestconfRequest(sess.getContext(), req.method(), req.uri().path);
 
