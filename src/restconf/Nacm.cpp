@@ -96,7 +96,7 @@ Nacm::Nacm(sysrepo::Connection conn)
 }
 
 /** @brief Tries to set @p user as NACM user in @p session. In case the user is the anonymous user we also check that anonymous access is enabled */
-bool Nacm::authorize(sysrepo::Session session, const std::string& user)
+bool Nacm::authorize(sysrepo::Session session, const std::string& user) const
 {
     if (user == ANONYMOUS_USER && !m_anonymousEnabled) {
         spdlog::trace("Anonymous access not configured");
