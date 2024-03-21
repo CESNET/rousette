@@ -82,8 +82,8 @@ bool hasAccessToYangSchema(const sysrepo::Session& session, const std::variant<l
     const std::string prefix = "/ietf-yang-library:yang-library/module-set[name='complete']/";
 
     std::string xpath = isRootModule ?
-        prefix + "module[name='" + moduleName + "'] | " + prefix + "import-only-module[name='" + moduleName + "']"
-        : prefix + "module/submodule[name='" + moduleName + "'] | " + prefix + "import-only-module/submodule[name='" + moduleName + "']";
+        prefix + "module[name='" + moduleName + "']/location | " + prefix + "import-only-module[name='" + moduleName + "']/location"
+        : prefix + "module/submodule[name='" + moduleName + "']/location | " + prefix + "import-only-module/submodule[name='" + moduleName + "']/location";
 
     return !!session.getData(xpath);
 }
