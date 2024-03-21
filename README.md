@@ -35,13 +35,13 @@ The anonymous user access is disabled whenever these rules are not met.
 ### YANG schema retrieval
 
 As an extension to the RESTCONF protocol, all YANG modules which are available through sysrepo can be fetched via the `/yang/` endpoint.
-This access is controlled through NACM as-if the access was made against the `module` or `submodule` list within the [`ietf-yang-library`](https://datatracker.ietf.org/doc/html/rfc8525#section-3).
+This access is controlled through NACM as-if the access was made against the `location` leaf-list within the [`ietf-yang-library`](https://datatracker.ietf.org/doc/html/rfc8525#section-3).
 In practical terms, this means that the NACM access rules for the following XPaths also control schema retrieval:
 
-- `/ietf-yang-library:yang-library/module-set[name='complete']/module`
-- `/ietf-yang-library:yang-library/module-set[name='complete']/import-only-module`
-- `/ietf-yang-library:yang-library/module-set[name='complete']/module/submodule`
-- `/ietf-yang-library:yang-library/module-set[name='complete']/import-only-module/submodule`
+- `/ietf-yang-library:yang-library/module-set[name='complete']/module/location`
+- `/ietf-yang-library:yang-library/module-set[name='complete']/import-only-module/location`
+- `/ietf-yang-library:yang-library/module-set[name='complete']/module/submodule/location`
+- `/ietf-yang-library:yang-library/module-set[name='complete']/import-only-module/submodule/location`
 
 ## Dependencies
 

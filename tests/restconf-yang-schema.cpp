@@ -254,7 +254,9 @@ TEST_CASE("obtaining YANG schemas")
             srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='99']/path", "/ietf-yang-library:yang-library/module-set[name='complete']");
             srSess.applyChanges();
 
-            REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-yang-library:yang-library/module-set=complete", {AUTH_DWDM, FORWARDED}) == Response{200, jsonHeaders, R"({
+            SECTION("no other modifications")
+            {
+                REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-yang-library:yang-library/module-set=complete", {AUTH_DWDM, FORWARDED}) == Response{200, jsonHeaders, R"({
   "ietf-yang-library:yang-library": {
     "module-set": [
       {
@@ -274,23 +276,52 @@ TEST_CASE("obtaining YANG schemas")
   }
 }
 )"});
-
-            REQUIRE(get(YANG_ROOT "/ietf-system@2014-08-06", {AUTH_DWDM}) == Response{404, plaintextHeaders, "YANG schema not found"});
-            REQUIRE(get(YANG_ROOT "/ietf-system@2014-08-06", {AUTH_DWDM, FORWARDED}) == Response{404, plaintextHeaders, "YANG schema not found"});
-
-            {
                 auto resp = get(YANG_ROOT "/ietf-yang-library@2019-01-04", {AUTH_DWDM, FORWARDED});
                 REQUIRE(resp.equalStatusCodeAndHeaders(Response{200, yangHeaders, ""}));
                 REQUIRE(resp.data.substr(0, 26) == "module ietf-yang-library {");
             }
 
+            SECTION("blocked location leaf-list")
+            {
+                srSess.moveItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='09']", sysrepo::MovePosition::Before, "[name='10']");
+                srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='09']/module-name", "ietf-yang-library");
+                srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='09']/action", "deny");
+                srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='09']/access-operations", "read");
+                srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='09']/path", "/ietf-yang-library:yang-library/module-set[name='complete']/module[name='ietf-yang-library']/location");
+                srSess.applyChanges();
+
+                auto resp = get(RESTCONF_DATA_ROOT "/ietf-netconf-acm:nacm", {AUTH_ROOT, FORWARDED});
+                CAPTURE(resp.data);
+
+                REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-yang-library:yang-library/module-set=complete", {AUTH_DWDM, FORWARDED}) == Response{200, jsonHeaders, R"({
+  "ietf-yang-library:yang-library": {
+    "module-set": [
+      {
+        "name": "complete",
+        "module": [
+          {
+            "name": "ietf-yang-library",
+            "revision": "2019-01-04",
+            "namespace": "urn:ietf:params:xml:ns:yang:ietf-yang-library"
+          }
+        ]
+      }
+    ]
+  }
+}
+)"});
+                REQUIRE(get(YANG_ROOT "/ietf-yang-library@2019-01-04", {AUTH_DWDM, FORWARDED}) == Response{404, plaintextHeaders, "YANG schema not found"});
+            }
+
+            REQUIRE(get(YANG_ROOT "/ietf-system@2014-08-06", {AUTH_DWDM}) == Response{404, plaintextHeaders, "YANG schema not found"});
+            REQUIRE(get(YANG_ROOT "/ietf-system@2014-08-06", {AUTH_DWDM, FORWARDED}) == Response{404, plaintextHeaders, "YANG schema not found"});
             REQUIRE(get(YANG_ROOT "/inp-mod", {AUTH_DWDM}) == Response{404, plaintextHeaders, "YANG schema not found"});
             REQUIRE(get(YANG_ROOT "/inp-submod", {AUTH_DWDM}) == Response{404, plaintextHeaders, "YANG schema not found"});
             REQUIRE(get(YANG_ROOT "/root-mod", {AUTH_DWDM}) == Response{404, plaintextHeaders, "YANG schema not found"});
             REQUIRE(get(YANG_ROOT "/root-submod", {AUTH_DWDM}) == Response{404, plaintextHeaders, "YANG schema not found"});
         }
 
-        SECTION("root-mod is accessible, therefore also root-submod is accessible")
+        SECTION("accessible root-mod")
         {
             srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='11']/module-name", "ietf-yang-library");
             srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='11']/action", "permit");
@@ -301,13 +332,14 @@ TEST_CASE("obtaining YANG schemas")
             srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='99']/path", "/ietf-yang-library:yang-library/module-set[name='complete']");
             srSess.applyChanges();
 
+            // Since the entire list instance for "root-mod" is available, this means that all of its submodules are accessible as well
             REQUIRE(get(YANG_ROOT "/inp-mod", {AUTH_DWDM}) == Response{404, plaintextHeaders, "YANG schema not found"});
             REQUIRE(get(YANG_ROOT "/inp-submod", {AUTH_DWDM}) == Response{404, plaintextHeaders, "YANG schema not found"});
             REQUIRE(get(YANG_ROOT "/root-mod", {AUTH_DWDM}).statusCode == 200);
             REQUIRE(get(YANG_ROOT "/root-submod", {AUTH_DWDM}).statusCode == 200);
         }
 
-        SECTION("root-submod is accessible, this enables the parent module as well")
+        SECTION("accessible root-submod")
         {
             srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='11']/module-name", "ietf-yang-library");
             srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='11']/action", "permit");
@@ -320,7 +352,7 @@ TEST_CASE("obtaining YANG schemas")
 
             REQUIRE(get(YANG_ROOT "/inp-mod", {AUTH_DWDM}).statusCode == 404);
             REQUIRE(get(YANG_ROOT "/inp-submod", {AUTH_DWDM}).statusCode == 404);
-            REQUIRE(get(YANG_ROOT "/root-mod", {AUTH_DWDM}).statusCode == 200);
+            REQUIRE(get(YANG_ROOT "/root-mod", {AUTH_DWDM}).statusCode == 404);
             REQUIRE(get(YANG_ROOT "/root-submod", {AUTH_DWDM}).statusCode == 200);
         }
     }
