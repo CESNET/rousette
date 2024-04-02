@@ -288,7 +288,7 @@ void checkValidPostResource(const std::optional<libyang::SchemaNode>& node, cons
  * @throw ErrorResponse If node is invalid for this httpMethod and URI prefix */
 void validateRequestSchemaNode(const std::optional<libyang::SchemaNode>& node, const std::string& httpMethod, const impl::URIPrefix& prefix)
 {
-    if (httpMethod == "GET" || httpMethod == "PUT") {
+    if (httpMethod == "GET" || httpMethod == "PUT" || httpMethod == "DELETE") {
         checkValidDataResource(node, prefix);
     } else {
         checkValidPostResource(node, prefix);
@@ -366,7 +366,7 @@ SchemaNodeAndPath asLibyangPath(const libyang::Context& ctx, const std::vector<P
  */
 RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath)
 {
-    if (httpMethod != "GET" && httpMethod != "PUT" && httpMethod != "POST") {
+    if (httpMethod != "GET" && httpMethod != "PUT" && httpMethod != "POST" && httpMethod != "DELETE") {
         throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
     }
 
@@ -395,6 +395,8 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
         return {RestconfRequest::Type::GetData, uri->prefix.datastore, lyPath};
     } else if (httpMethod == "PUT") {
         return {RestconfRequest::Type::CreateOrReplaceThisNode, uri->prefix.datastore, lyPath};
+    } else if (httpMethod == "DELETE") {
+        return {RestconfRequest::Type::DeleteNode, uri->prefix.datastore, lyPath};
     } else {
         return {RestconfRequest::Type::Execute, uri->prefix.datastore, lyPath};
     }
