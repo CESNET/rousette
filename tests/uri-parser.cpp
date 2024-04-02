@@ -446,240 +446,240 @@ TEST_CASE("URI path parser")
                 REQUIRE(datastore == std::nullopt);
                 REQUIRE(action == RestconfRequest::Type::Execute);
             }
+        }
 
-            SECTION("Contextually invalid paths")
+        SECTION("Contextually invalid paths")
+        {
+            int expectedCode;
+            std::string expectedErrorType;
+            std::string expectedErrorTag;
+            std::string expectedErrorMessage;
+            std::string uriPath;
+
+            SECTION("GET and PUT")
             {
-                int expectedCode;
-                std::string expectedErrorType;
-                std::string expectedErrorTag;
-                std::string expectedErrorMessage;
-                std::string uriPath;
+                expectedCode = 400;
+                expectedErrorType = "application";
+                expectedErrorTag = "operation-failed";
 
-                SECTION("GET and PUT")
+                SECTION("Unparseable URI")
                 {
-                    expectedCode = 400;
-                    expectedErrorType = "application";
-                    expectedErrorTag = "operation-failed";
+                    uriPath = "/restconf/data///!/@akjsaosdasdlasd";
+                    expectedErrorMessage = "Syntax error";
+                }
 
-                    SECTION("Unparseable URI")
+                SECTION("Nonexistent modules and nodes")
+                {
+                    SECTION("Nonexistent module")
                     {
-                        uriPath = "/restconf/data///!/@akjsaosdasdlasd";
-                        expectedErrorMessage = "Syntax error";
+                        uriPath = "/restconf/data/hello:world";
+                        expectedErrorMessage = "Couldn't find schema node: /hello:world";
                     }
-
-                    SECTION("Nonexistent modules and nodes")
+                    SECTION("Nonexistent top-level node")
                     {
-                        SECTION("Nonexistent module")
-                        {
-                            uriPath = "/restconf/data/hello:world";
-                            expectedErrorMessage = "Couldn't find schema node: /hello:world";
-                        }
-                        SECTION("Nonexistent top-level node")
-                        {
-                            uriPath = "/restconf/data/example:foo";
-                            expectedErrorMessage = "Couldn't find schema node: /example:foo";
-                        }
-                        SECTION("Augment top-level node can't be top-level node")
-                        {
-                            uriPath = "/restconf/data/example-augment:b";
-                            expectedErrorMessage = "Couldn't find schema node: /example-augment:b";
-                        }
-                        SECTION("Nonexistent node")
-                        {
-                            uriPath = "/restconf/data/example:tlc/hello-world";
-                            expectedErrorMessage = "Node 'hello-world' is not a child of '/example:tlc'";
-                        }
-                        SECTION("Feature not enabled")
-                        {
-                            uriPath = "/restconf/data/example:f";
-                            expectedErrorMessage = "Couldn't find schema node: /example:f";
-                        }
-                        SECTION("Schema node")
-                        {
-                            uriPath = "/restconf/data/example:tlc/list=eth0/choose";
-                            expectedErrorMessage = "Node 'choose' is not a child of '/example:tlc/list'";
-                        }
-                        SECTION("Schema node")
-                        {
-                            uriPath = "/restconf/data/example:tlc/list=eth0/choose/choice1";
-                            expectedErrorMessage = "Node 'choose' is not a child of '/example:tlc/list'";
-                        }
+                        uriPath = "/restconf/data/example:foo";
+                        expectedErrorMessage = "Couldn't find schema node: /example:foo";
                     }
-
-                    SECTION("Invalid data resources")
+                    SECTION("Augment top-level node can't be top-level node")
                     {
-                        SECTION("top-level list node")
-                        {
-                            uriPath = "/restconf/data/example:top-level-list";
-                            expectedErrorMessage = "List '/example:top-level-list' requires 1 keys";
-                        }
-                        SECTION("List node")
-                        {
-                            uriPath = "/restconf/data/example:tlc/key-less-list";
-                            expectedErrorMessage = "List '/example:tlc/key-less-list' has no keys. It can not be accessed directly";
-                        }
-                        SECTION("leaf-list node")
-                        {
-                            uriPath = "/restconf/data/example:tlc/list=eth0/collection";
-                            expectedErrorMessage = "Leaf-list '/example:tlc/list/collection' requires exactly one key";
-                        }
-                        SECTION("RPCs")
-                        {
-                            expectedCode = 405;
-                            expectedErrorType = "protocol";
-                            expectedErrorTag = "operation-not-supported";
-
-                            SECTION("RPC node")
-                            {
-                                uriPath = "/restconf/data/example:test-rpc";
-                                expectedErrorMessage = "'/example:test-rpc' is an RPC/Action node";
-                            }
-                            SECTION("Action node")
-                            {
-                                uriPath = "/restconf/data/example:tlc/list=eth0/example-action";
-                                expectedErrorMessage = "'/example:tlc/list/example-action' is an RPC/Action node";
-                            }
-                        }
-                        SECTION("RPC input node")
-                        {
-                            uriPath = "/restconf/data/example:test-rpc/i";
-                            expectedErrorMessage = "'/example:test-rpc' is an RPC/Action node, any child of it can't be requested";
-                        }
-                        SECTION("RPC output node")
-                        {
-                            uriPath = "/restconf/data/example:test-rpc/o";
-                            expectedErrorMessage = "'/example:test-rpc' is an RPC/Action node, any child of it can't be requested";
-                        }
+                        uriPath = "/restconf/data/example-augment:b";
+                        expectedErrorMessage = "Couldn't find schema node: /example-augment:b";
                     }
-
-                    SECTION("(Leaf-)list key handling")
+                    SECTION("Nonexistent node")
                     {
-                        SECTION("Not a list")
-                        {
-                            uriPath = "/restconf/data/example:tlc=eth0";
-                            expectedErrorMessage = "No keys allowed for node '/example:tlc'";
-                        }
-                        SECTION("Wrong number of keys in a list")
-                        {
-                            uriPath = "/restconf/data/example:tlc/list=eth0,eth1";
-                            expectedErrorMessage = "List '/example:tlc/list' requires 1 keys";
-                        }
-                        SECTION("Wrong number of keys in a leaf-list")
-                        {
-                            uriPath = "/restconf/data/example:tlc/list=eth0/collection=br0,eth1";
-                            expectedErrorMessage = "Leaf-list '/example:tlc/list/collection' requires exactly one key";
-                        }
+                        uriPath = "/restconf/data/example:tlc/hello-world";
+                        expectedErrorMessage = "Node 'hello-world' is not a child of '/example:tlc'";
                     }
-
-                    SECTION("Unsupported datastore")
+                    SECTION("Feature not enabled")
                     {
-                        uriPath = "/restconf/ds/hello:world/example:tlc";
-                        expectedErrorMessage = "Unsupported datastore hello:world";
+                        uriPath = "/restconf/data/example:f";
+                        expectedErrorMessage = "Couldn't find schema node: /example:f";
                     }
-
-                    for (const auto& httpMethod : {"GET"s, "PUT"s}) {
-                        CAPTURE(httpMethod);
-                        REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, httpMethod, uriPath),
-                                               serializeErrorResponse(expectedCode, expectedErrorType, expectedErrorTag, expectedErrorMessage).c_str(),
-                                               rousette::restconf::ErrorResponse);
+                    SECTION("Schema node")
+                    {
+                        uriPath = "/restconf/data/example:tlc/list=eth0/choose";
+                        expectedErrorMessage = "Node 'choose' is not a child of '/example:tlc/list'";
+                    }
+                    SECTION("Schema node")
+                    {
+                        uriPath = "/restconf/data/example:tlc/list=eth0/choose/choice1";
+                        expectedErrorMessage = "Node 'choose' is not a child of '/example:tlc/list'";
                     }
                 }
 
-                SECTION("POST")
+                SECTION("Invalid data resources")
                 {
-                    expectedCode = 400;
-                    expectedErrorType = "protocol";
-                    expectedErrorTag = "operation-failed";
-
-                    SECTION("Operation resource")
+                    SECTION("top-level list node")
                     {
-                        SECTION("RPC node missing")
-                        {
-                            uriPath = "/restconf/operations";
-                            expectedErrorMessage = "'/' is not an operation resource";
-                        }
-                        SECTION("RPC must be invoked via /restconf/operations")
-                        {
-                            uriPath = "/restconf/data/example:test-rpc";
-                            expectedErrorMessage = "RPC '/example:test-rpc' must be requested using operation prefix";
-                        }
-                        SECTION("actions must be invoked via /restconf/data")
-                        {
-                            uriPath = "/restconf/operations/example:tlc/list=eth0/example-action";
-                            expectedErrorMessage = "Action '/example:tlc/list/example-action' must be requested using data prefix";
-                        }
-
-                        SECTION("RPC and action input/output nodes")
-                        {
-                            expectedErrorType = "application";
-                            SECTION("RPC")
-                            {
-                                expectedErrorMessage = "'/example:test-rpc' is an RPC/Action node, any child of it can't be requested";
-
-                                SECTION("Input node")
-                                {
-                                    uriPath = "/restconf/operations/example:test-rpc/i";
-                                }
-                                SECTION("Output node")
-                                {
-                                    uriPath = "/restconf/operations/example:test-rpc/o";
-                                }
-                            }
-                            SECTION("Action")
-                            {
-                                expectedErrorMessage = "'/example:tlc/list/example-action' is an RPC/Action node, any child of it can't be requested";
-
-                                SECTION("Input node")
-                                {
-                                    uriPath = "/restconf/data/example:tlc/list=eth0/example-action/i";
-                                }
-                                SECTION("Output node")
-                                {
-                                    uriPath = "/restconf/data/example:tlc/list=eth0/example-action/o";
-                                }
-                            }
-                        }
+                        uriPath = "/restconf/data/example:top-level-list";
+                        expectedErrorMessage = "List '/example:top-level-list' requires 1 keys";
                     }
-
-                    SECTION("Data(store) resources")
+                    SECTION("List node")
+                    {
+                        uriPath = "/restconf/data/example:tlc/key-less-list";
+                        expectedErrorMessage = "List '/example:tlc/key-less-list' has no keys. It can not be accessed directly";
+                    }
+                    SECTION("leaf-list node")
+                    {
+                        uriPath = "/restconf/data/example:tlc/list=eth0/collection";
+                        expectedErrorMessage = "Leaf-list '/example:tlc/list/collection' requires exactly one key";
+                    }
+                    SECTION("RPCs")
                     {
                         expectedCode = 405;
-                        expectedErrorType = "application";
+                        expectedErrorType = "protocol";
                         expectedErrorTag = "operation-not-supported";
 
-                        SECTION("Data")
+                        SECTION("RPC node")
                         {
-                            uriPath = "/restconf/data/example:tlc";
-                            expectedErrorMessage = "POST method for a data resource is not yet implemented";
+                            uriPath = "/restconf/data/example:test-rpc";
+                            expectedErrorMessage = "'/example:test-rpc' is an RPC/Action node";
                         }
-                        SECTION("Datastore")
+                        SECTION("Action node")
                         {
-                            expectedErrorMessage = "POST method for a complete-datastore resource is not yet implemented";
-
-                            SECTION("Basic datastore")
-                            {
-                                uriPath = "/restconf/data/";
-                            }
-                            SECTION("NMDA")
-                            {
-                                uriPath = "/restconf/ds/ietf-datastores:running";
-                            }
+                            uriPath = "/restconf/data/example:tlc/list=eth0/example-action";
+                            expectedErrorMessage = "'/example:tlc/list/example-action' is an RPC/Action node";
                         }
                     }
+                    SECTION("RPC input node")
+                    {
+                        uriPath = "/restconf/data/example:test-rpc/i";
+                        expectedErrorMessage = "'/example:test-rpc' is an RPC/Action node, any child of it can't be requested";
+                    }
+                    SECTION("RPC output node")
+                    {
+                        uriPath = "/restconf/data/example:test-rpc/o";
+                        expectedErrorMessage = "'/example:test-rpc' is an RPC/Action node, any child of it can't be requested";
+                    }
+                }
 
-                    REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "POST", uriPath),
+                SECTION("(Leaf-)list key handling")
+                {
+                    SECTION("Not a list")
+                    {
+                        uriPath = "/restconf/data/example:tlc=eth0";
+                        expectedErrorMessage = "No keys allowed for node '/example:tlc'";
+                    }
+                    SECTION("Wrong number of keys in a list")
+                    {
+                        uriPath = "/restconf/data/example:tlc/list=eth0,eth1";
+                        expectedErrorMessage = "List '/example:tlc/list' requires 1 keys";
+                    }
+                    SECTION("Wrong number of keys in a leaf-list")
+                    {
+                        uriPath = "/restconf/data/example:tlc/list=eth0/collection=br0,eth1";
+                        expectedErrorMessage = "Leaf-list '/example:tlc/list/collection' requires exactly one key";
+                    }
+                }
+
+                SECTION("Unsupported datastore")
+                {
+                    uriPath = "/restconf/ds/hello:world/example:tlc";
+                    expectedErrorMessage = "Unsupported datastore hello:world";
+                }
+
+                for (const auto& httpMethod : {"GET"s, "PUT"s}) {
+                    CAPTURE(httpMethod);
+                    REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, httpMethod, uriPath),
                                            serializeErrorResponse(expectedCode, expectedErrorType, expectedErrorTag, expectedErrorMessage).c_str(),
                                            rousette::restconf::ErrorResponse);
                 }
+            }
 
-                SECTION("yang-library-version")
+            SECTION("POST")
+            {
+                expectedCode = 400;
+                expectedErrorType = "protocol";
+                expectedErrorTag = "operation-failed";
+
+                SECTION("Operation resource")
                 {
-                    for (const std::string httpMethod : {"PUT", "POST", "PATCH", "DELETE"}) {
-                        CAPTURE(httpMethod);
-                        REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, httpMethod, "/restconf/yang-library-version"),
-                                               serializeErrorResponse(405, "application", "operation-not-supported", "Method not allowed.").c_str(),
-                                               rousette::restconf::ErrorResponse);
+                    SECTION("RPC node missing")
+                    {
+                        uriPath = "/restconf/operations";
+                        expectedErrorMessage = "'/' is not an operation resource";
                     }
+                    SECTION("RPC must be invoked via /restconf/operations")
+                    {
+                        uriPath = "/restconf/data/example:test-rpc";
+                        expectedErrorMessage = "RPC '/example:test-rpc' must be requested using operation prefix";
+                    }
+                    SECTION("actions must be invoked via /restconf/data")
+                    {
+                        uriPath = "/restconf/operations/example:tlc/list=eth0/example-action";
+                        expectedErrorMessage = "Action '/example:tlc/list/example-action' must be requested using data prefix";
+                    }
+
+                    SECTION("RPC and action input/output nodes")
+                    {
+                        expectedErrorType = "application";
+                        SECTION("RPC")
+                        {
+                            expectedErrorMessage = "'/example:test-rpc' is an RPC/Action node, any child of it can't be requested";
+
+                            SECTION("Input node")
+                            {
+                                uriPath = "/restconf/operations/example:test-rpc/i";
+                            }
+                            SECTION("Output node")
+                            {
+                                uriPath = "/restconf/operations/example:test-rpc/o";
+                            }
+                        }
+                        SECTION("Action")
+                        {
+                            expectedErrorMessage = "'/example:tlc/list/example-action' is an RPC/Action node, any child of it can't be requested";
+
+                            SECTION("Input node")
+                            {
+                                uriPath = "/restconf/data/example:tlc/list=eth0/example-action/i";
+                            }
+                            SECTION("Output node")
+                            {
+                                uriPath = "/restconf/data/example:tlc/list=eth0/example-action/o";
+                            }
+                        }
+                    }
+                }
+
+                SECTION("Data(store) resources")
+                {
+                    expectedCode = 405;
+                    expectedErrorType = "application";
+                    expectedErrorTag = "operation-not-supported";
+
+                    SECTION("Data")
+                    {
+                        uriPath = "/restconf/data/example:tlc";
+                        expectedErrorMessage = "POST method for a data resource is not yet implemented";
+                    }
+                    SECTION("Datastore")
+                    {
+                        expectedErrorMessage = "POST method for a complete-datastore resource is not yet implemented";
+
+                        SECTION("Basic datastore")
+                        {
+                            uriPath = "/restconf/data/";
+                        }
+                        SECTION("NMDA")
+                        {
+                            uriPath = "/restconf/ds/ietf-datastores:running";
+                        }
+                    }
+                }
+
+                REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "POST", uriPath),
+                                       serializeErrorResponse(expectedCode, expectedErrorType, expectedErrorTag, expectedErrorMessage).c_str(),
+                                       rousette::restconf::ErrorResponse);
+            }
+
+            SECTION("yang-library-version")
+            {
+                for (const std::string httpMethod : {"PUT", "POST", "PATCH", "DELETE"}) {
+                    CAPTURE(httpMethod);
+                    REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, httpMethod, "/restconf/yang-library-version"),
+                                           serializeErrorResponse(405, "application", "operation-not-supported", "Method not allowed.").c_str(),
+                                           rousette::restconf::ErrorResponse);
                 }
             }
 
