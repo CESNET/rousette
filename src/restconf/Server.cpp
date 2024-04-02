@@ -585,6 +585,47 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     break;
                 }
 
+                case RestconfRequest::Type::DeleteNode:
+                    if (restconfRequest.datastore == sysrepo::Datastore::FactoryDefault || restconfRequest.datastore == sysrepo::Datastore::Operational) {
+                        throw ErrorResponse(405, "application", "operation-not-supported", "Read-only datastore.");
+                    }
+
+                    sess.switchDatastore(restconfRequest.datastore ? restconfRequest.datastore.value() : sysrepo::Datastore::Running);
+
+                    try {
+                        auto [edit, deletedNode] = sess.getContext().newPath2(restconfRequest.path, std::nullopt, libyang::CreationOptions::Opaque);
+                        // If the node could be created, it will not be opaque. However, setting meta attributes to opaque and standard nodes is a different process.
+                        if (deletedNode->isOpaque()) {
+                            deletedNode->newAttrOpaqueJSON("ietf-netconf", "operation", "delete");
+                        } else {
+                            auto netconf = sess.getContext().getModuleLatest("ietf-netconf");
+                            deletedNode->newMeta(*netconf, "operation", "delete");
+                        }
+
+                        sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
+                        sess.applyChanges();
+                    } catch (const sysrepo::ErrorWithCode& e) {
+                        if (e.code() == sysrepo::ErrorCode::Unauthorized) {
+                            throw ErrorResponse(403, "application", "access-denied", "Access denied.", restconfRequest.path);
+                        } else if (e.code() == sysrepo::ErrorCode::NotFound) {
+                            res.write_head(404, {
+                                                    {"access-control-allow-origin", {"*", false}},
+                                                });
+                            res.end();
+                            return;
+                        }
+
+                        throw;
+                    }
+
+                    res.write_head(
+                        204,
+                        {
+                            {"access-control-allow-origin", {"*", false}},
+                        });
+                    res.end();
+                    break;
+
                 case RestconfRequest::Type::Execute: {
                     auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, restconfRequest.path);
 
