@@ -173,6 +173,11 @@ Response post(auto xpath, const std::string& data, const std::map<std::string, s
     return clientRequest("POST", xpath, data, headers);
 }
 
+Response httpDelete(auto uri, const std::map<std::string, std::string>& headers)
+{
+    return clientRequest("DELETE", uri, "", headers);
+}
+
 auto manageNacm(sysrepo::Session session)
 {
     return make_unique_resource(
