@@ -334,9 +334,13 @@ TEST_CASE("URI path parser")
 
         SECTION("Contextually valid paths")
         {
-            SECTION("GET and PUT")
+            SECTION("GET, PUT, DELETE")
             {
-                for (const auto& [httpMethod, expectedRequestType] : {std::pair<std::string, RestconfRequest::Type>{"GET", RestconfRequest::Type::GetData}, {"PUT", RestconfRequest::Type::CreateOrReplaceThisNode}}) {
+                for (const auto& [httpMethod, expectedRequestType] : {
+                         std::pair<std::string, RestconfRequest::Type>{"GET", RestconfRequest::Type::GetData},
+                         {"PUT", RestconfRequest::Type::CreateOrReplaceThisNode},
+                         {"DELETE", RestconfRequest::Type::DeleteNode},
+                     }) {
                     for (const auto& [uriPath, expectedLyPath, expectedDatastore] : {
                              std::tuple<std::string, std::string, std::optional<sysrepo::Datastore>>{"/restconf/data/example:top-level-leaf", "/example:top-level-leaf", std::nullopt},
                              {"/restconf/data/example:top-level-list=hello", "/example:top-level-list[name='hello']", std::nullopt},
@@ -456,7 +460,7 @@ TEST_CASE("URI path parser")
             std::string expectedErrorMessage;
             std::string uriPath;
 
-            SECTION("GET and PUT")
+            SECTION("GET, PUT, DELETE")
             {
                 expectedCode = 400;
                 expectedErrorType = "application";
@@ -578,7 +582,7 @@ TEST_CASE("URI path parser")
                     expectedErrorMessage = "Unsupported datastore hello:world";
                 }
 
-                for (const auto& httpMethod : {"GET"s, "PUT"s}) {
+                for (const auto& httpMethod : {"GET"s, "PUT"s, "DELETE"s}) {
                     CAPTURE(httpMethod);
                     REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, httpMethod, uriPath),
                                            serializeErrorResponse(expectedCode, expectedErrorType, expectedErrorTag, expectedErrorMessage).c_str(),
@@ -689,7 +693,6 @@ TEST_CASE("URI path parser")
                 REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "HEAD", "/restconf/data/example:top-level-leaf"), exc.c_str(), rousette::restconf::ErrorResponse);
                 REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "OPTIONS", "/restconf/data/example:top-level-leaf"), exc.c_str(), rousette::restconf::ErrorResponse);
                 REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "PATCH", "/restconf/data"), exc.c_str(), rousette::restconf::ErrorResponse);
-                REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "DELETE", "/restconf/data/example:top-level-leaf"), exc.c_str(), rousette::restconf::ErrorResponse);
             }
         }
     }

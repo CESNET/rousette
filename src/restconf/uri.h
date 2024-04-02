@@ -52,6 +52,7 @@ struct RestconfRequest {
     enum class Type {
         GetData, ///< GET on a data resource or a complete-datastore resource
         CreateOrReplaceThisNode, ///< PUT on a data resource
+        DeleteNode, ///< DELETE on a data resource
         Execute, ///< POST on a operation resource (Execute an RPC or an action)
         YangLibraryVersion ///< Report ietf-yang-library version
     };
