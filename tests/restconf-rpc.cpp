@@ -12,15 +12,6 @@ static const auto SERVER_PORT = "10084";
 #include "tests/aux-utils.h"
 #include "tests/pretty_printers.h"
 
-#define CONTENT_TYPE_JSON                            \
-    {                                                \
-        "content-type", "application/yang-data+json" \
-    }
-#define CONTENT_TYPE_XML                            \
-    {                                               \
-        "content-type", "application/yang-data+xml" \
-    }
-
 struct RpcCall {
     MAKE_MOCK2(rpcCall, void(std::string_view, const std::map<std::string, std::string>&));
 };
