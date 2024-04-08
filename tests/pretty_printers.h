@@ -10,6 +10,7 @@
 #include <optional>
 #include <sstream>
 #include <trompeloeil.hpp>
+#include "datastoreUtils.h"
 
 namespace trompeloeil {
 template <>
@@ -23,4 +24,17 @@ struct printer<std::optional<std::string>> {
         }
     }
 };
+
+template <>
+struct printer<SrChange> {
+    static void print(std::ostream& os, const SrChange& o)
+    {
+        os << '{';
+        os << o.operation << ", ";
+        os << o.nodePath << ", ";
+        printer<std::optional<std::string>>::print(os, o.currentValue);
+        os << '}';
+    }
+};
 }
+

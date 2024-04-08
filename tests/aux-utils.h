@@ -84,6 +84,9 @@ static const auto SERVER_ADDRESS_AND_PORT = "http://["s + SERVER_ADDRESS + "]" +
 #define AUTH_NORULES {"authorization", "Basic bm9ydWxlczplbXB0eQ=="}
 #define AUTH_ROOT {"authorization", "Basic cm9vdDpzZWtyaXQ="}
 
+#define CONTENT_TYPE_JSON {"content-type", "application/yang-data+json"}
+#define CONTENT_TYPE_XML {"content-type", "application/yang-data+xml"}
+
 #define YANG_ROOT "/yang"
 #define RESTCONF_ROOT "/restconf"
 #define RESTCONF_DATA_ROOT RESTCONF_ROOT "/data"

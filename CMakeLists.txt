@@ -134,6 +134,7 @@ if(BUILD_TESTING)
     include(cmake/SysrepoTest.cmake)
 
     add_library(DoctestIntegration STATIC
+        tests/datastoreUtils.cpp
         tests/doctest_integration.cpp
         tests/trompeloeil_doctest.h
         )
