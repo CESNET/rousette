@@ -740,43 +740,451 @@ TEST_CASE("writing data")
 
     SECTION("POST")
     {
-        REQUIRE(post(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "str"})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{405, jsonHeaders, R"({
+        auto changesExample = datastoreChangesSubscription(srSess, dsChangesMock, "example");
+
+        SECTION("Create a leaf")
+        {
+            SECTION("Top-level leaf")
+            {
+                EXPECT_CHANGE(CREATED("/example:top-level-leaf", "str"));
+                REQUIRE(post(RESTCONF_DATA_ROOT "/", R"({"example:top-level-leaf": "str"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+            }
+
+            SECTION("Leaf in a container")
+            {
+                EXPECT_CHANGE(CREATED("/example:two-leafs/a", "a-value"));
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:a": "a-value"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:a": "another-a-value"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{409, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
         "error-type": "application",
-        "error-tag": "operation-not-supported",
-        "error-message": "POST method for a complete-datastore resource is not yet implemented"
+        "error-tag": "resource-denied",
+        "error-message": "Resource already exists."
+      }
+    ]
+  }
+}
+)"});
+            }
+
+            SECTION("Creating two leafs at once")
+            {
+                REQUIRE(post(RESTCONF_DATA_ROOT "/", R"({"example:top-level-leaf": "a", "example:top-level-leaf2": "b"})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "The message body MUST contain exactly one instance of the expected data resource."
       }
     ]
   }
 }
 )"});
 
-        REQUIRE(post(RESTCONF_ROOT_DS("running"), R"({"example:top-level-leaf": "str"})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{405, jsonHeaders, R"({
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:a": "a", "example:b": "b"})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "The message body MUST contain exactly one instance of the expected data resource."
+      }
+    ]
+  }
+}
+)"});
+            }
+        }
+
+        SECTION("Container operations")
+        {
+            EXPECT_CHANGE(CREATED("/example:two-leafs/a", "a-val"));
+            REQUIRE(post(RESTCONF_DATA_ROOT "/", R"({"example:two-leafs": {"a": "a-val"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+            SECTION("Add the second leaf via /example:two-leafs")
+            {
+                EXPECT_CHANGE(CREATED("/example:two-leafs/b", "new-b-val"));
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:b": "new-b-val"})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+            }
+
+            SECTION("Add the second via /")
+            {
+                /* This looks like that it should fail because example:two-leafs container already exists
+                 * But the way it's implemented in sysrepo is that non-presence containers are "idempotent", and a create op on them always succeeds even if there are child nodes.
+                 */
+                EXPECT_CHANGE(CREATED("/example:two-leafs/b", "new-b-val"));
+                REQUIRE(post(RESTCONF_DATA_ROOT "/", R"({"example:two-leafs": {"example:b": "new-b-val"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+            }
+
+            REQUIRE(post(RESTCONF_DATA_ROOT "/", R"({"example:two-leafs": {}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:a": "blabla"})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{409, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
         "error-type": "application",
-        "error-tag": "operation-not-supported",
-        "error-message": "POST method for a complete-datastore resource is not yet implemented"
+        "error-tag": "resource-denied",
+        "error-message": "Resource already exists."
+      }
+    ]
+  }
+}
+)"});
+        }
+
+        SECTION("content-type")
+        {
+            EXPECT_CHANGE(CREATED("/example:a/b/c/blower", "libyang is love"));
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:a", R"(<b xmlns="http://example.tld/example"><c><blower>libyang is love</blower></c></b>)", {AUTH_ROOT, CONTENT_TYPE_XML}) == Response{201, xmlHeaders, ""});
+
+            // content-type header is mandatory for POST which sends a body
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:a", R"({"example-augment:b": { "c" : {"enabled" : false}}}")", {AUTH_ROOT}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Content-type header missing."
       }
     ]
   }
 }
 )"});
 
-        REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:a": "a-value"}")", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{405, jsonHeaders, R"({
+            // mismatch between content-type and actual data format
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:a", R"({"example:b": {"example:c": {"l": "ahoj"}}}")", {AUTH_ROOT, CONTENT_TYPE_XML}) == Response{400, xmlHeaders, R"(<errors xmlns="urn:ietf:params:xml:ns:yang:ietf-restconf">
+  <error>
+    <error-type>protocol</error-type>
+    <error-tag>invalid-value</error-tag>
+    <error-message>Validation failure: DataNode::parseSubtree: lyd_parse_data failed: LY_EVALID</error-message>
+  </error>
+</errors>
+)"});
+        }
+
+        SECTION("Default values handling")
+        {
+            SECTION("no change; setting default value")
+            {
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:a", R"({"example:b":{"c":{"enabled":true}}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+            }
+
+            SECTION("change; setting different value")
+            {
+                EXPECT_CHANGE(MODIFIED("/example:a/b/c/enabled", "false"));
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:a/b", R"({"example:c":{"enabled":false}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+            }
+        }
+
+        SECTION("Children with same name but different namespaces")
+        {
+            // there are two childs named 'b' under /example:a but both inside different namespaces (/example:a/b and /example:a/example-augment:b)
+            EXPECT_CHANGE(MODIFIED("/example:a/example-augment:b/c/enabled", "false"));
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:a", R"({"example-augment:b":{"c":{"enabled":false}}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+        }
+
+        SECTION("List operations")
+        {
+            // two inserts so we have something to operate on
+            EXPECT_CHANGE(
+                CREATED("/example:top-level-list[name='sysrepo']", std::nullopt),
+                CREATED("/example:top-level-list[name='sysrepo']/name", "sysrepo"));
+            REQUIRE(post(RESTCONF_DATA_ROOT "/", R"({"example:top-level-list":[{"name": "sysrepo"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+            EXPECT_CHANGE(
+                CREATED("/example:tlc/list[name='libyang']", std::nullopt),
+                CREATED("/example:tlc/list[name='libyang']/name", "libyang"),
+                CREATED("/example:tlc/list[name='libyang']/choice1", "libyang"));
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc", R"({"example:list":[{"name": "libyang", "choice1": "libyang"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+            SECTION("New insert does not modify other list entries")
+            {
+                EXPECT_CHANGE(
+                    CREATED("/example:tlc/list[name='netconf']", std::nullopt),
+                    CREATED("/example:tlc/list[name='netconf']/name", "netconf"),
+                    CREATED("/example:tlc/list[name='netconf']/choice1", "netconf"));
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc", R"({"example:list":[{"name": "netconf", "choice1": "netconf"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+            }
+
+            SECTION("Insert a larger portion of data")
+            {
+                EXPECT_CHANGE(
+                    CREATED("/example:tlc/list[name='large']", std::nullopt),
+                    CREATED("/example:tlc/list[name='large']/name", "large"),
+                    CREATED("/example:tlc/list[name='large']/nested[first='1'][second='2'][third='3']", std::nullopt),
+                    CREATED("/example:tlc/list[name='large']/nested[first='1'][second='2'][third='3']/first", "1"),
+                    CREATED("/example:tlc/list[name='large']/nested[first='1'][second='2'][third='3']/second", "2"),
+                    CREATED("/example:tlc/list[name='large']/nested[first='1'][second='2'][third='3']/third", "3"),
+                    CREATED("/example:tlc/list[name='large']/choice2", "large"));
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc", R"({"example:list":[{"name": "large", "choice2": "large", "example:nested": [{"first": "1", "second": 2, "third": "3"}]}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+            }
+
+            SECTION("Insert into the list having multiple keys")
+            {
+                EXPECT_CHANGE(
+                    CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']", std::nullopt),
+                    CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']/first", "11"),
+                    CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']/second", "12"),
+                    CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']/third", "13"));
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc/list=libyang", R"({"example:nested": [{"first": "11", "second": 12, "third": "13"}]}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+            }
+
+            SECTION("Multiple (leaf-)list entries at once")
+            {
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc", R"({"example:list":[{"name": "netconf", "choice1": "nope"}, {"name": "sysrepo", "choice1": "bla"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
-        "error-type": "application",
-        "error-tag": "operation-not-supported",
-        "error-message": "POST method for a data resource is not yet implemented"
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "The message body MUST contain exactly one instance of the expected data resource."
       }
     ]
   }
 }
 )"});
+
+                REQUIRE(post(RESTCONF_DATA_ROOT "/", R"({"example:top-level-list":[{"name": "netconf"}, {"name": "sysrepo"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "The message body MUST contain exactly one instance of the expected data resource."
+      }
+    ]
+  }
+}
+)"});
+
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc/list=libyang", R"({"example:collection": [5, 42]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "The message body MUST contain exactly one instance of the expected data resource."
+      }
+    ]
+  }
+}
+)"});
+
+                REQUIRE(post(RESTCONF_DATA_ROOT "/", R"({"example:top-level-leaf-list": [5, 42]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "The message body MUST contain exactly one instance of the expected data resource."
+      }
+    ]
+  }
+}
+)"});
+            }
+
+            SECTION("Insert into leaf-lists")
+            {
+                EXPECT_CHANGE(CREATED("/example:top-level-leaf-list[.='4']", "4"));
+                REQUIRE(post(RESTCONF_DATA_ROOT "/", R"({"example:top-level-leaf-list":[4]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                EXPECT_CHANGE(CREATED("/example:top-level-leaf-list[.='1']", "1"));
+                REQUIRE(post(RESTCONF_DATA_ROOT "/", R"({"example:top-level-leaf-list":[1]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                EXPECT_CHANGE(CREATED("/example:tlc/list[name='libyang']/collection[.='4']", "4"));
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc/list=libyang", R"({"example:collection": [4]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc/list=libyang", R"({"example:collection": 4})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Validation failure: DataNode::parseSubtree: lyd_parse_data failed: LY_EVALID"
+      }
+    ]
+  }
+}
+)"});
+            }
+
+            SECTION("Key handling")
+            {
+                // key leaf missing
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc", R"({"example:list":[{"choice1": "nope"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Validation failure: DataNode::parseSubtree: lyd_parse_data failed: LY_EVALID"
+      }
+    ]
+  }
+}
+)"});
+
+                // list entry missing
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc", R"({"example:list":[]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "The message body MUST contain exactly one instance of the expected data resource."
+      }
+    ]
+  }
+}
+)"});
+
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:top-level-list=hello", R"({"name":"hello"})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "The message body MUST contain exactly one instance of the expected data resource."
+      }
+    ]
+  }
+}
+)"});
+
+                REQUIRE(post(RESTCONF_DATA_ROOT "/", R"({"example:top-level-list":[]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "The message body MUST contain exactly one instance of the expected data resource."
+      }
+    ]
+  }
+}
+)"});
+            }
+        }
+    }
+
+    SECTION("POST with NMDA")
+    {
+        SECTION("Writable datastores")
+        {
+            sysrepo::Datastore ds = sysrepo::Datastore::Running;
+            std::string uri;
+
+            // The code serving POST requests branches if the resource is /.
+            SECTION("Creating top-level nodes")
+            {
+                SECTION("startup")
+                {
+                    ds = sysrepo::Datastore::Startup;
+                    uri = RESTCONF_ROOT_DS("startup");
+                }
+
+                SECTION("candidate")
+                {
+                    ds = sysrepo::Datastore::Candidate;
+                    uri = RESTCONF_ROOT_DS("candidate");
+                }
+
+                SECTION("running")
+                {
+                    ds = sysrepo::Datastore::Running;
+                    uri = RESTCONF_ROOT_DS("running");
+                }
+
+                auto sess = srConn.sessionStart(ds);
+
+                auto sub = datastoreChangesSubscription(sess, dsChangesMock, "example");
+
+                EXPECT_CHANGE(
+                    CREATED("/example:tlc/list[name='libyang']", std::nullopt),
+                    CREATED("/example:tlc/list[name='libyang']/name", "libyang"),
+                    CREATED("/example:tlc/list[name='libyang']/choice1", "libyang"));
+                REQUIRE(post(uri, R"({"example:tlc": {"list": [{"name": "libyang", "choice1": "libyang"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{201, jsonHeaders, ""});
+                REQUIRE(post(uri, R"({"example:tlc": {"list": [{"name": "libyang", "choice1": "libyang"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{409, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "resource-denied",
+        "error-message": "Resource already exists."
+      }
+    ]
+  }
+}
+)"});
+            }
+
+            SECTION("Creating non-top-level nodes")
+            {
+                SECTION("startup")
+                {
+                    ds = sysrepo::Datastore::Startup;
+                    uri = RESTCONF_ROOT_DS("startup");
+                }
+
+                SECTION("candidate")
+                {
+                    ds = sysrepo::Datastore::Candidate;
+                    uri = RESTCONF_ROOT_DS("candidate");
+                }
+
+                SECTION("running")
+                {
+                    ds = sysrepo::Datastore::Running;
+                    uri = RESTCONF_ROOT_DS("running");
+                }
+
+                auto sess = srConn.sessionStart(ds);
+                auto sub = datastoreChangesSubscription(sess, dsChangesMock, "example");
+
+                EXPECT_CHANGE(CREATED("/example:two-leafs/a", "hello"));
+                REQUIRE(post(uri + "/example:two-leafs", R"({"example:a":"hello"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                REQUIRE(post(uri + "/example:two-leafs", R"({"example:a":"hello world"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{409, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "resource-denied",
+        "error-message": "Resource already exists."
+      }
+    ]
+  }
+}
+)"});
+            }
+        }
+
+        SECTION("Read-only datastores")
+        {
+            std::string uri;
+            SECTION("operational")
+            {
+                uri = RESTCONF_ROOT_DS("operational");
+            }
+
+            SECTION("factory-default")
+            {
+                uri = RESTCONF_ROOT_DS("factory-default");
+            }
+
+            REQUIRE(post(uri + "/", R"({"example:top-level-leaf": "str"})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{405, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-not-supported",
+        "error-message": "Read-only datastore."
+      }
+    ]
+  }
+}
+)"});
+        }
     }
 }

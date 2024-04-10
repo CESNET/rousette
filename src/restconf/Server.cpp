@@ -330,6 +330,78 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
     }
 }
 
+void processPost(std::shared_ptr<RequestContext> requestCtx)
+{
+    try {
+        auto ctx = requestCtx->sess.getContext();
+
+        std::optional<libyang::DataNode> edit;
+        std::optional<libyang::DataNode> node;
+        std::vector<libyang::DataNode> createdNodes;
+
+        if (requestCtx->lyPathOriginal == "/") {
+            node = edit = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+            if (node) {
+                const auto siblings = node->siblings();
+                createdNodes = {siblings.begin(), siblings.end()};
+            }
+        } else {
+            auto nodes = ctx.newPath2(requestCtx->lyPathOriginal, std::nullopt);
+            edit = nodes.createdParent;
+            node = nodes.createdNode;
+
+            node->parseSubtree(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+            if (node) {
+                const auto children = node->immediateChildren();
+                createdNodes = {children.begin(), children.end()};
+            }
+        }
+
+        // filter out list key nodes, they can appear automatically when creating path that corresponds to a libyang list node
+        for (auto it = createdNodes.begin(); it != createdNodes.end();) {
+            if (node->schema().nodeType() == libyang::NodeType::List && it->schema().nodeType() == libyang::NodeType::Leaf && it->schema().asLeaf().isKey()) {
+                it = createdNodes.erase(it);
+            } else {
+                ++it;
+            }
+        }
+
+        if (createdNodes.size() != 1) {
+            throw ErrorResponse(400, "protocol", "invalid-value", "The message body MUST contain exactly one instance of the expected data resource.");
+        }
+
+        auto mod = ctx.getModuleImplemented("ietf-netconf");
+        createdNodes.begin()->newMeta(*mod, "operation", "create"); // FIXME: check no other nc:operations in the tree
+
+        requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
+        requestCtx->sess.applyChanges();
+
+        requestCtx->res.write_head(201,
+                                   {
+                                       {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
+                                       {"access-control-allow-origin", {"*", false}},
+                                       // FIXME: POST data operation MUST return Location header
+                                   });
+        requestCtx->res.end();
+    } catch (const ErrorResponse& e) {
+        rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath);
+    } catch (libyang::ErrorWithCode& e) {
+        if (e.code() == libyang::ErrorCode::ValidationFailure) {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", "Validation failure: "s + e.what());
+        } else {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to libyang exception: "s + e.what());
+        }
+    } catch (sysrepo::ErrorWithCode& e) {
+        if (e.code() == sysrepo::ErrorCode::Unauthorized) {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 403, "application", "access-denied", "Access denied.");
+        } else if (e.code() == sysrepo::ErrorCode::ItemAlreadyExists) {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 409, "application", "resource-denied", "Resource already exists.");
+        } else {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception: "s + e.what());
+        }
+    }
+}
+
 void processPut(std::shared_ptr<RequestContext> requestCtx)
 {
     try {
@@ -607,7 +679,8 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     }
                     break;
 
-                case RestconfRequest::Type::CreateOrReplaceThisNode: {
+                case RestconfRequest::Type::CreateOrReplaceThisNode:
+                case RestconfRequest::Type::CreateChildren: {
                     if (restconfRequest.datastore == sysrepo::Datastore::FactoryDefault || restconfRequest.datastore == sysrepo::Datastore::Operational) {
                         throw ErrorResponse(405, "application", "operation-not-supported", "Read-only datastore.");
                     }
@@ -619,11 +692,16 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
                     auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, restconfRequest.path);
 
-                    req.on_data([requestCtx](const uint8_t* data, std::size_t length) {
-                        if (length > 0) {
+                    req.on_data([requestCtx, restconfRequest /* intentional copy */](const uint8_t* data, std::size_t length) {
+                        if (length > 0) { // there are still some data to be read
                             requestCtx->payload.append(reinterpret_cast<const char*>(data), length);
-                        } else {
+                            return;
+                        }
+
+                        if (restconfRequest.type == RestconfRequest::Type::CreateOrReplaceThisNode) {
                             processPut(requestCtx);
+                        } else {
+                            processPost(requestCtx);
                         }
                     });
                     break;
