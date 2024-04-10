@@ -528,23 +528,6 @@ TEST_CASE("URI path parser")
                         uriPath = "/restconf/data/example:tlc/list=eth0/collection";
                         expectedErrorMessage = "Leaf-list '/example:tlc/list/collection' requires exactly one key";
                     }
-                    SECTION("RPCs")
-                    {
-                        expectedCode = 405;
-                        expectedErrorType = "protocol";
-                        expectedErrorTag = "operation-not-supported";
-
-                        SECTION("RPC node")
-                        {
-                            uriPath = "/restconf/data/example:test-rpc";
-                            expectedErrorMessage = "'/example:test-rpc' is an RPC/Action node";
-                        }
-                        SECTION("Action node")
-                        {
-                            uriPath = "/restconf/data/example:tlc/list=eth0/example-action";
-                            expectedErrorMessage = "'/example:tlc/list/example-action' is an RPC/Action node";
-                        }
-                    }
                     SECTION("RPC input node")
                     {
                         uriPath = "/restconf/data/example:test-rpc/i";
@@ -580,6 +563,31 @@ TEST_CASE("URI path parser")
                 {
                     uriPath = "/restconf/ds/hello:world/example:tlc";
                     expectedErrorMessage = "Unsupported datastore hello:world";
+                }
+
+                for (const auto& httpMethod : {"GET"s, "PUT"s, "DELETE"s}) {
+                    CAPTURE(httpMethod);
+                    REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, httpMethod, uriPath),
+                                           serializeErrorResponse(expectedCode, expectedErrorType, expectedErrorTag, expectedErrorMessage).c_str(),
+                                           rousette::restconf::ErrorResponse);
+                }
+            }
+
+            SECTION("GET, PUT, DELETE with RPC nodes")
+            {
+                expectedCode = 405;
+                expectedErrorType = "protocol";
+                expectedErrorTag = "operation-not-supported";
+
+                SECTION("RPC node")
+                {
+                    uriPath = "/restconf/data/example:test-rpc";
+                    expectedErrorMessage = "'/example:test-rpc' is an RPC/Action node";
+                }
+                SECTION("Action node")
+                {
+                    uriPath = "/restconf/data/example:tlc/list=eth0/example-action";
+                    expectedErrorMessage = "'/example:tlc/list/example-action' is an RPC/Action node";
                 }
 
                 for (const auto& httpMethod : {"GET"s, "PUT"s, "DELETE"s}) {
