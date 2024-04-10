@@ -334,12 +334,13 @@ TEST_CASE("URI path parser")
 
         SECTION("Contextually valid paths")
         {
-            SECTION("GET, PUT, DELETE")
+            SECTION("GET, PUT, DELETE, POST (data)")
             {
                 for (const auto& [httpMethod, expectedRequestType] : {
                          std::pair<std::string, RestconfRequest::Type>{"GET", RestconfRequest::Type::GetData},
                          {"PUT", RestconfRequest::Type::CreateOrReplaceThisNode},
                          {"DELETE", RestconfRequest::Type::DeleteNode},
+                         {"POST", RestconfRequest::Type::CreateChildren},
                      }) {
                     for (const auto& [uriPath, expectedLyPath, expectedDatastore] : {
                              std::tuple<std::string, std::string, std::optional<sysrepo::Datastore>>{"/restconf/data/example:top-level-leaf", "/example:top-level-leaf", std::nullopt},
@@ -425,6 +426,12 @@ TEST_CASE("URI path parser")
                         REQUIRE(path == "/");
                         REQUIRE(datastore == expectedDatastore);
                     }
+                    {
+                        auto [requestType, datastore, path] = rousette::restconf::asRestconfRequest(ctx, "POST", uriPath);
+                        REQUIRE(requestType == RestconfRequest::Type::CreateChildren);
+                        REQUIRE(path == "/");
+                        REQUIRE(datastore == expectedDatastore);
+                    }
                 }
             }
 
@@ -460,7 +467,7 @@ TEST_CASE("URI path parser")
             std::string expectedErrorMessage;
             std::string uriPath;
 
-            SECTION("GET, PUT, DELETE")
+            SECTION("GET, PUT, DELETE, POST (data)")
             {
                 expectedCode = 400;
                 expectedErrorType = "application";
@@ -565,7 +572,7 @@ TEST_CASE("URI path parser")
                     expectedErrorMessage = "Unsupported datastore hello:world";
                 }
 
-                for (const auto& httpMethod : {"GET"s, "PUT"s, "DELETE"s}) {
+                for (const auto& httpMethod : {"GET"s, "PUT"s, "DELETE"s, "POST"s}) {
                     CAPTURE(httpMethod);
                     REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, httpMethod, uriPath),
                                            serializeErrorResponse(expectedCode, expectedErrorType, expectedErrorTag, expectedErrorMessage).c_str(),
@@ -598,84 +605,55 @@ TEST_CASE("URI path parser")
                 }
             }
 
-            SECTION("POST")
+            SECTION("POST (operation)")
             {
                 expectedCode = 400;
                 expectedErrorType = "protocol";
                 expectedErrorTag = "operation-failed";
 
-                SECTION("Operation resource")
+                SECTION("RPC node missing")
                 {
-                    SECTION("RPC node missing")
-                    {
-                        uriPath = "/restconf/operations";
-                        expectedErrorMessage = "'/' is not an operation resource";
-                    }
-                    SECTION("RPC must be invoked via /restconf/operations")
-                    {
-                        uriPath = "/restconf/data/example:test-rpc";
-                        expectedErrorMessage = "RPC '/example:test-rpc' must be requested using operation prefix";
-                    }
-                    SECTION("actions must be invoked via /restconf/data")
-                    {
-                        uriPath = "/restconf/operations/example:tlc/list=eth0/example-action";
-                        expectedErrorMessage = "Action '/example:tlc/list/example-action' must be requested using data prefix";
-                    }
-
-                    SECTION("RPC and action input/output nodes")
-                    {
-                        expectedErrorType = "application";
-                        SECTION("RPC")
-                        {
-                            expectedErrorMessage = "'/example:test-rpc' is an RPC/Action node, any child of it can't be requested";
-
-                            SECTION("Input node")
-                            {
-                                uriPath = "/restconf/operations/example:test-rpc/i";
-                            }
-                            SECTION("Output node")
-                            {
-                                uriPath = "/restconf/operations/example:test-rpc/o";
-                            }
-                        }
-                        SECTION("Action")
-                        {
-                            expectedErrorMessage = "'/example:tlc/list/example-action' is an RPC/Action node, any child of it can't be requested";
-
-                            SECTION("Input node")
-                            {
-                                uriPath = "/restconf/data/example:tlc/list=eth0/example-action/i";
-                            }
-                            SECTION("Output node")
-                            {
-                                uriPath = "/restconf/data/example:tlc/list=eth0/example-action/o";
-                            }
-                        }
-                    }
+                    uriPath = "/restconf/operations";
+                    expectedErrorMessage = "'/' is not an operation resource";
+                }
+                SECTION("RPC must be invoked via /restconf/operations")
+                {
+                    uriPath = "/restconf/data/example:test-rpc";
+                    expectedErrorMessage = "RPC '/example:test-rpc' must be requested using operation prefix";
+                }
+                SECTION("actions must be invoked via /restconf/data")
+                {
+                    uriPath = "/restconf/operations/example:tlc/list=eth0/example-action";
+                    expectedErrorMessage = "Action '/example:tlc/list/example-action' must be requested using data prefix";
                 }
 
-                SECTION("Data(store) resources")
+                SECTION("RPC and action input/output nodes")
                 {
-                    expectedCode = 405;
                     expectedErrorType = "application";
-                    expectedErrorTag = "operation-not-supported";
-
-                    SECTION("Data")
+                    SECTION("RPC")
                     {
-                        uriPath = "/restconf/data/example:tlc";
-                        expectedErrorMessage = "POST method for a data resource is not yet implemented";
-                    }
-                    SECTION("Datastore")
-                    {
-                        expectedErrorMessage = "POST method for a complete-datastore resource is not yet implemented";
+                        expectedErrorMessage = "'/example:test-rpc' is an RPC/Action node, any child of it can't be requested";
 
-                        SECTION("Basic datastore")
+                        SECTION("Input node")
                         {
-                            uriPath = "/restconf/data/";
+                            uriPath = "/restconf/operations/example:test-rpc/i";
                         }
-                        SECTION("NMDA")
+                        SECTION("Output node")
                         {
-                            uriPath = "/restconf/ds/ietf-datastores:running";
+                            uriPath = "/restconf/operations/example:test-rpc/o";
+                        }
+                    }
+                    SECTION("Action")
+                    {
+                        expectedErrorMessage = "'/example:tlc/list/example-action' is an RPC/Action node, any child of it can't be requested";
+
+                        SECTION("Input node")
+                        {
+                            uriPath = "/restconf/data/example:tlc/list=eth0/example-action/i";
+                        }
+                        SECTION("Output node")
+                        {
+                            uriPath = "/restconf/data/example:tlc/list=eth0/example-action/o";
                         }
                     }
                 }

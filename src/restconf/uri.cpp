@@ -262,24 +262,20 @@ void checkValidDataResource(const std::optional<libyang::SchemaNode>& node, cons
 /** @brief checks if provided schema node is valid for POST resource */
 void checkValidPostResource(const std::optional<libyang::SchemaNode>& node, const impl::URIPrefix& prefix)
 {
-    if (!node) {
-        if (prefix.resourceType == impl::URIPrefix::Type::BasicRestconfOperations) {
-            throw ErrorResponse(400, "protocol", "operation-failed", "'/' is not an operation resource");
-        } else {
-            throw ErrorResponse(405, "application", "operation-not-supported", "POST method for a complete-datastore resource is not yet implemented");
-        }
+    if (!node && prefix.resourceType == impl::URIPrefix::Type::BasicRestconfOperations) {
+        throw ErrorResponse(400, "protocol", "operation-failed", "'/' is not an operation resource");
     }
 
-    if (node->nodeType() != libyang::NodeType::RPC && node->nodeType() != libyang::NodeType::Action) {
-        throw ErrorResponse(405, "application", "operation-not-supported", "POST method for a data resource is not yet implemented");
-    }
-
-    if (node->nodeType() == libyang::NodeType::RPC && prefix.resourceType != impl::URIPrefix::Type::BasicRestconfOperations) {
+    if (node && node->nodeType() == libyang::NodeType::RPC && prefix.resourceType != impl::URIPrefix::Type::BasicRestconfOperations) {
         throw ErrorResponse(400, "protocol", "operation-failed", "RPC '"s + node->path() + "' must be requested using operation prefix");
     }
 
-    if (node->nodeType() == libyang::NodeType::Action && prefix.resourceType != impl::URIPrefix::Type::BasicRestconfData) {
+    if (node && node->nodeType() == libyang::NodeType::Action && prefix.resourceType != impl::URIPrefix::Type::BasicRestconfData) {
         throw ErrorResponse(400, "protocol", "operation-failed", "Action '"s + node->path() + "' must be requested using data prefix");
+    }
+
+    if (!node || (node && node->nodeType() != libyang::NodeType::RPC && node->nodeType() != libyang::NodeType::Action)) {
+        checkValidDataResource(node, prefix);
     }
 }
 
@@ -387,6 +383,8 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
         return {RestconfRequest::Type::GetData, uri->prefix.datastore, "/*"};
     } else if (httpMethod == "PUT" && uri->segments.empty()) {
         return {RestconfRequest::Type::CreateOrReplaceThisNode, uri->prefix.datastore, "/"};
+    } else if (httpMethod == "POST" && uri->segments.empty() && (uri->prefix.resourceType == impl::URIPrefix::Type::BasicRestconfData || uri->prefix.resourceType == impl::URIPrefix::Type::NMDADatastore)) {
+        return {RestconfRequest::Type::CreateChildren, uri->prefix.datastore, "/"};
     }
 
     auto [lyPath, schemaNode] = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
@@ -397,8 +395,12 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
         return {RestconfRequest::Type::CreateOrReplaceThisNode, uri->prefix.datastore, lyPath};
     } else if (httpMethod == "DELETE") {
         return {RestconfRequest::Type::DeleteNode, uri->prefix.datastore, lyPath};
-    } else {
+    } else if (httpMethod == "POST" && schemaNode && (schemaNode->nodeType() == libyang::NodeType::Action || schemaNode->nodeType() == libyang::NodeType::RPC)) {
         return {RestconfRequest::Type::Execute, uri->prefix.datastore, lyPath};
+    } else if (httpMethod == "POST") {
+        return {RestconfRequest::Type::CreateChildren, uri->prefix.datastore, lyPath};
+    } else {
+        throw "asd";
     }
 }
 

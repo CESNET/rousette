@@ -7,6 +7,8 @@ module example {
   feature f2 { }
 
   leaf top-level-leaf { type string; }
+  leaf top-level-leaf2 { type string; }
+
   list top-level-list {
     key "name";
     leaf name { type string; }
