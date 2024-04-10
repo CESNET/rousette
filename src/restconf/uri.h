@@ -54,6 +54,7 @@ struct RestconfRequest {
         CreateOrReplaceThisNode, ///< PUT on a data resource
         DeleteNode, ///< DELETE on a data resource
         Execute, ///< POST on a operation resource (Execute an RPC or an action)
+        CreateChildren, ///< POST on a data resouure
         YangLibraryVersion ///< Report ietf-yang-library version
     };
 
