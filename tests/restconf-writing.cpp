@@ -372,10 +372,10 @@ TEST_CASE("writing data")
                 REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang/collection=4", R"({"example:collection": [4]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
 
                 EXPECT_CHANGE(
-                    DELETED("/example:tlc/list[name='libyang']/collection[.='4']", "4"),
                     CREATED("/example:tlc/list[name='libyang']/collection[.='1']", "1"),
                     CREATED("/example:tlc/list[name='libyang']/collection[.='2']", "2"),
                     CREATED("/example:tlc/list[name='libyang']/collection[.='3']", "3"),
+                    DELETED("/example:tlc/list[name='libyang']/collection[.='4']", "4"),
                     MODIFIED("/example:tlc/list[name='libyang']/choice1", "idk"));
                 REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang", R"({"example:list":[{"name": "libyang", "choice1": "idk", "collection": [1,2,3]}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
             }
