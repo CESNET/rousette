@@ -592,7 +592,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 }
 
                 case RestconfRequest::Type::GetData:
-                    sess.switchDatastore(restconfRequest.datastore ? restconfRequest.datastore.value() : sysrepo::Datastore::Operational);
+                    sess.switchDatastore(restconfRequest.datastore.value_or(sysrepo::Datastore::Operational));
                     if (auto data = sess.getData(restconfRequest.path); data) {
                         res.write_head(
                             200,
@@ -612,7 +612,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         throw ErrorResponse(405, "application", "operation-not-supported", "Read-only datastore.");
                     }
 
-                    sess.switchDatastore(restconfRequest.datastore ? restconfRequest.datastore.value() : sysrepo::Datastore::Running);
+                    sess.switchDatastore(restconfRequest.datastore.value_or(sysrepo::Datastore::Running));
                     if (!dataFormat.request) {
                         throw ErrorResponse(400, "protocol", "invalid-value", "Content-type header missing.");
                     }
