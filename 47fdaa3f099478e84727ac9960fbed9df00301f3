@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "984a23de_ccefd3d6",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 817,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-12T11:46:28Z",
+      "side": 1,
+      "message": "Strange that this passes. How does the actual edit look like when passed to sysrepo? I would have thought that it\u0027s the `example:two-leafs` container and it\u0027s tagged with `nc:operation\u003dcreate`, but since that container already exists, then the create should fail. How is it done? If the edit is already built that way and if sysrepo lets it through, then I suppose OK, but I\u0027m still puzzled that it works that way.",
+      "range": {
+        "startLine": 813,
+        "startChar": 0,
+        "endLine": 817,
+        "endChar": 13
+      },
+      "revId": "47fdaa3f099478e84727ac9960fbed9df00301f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c99e4702_c5d52fcd",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 819,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-12T11:46:28Z",
+      "side": 1,
+      "message": "I would have thought that this fails because the container is already present",
+      "range": {
+        "startLine": 819,
+        "startChar": 12,
+        "endLine": 819,
+        "endChar": 157
+      },
+      "revId": "47fdaa3f099478e84727ac9960fbed9df00301f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3f4a67be_4c7d44e2",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 1156,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-12T11:46:28Z",
+      "side": 1,
+      "message": "what are these two seciton (\"Complete datastore\") and the other one (\"Inner resources\") testing, what\u0027s the difference?",
+      "range": {
+        "startLine": 1076,
+        "startChar": 1,
+        "endLine": 1156,
+        "endChar": 13
+      },
+      "revId": "47fdaa3f099478e84727ac9960fbed9df00301f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
