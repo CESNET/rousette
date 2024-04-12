@@ -140,6 +140,30 @@
       },
       "revId": "64cb14479b267ef3ac4112d3dc6fd9d924c894c4",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "bd383d5b_2d2e9650",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 382,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-12T11:33:36Z",
+      "side": 1,
+      "message": "ah, OK",
+      "parentUuid": "e49dcc49_94e57850",
+      "range": {
+        "startLine": 380,
+        "startChar": 0,
+        "endLine": 382,
+        "endChar": 5
+      },
+      "revId": "64cb14479b267ef3ac4112d3dc6fd9d924c894c4",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
