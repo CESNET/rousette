@@ -64,7 +64,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<PathSegment>& v)
 }
 
 namespace rousette::restconf::impl {
-std::ostream& operator<<(std::ostream& os, const URI& obj)
+std::ostream& operator<<(std::ostream& os, const URIPath& obj)
 {
     os << "[";
     std::copy(obj.segments.begin(), obj.segments.end(), std::experimental::make_ostream_joiner(os, ", "));
@@ -75,8 +75,8 @@ std::ostream& operator<<(std::ostream& os, const URI& obj)
 namespace doctest {
 
 template <>
-struct StringMaker<std::optional<rousette::restconf::impl::URI>> {
-    static String convert(const std::optional<rousette::restconf::impl::URI>& obj)
+struct StringMaker<std::optional<rousette::restconf::impl::URIPath>> {
+    static String convert(const std::optional<rousette::restconf::impl::URIPath>& obj)
     {
         std::ostringstream oss;
 
@@ -111,15 +111,15 @@ TEST_CASE("URI path parser")
 {
     using rousette::restconf::PathSegment;
     using rousette::restconf::RestconfRequest;
-    using rousette::restconf::impl::URI;
+    using rousette::restconf::impl::URIPath;
     using rousette::restconf::impl::URIPrefix;
 
     SECTION("Valid paths")
     {
         for (const auto& [uriPath, expected] : {
-                 std::pair<std::string, URI>{"/restconf/data/x333:y666", {{
-                                                                             {{"x333", "y666"}},
-                                                                         }}},
+                 std::pair<std::string, URIPath>{"/restconf/data/x333:y666", {{
+                                                                                 {{"x333", "y666"}},
+                                                                             }}},
                  {"/restconf/data/foo:bar", {{
                                                 {{"foo", "bar"}},
                                             }}},
