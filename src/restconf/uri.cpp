@@ -44,7 +44,7 @@ const auto uriPrefix = x3::rule<class uriPrefix, URIPrefix>{"uriPrefix"} =
 const auto uriPrefixYangLibraryVersion = x3::rule<class uriPrefixYangLibraryVersion, URIPrefix>{"uriPrefixYangLibraryVersion"} =
     (x3::lit("yang-library-version") >> x3::attr(URIPrefix::Type::YangLibraryVersion) >> x3::attr(boost::none));
 const auto uriPath = x3::rule<class uriPath, std::vector<PathSegment>>{"uriPath"} = -x3::lit("/") >> -(fullyQualifiedListInstance >> -("/" >> listInstance % "/")); // RFC 8040, sec 3.5.3
-const auto uriGrammar = x3::rule<class grammar, URI>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> "/" >>
+const auto uriGrammar = x3::rule<class grammar, URIPath>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> "/" >>
     ((uriPrefix >> uriPath) |
      (uriPrefixYangLibraryVersion >> -x3::lit("/") >> x3::attr(std::vector<PathSegment>{} /* there is no path segment in this URI, this is just a dummy to return correct type */)));
 
@@ -64,9 +64,9 @@ const auto yangSchemaUriGrammar = x3::rule<class grammar, impl::YangModule>{"yan
 }
 
 
-std::optional<URI> parseUriPath(const std::string& uriPath)
+std::optional<URIPath> parseUriPath(const std::string& uriPath)
 {
-    URI out;
+    URIPath out;
     auto iter = std::begin(uriPath);
     auto end = std::end(uriPath);
 
@@ -101,15 +101,15 @@ URIPrefix::URIPrefix(URIPrefix::Type resourceType, const boost::optional<ApiIden
 {
 }
 
-URI::URI() = default;
+URIPath::URIPath() = default;
 
-URI::URI(const URIPrefix& prefix, const std::vector<PathSegment>& segments)
+URIPath::URIPath(const URIPrefix& prefix, const std::vector<PathSegment>& segments)
     : prefix(prefix)
     , segments(segments)
 {
 }
 
-URI::URI(const std::vector<PathSegment>& segments)
+URIPath::URIPath(const std::vector<PathSegment>& segments)
     : segments(segments)
 {
 }

@@ -34,15 +34,15 @@ struct URIPrefix {
 };
 
 /** @brief Represents parsed URI path split into segments delimited by a `/` separator. */
-struct URI {
+struct URIPath {
     URIPrefix prefix;
     std::vector<PathSegment> segments;
 
-    URI();
-    URI(const std::vector<PathSegment>& pathSegments);
-    URI(const URIPrefix& prefix, const std::vector<PathSegment>& pathSegments);
+    URIPath();
+    URIPath(const std::vector<PathSegment>& pathSegments);
+    URIPath(const URIPrefix& prefix, const std::vector<PathSegment>& pathSegments);
 
-    bool operator==(const URI&) const = default;
+    bool operator==(const URIPath&) const = default;
 };
 
 /** @brief Represents parsed YANG module name and revision from YANG schema URI */
@@ -53,13 +53,13 @@ struct YangModule {
     bool operator==(const YangModule&) const = default;
 };
 
-std::optional<URI> parseUriPath(const std::string& uriPath);
+std::optional<URIPath> parseUriPath(const std::string& uriPath);
 std::optional<YangModule> parseModuleWithRevision(const std::string& uriPath);
 }
 }
 
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::impl::URIPrefix, resourceType, datastore);
-BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::impl::URI, prefix, segments);
+BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::impl::URIPath, prefix, segments);
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::impl::YangModule, name, revision);
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::PathSegment, apiIdent, keys);
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::ApiIdentifier, prefix, identifier);
