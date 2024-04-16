@@ -360,10 +360,11 @@ TEST_CASE("URI path parser")
                         CAPTURE(expectedRequestType);
                         CAPTURE(uriPath);
                         REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
-                        auto [requestType, datastore, path] = rousette::restconf::asRestconfRequest(ctx, httpMethod, uriPath);
+                        auto [requestType, datastore, path, queryParams] = rousette::restconf::asRestconfRequest(ctx, httpMethod, uriPath);
                         REQUIRE(requestType == expectedRequestType);
                         REQUIRE(path == expectedLyPath);
                         REQUIRE(datastore == expectedDatastore);
+                        REQUIRE(queryParams.empty());
                     }
 
                     for (const auto& [uriPath, expectedLyPathParent, expectedLastSegment] : {
@@ -399,22 +400,25 @@ TEST_CASE("URI path parser")
                     }
 
                     {
-                        auto [requestType, datastore, path] = rousette::restconf::asRestconfRequest(ctx, "GET", uriPath);
+                        auto [requestType, datastore, path, queryParams] = rousette::restconf::asRestconfRequest(ctx, "GET", uriPath);
                         REQUIRE(requestType == RestconfRequest::Type::GetData);
                         REQUIRE(path == "/*");
                         REQUIRE(datastore == expectedDatastore);
+                        REQUIRE(queryParams.empty());
                     }
                     {
-                        auto [requestType, datastore, path] = rousette::restconf::asRestconfRequest(ctx, "PUT", uriPath);
+                        auto [requestType, datastore, path, queryParams] = rousette::restconf::asRestconfRequest(ctx, "PUT", uriPath);
                         REQUIRE(requestType == RestconfRequest::Type::CreateOrReplaceThisNode);
                         REQUIRE(path == "/");
                         REQUIRE(datastore == expectedDatastore);
+                        REQUIRE(queryParams.empty());
                     }
                     {
-                        auto [requestType, datastore, path] = rousette::restconf::asRestconfRequest(ctx, "POST", uriPath);
+                        auto [requestType, datastore, path, queryParams] = rousette::restconf::asRestconfRequest(ctx, "POST", uriPath);
                         REQUIRE(requestType == RestconfRequest::Type::CreateChildren);
                         REQUIRE(path == "/");
                         REQUIRE(datastore == expectedDatastore);
+                        REQUIRE(queryParams.empty());
                     }
                 }
             }
@@ -436,10 +440,11 @@ TEST_CASE("URI path parser")
                 }
 
                 CAPTURE(uri);
-                auto [action, datastore, path] = rousette::restconf::asRestconfRequest(ctx, "POST", uri);
+                auto [action, datastore, path, queryParams] = rousette::restconf::asRestconfRequest(ctx, "POST", uri);
                 REQUIRE(path == expectedPath);
                 REQUIRE(datastore == std::nullopt);
                 REQUIRE(action == RestconfRequest::Type::Execute);
+                REQUIRE(queryParams.empty());
             }
         }
 
@@ -781,6 +786,55 @@ TEST_CASE("URI path parser")
                     REQUIRE(!rousette::restconf::asYangModule(ctx, "/yang/ietf-netconf-acm"));
                 }
             }
+        }
+    }
+
+    SECTION("query params")
+    {
+        using rousette::restconf::asRestconfRequest;
+        using rousette::restconf::impl::parseQueryParams;
+        using rousette::restconf::RestconfRequest;
+        using QueryParamsRaw = std::vector<std::pair<std::string, std::string>>;
+
+        SECTION("Parsing")
+        {
+            REQUIRE(parseQueryParams("") == QueryParamsRaw{});
+            REQUIRE(parseQueryParams("a=b") == std::nullopt);
+            REQUIRE(parseQueryParams("depth=unbounded") == QueryParamsRaw{{"depth", "unbounded"}});
+            REQUIRE(parseQueryParams("Depth=1") == std::nullopt);
+            REQUIRE(parseQueryParams("depth=0") == std::nullopt);
+            REQUIRE(parseQueryParams("depth=65535") == QueryParamsRaw{{"depth", "65535"}});
+            REQUIRE(parseQueryParams("depth=65536") == std::nullopt);
+            REQUIRE(parseQueryParams("depth=1&depth=unbounded") == QueryParamsRaw{{"depth", "1"}, {"depth", "unbounded"}});
+            REQUIRE(parseQueryParams("depth=") == std::nullopt);
+            REQUIRE(parseQueryParams("=") == std::nullopt);
+            REQUIRE(parseQueryParams("&") == std::nullopt);
+            REQUIRE(parseQueryParams("depth=1&") == std::nullopt);
+            REQUIRE(parseQueryParams("a&b=a") == std::nullopt);
+        }
+
+        SECTION("Full requests with validation")
+        {
+            auto ctx = libyang::Context{std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "tests" / "yang"};
+            ctx.loadModule("example", std::nullopt, {"f1"});
+            ctx.loadModule("example-augment");
+
+            SECTION("Depth") {
+                auto r1 = asRestconfRequest(ctx, "GET", "/restconf/data/example:tlc", "depth=unbounded");
+                REQUIRE(r1.queryParams == RestconfRequest::QueryParams({{"depth", "unbounded"}}));
+
+                auto r2 = asRestconfRequest(ctx, "GET", "/restconf/data/example:tlc", "depth=11111");
+                REQUIRE(r2.queryParams == RestconfRequest::QueryParams({{"depth", "11111"}}));
+
+                REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "POST", "/restconf/data/example:tlc", "depth=1"),
+                                       serializeErrorResponse(400, "protocol", "invalid-value", "Query param depth can be used only with GET and HEAD methods").c_str(),
+                                       rousette::restconf::ErrorResponse);
+            }
+
+            REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "GET", "/restconf/data/example:tlc", "insert=first"),
+                                   serializeErrorResponse(400, "protocol", "invalid-value", "Query parameters syntax error").c_str(),
+                                   rousette::restconf::ErrorResponse);
+
         }
     }
 }
