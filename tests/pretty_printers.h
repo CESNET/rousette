@@ -8,10 +8,12 @@
 #pragma once
 
 #include "trompeloeil_doctest.h"
+#include <experimental/iterator>
 #include <optional>
 #include <sstream>
 #include <trompeloeil.hpp>
 #include "datastoreUtils.h"
+#include "restconf/uri.h"
 
 namespace trompeloeil {
 template <>
@@ -49,6 +51,39 @@ struct StringMaker<std::optional<T>> {
         } else {
             return "nullopt{}";
         }
+    }
+};
+
+template <>
+struct StringMaker<rousette::restconf::queryParams::QueryParamValue> {
+    static String convert(const rousette::restconf::queryParams::QueryParamValue& obj)
+    {
+        return std::visit([](auto&& arg) -> std::string {
+                   using T = std::decay_t<decltype(arg)>;
+                   if constexpr (std::is_same_v<T, rousette::restconf::queryParams::UnboundedDepth>) {
+                       return "UnboundedDepth()";
+                   } else if constexpr (std::is_same_v<T, unsigned int>) {
+                       return std::to_string(arg);
+                   } else {
+                       return "<unknown query param value>";
+                   }
+               },
+                          obj)
+            .c_str();
+    }
+};
+
+template <>
+struct StringMaker<rousette::restconf::queryParams::QueryParams> {
+    static String convert(const rousette::restconf::queryParams::QueryParams& obj)
+    {
+        std::ostringstream oss;
+        oss << "{";
+        std::transform(obj.begin(), obj.end(), std::experimental::make_ostream_joiner(oss, ", "), [&](const auto& e) {
+            return "{" + e.first + ", " + StringMaker<decltype(e.second)>::convert(e.second).c_str() + "}";
+        });
+        oss << "}";
+        return oss.str().c_str();
     }
 };
 }
