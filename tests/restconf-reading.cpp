@@ -60,7 +60,8 @@ TEST_CASE("reading data")
   "ietf-restconf-monitoring:restconf-state": {
     "capabilities": {
       "capability": [
-        "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=report-all"
+        "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=report-all",
+        "urn:ietf:params:restconf:capability:depth:1.0"
       ]
     }
   },
@@ -76,7 +77,8 @@ TEST_CASE("reading data")
   "ietf-restconf-monitoring:restconf-state": {
     "capabilities": {
       "capability": [
-        "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=report-all"
+        "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=report-all",
+        "urn:ietf:params:restconf:capability:depth:1.0"
       ]
     }
   },
@@ -134,6 +136,19 @@ TEST_CASE("reading data")
           "udp": {
             "address": "1.1.1.1"
           }
+        }
+      ]
+    }
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/radius?depth=1", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
+  "ietf-system:system": {
+    "radius": {
+      "server": [
+        {
+          "name": "a"
         }
       ]
     }
@@ -434,7 +449,8 @@ TEST_CASE("reading data")
   "ietf-restconf-monitoring:restconf-state": {
     "capabilities": {
       "capability": [
-        "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=report-all"
+        "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=report-all",
+        "urn:ietf:params:restconf:capability:depth:1.0"
       ]
     }
   }

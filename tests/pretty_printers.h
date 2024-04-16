@@ -8,10 +8,12 @@
 #pragma once
 
 #include "trompeloeil_doctest.h"
+#include <experimental/iterator>
 #include <optional>
 #include <sstream>
 #include <trompeloeil.hpp>
 #include "datastoreUtils.h"
+#include "restconf/uri.h"
 
 namespace trompeloeil {
 template <>
@@ -49,6 +51,18 @@ struct StringMaker<std::optional<std::string>> {
         } else {
             return "nullopt{}";
         }
+    }
+};
+
+template <>
+struct StringMaker<rousette::restconf::RestconfRequest::QueryParams> {
+    static String convert(const rousette::restconf::RestconfRequest::QueryParams& obj)
+    {
+        std::ostringstream oss;
+        oss << "{";
+        std::transform(obj.begin(), obj.end(), std::experimental::make_ostream_joiner(oss, ", "), [](const auto& e) { return ("{" + e.first + ", " + e.second + "}"); });
+        oss << "}";
+        return oss.str().c_str();
     }
 };
 }
