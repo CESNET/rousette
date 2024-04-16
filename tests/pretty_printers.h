@@ -42,12 +42,13 @@ struct printer<SrChange> {
 namespace doctest {
 template <>
 struct StringMaker<std::optional<std::string>> {
-    static String convert(const std::optional<std::string>& value)
+    static String convert(const std::optional<std::string>& obj)
     {
-        if (value) {
-            return value->c_str();
+        if (obj) {
+            return ("optional{" + *obj + "}").c_str();
+        } else {
+            return "nullopt{}";
         }
-        return "std::nullopt";
     }
 };
 }
