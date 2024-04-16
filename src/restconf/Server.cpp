@@ -534,6 +534,15 @@ void processAuthError(const request& req, const response& res, const auth::Error
         errorResponseCb();
     }
 }
+
+template <class Map>
+typename Map::mapped_type mapGetValueOr(const Map& map, const typename Map::key_type& k, const typename Map::mapped_type& defaultValue)
+{
+    if (auto it = map.find(k); it != map.end()) {
+        return it->second;
+    }
+    return defaultValue;
+}
 }
 
 Server::~Server()
@@ -640,7 +649,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 dataFormat = chooseDataEncoding(req.header());
                 authorizeRequest(nacm, sess, req);
 
-                auto restconfRequest = asRestconfRequest(sess.getContext(), req.method(), req.uri().path);
+                auto restconfRequest = asRestconfRequest(sess.getContext(), req.method(), req.uri().path, req.uri().raw_query);
 
                 switch (restconfRequest.type) {
                 case RestconfRequest::Type::YangLibraryVersion: {
@@ -663,9 +672,12 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     break;
                 }
 
-                case RestconfRequest::Type::GetData:
+                case RestconfRequest::Type::GetData: {
                     sess.switchDatastore(restconfRequest.datastore.value_or(sysrepo::Datastore::Operational));
-                    if (auto data = sess.getData(restconfRequest.path); data) {
+
+                    auto maxDepth = mapGetValueOr(restconfRequest.queryParams, "depth"s, "unbounded");
+
+                    if (auto data = sess.getData(restconfRequest.path, maxDepth == "unbounded" ? 0 : std::stoi(maxDepth)); data) {
                         res.write_head(
                             200,
                             {
@@ -678,6 +690,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         throw ErrorResponse(404, "application", "invalid-value", "No data from sysrepo.");
                     }
                     break;
+                }
 
                 case RestconfRequest::Type::CreateOrReplaceThisNode:
                 case RestconfRequest::Type::CreateChildren: {

@@ -7,6 +7,7 @@
 #pragma once
 #include <boost/optional.hpp>
 #include <libyang-cpp/Module.hpp>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -49,6 +50,8 @@ struct PathSegment {
 
 /** @brief Specifies request type and target as determined from URI */
 struct RestconfRequest {
+    using QueryParams = std::map<std::string, std::string>;
+
     enum class Type {
         GetData, ///< GET on a data resource or a complete-datastore resource
         CreateOrReplaceThisNode, ///< PUT on a data resource
@@ -61,11 +64,12 @@ struct RestconfRequest {
     Type type;
     std::optional<sysrepo::Datastore> datastore;
     std::string path;
+    QueryParams queryParams;
 
-    RestconfRequest(Type type, const boost::optional<ApiIdentifier>& datastore, const std::string& path);
+    RestconfRequest(Type type, const boost::optional<ApiIdentifier>& datastore, const std::string& path, const QueryParams& queryParams);
 };
 
-RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath);
+RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath, const std::string& uriQuerystring = "");
 std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath);
 std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> asYangModule(const libyang::Context& ctx, const std::string& uriPath);
 }
