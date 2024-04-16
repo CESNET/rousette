@@ -570,6 +570,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
     // set capabilities
     m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[1]", "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=explicit");
+    m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[2]", "urn:ietf:params:restconf:capability:depth:1.0");
     m_monitoringSession.applyChanges();
 
     dwdmEvents->change.connect([this](const std::string& content) {
@@ -645,7 +646,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 dataFormat = chooseDataEncoding(req.header());
                 authorizeRequest(nacm, sess, req);
 
-                auto restconfRequest = asRestconfRequest(sess.getContext(), req.method(), req.uri().path);
+                auto restconfRequest = asRestconfRequest(sess.getContext(), req.method(), req.uri().path, req.uri().raw_query);
 
                 switch (restconfRequest.type) {
                 case RestconfRequest::Type::YangLibraryVersion: {
@@ -668,9 +669,15 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     break;
                 }
 
-                case RestconfRequest::Type::GetData:
+                case RestconfRequest::Type::GetData: {
                     sess.switchDatastore(restconfRequest.datastore.value_or(sysrepo::Datastore::Operational));
-                    if (auto data = sess.getData(restconfRequest.path); data) {
+
+                    int maxDepth = 0; /* unbounded depth is the RFC default, which in sysrepo terms is 0 */
+                    if (auto it = restconfRequest.queryParams.find("depth"); it != restconfRequest.queryParams.end() && std::holds_alternative<unsigned int>(it->second)) {
+                        maxDepth = std::get<unsigned int>(it->second);
+                    }
+
+                    if (auto data = sess.getData(restconfRequest.path, maxDepth); data) {
                         res.write_head(
                             200,
                             {
@@ -683,6 +690,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         throw ErrorResponse(404, "application", "invalid-value", "No data from sysrepo.");
                     }
                     break;
+                }
 
                 case RestconfRequest::Type::CreateOrReplaceThisNode:
                 case RestconfRequest::Type::CreateChildren: {
