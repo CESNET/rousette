@@ -55,6 +55,7 @@ struct YangModule {
 
 std::optional<URIPath> parseUriPath(const std::string& uriPath);
 std::optional<YangModule> parseModuleWithRevision(const std::string& uriPath);
+std::optional<std::multimap<std::string, queryParams::QueryParamValue>> parseQueryParams(const std::string& queryString);
 }
 }
 

@@ -70,7 +70,8 @@ TEST_CASE("reading data")
   "ietf-restconf-monitoring:restconf-state": {
     "capabilities": {
       "capability": [
-        "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=explicit"
+        "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=explicit",
+        "urn:ietf:params:restconf:capability:depth:1.0"
       ]
     }
   },
@@ -87,7 +88,8 @@ TEST_CASE("reading data")
   "ietf-restconf-monitoring:restconf-state": {
     "capabilities": {
       "capability": [
-        "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=explicit"
+        "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=explicit",
+        "urn:ietf:params:restconf:capability:depth:1.0"
       ]
     }
   },
@@ -144,6 +146,49 @@ TEST_CASE("reading data")
           "name": "a",
           "udp": {
             "address": "1.1.1.1"
+          }
+        }
+      ]
+    }
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/radius?depth=1", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
+  "ietf-system:system": {
+    "radius": {
+      "server": [
+        {
+          "name": "a"
+        }
+      ]
+    }
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/radius?depth=1&depth=1", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Query parameter 'depth' already specified"
+      }
+    ]
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/radius?depth=unbounded", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
+  "ietf-system:system": {
+    "radius": {
+      "server": [
+        {
+          "name": "a",
+          "udp": {
+            "address": "1.1.1.1",
+            "shared-secret": "shared-secret"
           }
         }
       ]
@@ -445,7 +490,8 @@ TEST_CASE("reading data")
   "ietf-restconf-monitoring:restconf-state": {
     "capabilities": {
       "capability": [
-        "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=explicit"
+        "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=explicit",
+        "urn:ietf:params:restconf:capability:depth:1.0"
       ]
     }
   }
