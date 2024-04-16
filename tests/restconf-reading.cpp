@@ -141,6 +141,19 @@ TEST_CASE("reading data")
 }
 )"});
 
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/radius?depth=1", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
+  "ietf-system:system": {
+    "radius": {
+      "server": [
+        {
+          "name": "a"
+        }
+      ]
+    }
+  }
+}
+)"});
+
         REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/radius/server=b", {AUTH_DWDM}) == Response{404, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
