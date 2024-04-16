@@ -4,7 +4,10 @@
  * Written by Tomáš Pecka <tomas.pecka@cesnet.cz>
  */
 
+#include <boost/fusion/include/std_pair.hpp>
 #include <libyang-cpp/Enum.hpp>
+#include <map>
+#include <string>
 #include "restconf/Exceptions.h"
 #include "restconf/uri.h"
 #include "restconf/uri_impl.h"
@@ -63,6 +66,26 @@ const auto yangSchemaUriGrammar = x3::rule<class grammar, impl::YangModule>{"yan
 // clang-format on
 }
 
+namespace {
+namespace x3 = boost::spirit::x3;
+
+
+// clang-format off
+
+auto validDepthValues = [](auto& ctx) {
+    _val(ctx) = _attr(ctx); // it seems that this must be present, otherwise the _val(ctx) is default-constructed?
+    _pass(ctx) = _attr(ctx) > 0 && _attr(ctx) < 65536;
+};
+
+
+const auto depthParam = x3::rule<class depthParam, queryParams::QueryParamValue>{"depthParam"} = x3::uint_[validDepthValues] | (x3::string("unbounded") >> x3::attr(queryParams::UnboundedDepth{}));
+const auto queryParamPair = x3::rule<class queryParamPair, std::pair<std::string, queryParams::QueryParamValue>>{"queryParamPair"} =
+        (x3::string("depth") >> "=" >> depthParam);
+
+const auto queryParamGrammar = x3::rule<class grammar, queryParams::QueryParams>{"queryParamGrammar"} = queryParamPair % "&" | x3::eps;
+
+// clang-format on
+}
 
 std::optional<URIPath> parseUriPath(const std::string& uriPath)
 {
@@ -88,6 +111,17 @@ std::optional<impl::YangModule> parseModuleWithRevision(const std::string& uriPa
     }
 
     return parsed;
+}
+
+std::optional<queryParams::QueryParams> parseQueryParams(const std::string& queryString)
+{
+    std::optional<queryParams::QueryParams> ret;
+
+    if (!x3::parse(std::begin(queryString), std::end(queryString), queryParamGrammar >> x3::eoi, ret)) {
+        return std::nullopt;
+    }
+
+    return ret;
 }
 
 URIPrefix::URIPrefix()
@@ -173,10 +207,11 @@ std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> getModule
 }
 }
 
-RestconfRequest::RestconfRequest(Type type, const boost::optional<ApiIdentifier>& datastore, const std::string& path)
+RestconfRequest::RestconfRequest(Type type, const boost::optional<ApiIdentifier>& datastore, const std::string& path, const queryParams::QueryParams& queryParams)
     : type(type)
     , datastore(datastoreFromApiIdentifier(datastore))
     , path(path)
+    , queryParams(queryParams)
 {
 }
 
@@ -302,6 +337,21 @@ void validateRequestSchemaNode(const std::optional<libyang::SchemaNode>& node, c
     }
 }
 
+void validateQueryParameters(const std::multimap<std::string, queryParams::QueryParamValue>& params_, const std::string& httpMethod)
+{
+    std::map<std::string, queryParams::QueryParamValue> params;
+    for (const auto& [k, v] : params_) {
+        auto [it, inserted] = params.emplace(k, v);
+        if (!inserted) {
+            throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter '" + k + "' already specified");
+        }
+    }
+
+    if (auto it = params.find("depth"); it != params.end() && httpMethod != "GET" && httpMethod != "HEAD") {
+        throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter 'depth' can be used only with GET and HEAD methods");
+    }
+}
+
 /** @brief Wrapper for a libyang path and a corresponding SchemaNode. SchemaNode is nullopt for datastore resource */
 struct SchemaNodeAndPath {
     std::string dataPath;
@@ -371,7 +421,7 @@ SchemaNodeAndPath asLibyangPath(const libyang::Context& ctx, const std::vector<P
  *
  * @throws ErrorResponse when the URI cannot be parsed or the URI is invalid for this HTTP method
  */
-RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath)
+RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString)
 {
     if (httpMethod != "GET" && httpMethod != "PUT" && httpMethod != "POST" && httpMethod != "DELETE") {
         throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
@@ -382,34 +432,41 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
         throw ErrorResponse(400, "application", "operation-failed", "Syntax error");
     }
 
+    auto queryParameters = impl::parseQueryParams(uriQueryString);
+    if (!queryParameters) {
+        throw ErrorResponse(400, "protocol", "invalid-value", "Query parameters syntax error");
+    }
+
+    validateQueryParameters(*queryParameters, httpMethod);
+
     if (uri->prefix.resourceType == impl::URIPrefix::Type::YangLibraryVersion) {
         if (httpMethod == "GET") {
-            return {RestconfRequest::Type::YangLibraryVersion, boost::none, ""s};
+            return {RestconfRequest::Type::YangLibraryVersion, boost::none, ""s, *queryParameters};
         } else {
             throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
         }
     }
 
     if (httpMethod == "GET" && uri->segments.empty()) {
-        return {RestconfRequest::Type::GetData, uri->prefix.datastore, "/*"};
+        return {RestconfRequest::Type::GetData, uri->prefix.datastore, "/*", *queryParameters};
     } else if (httpMethod == "PUT" && uri->segments.empty()) {
-        return {RestconfRequest::Type::CreateOrReplaceThisNode, uri->prefix.datastore, "/"};
+        return {RestconfRequest::Type::CreateOrReplaceThisNode, uri->prefix.datastore, "/", *queryParameters};
     } else if (httpMethod == "POST" && uri->segments.empty() && (uri->prefix.resourceType == impl::URIPrefix::Type::BasicRestconfData || uri->prefix.resourceType == impl::URIPrefix::Type::NMDADatastore)) {
-        return {RestconfRequest::Type::CreateChildren, uri->prefix.datastore, "/"};
+        return {RestconfRequest::Type::CreateChildren, uri->prefix.datastore, "/", *queryParameters};
     }
 
     auto [lyPath, schemaNode] = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
     validateRequestSchemaNode(schemaNode, httpMethod, uri->prefix);
     if (httpMethod == "GET") {
-        return {RestconfRequest::Type::GetData, uri->prefix.datastore, lyPath};
+        return {RestconfRequest::Type::GetData, uri->prefix.datastore, lyPath, *queryParameters};
     } else if (httpMethod == "PUT") {
-        return {RestconfRequest::Type::CreateOrReplaceThisNode, uri->prefix.datastore, lyPath};
+        return {RestconfRequest::Type::CreateOrReplaceThisNode, uri->prefix.datastore, lyPath, *queryParameters};
     } else if (httpMethod == "DELETE") {
-        return {RestconfRequest::Type::DeleteNode, uri->prefix.datastore, lyPath};
+        return {RestconfRequest::Type::DeleteNode, uri->prefix.datastore, lyPath, *queryParameters};
     } else if (httpMethod == "POST" && schemaNode && (schemaNode->nodeType() == libyang::NodeType::Action || schemaNode->nodeType() == libyang::NodeType::RPC)) {
-        return {RestconfRequest::Type::Execute, uri->prefix.datastore, lyPath};
+        return {RestconfRequest::Type::Execute, uri->prefix.datastore, lyPath, *queryParameters};
     } else {
-        return {RestconfRequest::Type::CreateChildren, uri->prefix.datastore, lyPath};
+        return {RestconfRequest::Type::CreateChildren, uri->prefix.datastore, lyPath, *queryParameters};
     }
 }
 
