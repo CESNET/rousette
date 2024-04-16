@@ -14,6 +14,7 @@
 #include "restconf/uri.h"
 #include "restconf/uri_impl.h"
 #include "tests/configure.cmake.h"
+#include "tests/pretty_printers.h"
 
 using namespace std::string_literals;
 
@@ -72,21 +73,6 @@ std::ostream& operator<<(std::ostream& os, const URIPath& obj)
 }
 
 namespace doctest {
-template <>
-struct StringMaker<std::optional<std::string>> {
-    static String convert(const std::optional<std::string>& obj)
-    {
-        std::ostringstream oss;
-
-        if (obj) {
-            oss << "optional{" << *obj << "}";
-        } else {
-            oss << "nullopt{}";
-        }
-
-        return oss.str().c_str();
-    }
-};
 
 template <>
 struct StringMaker<std::optional<rousette::restconf::impl::URIPath>> {
