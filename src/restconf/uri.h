@@ -7,6 +7,7 @@
 #pragma once
 #include <boost/optional.hpp>
 #include <libyang-cpp/Module.hpp>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -47,6 +48,16 @@ struct PathSegment {
     bool operator==(const PathSegment&) const = default;
 };
 
+/** @brief Helper namespace containing named query parameter values so we do not pollute parent namespace */
+namespace queryParams {
+    struct UnboundedDepth{
+        bool operator==(const UnboundedDepth&) const { return true; }
+    };
+
+    using QueryParamValue = std::variant<UnboundedDepth, unsigned int>;
+    using QueryParams = std::multimap<std::string, QueryParamValue>;
+}
+
 /** @brief Specifies request type and target as determined from URI */
 struct RestconfRequest {
     enum class Type {
@@ -61,11 +72,12 @@ struct RestconfRequest {
     Type type;
     std::optional<sysrepo::Datastore> datastore;
     std::string path;
+    queryParams::QueryParams queryParams;
 
-    RestconfRequest(Type type, const boost::optional<ApiIdentifier>& datastore, const std::string& path);
+    RestconfRequest(Type type, const boost::optional<ApiIdentifier>& datastore, const std::string& path, const queryParams::QueryParams& queryParams);
 };
 
-RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath);
+RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString = "");
 std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath);
 std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> asYangModule(const libyang::Context& ctx, const std::string& uriPath);
 }
