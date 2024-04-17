@@ -757,7 +757,8 @@ TEST_CASE("URI path parser")
                     REQUIRE(!rousette::restconf::asYangModule(ctx, "/yang/example@2020-02-02"));
                 }
 
-                SECTION("No revision in URI") {
+                SECTION("No revision in URI")
+                {
                     std::string uri;
                     std::string expectedModuleName;
 
