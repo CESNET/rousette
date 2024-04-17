@@ -32,6 +32,7 @@ public:
     ~Server();
 
 private:
+    sysrepo::Session m_monitoringSession;
     Nacm nacm;
     std::unique_ptr<nghttp2::asio_http2::server::http2> server;
     std::unique_ptr<sr::OpticalEvents> dwdmEvents;
