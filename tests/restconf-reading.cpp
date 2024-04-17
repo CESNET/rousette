@@ -79,6 +79,13 @@ TEST_CASE("reading data")
       }
     }
   },
+  "ietf-restconf-monitoring:restconf-state": {
+    "capabilities": {
+      "capability": [
+        "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=report-all"
+      ]
+    }
+  },
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -99,6 +106,13 @@ TEST_CASE("reading data")
       "c": {
         "enabled": true
       }
+    }
+  },
+  "ietf-restconf-monitoring:restconf-state": {
+    "capabilities": {
+      "capability": [
+        "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=report-all"
+      ]
     }
   },
   "ietf-system:system": {
@@ -459,5 +473,20 @@ TEST_CASE("reading data")
         REQUIRE(get(RESTCONF_ROOT "/yang-library-version", {{"accept", "application/yang-data+xml"}}) == Response{200, xmlHeaders,
                 R"(<yang-library-version xmlns="urn:ietf:params:xml:ns:yang:ietf-restconf">2019-01-04</yang-library-version>
 )"});
+    }
+
+    SECTION("restconf monitoring")
+    {
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-restconf-monitoring:restconf-state", {}) == Response{200, jsonHeaders, R"({
+  "ietf-restconf-monitoring:restconf-state": {
+    "capabilities": {
+      "capability": [
+        "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=report-all"
+      ]
+    }
+  }
+}
+)"});
+
     }
 }
