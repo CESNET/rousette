@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "58aab208_4d458ce4",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-17T09:02:15Z",
+      "side": 1,
+      "message": "All of these except the first one can be safely removed. Do that in an extra commit if you want to be fancy :).",
+      "range": {
+        "startLine": 138,
+        "startChar": 44,
+        "endLine": 138,
+        "endChar": 51
+      },
+      "revId": "fbbc78162521d0ba8627d5fbc7d498e39950738b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
