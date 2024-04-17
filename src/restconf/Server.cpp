@@ -543,6 +543,35 @@ std::optional<typename Map::mapped_type> mapGetValue(const Map& map, const typen
     }
     return std::nullopt;
 }
+
+libyang::PrintFlags libyangPrintFlags(const std::optional<libyang::DataNode>& node, const std::optional<std::string>& withDefaults)
+{
+    libyang::PrintFlags ret = libyang::PrintFlags::WithSiblings;
+
+    /*
+     * If the target of a GET method is a data node that represents a leaf
+     * or leaf-list that has a default value and the leaf or leaf-list has
+     * not been instantiated yet, the server MUST return the default value
+     * or values that are in use by the server, In this case, the server
+     * MUST ignore its "basic-mode", described in Section 4.8.9, and return
+     * the default value.
+    */
+    if (auto type = node->schema().nodeType(); (type == libyang::NodeType::Leaf || type == libyang::NodeType::Leaflist) && node->asTerm().isImplicitlyCreatedDefaultValue()) {
+        return ret | libyang::PrintFlags::WithDefaultsAll;
+    }
+
+    if (!withDefaults || withDefaults == "report-all") {
+        return ret | libyang::PrintFlags::WithDefaultsAll;
+    } else if (withDefaults == "report-all-tagged") {
+        return ret | libyang::PrintFlags::WithDefaultsAllTag;
+    } else if (withDefaults == "trim") {
+        return ret | libyang::PrintFlags::WithDefaultsTrim;
+    } else if (withDefaults == "explicit") {
+        return ret | libyang::PrintFlags::WithDefaultsExplicit;
+    }
+
+    throw std::logic_error("Invalid withDefaults query parameter");
+}
 }
 
 Server::~Server()
@@ -580,6 +609,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     // set capabilities
     m_sess.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[1]", "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=report-all");
     m_sess.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[2]", "urn:ietf:params:restconf:capability:depth:1.0");
+    m_sess.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[3]", "urn:ietf:params:restconf:capability:with-defaults:1.0");
     m_sess.applyChanges();
 
     dwdmEvents->change.connect([this](const std::string& content) {
@@ -682,6 +712,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     sess.switchDatastore(restconfRequest.datastore.value_or(sysrepo::Datastore::Operational));
 
                     auto maxDepth = mapGetValue(restconfRequest.queryParams, "depth"s);
+                    auto withDefaults = mapGetValue(restconfRequest.queryParams, "with-defaults"s);
 
                     if (auto data = sess.getData(restconfRequest.path, maxDepth ? std::stoi(*maxDepth) : 0); data) {
                         res.write_head(
@@ -691,7 +722,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                                 {"access-control-allow-origin", {"*", false}},
                             });
 
-                        res.end(*replaceYangLibraryLocations(parseUrlPrefix(req.header()), yangSchemaRoot, *data).printStr(dataFormat.response, libyang::PrintFlags::WithSiblings | libyang::PrintFlags::WithDefaultsAll));
+                        res.end(*replaceYangLibraryLocations(parseUrlPrefix(req.header()), yangSchemaRoot, *data).printStr(dataFormat.response, libyangPrintFlags(data->findPath(restconfRequest.path), withDefaults)));
                     } else {
                         throw ErrorResponse(404, "application", "invalid-value", "No data from sysrepo.");
                     }

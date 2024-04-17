@@ -83,7 +83,8 @@ TEST_CASE("reading data")
     "capabilities": {
       "capability": [
         "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=report-all",
-        "urn:ietf:params:restconf:capability:depth:1.0"
+        "urn:ietf:params:restconf:capability:depth:1.0",
+        "urn:ietf:params:restconf:capability:with-defaults:1.0"
       ]
     }
   },
@@ -113,7 +114,8 @@ TEST_CASE("reading data")
     "capabilities": {
       "capability": [
         "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=report-all",
-        "urn:ietf:params:restconf:capability:depth:1.0"
+        "urn:ietf:params:restconf:capability:depth:1.0",
+        "urn:ietf:params:restconf:capability:with-defaults:1.0"
       ]
     }
   },
@@ -497,7 +499,8 @@ TEST_CASE("reading data")
     "capabilities": {
       "capability": [
         "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=report-all",
-        "urn:ietf:params:restconf:capability:depth:1.0"
+        "urn:ietf:params:restconf:capability:depth:1.0",
+        "urn:ietf:params:restconf:capability:with-defaults:1.0"
       ]
     }
   }
