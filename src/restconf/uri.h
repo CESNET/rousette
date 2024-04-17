@@ -54,7 +54,22 @@ struct UnboundedDepth {
     bool operator==(const UnboundedDepth&) const = default;
 };
 
-using QueryParamValue = std::variant<UnboundedDepth, unsigned int>;
+namespace withDefaults {
+struct Trim {
+    bool operator==(const Trim&) const = default;
+};
+struct Explicit {
+    bool operator==(const Explicit&) const = default;
+};
+struct ReportAll {
+    bool operator==(const ReportAll&) const = default;
+};
+struct ReportAllTagged {
+    bool operator==(const ReportAllTagged&) const = default;
+};
+}
+
+using QueryParamValue = std::variant<UnboundedDepth, unsigned int, withDefaults::Trim, withDefaults::Explicit, withDefaults::ReportAll, withDefaults::ReportAllTagged>;
 using QueryParams = std::multimap<std::string, QueryParamValue>;
 }
 

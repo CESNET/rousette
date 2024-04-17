@@ -543,6 +543,48 @@ std::optional<typename Map::mapped_type> mapGetValue(const Map& map, const typen
     }
     return std::nullopt;
 }
+
+libyang::PrintFlags libyangPrintFlags(const libyang::DataNode& dataNode, const std::string& requestPath, const std::optional<queryParams::QueryParamValue>& withDefaults)
+{
+    std::optional<libyang::DataNode> node;
+
+    /*
+     * RFC 8040, sec. 3.5.4:
+     *   If the target of a GET method is a data node that represents a leaf
+     *   or leaf-list that has a default value and the leaf or leaf-list has
+     *   not been instantiated yet, the server MUST return the default value
+     *   or values that are in use by the server, In this case, the server
+     *   MUST ignore its "basic-mode", described in Section 4.8.9, and return
+     *   the default value.
+     *
+     * My interpretation is that this only applies when no with-defaults query parameter is set. The with-defaults can override this.
+    */
+
+    // Be careful, we can get something like /* which is not a valid path. In other cases, the node should be valid in the schema (we check that in the parser) but the actual data node might not be instantiated
+    try {
+        node = dataNode.findPath(requestPath);
+    } catch(const libyang::Error& e) {
+    }
+
+    libyang::PrintFlags ret = libyang::PrintFlags::WithSiblings;
+
+    if (!withDefaults && node && (node->schema().nodeType() == libyang::NodeType::Leaf || node->schema().nodeType() == libyang::NodeType::Leaflist) && node->asTerm().isImplicitDefault()) {
+        return ret | libyang::PrintFlags::WithDefaultsAll;
+    }
+
+    // Explicit is our default mode
+    if (!withDefaults || std::holds_alternative<queryParams::withDefaults::Explicit>(*withDefaults)) {
+        return ret;
+    } else if (std::holds_alternative<queryParams::withDefaults::Trim>(*withDefaults)) {
+        return ret | libyang::PrintFlags::WithDefaultsTrim;
+    } else if (std::holds_alternative<queryParams::withDefaults::ReportAll>(*withDefaults)) {
+        return ret | libyang::PrintFlags::WithDefaultsAll;
+    } else if (std::holds_alternative<queryParams::withDefaults::ReportAllTagged>(*withDefaults)) {
+        return ret | libyang::PrintFlags::WithDefaultsAllTag;
+    }
+
+    throw std::logic_error("Invalid withDefaults query parameter value");
+}
 }
 
 Server::~Server()
@@ -580,6 +622,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     // set capabilities
     m_sess.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[1]", "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=explicit");
     m_sess.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[2]", "urn:ietf:params:restconf:capability:depth:1.0");
+    m_sess.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[3]", "urn:ietf:params:restconf:capability:with-defaults:1.0");
     m_sess.applyChanges();
 
     dwdmEvents->change.connect([this](const std::string& content) {
@@ -681,8 +724,13 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 case RestconfRequest::Type::GetData: {
                     sess.switchDatastore(restconfRequest.datastore.value_or(sysrepo::Datastore::Operational));
                     int maxDepth = 0; // unbounded depth (0 in the language of sysrepo) is default
+                    std::optional<queryParams::QueryParamValue> withDefaults;
+
                     if (auto it = restconfRequest.queryParams.find("depth"); it != restconfRequest.queryParams.end() && std::holds_alternative<unsigned int>(it->second)) {
                         maxDepth = std::get<unsigned int>(it->second);
+                    }
+                    if (auto it = restconfRequest.queryParams.find("with-defaults"); it != restconfRequest.queryParams.end()) {
+                        withDefaults = it->second;
                     }
 
                     if (auto data = sess.getData(restconfRequest.path, maxDepth); data) {
@@ -693,7 +741,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                                 {"access-control-allow-origin", {"*", false}},
                             });
 
-                        res.end(*replaceYangLibraryLocations(parseUrlPrefix(req.header()), yangSchemaRoot, *data).printStr(dataFormat.response, libyang::PrintFlags::WithSiblings));
+                        res.end(*replaceYangLibraryLocations(parseUrlPrefix(req.header()), yangSchemaRoot, *data).printStr(dataFormat.response, libyangPrintFlags(*data, restconfRequest.path, withDefaults)));
                     } else {
                         throw ErrorResponse(404, "application", "invalid-value", "No data from sysrepo.");
                     }
