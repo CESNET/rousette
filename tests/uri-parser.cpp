@@ -109,7 +109,6 @@ struct StringMaker<std::optional<rousette::restconf::impl::YangModule>> {
 
 TEST_CASE("URI path parser")
 {
-    using rousette::restconf::ApiIdentifier;
     using rousette::restconf::PathSegment;
     using rousette::restconf::RestconfRequest;
     using rousette::restconf::impl::URIPath;
@@ -118,146 +117,146 @@ TEST_CASE("URI path parser")
     SECTION("Valid paths")
     {
         for (const auto& [uriPath, expected] : {
-                 std::pair<std::string, URIPath>{"/restconf/data/x333:y666", URIPath({
+                 std::pair<std::string, URIPath>{"/restconf/data/x333:y666", {{
                                                                                  {{"x333", "y666"}},
-                                                                             })},
-                 {"/restconf/data/foo:bar", URIPath(std::vector<PathSegment>{
+                                                                             }}},
+                 {"/restconf/data/foo:bar", {{
                                                 {{"foo", "bar"}},
-                                            })},
-                 {"/restconf/data/foo:bar/baz", URIPath({
+                                            }}},
+                 {"/restconf/data/foo:bar/baz", {{
                                                     {{"foo", "bar"}},
                                                     {{"baz"}},
-                                                })},
-                 {"/restconf/data/foo:bar/meh:baz", URIPath({
+                                                }}},
+                 {"/restconf/data/foo:bar/meh:baz", {{
                                                         {{"foo", "bar"}},
                                                         {{"meh", "baz"}},
-                                                    })},
-                 {"/restconf/data/foo:bar/yay/meh:baz", URIPath({
+                                                    }}},
+                 {"/restconf/data/foo:bar/yay/meh:baz", {{
                                                             {{"foo", "bar"}},
                                                             {{"yay"}},
                                                             {{"meh", "baz"}},
-                                                        })},
-                 {"/restconf/data/foo:bar/Y=val", URIPath({
+                                                        }}},
+                 {"/restconf/data/foo:bar/Y=val", {{
                                                       {{"foo", "bar"}},
                                                       {{"Y"}, {"val"}},
-                                                  })},
-                 {"/restconf/data/foo:bar/Y=val-ue", URIPath({
+                                                  }}},
+                 {"/restconf/data/foo:bar/Y=val-ue", {{
                                                          {{"foo", "bar"}},
                                                          {{"Y"}, {"val-ue"}},
-                                                     })},
-                 {"/restconf/data/foo:bar/p:lst=key1", URIPath({
+                                                     }}},
+                 {"/restconf/data/foo:bar/p:lst=key1", {{
                                                            {{"foo", "bar"}},
                                                            {{"p", "lst"}, {"key1"}},
-                                                       })},
+                                                       }}},
 
-                 {"/restconf/data/foo:bar/p:lst=key1/leaf", URIPath({
+                 {"/restconf/data/foo:bar/p:lst=key1/leaf", {{
                                                                 {{"foo", "bar"}},
                                                                 {{"p", "lst"}, {"key1"}},
                                                                 {{"leaf"}},
-                                                            })},
-                 {"/restconf/data/foo:bar/lst=key1,", URIPath({
+                                                            }}},
+                 {"/restconf/data/foo:bar/lst=key1,", {{
                                                           {{"foo", "bar"}},
                                                           {{"lst"}, {"key1", ""}},
-                                                      })},
-                 {"/restconf/data/foo:bar/lst=key1,,,", URIPath({
+                                                      }}},
+                 {"/restconf/data/foo:bar/lst=key1,,,", {{
                                                             {{"foo", "bar"}},
                                                             {{"lst"}, {"key1", "", "", ""}},
-                                                        })},
-                 {"/restconf/data/foo:bar/lst=key1,/leaf", URIPath({
+                                                        }}},
+                 {"/restconf/data/foo:bar/lst=key1,/leaf", {{
                                                                {{"foo", "bar"}},
                                                                {{"lst"}, {"key1", ""}},
                                                                {{"leaf"}},
-                                                           })},
-                 {"/restconf/data/foo:bar/lst=key1,key2", URIPath({
+                                                           }}},
+                 {"/restconf/data/foo:bar/lst=key1,key2", {{
                                                               {{"foo", "bar"}},
                                                               {{"lst"}, {"key1", "key2"}},
-                                                          })},
-                 {"/restconf/data/foo:bar/lst=key1,key2/leaf", URIPath({
+                                                          }}},
+                 {"/restconf/data/foo:bar/lst=key1,key2/leaf", {{
                                                                    {{"foo", "bar"}},
                                                                    {{"lst"}, {"key1", "key2"}},
                                                                    {{"leaf"}},
-                                                               })},
-                 {"/restconf/data/foo:bar/lst=key1,key2/lst2=key1/leaf", URIPath({
+                                                               }}},
+                 {"/restconf/data/foo:bar/lst=key1,key2/lst2=key1/leaf", {{
                                                                              {{"foo", "bar"}},
                                                                              {{"lst"}, {"key1", "key2"}},
                                                                              {{"lst2"}, {"key1"}},
                                                                              {{"leaf"}},
-                                                                         })},
-                 {"/restconf/data/foo:bar/lst=,key2/lst2=key1/leaf", URIPath({
+                                                                         }}},
+                 {"/restconf/data/foo:bar/lst=,key2/lst2=key1/leaf", {{
                                                                          {{"foo", "bar"}},
                                                                          {{"lst"}, {"", "key2"}},
                                                                          {{"lst2"}, {"key1"}},
                                                                          {{"leaf"}},
-                                                                     })},
-                 {"/restconf/data/foo:bar/lst=,/lst2=key1/leaf", URIPath({
+                                                                     }}},
+                 {"/restconf/data/foo:bar/lst=,/lst2=key1/leaf", {{
                                                                      {{"foo", "bar"}},
                                                                      {{"lst"}, {"", ""}},
                                                                      {{"lst2"}, {"key1"}},
                                                                      {{"leaf"}},
-                                                                 })},
-                 {"/restconf/data/foo:bar/lst=", URIPath({
+                                                                 }}},
+                 {"/restconf/data/foo:bar/lst=", {{
                                                      {{"foo", "bar"}},
                                                      {{"lst"}, {""}},
-                                                 })},
-                 {"/restconf/data/foo:bar/lst=/leaf", URIPath({
+                                                 }}},
+                 {"/restconf/data/foo:bar/lst=/leaf", {{
                                                           {{"foo", "bar"}},
                                                           {{"lst"}, {""}},
                                                           {{"leaf"}},
-                                                      })},
-                 {"/restconf/data/foo:bar/prefix:lst=key1/prefix:leaf", URIPath({
+                                                      }}},
+                 {"/restconf/data/foo:bar/prefix:lst=key1/prefix:leaf", {{
                                                                             {{"foo", "bar"}},
                                                                             {{"prefix", "lst"}, {"key1"}},
                                                                             {{"prefix", "leaf"}},
-                                                                        })},
-                 {"/restconf/data/foo:bar/lst=key1,,key3", URIPath({
+                                                                        }}},
+                 {"/restconf/data/foo:bar/lst=key1,,key3", {{
                                                                {{"foo", "bar"}},
                                                                {{"lst"}, {"key1", "", "key3"}},
-                                                           })},
-                 {"/restconf/data/foo:bar/lst=key%2CWithCommas,,key2C", URIPath({
+                                                           }}},
+                 {"/restconf/data/foo:bar/lst=key%2CWithCommas,,key2C", {{
                                                                             {{"foo", "bar"}},
                                                                             {{"lst"}, {"key,WithCommas", "", "key2C"}},
-                                                                        })},
-                 {R"(/restconf/data/foo:bar/list1=%2C%27"%3A"%20%2F,,foo)", URIPath({
+                                                                        }}},
+                 {R"(/restconf/data/foo:bar/list1=%2C%27"%3A"%20%2F,,foo)", {{
                                                                                 {{"foo", "bar"}},
                                                                                 {{"list1"}, {R"(,'":" /)", "", "foo"}},
-                                                                            })},
-                 {"/restconf/data/foo:bar/list1= %20,%20,foo", URIPath({
+                                                                            }}},
+                 {"/restconf/data/foo:bar/list1= %20,%20,foo", {{
                                                                    {{"foo", "bar"}},
                                                                    {{"list1"}, {"  ", " ", "foo"}},
-                                                               })},
-                 {"/restconf/data/foo:bar/list1= %20,%20, ", URIPath({
+                                                               }}},
+                 {"/restconf/data/foo:bar/list1= %20,%20, ", {{
                                                                  {{"foo", "bar"}},
                                                                  {{"list1"}, {"  ", " ", " "}},
-                                                             })},
-                 {"/restconf/data/foo:bar/list1=žluťoučkýkůň", URIPath({
+                                                             }}},
+                 {"/restconf/data/foo:bar/list1=žluťoučkýkůň", {{
                                                                    {{"foo", "bar"}},
                                                                    {{"list1"}, {"žluťoučkýkůň"}},
-                                                               })},
-                 {"/restconf/data/foo:list=A%20Z", URIPath({
+                                                               }}},
+                 {"/restconf/data/foo:list=A%20Z", {{
                                                        {{"foo", "list"}, {"A Z"}},
-                                                   })},
-                 {"/restconf/data/foo:list=A%25Z", URIPath({
+                                                   }}},
+                 {"/restconf/data/foo:list=A%25Z", {{
                                                        {{"foo", "list"}, {"A%Z"}},
-                                                   })},
-                 {"/restconf/data", URIPath({}, {})},
-                 {"/restconf/data/", URIPath({}, {})},
+                                                   }}},
+                 {"/restconf/data", {{}, {}}},
+                 {"/restconf/data/", {{}, {}}},
 
                  // RFC 8527 uris
-                 {"/restconf/ds/hello:world", URIPath(URIPrefix(URIPrefix::Type::NMDADatastore, ApiIdentifier{"hello", "world"}), {})},
-                 {"/restconf/ds/ietf-datastores:running/foo:bar/list1=a", URIPath(URIPrefix(URIPrefix::Type::NMDADatastore, ApiIdentifier{"ietf-datastores", "running"}), {{{"foo", "bar"}}, {{"list1"}, {"a"}}})},
-                 {"/restconf/ds/ietf-datastores:operational", URIPath(URIPrefix(URIPrefix::Type::NMDADatastore, ApiIdentifier{"ietf-datastores", "operational"}), {})},
-                 {"/restconf/ds/ietf-datastores:operational/", URIPath(URIPrefix(URIPrefix::Type::NMDADatastore, ApiIdentifier{"ietf-datastores", "operational"}), {})},
+                 {"/restconf/ds/hello:world", {{URIPrefix::Type::NMDADatastore, {{"hello", "world"}}}, {}}},
+                 {"/restconf/ds/ietf-datastores:running/foo:bar/list1=a", {{URIPrefix::Type::NMDADatastore, {{"ietf-datastores", "running"}}}, {{{"foo", "bar"}}, {{"list1"}, {"a"}}}}},
+                 {"/restconf/ds/ietf-datastores:operational", {{URIPrefix::Type::NMDADatastore, {{"ietf-datastores", "operational"}}}, {}}},
+                 {"/restconf/ds/ietf-datastores:operational/", {{URIPrefix::Type::NMDADatastore, {{"ietf-datastores", "operational"}}}, {}}},
 
                  // RPCs and actions
-                 {"/restconf/operations/example:rpc-test", URIPath(URIPrefix(URIPrefix::Type::BasicRestconfOperations, boost::none), {{{"example", "rpc-test"}}})},
-                 {"/restconf/data/example:tlc/list=hello-world/example-action", URIPath({
+                 {"/restconf/operations/example:rpc-test", {{URIPrefix::Type::BasicRestconfOperations, boost::none}, {{{"example", "rpc-test"}}}}},
+                 {"/restconf/data/example:tlc/list=hello-world/example-action", {{
                                                                                     {{"example", "tlc"}},
                                                                                     {{"list"}, {"hello-world"}},
                                                                                     {{"example-action"}},
-                                                                                })},
+                                                                                }}},
 
-                 {"/restconf/yang-library-version", URIPath(URIPrefix(URIPrefix::Type::YangLibraryVersion, boost::none), {})},
-                 {"/restconf/yang-library-version/", URIPath(URIPrefix(URIPrefix::Type::YangLibraryVersion, boost::none), {})},
+                 {"/restconf/yang-library-version", {{URIPrefix::Type::YangLibraryVersion, boost::none}, {}}},
+                 {"/restconf/yang-library-version/", {{URIPrefix::Type::YangLibraryVersion, boost::none}, {}}},
              }) {
             CAPTURE(uriPath);
             auto path = rousette::restconf::impl::parseUriPath(uriPath);
@@ -369,12 +368,12 @@ TEST_CASE("URI path parser")
                     }
 
                     for (const auto& [uriPath, expectedLyPathParent, expectedLastSegment] : {
-                             std::tuple<std::string, std::string, PathSegment>{"/restconf/data/example:top-level-leaf", "", PathSegment({"example", "top-level-leaf"})},
-                             {"/restconf/data/example:top-level-list=hello", "", PathSegment({"example", "top-level-list"}, {"hello"})},
-                             {"/restconf/data/example:tlc/list=eth0/collection=1", "/example:tlc/list[name='eth0']", PathSegment({"example", "collection"}, {"1"})},
-                             {"/restconf/data/example:tlc/status", "/example:tlc", PathSegment({"example", "status"})},
-                             {"/restconf/data/example:a/example-augment:b/c", "/example:a/example-augment:b", PathSegment({"example-augment", "c"})},
-                             {"/restconf/ds/ietf-datastores:startup/example:a/example-augment:b/c", "/example:a/example-augment:b", PathSegment({"example-augment", "c"})},
+                             std::tuple<std::string, std::string, PathSegment>{"/restconf/data/example:top-level-leaf", "", {{"example", "top-level-leaf"}}},
+                             {"/restconf/data/example:top-level-list=hello", "", {{"example", "top-level-list"}, {"hello"}}},
+                             {"/restconf/data/example:tlc/list=eth0/collection=1", "/example:tlc/list[name='eth0']", {{"example", "collection"}, {"1"}}},
+                             {"/restconf/data/example:tlc/status", "/example:tlc", {{"example", "status"}}},
+                             {"/restconf/data/example:a/example-augment:b/c", "/example:a/example-augment:b", {{"example-augment", "c"}}},
+                             {"/restconf/ds/ietf-datastores:startup/example:a/example-augment:b/c", "/example:a/example-augment:b", {{"example-augment", "c"}}},
                          }) {
                         CAPTURE(httpMethod);
                         CAPTURE(expectedRequestType);
