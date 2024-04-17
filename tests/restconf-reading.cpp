@@ -18,6 +18,7 @@ TEST_CASE("reading data")
     spdlog::set_level(spdlog::level::trace);
     auto srConn = sysrepo::Connection{};
     auto srSess = srConn.sessionStart(sysrepo::Datastore::Running);
+    srSess.sendRPC(srSess.getContext().newPath("/ietf-factory-default:factory-reset"));
     auto nacmGuard = manageNacm(srSess);
 
     SUBSCRIBE_MODULE(sub1, srSess, "example");
@@ -71,7 +72,8 @@ TEST_CASE("reading data")
     "capabilities": {
       "capability": [
         "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=explicit",
-        "urn:ietf:params:restconf:capability:depth:1.0"
+        "urn:ietf:params:restconf:capability:depth:1.0",
+        "urn:ietf:params:restconf:capability:with-defaults:1.0"
       ]
     }
   },
@@ -89,7 +91,8 @@ TEST_CASE("reading data")
     "capabilities": {
       "capability": [
         "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=explicit",
-        "urn:ietf:params:restconf:capability:depth:1.0"
+        "urn:ietf:params:restconf:capability:depth:1.0",
+        "urn:ietf:params:restconf:capability:with-defaults:1.0"
       ]
     }
   },
@@ -491,12 +494,175 @@ TEST_CASE("reading data")
     "capabilities": {
       "capability": [
         "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=explicit",
-        "urn:ietf:params:restconf:capability:depth:1.0"
+        "urn:ietf:params:restconf:capability:depth:1.0",
+        "urn:ietf:params:restconf:capability:with-defaults:1.0"
       ]
     }
   }
 }
 )"});
 
+    }
+
+    SECTION("with-defaults")
+    {
+        SECTION("Implicit default node")
+        {
+
+            REQUIRE(get(RESTCONF_DATA_ROOT "/example:a?with-defaults=report-all", {}) == Response{200, jsonHeaders, R"({
+  "example:a": {
+    "b": {
+      "c": {
+        "enabled": true
+      }
+    },
+    "example-augment:b": {
+      "c": {
+        "enabled": true
+      }
+    }
+  }
+}
+)"});
+            REQUIRE(get(RESTCONF_DATA_ROOT "/example:a?with-defaults=explicit", {}) == Response{200, jsonHeaders, R"({
+
+}
+)"});
+            REQUIRE(get(RESTCONF_DATA_ROOT "/example:a?with-defaults=trim", {}) == Response{200, jsonHeaders, R"({
+
+}
+)"});
+            REQUIRE(get(RESTCONF_DATA_ROOT "/example:a?with-defaults=report-all-tagged", {}) == Response{200, jsonHeaders, R"({
+  "example:a": {
+    "b": {
+      "c": {
+        "enabled": true,
+        "@enabled": {
+          "ietf-netconf-with-defaults:default": true
+        }
+      }
+    },
+    "example-augment:b": {
+      "c": {
+        "enabled": true,
+        "@enabled": {
+          "ietf-netconf-with-defaults:default": true
+        }
+      }
+    }
+  }
+}
+)"});
+        }
+
+        SECTION("Explicit default node")
+        {
+            srSess.switchDatastore(sysrepo::Datastore::Running);
+            srSess.setItem("/example:a/b/c/enabled", "true");
+            srSess.applyChanges();
+
+            REQUIRE(get(RESTCONF_DATA_ROOT "/example:a?with-defaults=report-all", {}) == Response{200, jsonHeaders, R"({
+  "example:a": {
+    "b": {
+      "c": {
+        "enabled": true
+      }
+    },
+    "example-augment:b": {
+      "c": {
+        "enabled": true
+      }
+    }
+  }
+}
+)"});
+
+            REQUIRE(get(RESTCONF_DATA_ROOT "/example:a?with-defaults=explicit", {}) == Response{200, jsonHeaders, R"({
+  "example:a": {
+    "b": {
+      "c": {
+        "enabled": true
+      }
+    }
+  }
+}
+)"});
+
+            REQUIRE(get(RESTCONF_DATA_ROOT "/example:a?with-defaults=trim", {}) == Response{200, jsonHeaders, R"({
+
+}
+)"});
+
+            REQUIRE(get(RESTCONF_DATA_ROOT "/example:a?with-defaults=report-all-tagged", {}) == Response{200, jsonHeaders, R"({
+  "example:a": {
+    "b": {
+      "c": {
+        "enabled": true,
+        "@enabled": {
+          "ietf-netconf-with-defaults:default": true
+        }
+      }
+    },
+    "example-augment:b": {
+      "c": {
+        "enabled": true,
+        "@enabled": {
+          "ietf-netconf-with-defaults:default": true
+        }
+      }
+    }
+  }
+}
+)"});
+        }
+    }
+
+    SECTION("Implicit node with default value")
+    {
+        // RFC 4080, 3.5.4: If target of the query is implicitly created node with default value, ignore basic mode
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:a/b/c/enabled", {}) == Response{200, jsonHeaders, R"({
+  "example:a": {
+    "b": {
+      "c": {
+        "enabled": true
+      }
+    }
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:a/b/c/enabled?with-defaults=explicit", {}) == Response{200, jsonHeaders, R"({
+
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:a/b/c/enabled?with-defaults=trim", {}) == Response{200, jsonHeaders, R"({
+
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:a/b/c/enabled?with-defaults=report-all", {}) == Response{200, jsonHeaders, R"({
+  "example:a": {
+    "b": {
+      "c": {
+        "enabled": true
+      }
+    }
+  }
+}
+)"});
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:a/b/c/enabled?with-defaults=report-all-tagged", {}) == Response{200, jsonHeaders, R"({
+  "example:a": {
+    "b": {
+      "c": {
+        "enabled": true,
+        "@enabled": {
+          "ietf-netconf-with-defaults:default": true
+        }
+      }
+    }
+  }
+}
+)"});
     }
 }
