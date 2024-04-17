@@ -123,7 +123,10 @@ install(TARGETS
     # watch-operational-ds
     rousette
     RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/)
-install(FILES ${CMAKE_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang DESTINATION ${CMAKE_INSTALL_PREFIX}/share/rousette/yang)
+install(FILES
+    ${CMAKE_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang
+    ${CMAKE_SOURCE_DIR}/yang/ietf-restconf-monitoring@2017-01-26.yang
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/share/rousette/yang)
 
 include(CTest)
 if(BUILD_TESTING)
@@ -177,6 +180,7 @@ if(BUILD_TESTING)
     set(common-models
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/ietf-system@2014-08-06.yang --enable-feature radius
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf-monitoring@2017-01-26.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang --enable-feature f1
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-augment.yang)
     rousette_test(NAME restconf-reading LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
