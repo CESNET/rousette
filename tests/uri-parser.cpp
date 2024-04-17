@@ -811,6 +811,12 @@ TEST_CASE("URI path parser")
             REQUIRE(parseQueryParams("&") == std::nullopt);
             REQUIRE(parseQueryParams("depth=1&") == std::nullopt);
             REQUIRE(parseQueryParams("a&b=a") == std::nullopt);
+            REQUIRE(parseQueryParams("with-defaults=report-all") == QueryParamsRaw{{"with-defaults", "report-all"}});
+            REQUIRE(parseQueryParams("with-defaults=trim") == QueryParamsRaw{{"with-defaults", "trim"}});
+            REQUIRE(parseQueryParams("with-defaults=explicit") == QueryParamsRaw{{"with-defaults", "explicit"}});
+            REQUIRE(parseQueryParams("with-defaults=report-all-tagged") == QueryParamsRaw{{"with-defaults", "report-all-tagged"}});
+            REQUIRE(parseQueryParams("depth=3&with-defaults=report-all") == QueryParamsRaw{{"depth", "3"}, {"with-defaults", "report-all"}});
+            REQUIRE(parseQueryParams("with-defaults=") == std::nullopt);
         }
 
         SECTION("Full requests with validation")
@@ -828,6 +834,16 @@ TEST_CASE("URI path parser")
 
                 REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "POST", "/restconf/data/example:tlc", "depth=1"),
                                        serializeErrorResponse(400, "protocol", "invalid-value", "Query param depth can be used only with GET and HEAD methods").c_str(),
+                                       rousette::restconf::ErrorResponse);
+            }
+
+            SECTION("with-default")
+            {
+                auto resp = asRestconfRequest(ctx, "GET", "/restconf/data/example:tlc", "with-defaults=report-all");
+                REQUIRE(resp.queryParams == RestconfRequest::QueryParams({{"with-defaults", "report-all"}}));
+
+                REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "POST", "/restconf/data/example:tlc", "with-defaults=report-all"),
+                                       serializeErrorResponse(400, "protocol", "invalid-value", "Query param with-defaults can be used only with GET and HEAD methods").c_str(),
                                        rousette::restconf::ErrorResponse);
             }
 

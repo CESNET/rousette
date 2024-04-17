@@ -543,6 +543,24 @@ typename Map::mapped_type mapGetValueOr(const Map& map, const typename Map::key_
     }
     return defaultValue;
 }
+
+libyang::PrintFlags libyangPrintFlagsFromString(const std::string& withDefaults)
+{
+    if (withDefaults == "report-all") {
+        return libyang::PrintFlags::WithDefaultsExplicit;
+    }
+    if (withDefaults == "report-all-tagged") {
+        return libyang::PrintFlags::WithDefaultsAllTag;
+    }
+    if (withDefaults == "trim") {
+        return libyang::PrintFlags::WithDefaultsTrim;
+    }
+    if (withDefaults == "explicit") {
+        return libyang::PrintFlags::WithDefaultsExplicit;
+    }
+
+    throw std::logic_error("Invalid withDefaults query parameter");
+}
 }
 
 Server::~Server()
@@ -580,6 +598,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     // set capabilities
     m_sess.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[1]", "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=report-all");
     m_sess.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[2]", "urn:ietf:params:restconf:capability:depth:1.0");
+    m_sess.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[3]", "urn:ietf:params:restconf:capability:with-defaults:1.0");
     m_sess.applyChanges();
 
     dwdmEvents->change.connect([this](const std::string& content) {
@@ -682,6 +701,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     sess.switchDatastore(restconfRequest.datastore.value_or(sysrepo::Datastore::Operational));
 
                     auto maxDepth = mapGetValueOr(restconfRequest.queryParams, "depth"s, "unbounded");
+                    auto printFlags = libyangPrintFlagsFromString(mapGetValueOr(restconfRequest.queryParams, "with-defaults"s, "explicit"));
 
                     if (auto data = sess.getData(restconfRequest.path, maxDepth == "unbounded" ? 0 : std::stoi(maxDepth)); data) {
                         res.write_head(
@@ -691,7 +711,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                                 {"access-control-allow-origin", {"*", false}},
                             });
 
-                        res.end(*replaceYangLibraryLocations(parseUrlPrefix(req.header()), yangSchemaRoot, *data).printStr(dataFormat.response, libyang::PrintFlags::WithSiblings));
+                        res.end(*replaceYangLibraryLocations(parseUrlPrefix(req.header()), yangSchemaRoot, *data).printStr(dataFormat.response, printFlags));
                     } else {
                         throw ErrorResponse(404, "application", "invalid-value", "No data from sysrepo.");
                     }

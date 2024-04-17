@@ -79,6 +79,7 @@ auto validDepthValues = [](auto& ctx) {
 
 const auto depthValues = x3::rule<class insertValues, std::string>{"depthValues"} = (x3::uint_[validDepthValues]);
 const auto queryParamPair = x3::rule<class queryParamPair, std::pair<std::string, std::string>>{"queryParamPair"} =
+        (x3::string("with-defaults") >> "=" >> (x3::string("report-all-tagged") | x3::string("report-all") | x3::string("trim") | x3::string("explicit"))) |
         (x3::string("depth") >> "=" >> (x3::string("unbounded") | depthValues));
 
 const auto queryParamGrammar = x3::rule<class grammar, std::vector<std::pair<std::string, std::string>>>{"queryParamGrammar"} = queryParamPair % "&" | x3::eps;
@@ -346,8 +347,10 @@ void validateQueryParameters(const std::vector<std::pair<std::string, std::strin
         }
     }
 
-    if (auto it = params.find("depth"); it != params.end() && httpMethod != "GET" && httpMethod != "HEAD") {
-        throw ErrorResponse(400, "protocol", "invalid-value", "Query param depth can be used only with GET and HEAD methods");
+    for (const auto& param : {"depth", "with-defaults"}) {
+        if (auto it = params.find(param); it != params.end() && httpMethod != "GET" && httpMethod != "HEAD") {
+            throw ErrorResponse(400, "protocol", "invalid-value", "Query param "s + param + " can be used only with GET and HEAD methods");
+        }
     }
 }
 
