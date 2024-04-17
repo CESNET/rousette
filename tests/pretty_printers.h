@@ -65,6 +65,10 @@ struct StringMaker<rousette::restconf::queryParams::QueryParamValue> {
         return std::visit(overloaded{
             [](const rousette::restconf::queryParams::UnboundedDepth&) -> std::string { return "UnboundedDepth{}"; },
             [](unsigned int i) { return std::to_string(i); },
+            [](const rousette::restconf::queryParams::withDefaults::Explicit&) -> std::string { return "Explicit{}"; },
+            [](const rousette::restconf::queryParams::withDefaults::ReportAll&) -> std::string { return "ReportAll{}"; },
+            [](const rousette::restconf::queryParams::withDefaults::ReportAllTagged&) -> std::string { return "ReportAllTagged{}"; },
+            [](const rousette::restconf::queryParams::withDefaults::Trim&) -> std::string { return "Trim{}"; },
         }, obj).c_str();
     }
 };
