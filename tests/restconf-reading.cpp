@@ -413,4 +413,13 @@ TEST_CASE("reading data")
                 R"(<yang-library-version xmlns="urn:ietf:params:xml:ns:yang:ietf-restconf">2019-01-04</yang-library-version>
 )"});
     }
+
+    SECTION("restconf monitoring")
+    {
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-restconf-monitoring:restconf-state", {}) == Response{200, jsonHeaders, R"({
+
+}
+)"});
+
+    }
 }

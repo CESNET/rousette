@@ -556,7 +556,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
-    for (const auto& [module, version] : {std::pair<std::string, std::string>{"ietf-restconf", "2017-01-26"}, {"ietf-netconf", ""}}) {
+    for (const auto& [module, version] : {std::pair<std::string, std::string>{"ietf-restconf", "2017-01-26"}, {"ietf-restconf-monitoring", "2017-01-26"}, {"ietf-netconf", ""}}) {
         if (!conn.sessionStart().getContext().getModuleImplemented(module)) {
             throw std::runtime_error("Module "s + module + "@" + version + " is not implemented in sysrepo");
         }
@@ -565,6 +565,13 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     // RFC 8527, we must implement at least ietf-yang-library@2019-01-04 and support operational DS
     if (auto mod = conn.sessionStart().getContext().getModuleImplemented("ietf-yang-library"); !mod || mod->revision() < "2019-01-04") {
         throw std::runtime_error("Module ietf-yang-library of revision at least 2019-01-04 is not implemented");
+    }
+
+    // set capabilities
+    {
+        auto sess = conn.sessionStart(sysrepo::Datastore::Operational);
+        sess.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[.='urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=report-all']", "");
+        sess.applyChanges();
     }
 
     dwdmEvents->change.connect([this](const std::string& content) {
