@@ -50,6 +50,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "f4af0c14_70098c0a",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 817,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-21T20:32:17Z",
+      "side": 1,
+      "message": "I asked about this on Slack, and the way it\u0027s implemented in sysrepo is that non-presence containers are \"idempotent\", and a create op on them always succeeds even if there are child nodes. We will very likely be relying on sysrepo for this one anyway, so I\u0027m OK-ish with this behavior.\n\nStill, I would appreciate a comment here in the test suite which explains that.",
+      "parentUuid": "2682d5ee_9ffc9680",
+      "range": {
+        "startLine": 813,
+        "startChar": 0,
+        "endLine": 817,
+        "endChar": 13
+      },
+      "revId": "47fdaa3f099478e84727ac9960fbed9df00301f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "c99e4702_c5d52fcd",
         "filename": "tests/restconf-writing.cpp",
         "patchSetId": 3
@@ -85,6 +109,30 @@
       "side": 1,
       "message": "I think this is the same case as the previous comment.",
       "parentUuid": "c99e4702_c5d52fcd",
+      "range": {
+        "startLine": 819,
+        "startChar": 12,
+        "endLine": 819,
+        "endChar": 157
+      },
+      "revId": "47fdaa3f099478e84727ac9960fbed9df00301f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "aae985b0_49c0513f",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 819,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-21T20:32:17Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "73255774_c570cc18",
       "range": {
         "startLine": 819,
         "startChar": 12,

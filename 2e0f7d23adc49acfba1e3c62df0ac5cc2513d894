@@ -1,0 +1,113 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "13c824f5_25a8db90",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-21T20:32:17Z",
+      "side": 1,
+      "message": "(oops, i forgot to push \"reply\", sending my review comments now)",
+      "revId": "2e0f7d23adc49acfba1e3c62df0ac5cc2513d894",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ee2b32b8_1fab54ec",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 340,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-21T20:32:17Z",
+      "side": 1,
+      "message": "Why is this a list and not a vector? DataNode is a very lightweight data structure and I think that moving it might be about as costy as maintaining that linked list here. Also, I tend to default to a vector, and I believe that this is a pretty universal C++ recommendation these days; indirection tends to be worse than a move, IIRC.",
+      "range": {
+        "startLine": 340,
+        "startChar": 13,
+        "endLine": 340,
+        "endChar": 17
+      },
+      "revId": "2e0f7d23adc49acfba1e3c62df0ac5cc2513d894",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "727bb519_d5adc8b3",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 351,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-21T20:32:17Z",
+      "side": 1,
+      "message": "why not a structured binding to `[edit, node]`?",
+      "range": {
+        "startLine": 349,
+        "startChar": 1,
+        "endLine": 351,
+        "endChar": 37
+      },
+      "revId": "2e0f7d23adc49acfba1e3c62df0ac5cc2513d894",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7c2633fc_07612397",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 702,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-21T20:32:17Z",
+      "side": 1,
+      "message": "I would prefer this if/else block to *not* be on the same level as the first `if`; the reason for that is that the first `if` is about reading the data, while the second one is about what to do when the data have been read. IMHO, these are completely different conditions, so it will make the code a bit easier to read if it\u0027s written either as:\n \nif (length \u003e 0) {\n  ...payload.append(...);\n  return;\n}\n \nif (...) {\n  processPut...\n} else {\n  processPost...\n}\n\nor:\n \nif (length \u003e 0) {\n  ...payload.append(...);\n} else {\n  if (...) {\n    processPut...\n  } else {\n    processPost...\n  }\n}",
+      "range": {
+        "startLine": 698,
+        "startChar": 31,
+        "endLine": 702,
+        "endChar": 25
+      },
+      "revId": "2e0f7d23adc49acfba1e3c62df0ac5cc2513d894",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ee8beb79_8eb4e655",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-21T20:32:17Z",
+      "side": 1,
+      "message": "nit: typo",
+      "range": {
+        "startLine": 58,
+        "startChar": 48,
+        "endLine": 58,
+        "endChar": 49
+      },
+      "revId": "2e0f7d23adc49acfba1e3c62df0ac5cc2513d894",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
