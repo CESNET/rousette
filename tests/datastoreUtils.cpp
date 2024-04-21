@@ -1,3 +1,4 @@
+#include "UniqueResource.h"
 #include "datastoreUtils.h"
 
 namespace {
@@ -43,6 +44,28 @@ sysrepo::Subscription datastoreNewStateSubscription(sysrepo::Session& session, D
         moduleName,
         [moduleName, &dsChangesMock](auto session, auto, auto, auto, auto, auto) {
             datastoreNewState(session, dsChangesMock, "/" + moduleName + ":*");
+            return sysrepo::ErrorCode::Ok;
+        },
+        std::nullopt,
+        0,
+        sysrepo::SubscribeOptions::DoneOnly);
+}
+
+/** @brief Subscribe to running datastore on a module. This show running DS data in the operational DS. */
+sysrepo::Subscription subscribeRunningForOperDs(sysrepo::Session& session, const std::string& moduleName)
+{
+    sysrepo::Datastore origDs;
+    auto ds = make_unique_resource(
+        [&]() {
+            origDs = session.activeDatastore();
+            session.switchDatastore(sysrepo::Datastore::Running); },
+        [&]() {
+            session.switchDatastore(origDs);
+        });
+
+    return session.onModuleChange(
+        moduleName,
+        [](auto, auto, auto, auto, auto, auto) {
             return sysrepo::ErrorCode::Ok;
         },
         std::nullopt,

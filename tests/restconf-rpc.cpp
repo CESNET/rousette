@@ -10,6 +10,7 @@ static const auto SERVER_PORT = "10084";
 #include <spdlog/spdlog.h>
 #include "restconf/Server.h"
 #include "tests/aux-utils.h"
+#include "tests/datastoreUtils.h"
 #include "tests/pretty_printers.h"
 
 struct RpcCall {
@@ -34,6 +35,7 @@ TEST_CASE("invoking actions and rpcs")
     spdlog::set_level(spdlog::level::trace);
     auto srConn = sysrepo::Connection{};
     auto srSess = srConn.sessionStart(sysrepo::Datastore::Running);
+    auto sub = subscribeRunningForOperDs(srSess, "example");
     auto nacmGuard = manageNacm(srSess);
     auto server = rousette::restconf::Server{srConn, SERVER_ADDRESS, SERVER_PORT};
 
@@ -41,16 +43,6 @@ TEST_CASE("invoking actions and rpcs")
 
     trompeloeil::sequence seq1;
     RpcCall rpcCall;
-
-    // subscribe to running so we see data in oper ds
-    auto sub = srSess.onModuleChange(
-        "example",
-        [](auto, auto, auto, auto, auto, auto) {
-            return sysrepo::ErrorCode::Ok;
-        },
-        std::nullopt,
-        0,
-        sysrepo::SubscribeOptions::DoneOnly);
 
     // rpc callbacks
     auto rpc1 = srSess.onRPCAction("/example:test-rpc", [&](sysrepo::Session, auto, auto path, libyang::DataNode input, auto, auto, libyang::DataNode output) {
