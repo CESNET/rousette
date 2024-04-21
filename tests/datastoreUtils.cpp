@@ -1,3 +1,4 @@
+#include "UniqueResource.h"
 #include "datastoreUtils.h"
 
 namespace {

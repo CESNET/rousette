@@ -25,3 +25,9 @@ struct DatastoreChangesMock {
 
 sysrepo::Subscription datastoreNewStateSubscription(sysrepo::Session& session, DatastoreChangesMock& dsChangesMock, const std::string& moduleName);
 sysrepo::Subscription datastoreChangesSubscription(sysrepo::Session& session, DatastoreChangesMock& dsChangesMock, const std::string& moduleName);
+
+static DatastoreChangesMock ignored;
+
+#define SUBSCRIBE_MODULE(SUBNAME, SESSION, MODULE) \
+    ALLOW_CALL(ignored, change(trompeloeil::_)); \
+    auto SUBNAME = datastoreChangesSubscription(SESSION, ignored, MODULE);
