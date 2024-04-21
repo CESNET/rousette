@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "547f0c61_0b9687f6",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 572,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-04-21T19:37:52Z",
+      "side": 1,
+      "message": "this is probably wrong - read https://www.rfc-editor.org/rfc/rfc8040#section-9.1.2 and adjust default printflags if necessary",
+      "range": {
+        "startLine": 572,
+        "startChar": 91,
+        "endLine": 572,
+        "endChar": 161
+      },
+      "revId": "f535cf3eeea7a2315da3bb160d44d35d774997d3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
