@@ -1,0 +1,113 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "450f35f0_ca335f15",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 345,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-21T21:01:07Z",
+      "side": 1,
+      "message": "I think it would be more developer-friendly to say \"Query parameter \u0027foo\u0027 already specified\"",
+      "revId": "d8e67483bafb949d18afa725473dff5cb17e44cd",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fb1a3131_ef74b7b9",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 350,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-21T21:01:07Z",
+      "side": 1,
+      "message": "IMHO better: \"Query parameter \u0027depth\u0027\" (no abbreviations, and quoting)",
+      "range": {
+        "startLine": 350,
+        "startChar": 62,
+        "endLine": 350,
+        "endChar": 80
+      },
+      "revId": "d8e67483bafb949d18afa725473dff5cb17e44cd",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fc26698a_63e6ee83",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 6
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-21T21:01:07Z",
+      "side": 1,
+      "message": "would it make more sense to turn this into a typed variant, like this:\n \nstruct Unbound{};\n// in future, also struct First{}; struct Last{}; etc\nusing QueryParams \u003d std::map\u003cstd::string, std::variant\u003cint, Unbound\u003e\u003e;\n\nThat way you won\u0027t have to do string comparisons (again) in the actual code, which is IMHO always a good pattern because it turns typos into compile-time errors, and you won\u0027t have to convert string to numbers again, either.",
+      "range": {
+        "startLine": 53,
+        "startChar": 46,
+        "endLine": 53,
+        "endChar": 57
+      },
+      "revId": "d8e67483bafb949d18afa725473dff5cb17e44cd",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "67f15630_6a852589",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 6
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-21T21:01:07Z",
+      "side": 1,
+      "message": "nit: uriQueryString",
+      "range": {
+        "startLine": 72,
+        "startChar": 141,
+        "endLine": 72,
+        "endChar": 155
+      },
+      "revId": "d8e67483bafb949d18afa725473dff5cb17e44cd",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d22cd263_3dbf8830",
+        "filename": "src/restconf/uri_impl.h",
+        "patchSetId": 6
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-21T21:01:07Z",
+      "side": 1,
+      "message": "nit: queryString",
+      "range": {
+        "startLine": 58,
+        "startChar": 100,
+        "endLine": 58,
+        "endChar": 111
+      },
+      "revId": "d8e67483bafb949d18afa725473dff5cb17e44cd",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
