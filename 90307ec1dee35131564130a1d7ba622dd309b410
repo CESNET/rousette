@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "223b86d9_2c522d15",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-21T20:42:50Z",
+      "side": 1,
+      "message": "I think that the amount of code can be vastly reduced by using the mock framework a bit more aggressively. For example, this new function is essentially an equivalent of:\n \nDatastoreChangesMock ignored;\nALLOW_CALL(ignored, change(trompeloeil::_);\nauto sub \u003d datastoreChangesSubscription(sess, ignored, \"example\");\n\n...plus the automatic switching of datastores.\n\nNow, if you move the `ignored` mock to a global static variable in datastoreUtils.cpp, this becomes a one-liner:\n\nauto sub \u003d datastoreChangesSubscription(sess, ignored, \"example\");\n\nI think that the quto-switching of DS is not really required because this is code which usually happens at test init time.\n\nWould you like this direction?",
+      "revId": "90307ec1dee35131564130a1d7ba622dd309b410",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
