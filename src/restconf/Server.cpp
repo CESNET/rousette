@@ -673,7 +673,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                                 {"access-control-allow-origin", {"*", false}},
                             });
 
-                        res.end(*replaceYangLibraryLocations(parseUrlPrefix(req.header()), yangSchemaRoot, *data).printStr(dataFormat.response, libyang::PrintFlags::WithSiblings));
+                        res.end(*replaceYangLibraryLocations(parseUrlPrefix(req.header()), yangSchemaRoot, *data).printStr(dataFormat.response, libyang::PrintFlags::WithSiblings | libyang::PrintFlags::WithDefaultsAll));
                     } else {
                         throw ErrorResponse(404, "application", "invalid-value", "No data from sysrepo.");
                     }
