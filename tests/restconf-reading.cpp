@@ -11,6 +11,7 @@ static const auto SERVER_PORT = "10081";
 #include <nghttp2/asio_http2.h>
 #include <spdlog/spdlog.h>
 #include "restconf/Server.h"
+#include "tests/datastoreUtils.h"
 
 TEST_CASE("reading data")
 {
@@ -18,6 +19,10 @@ TEST_CASE("reading data")
     auto srConn = sysrepo::Connection{};
     auto srSess = srConn.sessionStart(sysrepo::Datastore::Running);
     auto nacmGuard = manageNacm(srSess);
+
+    SUBSCRIBE_MODULE(sub1, srSess, "example");
+    SUBSCRIBE_MODULE(sub2, srSess, "ietf-system");
+
     auto server = rousette::restconf::Server{srConn, SERVER_ADDRESS, SERVER_PORT};
 
     // something we can read
@@ -28,6 +33,10 @@ TEST_CASE("reading data")
     srSess.setItem("/ietf-system:system/clock/timezone-utc-offset", "2");
     srSess.setItem("/ietf-system:system/radius/server[name='a']/udp/address", "1.1.1.1");
     srSess.setItem("/ietf-system:system/radius/server[name='a']/udp/shared-secret", "shared-secret");
+    srSess.applyChanges();
+
+    srSess.switchDatastore(sysrepo::Datastore::Running);
+    srSess.setItem("/example:top-level-leaf", "moo");
     srSess.applyChanges();
 
     // setup real-like NACM
@@ -57,6 +66,7 @@ TEST_CASE("reading data")
     {
         // this relies on a NACM rule for anonymous access that filters out "a lot of stuff"
         REQUIRE(get(RESTCONF_DATA_ROOT, {}) == Response{200, jsonHeaders, R"({
+  "example:top-level-leaf": "moo",
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -66,6 +76,7 @@ TEST_CASE("reading data")
 )"});
 
         REQUIRE(get(RESTCONF_ROOT_DS("operational"), {}) == Response{200, jsonHeaders, R"({
+  "example:top-level-leaf": "moo",
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -75,7 +86,7 @@ TEST_CASE("reading data")
 )"});
 
         REQUIRE(get(RESTCONF_ROOT_DS("running"), {}) == Response{200, jsonHeaders, R"({
-
+  "example:top-level-leaf": "moo"
 }
 )"});
     }
