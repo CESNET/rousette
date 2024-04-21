@@ -253,7 +253,7 @@ TEST_CASE("deleting data")
 }
 )"});
 
-        // User does not know that this node actually does not exist
+        // FIXME: User does not know that this node actually does not exist but sysrepo does report data is missing error here. See https://github.com/sysrepo/sysrepo/issues/3283
         REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example-delete:secret=non-existing-key", {}) == Response{404, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
