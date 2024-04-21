@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "eabf13c3_83dac954",
+        "filename": "tests/restconf-reading.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-21T20:46:06Z",
+      "side": 1,
+      "message": "I do not understand why \"running\" is clearer than \"foo\" here; sure, it\u0027s a value that\u0027s set in the running DS, but I think that code which checks the operational DS and finds a value \"running\" in there is a bit weird.",
+      "range": {
+        "startLine": 38,
+        "startChar": 47,
+        "endLine": 38,
+        "endChar": 54
+      },
+      "revId": "b45dd3c2b987266b009065e45a84001ec4cbd5c1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
