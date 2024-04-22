@@ -41,6 +41,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "57373188_e92ce139",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 340,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-04-22T10:00:48Z",
+      "side": 1,
+      "message": "I agree that for small lists like this the vector will probably be much more efficient. Done.",
+      "parentUuid": "ee2b32b8_1fab54ec",
+      "range": {
+        "startLine": 340,
+        "startChar": 13,
+        "endLine": 340,
+        "endChar": 17
+      },
+      "revId": "2e0f7d23adc49acfba1e3c62df0ac5cc2513d894",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "727bb519_d5adc8b3",
@@ -54,6 +78,30 @@
       "writtenOn": "2024-04-21T20:32:17Z",
       "side": 1,
       "message": "why not a structured binding to `[edit, node]`?",
+      "range": {
+        "startLine": 349,
+        "startChar": 1,
+        "endLine": 351,
+        "endChar": 37
+      },
+      "revId": "2e0f7d23adc49acfba1e3c62df0ac5cc2513d894",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d222f34a_9a9f0c7a",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 351,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-04-22T10:00:48Z",
+      "side": 1,
+      "message": "The names are defined out of this scope so `auto [edit,node]` would only shadow the identifiers. \n\nThe std::tie trick does not work here. As far as I understand it, the libyang::CreatedNodes type is not convertible to pair/tuple. Maybe `libyang::CreatedNodes::operator tuple` would suffice but that is up to the libyang-cpp library.",
+      "parentUuid": "727bb519_d5adc8b3",
       "range": {
         "startLine": 349,
         "startChar": 1,
@@ -87,6 +135,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "39c44fcb_5376a7b2",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 702,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-04-22T10:00:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7c2633fc_07612397",
+      "range": {
+        "startLine": 698,
+        "startChar": 31,
+        "endLine": 702,
+        "endChar": 25
+      },
+      "revId": "2e0f7d23adc49acfba1e3c62df0ac5cc2513d894",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "ee8beb79_8eb4e655",
@@ -100,6 +172,30 @@
       "writtenOn": "2024-04-21T20:32:17Z",
       "side": 1,
       "message": "nit: typo",
+      "range": {
+        "startLine": 58,
+        "startChar": 48,
+        "endLine": 58,
+        "endChar": 49
+      },
+      "revId": "2e0f7d23adc49acfba1e3c62df0ac5cc2513d894",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "cab20d55_52ff8fff",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-04-22T10:00:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ee8beb79_8eb4e655",
       "range": {
         "startLine": 58,
         "startChar": 48,

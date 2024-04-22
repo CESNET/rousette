@@ -72,6 +72,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "34a39be7_15bf7981",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 817,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-04-22T10:00:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f4af0c14_70098c0a",
+      "range": {
+        "startLine": 813,
+        "startChar": 0,
+        "endLine": 817,
+        "endChar": 13
+      },
+      "revId": "47fdaa3f099478e84727ac9960fbed9df00301f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c99e4702_c5d52fcd",
@@ -156,6 +180,30 @@
       "writtenOn": "2024-04-12T11:46:28Z",
       "side": 1,
       "message": "what are these two seciton (\"Complete datastore\") and the other one (\"Inner resources\") testing, what\u0027s the difference?",
+      "range": {
+        "startLine": 1076,
+        "startChar": 1,
+        "endLine": 1156,
+        "endChar": 13
+      },
+      "revId": "47fdaa3f099478e84727ac9960fbed9df00301f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6cb18073_aaa24907",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 1156,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-04-22T10:00:48Z",
+      "side": 1,
+      "message": "The code serving POST requests branches if the target data resource is /. I am testing both alternatives (the uri is /restconf/data and something nested inside, i.e., not a top level node). I have added a comment,",
+      "parentUuid": "3f4a67be_4c7d44e2",
       "range": {
         "startLine": 1076,
         "startChar": 1,
