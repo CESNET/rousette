@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "9f46602f_342ab3ac",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-04-23T18:21:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7a8b9800_bed1c51b",
+      "revId": "e4d4c39d3c5340d0341e7e54062220c030ff437c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "2adeaddc_935d3af8",
@@ -31,6 +49,24 @@
       "writtenOn": "2024-04-21T21:06:11Z",
       "side": 1,
       "message": "I read https://datatracker.ietf.org/doc/html/rfc6243#section-2.1.3 , and while I don\u0027t have a full understanding of the implication of a NETCONF-level mode to a YANG-level datastore operation and therefore also RESTCONF-level operations, I think that the `default-all` might not be a good fit. If the description in that RFC is correct, we will have to figure out which behavior is implemented in sysrepo, and then adjust our flags accordingly.",
+      "revId": "e4d4c39d3c5340d0341e7e54062220c030ff437c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9dbb0c1b_edafc527",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-04-23T18:21:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2adeaddc_935d3af8",
       "revId": "e4d4c39d3c5340d0341e7e54062220c030ff437c",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
