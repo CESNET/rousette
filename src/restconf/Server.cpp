@@ -730,7 +730,12 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         if (e.code() == sysrepo::ErrorCode::Unauthorized) {
                             throw ErrorResponse(403, "application", "access-denied", "Access denied.", restconfRequest.path);
                         } else if (e.code() == sysrepo::ErrorCode::NotFound) {
-                            throw ErrorResponse(404, "protocol", "invalid-value", "Data resource not found.", restconfRequest.path);
+                            /* The RFC is not clear at all on the error-tag.
+                             * See https://mailarchive.ietf.org/arch/msg/netconf/XcF9r3ek3LvZ4DjF-7_B8kxuiwA/
+                             * Also, if we replace 403 with 404 in order not to reveal if the node does not exist or if the user is not authorized
+                             * then we should return the error tag invalid-value. This clashes with the data-missing tag below and we reveal it anyway :(
+                             */
+                            throw ErrorResponse(404, "application", "data-missing", "Data is missing.", restconfRequest.path);
                         }
 
                         throw;

@@ -39,6 +39,8 @@ TEST_CASE("deleting data")
     srSess.setItem("/example:two-leafs/b", "b");
     srSess.setItem("/example:a/b/c/enabled", "true");
     srSess.setItem("/example:a/b/c/blower", "str");
+    srSess.setItem("/example-delete:secret[name='existing-key']", std::nullopt);
+    srSess.setItem("/example-delete:immutable[name='existing-key']", std::nullopt);
     srSess.applyChanges();
     auto changesExampleRunning = datastoreChangesSubscription(srSess, dsChangesMock, "example");
 
@@ -71,10 +73,10 @@ TEST_CASE("deleting data")
   "ietf-restconf:errors": {
     "error": [
       {
-        "error-type": "protocol",
-        "error-tag": "invalid-value",
+        "error-type": "application",
+        "error-tag": "data-missing",
         "error-path": "/example:tlc/status",
-        "error-message": "Data resource not found."
+        "error-message": "Data is missing."
       }
     ]
   }
@@ -110,10 +112,10 @@ TEST_CASE("deleting data")
   "ietf-restconf:errors": {
     "error": [
       {
-        "error-type": "protocol",
-        "error-tag": "invalid-value",
+        "error-type": "application",
+        "error-tag": "data-missing",
         "error-path": "/example:top-level-list[name='ThisKeyDoesNotExist']",
-        "error-message": "Data resource not found."
+        "error-message": "Data is missing."
       }
     ]
   }
@@ -143,10 +145,10 @@ TEST_CASE("deleting data")
   "ietf-restconf:errors": {
     "error": [
       {
-        "error-type": "protocol",
-        "error-tag": "invalid-value",
+        "error-type": "application",
+        "error-tag": "data-missing",
         "error-path": "/example:top-level-leaf-list[.='666']",
-        "error-message": "Data resource not found."
+        "error-message": "Data is missing."
       }
     ]
   }
@@ -197,6 +199,69 @@ TEST_CASE("deleting data")
         "error-type": "application",
         "error-tag": "operation-failed",
         "error-message": "'/example:test-rpc' is an RPC/Action node, any child of it can't be requested"
+      }
+    ]
+  }
+}
+)"});
+    }
+
+    SECTION("NACM 403 vs 404")
+    {
+        // User only has read permission, 403 makes sense
+        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example-delete:immutable=existing-key", {}) == Response{403, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "access-denied",
+        "error-path": "/example-delete:immutable[name='existing-key']",
+        "error-message": "Access denied."
+      }
+    ]
+  }
+}
+)"});
+
+        // User has read permission but the node is not present, 404 makes sense
+        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example-delete:immutable=non-existing-key", {}) == Response{404, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "data-missing",
+        "error-path": "/example-delete:immutable[name='non-existing-key']",
+        "error-message": "Data is missing."
+      }
+    ]
+  }
+}
+)"});
+
+        // User does not know that this node actually exist
+        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example-delete:secret=existing-key", {}) == Response{403, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "access-denied",
+        "error-path": "/example-delete:secret[name='existing-key']",
+        "error-message": "Access denied."
+      }
+    ]
+  }
+}
+)"});
+
+        // User does not know that this node actually does not exist
+        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example-delete:secret=non-existing-key", {}) == Response{404, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "data-missing",
+        "error-path": "/example-delete:secret[name='non-existing-key']",
+        "error-message": "Data is missing."
       }
     ]
   }
