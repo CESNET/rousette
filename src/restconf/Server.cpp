@@ -730,7 +730,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         if (e.code() == sysrepo::ErrorCode::Unauthorized) {
                             throw ErrorResponse(403, "application", "access-denied", "Access denied.", restconfRequest.path);
                         } else if (e.code() == sysrepo::ErrorCode::NotFound) {
-                            throw ErrorResponse(404, "protocol", "invalid-value", "Data resource not found.", restconfRequest.path);
+                            throw ErrorResponse(404, "application", "data-missing", "Data is missing.", restconfRequest.path);
                         }
 
                         throw;

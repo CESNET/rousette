@@ -71,10 +71,10 @@ TEST_CASE("deleting data")
   "ietf-restconf:errors": {
     "error": [
       {
-        "error-type": "protocol",
-        "error-tag": "invalid-value",
+        "error-type": "application",
+        "error-tag": "data-missing",
         "error-path": "/example:tlc/status",
-        "error-message": "Data resource not found."
+        "error-message": "Data is missing."
       }
     ]
   }
@@ -110,10 +110,10 @@ TEST_CASE("deleting data")
   "ietf-restconf:errors": {
     "error": [
       {
-        "error-type": "protocol",
-        "error-tag": "invalid-value",
+        "error-type": "application",
+        "error-tag": "data-missing",
         "error-path": "/example:top-level-list[name='ThisKeyDoesNotExist']",
-        "error-message": "Data resource not found."
+        "error-message": "Data is missing."
       }
     ]
   }
@@ -143,10 +143,10 @@ TEST_CASE("deleting data")
   "ietf-restconf:errors": {
     "error": [
       {
-        "error-type": "protocol",
-        "error-tag": "invalid-value",
+        "error-type": "application",
+        "error-tag": "data-missing",
         "error-path": "/example:top-level-leaf-list[.='666']",
-        "error-message": "Data resource not found."
+        "error-message": "Data is missing."
       }
     ]
   }
