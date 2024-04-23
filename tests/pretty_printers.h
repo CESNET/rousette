@@ -40,12 +40,12 @@ struct printer<SrChange> {
 }
 
 namespace doctest {
-template <>
-struct StringMaker<std::optional<std::string>> {
-    static String convert(const std::optional<std::string>& obj)
+template <class T>
+struct StringMaker<std::optional<T>> {
+    static String convert(const std::optional<T>& obj)
     {
         if (obj) {
-            return ("optional{" + *obj + "}").c_str();
+            return ("optional{" + StringMaker<T>::convert(*obj) + "}").c_str();
         } else {
             return "nullopt{}";
         }
