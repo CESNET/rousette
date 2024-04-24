@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b08931b0_a04d5dbe",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-24T20:30:37Z",
+      "side": 1,
+      "message": "Since this behavior very strongly depends on how sysrepo behaves, what I would like to see is a new test which explicitly verifies some of the corner cases. First, let\u0027s create a YANG model with a list `secret` that the current user cannot even read, and a list `immutable` that the current user cannot write to, but can read. Add an \"existing\" entry into each list. Then, try to:\n\n1) delete `secret[name\u003d\"existing\"]`\n2) delete `secret[name\u003d\"non-existing\"]`\n3) delete `immutable[name\u003d\"existing\"]`\n4) delete `immutable[name\u003d\"non-existing\"]`\n\nI *think* that 404 should be returned for case #4, a 403 for case #3, and for cases #1 and #2 the important thing is that both of these should return the same error (and that error should be, IMHO, the same among these two even at the sysrepo level.\n\nI *think* that we can pick what to do in cases #1 and #2 as long as they both behave the same.\n\nOr can we maybe come up with extra cases, like a \"confidential\" model whose existence is masked even at the ietf-yang-library level? (OTOH I think its existence might \"leak\" through, say, sysrepo-monitoring, etc, and some clever \"schema-ish\" requests...)",
+      "revId": "87d8626f9bc35567bb237ca7c1c5043137c2552b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
