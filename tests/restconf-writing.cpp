@@ -35,6 +35,42 @@ TEST_CASE("writing data")
         auto changesIetfSystem = datastoreChangesSubscription(srSess, dsChangesMock, "ietf-system");
         auto changesExample = datastoreChangesSubscription(srSess, dsChangesMock, "example");
 
+        SECTION("List insert")
+        {
+            SECTION("List")
+            {
+                EXPECT_CHANGE(
+                        CREATED("/example:ordered-lists/lst[name='2nd']", std::nullopt),
+                        CREATED("/example:ordered-lists/lst[name='2nd']/name", "2nd"));
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=2nd?insert=first", R"({"example:lst":[{"name": "2nd"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                EXPECT_CHANGE(
+                        CREATED("/example:ordered-lists/lst[name='1st']", std::nullopt),
+                        CREATED("/example:ordered-lists/lst[name='1st']/name", "1st"));
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=1st?insert=first", R"({"example:lst":[{"name": "1st"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                EXPECT_CHANGE(
+                        CREATED("/example:ordered-lists/lst[name='3rd']", std::nullopt),
+                        CREATED("/example:ordered-lists/lst[name='3rd']/name", "3rd"));
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=3rd?insert=last", R"({"example:lst":[{"name": "3rd"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                REQUIRE(get("/example:ordered-lists", {AUTH_ROOT}) == Response{200, jsonHeaders, ""});
+            }
+
+            SECTION("Leaf-list")
+            {
+                EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='2nd']", std::nullopt));
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll?insert=first", R"({"example:ll":[{"2nd"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='1st']", std::nullopt));
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll?insert=first", R"({"example:ll":["1st"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='3rd']", std::nullopt));
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll?insert=last", R"({"example:ll":["3rd"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                REQUIRE(get("/example:ordered-lists", {AUTH_ROOT}) == Response{200, jsonHeaders, ""});
+            }
+        }
         SECTION("anonymous writes disabled by NACM")
         {
             REQUIRE(put(RESTCONF_DATA_ROOT "/ietf-system:system", R"({"ietf-system:system":{"ietf-system:location":"prague"}}")", {CONTENT_TYPE_JSON}) == Response{403, jsonHeaders, R"({

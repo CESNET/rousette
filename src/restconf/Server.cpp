@@ -251,6 +251,18 @@ std::optional<libyang::DataNode> checkKeysMismatch(const libyang::DataNode& node
     return std::nullopt;
 }
 
+bool isUserOrderedList(const libyang::DataNode& node)
+{
+    if (node.schema().nodeType() == libyang::NodeType::List) {
+        return node.schema().asList().isUserOrdered();
+    }
+
+    if (node.schema().nodeType() == libyang::NodeType::Leaflist) {
+        return node.schema().asLeafList().isUserOrdered();
+    }
+
+    return false;
+}
 
 struct RequestContext {
     const nghttp2::asio_http2::server::request& req;
@@ -370,8 +382,20 @@ void processPost(std::shared_ptr<RequestContext> requestCtx)
             throw ErrorResponse(400, "protocol", "invalid-value", "The message body MUST contain exactly one instance of the expected data resource.");
         }
 
-        auto mod = ctx.getModuleImplemented("ietf-netconf");
-        createdNodes.begin()->newMeta(*mod, "operation", "create"); // FIXME: check no other nc:operations in the tree
+        auto modNetconf = ctx.getModuleImplemented("ietf-netconf");
+        auto modYang = ctx.getModuleImplemented("yang");
+
+        createdNodes.begin()->newMeta(*modNetconf, "operation", "create"); // FIXME: check no other nc:operations in the tree
+
+        if (auto it = requestCtx->restconfRequest.queryParams.find("insert"); it != requestCtx->restconfRequest.queryParams.end() && isUserOrderedList(*node)) {
+            createdNodes.begin()->newMeta(*modNetconf, "operation", "insert");
+
+            if (std::holds_alternative<queryParams::insert::First>(it->second)) {
+                createdNodes.begin()->newMeta(*modYang, "insert", "first");
+            } else if (std::holds_alternative<queryParams::insert::Last>(it->second)) {
+                createdNodes.begin()->newMeta(*modYang, "insert", "last");
+            }
+        }
 
         requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
         requestCtx->sess.applyChanges();
@@ -421,7 +445,6 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
             return;
         }
 
-        auto mod = ctx.getModuleImplemented("ietf-netconf");
         bool nodeExisted = dataExists(requestCtx->sess, requestCtx->restconfRequest.path);
         std::optional<libyang::DataNode> edit;
         std::optional<libyang::DataNode> replacementNode;
@@ -468,7 +491,20 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
             throw ErrorResponse(400, "protocol", "invalid-value", "Invalid data for PUT (node indicated by URI is missing).");
         }
 
-        replacementNode->newMeta(*mod, "operation", "replace"); // FIXME: check no other nc:operations in the tree
+        auto modNetconf = ctx.getModuleImplemented("ietf-netconf");
+        auto modYang = ctx.getModuleImplemented("yang");
+
+        replacementNode->newMeta(*modNetconf, "operation", "replace"); // FIXME: check no other nc:operations in the tree
+
+        if (auto it = requestCtx->restconfRequest.queryParams.find("insert"); it != requestCtx->restconfRequest.queryParams.end() && isUserOrderedList(*replacementNode)) {
+            replacementNode->newMeta(*modNetconf, "operation", "insert");
+
+            if (std::holds_alternative<queryParams::insert::First>(it->second)) {
+                replacementNode->newMeta(*modYang, "insert", "first");
+            } else if (std::holds_alternative<queryParams::insert::Last>(it->second)) {
+                replacementNode->newMeta(*modYang, "insert", "last");
+            }
+        }
 
         requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
         requestCtx->sess.applyChanges();
