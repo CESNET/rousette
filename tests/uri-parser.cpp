@@ -822,6 +822,10 @@ TEST_CASE("URI path parser")
             REQUIRE(parseQueryParams("with-defaults=") == std::nullopt);
             REQUIRE(parseQueryParams("content=all&content=nonconfig&content=config") == QueryParams{{"content", content::AllNodes{}}, {"content", content::OnlyNonConfigNodes{}}, {"content", content::OnlyConfigNodes{}}});
             REQUIRE(parseQueryParams("content=ahoj") == std::nullopt);
+            REQUIRE(parseQueryParams("insert=first") == QueryParams{{"insert", insert::First{}}});
+            REQUIRE(parseQueryParams("insert=last") == QueryParams{{"insert", insert::Last{}}});
+            REQUIRE(parseQueryParams("insert=foo") == std::nullopt);
+            REQUIRE(parseQueryParams("depth=4&insert=last&with-defaults=trim") == QueryParams{{"depth", 4u}, {"insert", insert::Last{}}, {"with-defaults", withDefaults::Trim{}}});
         }
 
         SECTION("Full requests with validation")
@@ -866,7 +870,20 @@ TEST_CASE("URI path parser")
                                        rousette::restconf::ErrorResponse);
             }
 
-            REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "GET", "/restconf/data/example:tlc", "insert=first"),
+            SECTION("insert first/last")
+            {
+                auto resp = asRestconfRequest(ctx, "PUT", "/restconf/data/example:tlc", "insert=first");
+                REQUIRE(resp.queryParams == QueryParams({{"insert", insert::First{}}}));
+
+                resp = asRestconfRequest(ctx, "POST", "/restconf/data/example:tlc", "insert=last");
+                REQUIRE(resp.queryParams == QueryParams({{"insert", insert::Last{}}}));
+
+                REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "GET", "/restconf/data/example:tlc", "insert=first"),
+                                       serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'insert' can be used only with POST and PUT methods").c_str(),
+                                       rousette::restconf::ErrorResponse);
+            }
+
+            REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "GET", "/restconf/data/example:tlc", "hello=world"),
                                    serializeErrorResponse(400, "protocol", "invalid-value", "Query parameters syntax error").c_str(),
                                    rousette::restconf::ErrorResponse);
 

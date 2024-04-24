@@ -81,6 +81,15 @@ struct OnlyNonConfigNodes {
 };
 }
 
+namespace insert {
+struct First {
+    bool operator==(const First &) const = default;
+};
+struct Last {
+    bool operator==(const Last &) const = default;
+};
+}
+
 using QueryParamValue = std::variant<
     UnboundedDepth,
     unsigned int,
@@ -90,7 +99,9 @@ using QueryParamValue = std::variant<
     withDefaults::ReportAllTagged,
     content::AllNodes,
     content::OnlyNonConfigNodes,
-    content::OnlyConfigNodes>;
+    content::OnlyConfigNodes,
+    insert::First,
+    insert::Last>;
 using QueryParams = std::multimap<std::string, QueryParamValue>;
 }
 
