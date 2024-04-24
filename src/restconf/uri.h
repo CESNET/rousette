@@ -69,7 +69,16 @@ struct ReportAllTagged {
 };
 }
 
-using QueryParamValue = std::variant<UnboundedDepth, unsigned int, withDefaults::Trim, withDefaults::Explicit, withDefaults::ReportAll, withDefaults::ReportAllTagged>;
+namespace insert {
+struct First {
+    bool operator==(const First &) const = default;
+};
+struct Last {
+    bool operator==(const Last &) const = default;
+};
+}
+
+using QueryParamValue = std::variant<UnboundedDepth, unsigned int, withDefaults::Trim, withDefaults::Explicit, withDefaults::ReportAll, withDefaults::ReportAllTagged, insert::First, insert::Last>;
 using QueryParams = std::multimap<std::string, QueryParamValue>;
 }
 
