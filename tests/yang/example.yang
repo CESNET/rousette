@@ -77,6 +77,18 @@ module example {
     leaf b { type string; }
   }
 
+  container ordered-lists {
+    list lst {
+      ordered-by user;
+      key "name";
+      leaf name { type string; }
+    }
+    leaf-list ll {
+      ordered-by user;
+      type string;
+    }
+  }
+
   rpc test-rpc {
     input {
       leaf i {

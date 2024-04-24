@@ -69,7 +69,16 @@ namespace withDefaults {
     };
 }
 
-    using QueryParamValue = std::variant<UnboundedDepth, unsigned int, withDefaults::Trim, withDefaults::Explicit, withDefaults::ReportAll, withDefaults::ReportAllTagged>;
+namespace insert {
+    struct First {
+        bool operator==(const First &) const { return true; }
+    };
+    struct Last {
+        bool operator==(const Last &) const { return true; }
+    };
+}
+
+    using QueryParamValue = std::variant<UnboundedDepth, unsigned int, withDefaults::Trim, withDefaults::Explicit, withDefaults::ReportAll, withDefaults::ReportAllTagged, insert::First, insert::Last>;
     using QueryParams = std::multimap<std::string, QueryParamValue>;
 }
 
