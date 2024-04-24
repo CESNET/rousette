@@ -257,7 +257,7 @@ struct RequestContext {
     const nghttp2::asio_http2::server::response& res;
     DataFormat dataFormat;
     sysrepo::Session sess;
-    std::string lyPathOriginal;
+    RestconfRequest restconfRequest;
     std::string payload;
 };
 
@@ -267,7 +267,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
     auto ctx = requestCtx->sess.getContext();
 
     try {
-        auto rpcSchemaNode = ctx.findPath(requestCtx->lyPathOriginal);
+        auto rpcSchemaNode = ctx.findPath(requestCtx->restconfRequest.path);
         if (!requestCtx->dataFormat.request && static_cast<bool>(rpcSchemaNode.asActionRpc().input().child())) {
             throw ErrorResponse(400, "protocol", "invalid-value", "Content-type header missing.");
         }
@@ -277,11 +277,11 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
             // FIXME: This is race-prone: we check for existing action data node but before we send the RPC the node may be gone
             auto [pathToParent, pathSegment] = asLibyangPathSplit(ctx, requestCtx->req.uri().path);
             if (!dataExists(requestCtx->sess, pathToParent)) {
-                throw ErrorResponse(400, "application", "operation-failed", "Action data node '" + requestCtx->lyPathOriginal + "' does not exist.");
+                throw ErrorResponse(400, "application", "operation-failed", "Action data node '" + requestCtx->restconfRequest.path + "' does not exist.");
             }
         }
 
-        auto [parent, rpcNode] = ctx.newPath2(requestCtx->lyPathOriginal);
+        auto [parent, rpcNode] = ctx.newPath2(requestCtx->restconfRequest.path);
 
         if (!requestCtx->payload.empty()) {
             rpcNode->parseOp(requestCtx->payload, *requestCtx->dataFormat.request, libyang::OperationType::RpcRestconf);
@@ -339,14 +339,14 @@ void processPost(std::shared_ptr<RequestContext> requestCtx)
         std::optional<libyang::DataNode> node;
         std::vector<libyang::DataNode> createdNodes;
 
-        if (requestCtx->lyPathOriginal == "/") {
+        if (requestCtx->restconfRequest.path == "/") {
             node = edit = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
             if (node) {
                 const auto siblings = node->siblings();
                 createdNodes = {siblings.begin(), siblings.end()};
             }
         } else {
-            auto nodes = ctx.newPath2(requestCtx->lyPathOriginal, std::nullopt);
+            auto nodes = ctx.newPath2(requestCtx->restconfRequest.path, std::nullopt);
             edit = nodes.createdParent;
             node = nodes.createdNode;
 
@@ -408,7 +408,7 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
         auto ctx = requestCtx->sess.getContext();
 
         // PUT / means replace everything
-        if (requestCtx->lyPathOriginal == "/") {
+        if (requestCtx->restconfRequest.path == "/") {
             auto edit = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
             requestCtx->sess.replaceConfig(edit);
 
@@ -422,7 +422,7 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
         }
 
         auto mod = ctx.getModuleImplemented("ietf-netconf");
-        bool nodeExisted = dataExists(requestCtx->sess, requestCtx->lyPathOriginal);
+        bool nodeExisted = dataExists(requestCtx->sess, requestCtx->restconfRequest.path);
         std::optional<libyang::DataNode> edit;
         std::optional<libyang::DataNode> replacementNode;
 
@@ -759,7 +759,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         throw ErrorResponse(400, "protocol", "invalid-value", "Content-type header missing.");
                     }
 
-                    auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, restconfRequest.path);
+                    auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, restconfRequest);
 
                     req.on_data([requestCtx, restconfRequest /* intentional copy */](const uint8_t* data, std::size_t length) {
                         if (length > 0) { // there are still some data to be read
@@ -819,7 +819,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     break;
 
                 case RestconfRequest::Type::Execute: {
-                    auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, restconfRequest.path);
+                    auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, restconfRequest);
 
                     req.on_data([requestCtx](const uint8_t* data, std::size_t length) {
                         if (length > 0) {
