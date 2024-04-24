@@ -98,11 +98,21 @@ struct contentTable : x3::symbols<queryParams::QueryParamValue> {
     }
 } const contentParam;
 
+struct insertTable: x3::symbols<queryParams::QueryParamValue> {
+    insertTable()
+    {
+    add
+        ("first", queryParams::insert::First{})
+        ("last", queryParams::insert::Last{});
+    }
+} const insertParam;
+
 const auto depthParam = x3::rule<class depthParam, queryParams::QueryParamValue>{"depthParam"} = x3::uint_[validDepthValues] | (x3::string("unbounded") >> x3::attr(queryParams::UnboundedDepth{}));
 const auto queryParamPair = x3::rule<class queryParamPair, std::pair<std::string, queryParams::QueryParamValue>>{"queryParamPair"} =
         (x3::string("depth") >> "=" >> depthParam) |
         (x3::string("with-defaults") >> "=" >> withDefaultsParam) |
-        (x3::string("content") >> "=" >> contentParam);
+        (x3::string("content") >> "=" >> contentParam) |
+        (x3::string("insert") >> "=" >> insertParam);
 
 const auto queryParamGrammar = x3::rule<class grammar, queryParams::QueryParams>{"queryParamGrammar"} = queryParamPair % "&" | x3::eps;
 
@@ -373,6 +383,10 @@ void validateQueryParameters(const std::multimap<std::string, queryParams::Query
         if (auto it = params.find(param); it != params.end() && httpMethod != "GET" && httpMethod != "HEAD") {
             throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter '"s + param + "' can be used only with GET and HEAD methods");
         }
+    }
+
+    if (auto it = params.find("insert"); it != params.end() && httpMethod != "POST" && httpMethod != "PUT") {
+        throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter 'insert' can be used only with POST and PUT methods");
     }
 }
 
