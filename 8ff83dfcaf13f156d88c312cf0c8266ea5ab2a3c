@@ -1,0 +1,78 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2ccc4ae2_0ad3ee8f",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 5
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-29T08:11:12Z",
+      "side": 1,
+      "message": "yay for linking to the \"better\" RFC website!",
+      "revId": "8ff83dfcaf13f156d88c312cf0c8266ea5ab2a3c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6629eba1_54f01ff6",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-29T08:11:12Z",
+      "side": 1,
+      "message": "This will also need a fix for br2-external\u0027s migrations; do you feel like uploading one now?",
+      "revId": "8ff83dfcaf13f156d88c312cf0c8266ea5ab2a3c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "eb46c0de_916127ba",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 5
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-29T08:11:12Z",
+      "side": 1,
+      "message": "also install that second YANG model here",
+      "revId": "8ff83dfcaf13f156d88c312cf0c8266ea5ab2a3c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "043abdac_12a1b1e1",
+        "filename": "src/restconf/Server.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-29T08:11:12Z",
+      "side": 1,
+      "message": "nit: I\u0027d prefer a name which does not imply that there\u0027s some kind of a shared session. Since it\u0027s currently used only for statistics, what about something like `m_serverState`?",
+      "range": {
+        "startLine": 35,
+        "startChar": 21,
+        "endLine": 35,
+        "endChar": 27
+      },
+      "revId": "8ff83dfcaf13f156d88c312cf0c8266ea5ab2a3c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
