@@ -1,0 +1,78 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "47e34372_6e05af0c",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 9
+      },
+      "lineNbr": 686,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-29T08:23:48Z",
+      "side": 1,
+      "message": "If a similar pattern is used in other places, I think it\u0027s worth a helper:\n \ntemplate \u003ctypename T\u003e\nT value_or(const QueryParams\u0026 query, const std::string\u0026 key, const T default)\n{\n    if (auto it \u003d query.find(key); it !\u003d query.end() \u0026\u0026 std::holds_alternative\u003cT\u003e(it-\u003esecond)) {\n        return std::get\u003cT\u003e(it-\u003esecond);\n    } else {\n        return default;\n    }\n}\n\nand then:\n \nauto maxDepth \u003d value_or\u003cint\u003e(restconfRequest.queryParams, \"dpeth\", 0 /* unbounded depth is the RFC default, which in sysrpeo terms is 0 */);",
+      "range": {
+        "startLine": 683,
+        "startChar": 0,
+        "endLine": 686,
+        "endChar": 21
+      },
+      "revId": "4cc2cf52171dd8e297eb097d2e7b4b545bd3d140",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "573cab19_e66559c5",
+        "filename": "tests/pretty_printers.h",
+        "patchSetId": 9
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-29T08:23:48Z",
+      "side": 1,
+      "message": "8-O\n\n(my ASCII art of my face whenever I look at the template magic)",
+      "revId": "4cc2cf52171dd8e297eb097d2e7b4b545bd3d140",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cc8a5e5b_4fe068fd",
+        "filename": "tests/pretty_printers.h",
+        "patchSetId": 9
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-29T08:23:48Z",
+      "side": 1,
+      "message": "I would prefer to not have an else branch, and instead have the compiler tell us that we\u0027re missing an overload for T. When a visitor is written as a lambda, it works that way.",
+      "revId": "4cc2cf52171dd8e297eb097d2e7b4b545bd3d140",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a7572ef3_690352f6",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 9
+      },
+      "lineNbr": 792,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-29T08:23:48Z",
+      "side": 1,
+      "message": "could you please also test for other wrong input like `depth\u003d-1` or `depth\u003dfoo`?",
+      "revId": "4cc2cf52171dd8e297eb097d2e7b4b545bd3d140",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
