@@ -52,6 +52,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "84ebace8_593f1648",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 5
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-04-29T15:17:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "eb46c0de_916127ba",
+      "revId": "8ff83dfcaf13f156d88c312cf0c8266ea5ab2a3c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "043abdac_12a1b1e1",
@@ -65,6 +83,30 @@
       "writtenOn": "2024-04-29T08:11:12Z",
       "side": 1,
       "message": "nit: I\u0027d prefer a name which does not imply that there\u0027s some kind of a shared session. Since it\u0027s currently used only for statistics, what about something like `m_serverState`?",
+      "range": {
+        "startLine": 35,
+        "startChar": 21,
+        "endLine": 35,
+        "endChar": 27
+      },
+      "revId": "8ff83dfcaf13f156d88c312cf0c8266ea5ab2a3c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "107ff9c8_e8967e4f",
+        "filename": "src/restconf/Server.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-04-29T15:17:25Z",
+      "side": 1,
+      "message": "is m_monitoringSession too bad?",
+      "parentUuid": "043abdac_12a1b1e1",
       "range": {
         "startLine": 35,
         "startChar": 21,
