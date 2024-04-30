@@ -7,6 +7,7 @@
 #pragma once
 #include <boost/optional.hpp>
 #include <libyang-cpp/Module.hpp>
+#include <libyang-cpp/SchemaNode.hpp>
 #include <map>
 #include <optional>
 #include <stdexcept>
@@ -88,6 +89,29 @@ struct First {
 struct Last {
     bool operator==(const Last&) const = default;
 };
+struct Before {
+    bool operator==(const Before&) const = default;
+};
+struct After {
+    bool operator==(const After&) const = default;
+};
+
+struct Point {
+    std::vector<PathSegment> pathSegments;
+    std::optional<libyang::SchemaNode> listSchemaNode;
+
+    bool operator==(const Point& other) const
+    {
+        return pathSegments == other.pathSegments;
+    }
+
+    Point() = default;
+    Point(const std::vector<PathSegment>& pathSegments, const std::optional<libyang::SchemaNode>& listSchemaNode = std::nullopt)
+        : pathSegments(pathSegments)
+        , listSchemaNode(listSchemaNode)
+    {
+    }
+};
 }
 
 using QueryParamValue = std::variant<
@@ -101,7 +125,10 @@ using QueryParamValue = std::variant<
     content::OnlyNonConfigNodes,
     content::OnlyConfigNodes,
     insert::First,
-    insert::Last>;
+    insert::Last,
+    insert::Before,
+    insert::After,
+    insert::Point>;
 using QueryParams = std::multimap<std::string, QueryParamValue>;
 }
 
