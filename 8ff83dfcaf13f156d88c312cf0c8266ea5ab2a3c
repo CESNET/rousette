@@ -35,6 +35,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "93d7b116_243aa3d7",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-04-30T13:03:00Z",
+      "side": 1,
+      "message": "I have prepared https://gerrit.cesnet.cz/c/CzechLight/br2-external/+/7104 but we can\u0027t merge it now. First, we need to migrate to v3 stack",
+      "parentUuid": "6629eba1_54f01ff6",
+      "revId": "8ff83dfcaf13f156d88c312cf0c8266ea5ab2a3c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "eb46c0de_916127ba",
