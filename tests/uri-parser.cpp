@@ -779,6 +779,9 @@ TEST_CASE("URI path parser")
             REQUIRE(parseQueryParams("insert=last") == QueryParams{{"insert", insert::Last{}}});
             REQUIRE(parseQueryParams("insert=foo") == std::nullopt);
             REQUIRE(parseQueryParams("depth=4&insert=last&with-defaults=trim") == QueryParams{{"depth", 4u}, {"insert", insert::Last{}}, {"with-defaults", withDefaults::Trim{}}});
+            REQUIRE(parseQueryParams("insert=before") == QueryParams{{"insert", insert::Before{}}});
+            REQUIRE(parseQueryParams("insert=after") == QueryParams{{"insert", insert::After{}}});
+            REQUIRE(parseQueryParams("insert=uwu") == std::nullopt);
         }
 
         SECTION("Full requests with validation")
@@ -834,6 +837,37 @@ TEST_CASE("URI path parser")
 
                 REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "GET", "/restconf/data/example:tlc", "insert=first"),
                                        serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'insert' can be used only with POST and PUT methods").c_str(),
+                                       rousette::restconf::ErrorResponse);
+            }
+
+            SECTION("insert before/after")
+            {
+                auto resp = asRestconfRequest(ctx, "PUT", "/restconf/data/example:tlc", "insert=before&point=/example:ordered-lists/lst=key");
+                REQUIRE(resp.queryParams == QueryParams({
+                            {"insert", insert::Before{}},
+                            {"point", insert::Point({
+                                          {{"example", "ordered-lists"}, {}},
+                                          {{"lst"}, {"key"}},
+                                      })},
+                        }));
+
+                resp = asRestconfRequest(ctx, "POST", "/restconf/data/example:tlc", "point=/example:ordered-lists/ll=key&insert=after");
+                REQUIRE(resp.queryParams == QueryParams({
+                            {"point", insert::Point({
+                                          {{"example", "ordered-lists"}, {}},
+                                          {{"ll"}, {"key"}},
+                                      })},
+                            {"insert", insert::After{}},
+                        }));
+
+                REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "POST", "/restconf/data/example:ordered-lists", "insert=after"),
+                                       serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'point' must always come with parameter 'insert' set to 'before' or 'after'").c_str(),
+                                       rousette::restconf::ErrorResponse);
+                REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "POST", "/restconf/data/example:ordered-lists", "point=/example:ordered-lists/ll=key"),
+                                       serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'point' must always come with parameter 'insert' set to 'before' or 'after'").c_str(),
+                                       rousette::restconf::ErrorResponse);
+                REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "POST", "/restconf/data/example:ordered-lists", "insert=after&point=/invalid:path"),
+                                       serializeErrorResponse(400, "application", "operation-failed", "Couldn't find schema node: /invalid:path").c_str(),
                                        rousette::restconf::ErrorResponse);
             }
 

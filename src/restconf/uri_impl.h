@@ -64,3 +64,4 @@ BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::impl::URIPath, prefix, segments);
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::impl::YangModule, name, revision);
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::PathSegment, apiIdent, keys);
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::ApiIdentifier, prefix, identifier);
+BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::queryParams::insert::Point, pathSegments, listSchemaNode);
