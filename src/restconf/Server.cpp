@@ -273,15 +273,52 @@ struct RequestContext {
     std::string payload;
 };
 
+std::string yangInsertKey(const libyang::SchemaNode& listNode, const queryParams::QueryParams& queryParams)
+{
+    auto it = queryParams.find("point");
+    auto& point = std::get<queryParams::insert::Point>(it->second);
+
+    if (listNode != point.listSchemaNode) {
+        throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter 'point' contains path to a different list");
+    }
+
+    if (listNode.nodeType() == libyang::NodeType::List) {
+        return listKeyPredicate(listNode.asList().keys(), point.pathSegments.back().keys);
+    } else if (listNode.nodeType() == libyang::NodeType::Leaflist) {
+        return point.pathSegments.back().keys[0];
+    }
+
+    throw std::logic_error("Node is neither a list nor a leaf-list");
+}
+
 void yangInsert(const RequestContext& requestCtx, libyang::DataNode& listEntryNode)
 {
     auto modYang = requestCtx.sess.getContext().getModuleImplemented("yang");
 
-    if (auto it = requestCtx.restconfRequest.queryParams.find("insert"); it != requestCtx.restconfRequest.queryParams.end() && isUserOrderedList(listEntryNode)) {
+    if (auto it = requestCtx.restconfRequest.queryParams.find("insert"); it != requestCtx.restconfRequest.queryParams.end()) {
+        if (!isUserOrderedList(listEntryNode)) {
+            throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter 'insert' is valid only for inserting into lists or leaf-lists that are 'ordered-by user'");
+        }
+
+        std::string keyOrValue;
+        if (listEntryNode.schema().nodeType() == libyang::NodeType::List) {
+            keyOrValue = "key";
+        } else if (listEntryNode.schema().nodeType() == libyang::NodeType::Leaflist) {
+            keyOrValue = "value";
+        } else {
+            throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter 'insert' is valid only for inserting into lists or leaf-lists that are 'ordered-by user'");
+        }
+
         if (std::holds_alternative<queryParams::insert::First>(it->second)) {
             listEntryNode.newMeta(*modYang, "insert", "first");
         } else if (std::holds_alternative<queryParams::insert::Last>(it->second)) {
             listEntryNode.newMeta(*modYang, "insert", "last");
+        } else if (std::holds_alternative<queryParams::insert::Before>(it->second)) {
+            listEntryNode.newMeta(*modYang, "insert", "before");
+            listEntryNode.newMeta(*modYang, keyOrValue, yangInsertKey(listEntryNode.schema(), requestCtx.restconfRequest.queryParams));
+        } else if (std::holds_alternative<queryParams::insert::After>(it->second)) {
+            listEntryNode.newMeta(*modYang, "insert", "after");
+            listEntryNode.newMeta(*modYang, keyOrValue, yangInsertKey(listEntryNode.schema(), requestCtx.restconfRequest.queryParams));
         }
     }
 }
@@ -423,6 +460,8 @@ void processPost(std::shared_ptr<RequestContext> requestCtx)
             rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 403, "application", "access-denied", "Access denied.");
         } else if (e.code() == sysrepo::ErrorCode::ItemAlreadyExists) {
             rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 409, "application", "resource-denied", "Resource already exists.");
+        } else if (e.code() == sysrepo::ErrorCode::NotFound) {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", e.what());
         } else {
             rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception: "s + e.what());
         }
@@ -520,6 +559,8 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
     } catch (sysrepo::ErrorWithCode& e) {
         if (e.code() == sysrepo::ErrorCode::Unauthorized) {
             rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 403, "application", "access-denied", "Access denied.");
+        } else if (e.code() == sysrepo::ErrorCode::NotFound) {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", e.what());
         } else {
             rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception: "s + e.what());
         }
