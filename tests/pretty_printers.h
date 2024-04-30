@@ -134,6 +134,11 @@ struct StringMaker<rousette::restconf::queryParams::QueryParamValue> {
             [](const rousette::restconf::queryParams::content::OnlyNonConfigNodes&) -> std::string { return "Nonconfig{}"; },
             [](const rousette::restconf::queryParams::insert::First&) -> std::string { return "First{}"; },
             [](const rousette::restconf::queryParams::insert::Last&) -> std::string { return "Last{}"; },
+            [](const rousette::restconf::queryParams::insert::Before&) -> std::string { return "Before{}"; },
+            [](const rousette::restconf::queryParams::insert::After&) -> std::string { return "After{}"; },
+            [](const rousette::restconf::queryParams::insert::PointParsed& p) -> std::string {
+                return ("PointParsed{" + StringMaker<decltype(p)>::convert(p) + "}").c_str();
+            },
         }, obj).c_str();
     }
 };

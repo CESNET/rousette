@@ -104,7 +104,9 @@ struct insertTable: x3::symbols<queryParams::QueryParamValue> {
     {
     add
         ("first", queryParams::insert::First{})
-        ("last", queryParams::insert::Last{});
+        ("last", queryParams::insert::Last{})
+        ("after", queryParams::insert::After{})
+        ("before", queryParams::insert::Before{});
     }
 } const insertParam;
 
@@ -113,7 +115,8 @@ const auto queryParamPair = x3::rule<class queryParamPair, std::pair<std::string
         (x3::string("depth") >> "=" >> depthParam) |
         (x3::string("with-defaults") >> "=" >> withDefaultsParam) |
         (x3::string("content") >> "=" >> contentParam) |
-        (x3::string("insert") >> "=" >> insertParam);
+        (x3::string("insert") >> "=" >> insertParam) |
+        (x3::string("point") >> "=" >> uriPath);
 
 const auto queryParamGrammar = x3::rule<class grammar, queryParams::QueryParams>{"queryParamGrammar"} = queryParamPair % "&" | x3::eps;
 
@@ -368,8 +371,21 @@ void validateQueryParameters(const std::multimap<std::string, queryParams::Query
         }
     }
 
-    if (auto it = params.find("insert"); it != params.end() && httpMethod != "POST" && httpMethod != "PUT") {
-        throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter 'insert' can be used only with POST and PUT methods");
+    for (const auto& param : {"insert", "point"}) {
+        if (auto it = params.find(param); it != params.end() && httpMethod != "POST" && httpMethod != "PUT") {
+            throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter '"s + param + "' can be used only with POST and PUT methods");
+        }
+    }
+
+    {
+        auto itInsert = params.find("insert");
+        auto itPoint = params.find("point");
+        auto hasInsertParamBeforeOrAfter = itInsert != params.end() && (std::holds_alternative<queryParams::insert::After>(itInsert->second) || std::holds_alternative<queryParams::insert::Before>(itInsert->second));
+        auto hasPointParam = itPoint != params.end();
+
+        if (hasPointParam != hasInsertParamBeforeOrAfter) {
+            throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter 'point' must always come with parameter 'insert' set to 'before' or 'after'");
+        }
     }
 }
 
@@ -439,6 +455,12 @@ SchemaNodeAndPath asLibyangPath(const libyang::Context& ctx, const std::vector<P
 }
 }
 
+/** @brief Returns a schema node corresponding to the parsed RESTCONF URI */
+std::optional<libyang::SchemaNode> asLibyangSchemaNode(const libyang::Context& ctx, const std::vector<PathSegment>& pathSegments)
+{
+    return asLibyangPath(ctx, pathSegments.begin(), pathSegments.end()).schemaNode;
+}
+
 /** @brief Parse requested URL as a RESTCONF requested
  *
  * The URI path (i.e., a resource identifier) will be parsed into an action that is supposed to be performed,
@@ -462,6 +484,8 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
         throw ErrorResponse(400, "protocol", "invalid-value", "Query parameters syntax error");
     }
 
+    auto [lyPath, schemaNode] = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
+
     validateQueryParameters(*queryParameters, httpMethod);
 
     if (uri->prefix.resourceType == impl::URIPrefix::Type::YangLibraryVersion) {
@@ -480,7 +504,6 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
         return {RestconfRequest::Type::CreateChildren, uri->prefix.datastore, "/", *queryParameters};
     }
 
-    auto [lyPath, schemaNode] = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
     validateRequestSchemaNode(schemaNode, httpMethod, uri->prefix);
     if (httpMethod == "GET") {
         return {RestconfRequest::Type::GetData, uri->prefix.datastore, lyPath, *queryParameters};

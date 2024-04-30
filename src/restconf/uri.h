@@ -7,6 +7,7 @@
 #pragma once
 #include <boost/optional.hpp>
 #include <libyang-cpp/Module.hpp>
+#include <libyang-cpp/SchemaNode.hpp>
 #include <map>
 #include <optional>
 #include <stdexcept>
@@ -88,6 +89,14 @@ struct First {
 struct Last {
     bool operator==(const Last&) const = default;
 };
+struct Before {
+    bool operator==(const Before&) const = default;
+};
+struct After {
+    bool operator==(const After&) const = default;
+};
+
+using PointParsed = std::vector<PathSegment>;
 }
 
 using QueryParamValue = std::variant<
@@ -101,7 +110,10 @@ using QueryParamValue = std::variant<
     content::OnlyNonConfigNodes,
     content::OnlyConfigNodes,
     insert::First,
-    insert::Last>;
+    insert::Last,
+    insert::Before,
+    insert::After,
+    insert::PointParsed>;
 using QueryParams = std::multimap<std::string, QueryParamValue>;
 }
 
@@ -125,6 +137,7 @@ struct RestconfRequest {
 };
 
 RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString = "");
+std::optional<libyang::SchemaNode> asLibyangSchemaNode(const libyang::Context& ctx, const std::vector<PathSegment>& pathSegments);
 std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath);
 std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> asYangModule(const libyang::Context& ctx, const std::string& uriPath);
 }
