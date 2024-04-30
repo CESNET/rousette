@@ -98,6 +98,10 @@ module example {
       ordered-by user;
       type string;
     }
+    leaf-list ll2 {
+      ordered-by user;
+      type string;
+    }
   }
 
   rpc test-rpc {

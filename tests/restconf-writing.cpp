@@ -547,22 +547,34 @@ TEST_CASE("writing data")
             {
                 SECTION("List")
                 {
-                    EXPECT_CHANGE(
-                            CREATED("/example:ordered-lists/lst[name='2nd']", std::nullopt),
-                            CREATED("/example:ordered-lists/lst[name='2nd']/name", "2nd"));
-                    REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=2nd?insert=first", R"({"example:lst":[{"name": "2nd"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                    SECTION("Basic")
+                    {
+                        EXPECT_CHANGE(
+                                CREATED("/example:ordered-lists/lst[name='4th']", std::nullopt),
+                                CREATED("/example:ordered-lists/lst[name='4th']/name", "4th"));
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=4th?insert=first", R"({"example:lst":[{"name": "4th"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
 
-                    EXPECT_CHANGE(
-                            CREATED("/example:ordered-lists/lst[name='3rd']", std::nullopt),
-                            CREATED("/example:ordered-lists/lst[name='3rd']/name", "3rd"));
-                    REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=3rd?insert=last", R"({"example:lst":[{"name": "3rd"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                        EXPECT_CHANGE(
+                                CREATED("/example:ordered-lists/lst[name='5th']", std::nullopt),
+                                CREATED("/example:ordered-lists/lst[name='5th']/name", "5th"));
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=5th?insert=last", R"({"example:lst":[{"name": "5th"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
 
-                    EXPECT_CHANGE(
-                            CREATED("/example:ordered-lists/lst[name='1st']", std::nullopt),
-                            CREATED("/example:ordered-lists/lst[name='1st']/name", "1st"));
-                    REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=1st?insert=first", R"({"example:lst":[{"name": "1st"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                        EXPECT_CHANGE(
+                                CREATED("/example:ordered-lists/lst[name='1st']", std::nullopt),
+                                CREATED("/example:ordered-lists/lst[name='1st']/name", "1st"));
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=1st?insert=first", R"({"example:lst":[{"name": "1st"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
 
-                    REQUIRE(get(RESTCONF_DATA_ROOT "/example:ordered-lists", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+                        EXPECT_CHANGE(
+                                CREATED("/example:ordered-lists/lst[name='2nd']", std::nullopt),
+                                CREATED("/example:ordered-lists/lst[name='2nd']/name", "2nd"));
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=2nd?insert=after&point=/example:ordered-lists/lst=1st", R"({"example:lst":[{"name": "2nd"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                        EXPECT_CHANGE(
+                                CREATED("/example:ordered-lists/lst[name='3rd']", std::nullopt),
+                                CREATED("/example:ordered-lists/lst[name='3rd']/name", "3rd"));
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=3rd?insert=before&point=/example:ordered-lists/lst=4th", R"({"example:lst":[{"name": "3rd"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                        REQUIRE(get(RESTCONF_DATA_ROOT "/example:ordered-lists", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
   "example:ordered-lists": {
     "lst": [
       {
@@ -573,34 +585,180 @@ TEST_CASE("writing data")
       },
       {
         "name": "3rd"
+      },
+      {
+        "name": "4th"
+      },
+      {
+        "name": "5th"
       }
     ]
   }
 }
 )"});
-                }
+                    }
 
-                SECTION("Leaf-list")
-                {
-                    EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='2nd']", "2nd"));
-                    REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=2nd?insert=first", R"({"example:ll":["2nd"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                    SECTION("List is not ordered-by user")
+                    {
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-list=ahoj?insert=first", R"({"example:top-level-list":[{"name": "ahoj"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"EOF({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Query parameter 'insert' is valid only for inserting into lists or leaf-lists that are 'ordered-by user'"
+      }
+    ]
+  }
+}
+)EOF"});
+                    }
 
-                    EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='3rd']", "3rd"));
-                    REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=3rd?insert=last", R"({"example:ll":["3rd"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                    SECTION("Insertion point key does not exists")
+                    {
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=foo?insert=after&point=/example:ordered-lists/lst=bar", R"({"example:lst":[{"name": "foo"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"EOF({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Session::applyChanges: Couldn't apply changes: SR_ERR_NOT_FOUND\u000A Node \"lst\" instance to insert next to not found. (SR_ERR_NOT_FOUND)\u000A Applying operation \"replace\" failed. (SR_ERR_NOT_FOUND)"
+      }
+    ]
+  }
+}
+)EOF"});
+                    }
 
-                    EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='1st']", "1st"));
-                    REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=1st?insert=first", R"({"example:ll":["1st"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
-
-                    REQUIRE(get(RESTCONF_DATA_ROOT "/example:ordered-lists", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
-  "example:ordered-lists": {
-    "ll": [
-      "1st",
-      "2nd",
-      "3rd"
+                    SECTION("Insertion point unspecified")
+                    {
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=foo?insert=after", R"({"example:lst":[{"name": "foo"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Query parameter 'point' must always come with parameter 'insert' set to 'before' or 'after'"
+      }
     ]
   }
 }
 )"});
+                    }
+
+                    SECTION("Insertion point in different list")
+                    {
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=foo?insert=after&point=/example:ordered-lists/ll=foo", R"({"example:lst":[{"name": "foo"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"EOF({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Query parameter 'point' contains path to a different list"
+      }
+    ]
+  }
+}
+)EOF"});
+                    }
+                }
+
+                SECTION("Leaf-list")
+                {
+                    SECTION("Basic")
+                    {
+                        EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='4th']", "4th"));
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=4th?insert=first", R"({"example:ll":["4th"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                        EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='5th']", "5th"));
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=5th?insert=last", R"({"example:ll":["5th"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                        EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='1st']", "1st"));
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=1st?insert=first", R"({"example:ll":["1st"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                        EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='2nd']", "2nd"));
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=2nd?insert=after&point=/example:ordered-lists/ll=1st", R"({"example:ll":["2nd"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                        EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='3rd']", "3rd"));
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=3rd?insert=before&point=/example:ordered-lists/ll=4th", R"({"example:ll":["3rd"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                        REQUIRE(get(RESTCONF_DATA_ROOT "/example:ordered-lists", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "example:ordered-lists": {
+    "ll": [
+      "1st",
+      "2nd",
+      "3rd",
+      "4th",
+      "5th"
+    ]
+  }
+}
+)"});
+                    }
+
+                    SECTION("Insertion point key does not exists")
+                    {
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=foo?insert=after&point=/example:ordered-lists/ll=bar", R"({"example:ll":["foo"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"EOF({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Session::applyChanges: Couldn't apply changes: SR_ERR_NOT_FOUND\u000A Node \"ll\" instance to insert next to not found. (SR_ERR_NOT_FOUND)\u000A Applying operation \"replace\" failed. (SR_ERR_NOT_FOUND)"
+      }
+    ]
+  }
+}
+)EOF"});
+                    }
+
+                    SECTION("Insertion point unspecified")
+                    {
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=foo?insert=after", R"({"example:ll":["foo"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Query parameter 'point' must always come with parameter 'insert' set to 'before' or 'after'"
+      }
+    ]
+  }
+}
+)"});
+                    }
+
+                    SECTION("List is not ordered-by user")
+                    {
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-leaf-list=42?insert=first", R"({"example:top-level-leaf-list":[42]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"EOF({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Query parameter 'insert' is valid only for inserting into lists or leaf-lists that are 'ordered-by user'"
+      }
+    ]
+  }
+}
+)EOF"});
+                    }
+
+                    SECTION("Insertion point in different list")
+                    {
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=foo?insert=after&point=/example:ordered-lists/ll2=bar", R"({"example:ll":["foo"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"EOF({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Query parameter 'point' contains path to a different list"
+      }
+    ]
+  }
+}
+)EOF"});
+                    }
                 }
             }
         }
@@ -1132,22 +1290,34 @@ TEST_CASE("writing data")
             {
                 SECTION("List")
                 {
-                    EXPECT_CHANGE(
-                            CREATED("/example:ordered-lists/lst[name='2nd']", std::nullopt),
-                            CREATED("/example:ordered-lists/lst[name='2nd']/name", "2nd"));
-                    REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=first", R"({"example:lst":[{"name": "2nd"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                    SECTION("Basic")
+                    {
+                        EXPECT_CHANGE(
+                                CREATED("/example:ordered-lists/lst[name='4th']", std::nullopt),
+                                CREATED("/example:ordered-lists/lst[name='4th']/name", "4th"));
+                        REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=first", R"({"example:lst":[{"name": "4th"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
 
-                    EXPECT_CHANGE(
-                            CREATED("/example:ordered-lists/lst[name='3rd']", std::nullopt),
-                            CREATED("/example:ordered-lists/lst[name='3rd']/name", "3rd"));
-                    REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=last", R"({"example:lst":[{"name": "3rd"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                        EXPECT_CHANGE(
+                                CREATED("/example:ordered-lists/lst[name='5th']", std::nullopt),
+                                CREATED("/example:ordered-lists/lst[name='5th']/name", "5th"));
+                        REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=last", R"({"example:lst":[{"name": "5th"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
 
-                    EXPECT_CHANGE(
-                            CREATED("/example:ordered-lists/lst[name='1st']", std::nullopt),
-                            CREATED("/example:ordered-lists/lst[name='1st']/name", "1st"));
-                    REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=first", R"({"example:lst":[{"name": "1st"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                        EXPECT_CHANGE(
+                                CREATED("/example:ordered-lists/lst[name='1st']", std::nullopt),
+                                CREATED("/example:ordered-lists/lst[name='1st']/name", "1st"));
+                        REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=first", R"({"example:lst":[{"name": "1st"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
 
-                    REQUIRE(get(RESTCONF_DATA_ROOT "/example:ordered-lists", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+                        EXPECT_CHANGE(
+                                CREATED("/example:ordered-lists/lst[name='2nd']", std::nullopt),
+                                CREATED("/example:ordered-lists/lst[name='2nd']/name", "2nd"));
+                        REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=after&point=/example:ordered-lists/lst=1st", R"({"example:lst":[{"name": "2nd"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                        EXPECT_CHANGE(
+                                CREATED("/example:ordered-lists/lst[name='3rd']", std::nullopt),
+                                CREATED("/example:ordered-lists/lst[name='3rd']/name", "3rd"));
+                        REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=before&point=/example:ordered-lists/lst=4th", R"({"example:lst":[{"name": "3rd"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                        REQUIRE(get(RESTCONF_DATA_ROOT "/example:ordered-lists", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
   "example:ordered-lists": {
     "lst": [
       {
@@ -1158,34 +1328,116 @@ TEST_CASE("writing data")
       },
       {
         "name": "3rd"
+      },
+      {
+        "name": "4th"
+      },
+      {
+        "name": "5th"
       }
     ]
   }
 }
 )"});
-                }
+                    }
 
-                SECTION("Leaf-list")
-                {
-                    EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='2nd']", "2nd"));
-                    REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=first", R"({"example:ll":["2nd"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                    SECTION("Insertion point key does not exists")
+                    {
+                        REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=after&point=/example:ordered-lists/lst=bar", R"({"example:lst":[{"name": "foo"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"EOF({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Session::applyChanges: Couldn't apply changes: SR_ERR_NOT_FOUND\u000A Node \"lst\" instance to insert next to not found. (SR_ERR_NOT_FOUND)\u000A Applying operation \"create\" failed. (SR_ERR_NOT_FOUND)"
+      }
+    ]
+  }
+}
+)EOF"});
+                    }
 
-                    EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='3rd']", "3rd"));
-                    REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=last", R"({"example:ll":["3rd"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
-
-                    EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='1st']", "1st"));
-                    REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=first", R"({"example:ll":["1st"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
-
-                    REQUIRE(get(RESTCONF_DATA_ROOT "/example:ordered-lists", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
-  "example:ordered-lists": {
-    "ll": [
-      "1st",
-      "2nd",
-      "3rd"
+                    SECTION("Insertion point unspecified")
+                    {
+                        REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=after", R"({"example:lst":[{"name": "foo"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Query parameter 'point' must always come with parameter 'insert' set to 'before' or 'after'"
+      }
     ]
   }
 }
 )"});
+                    }
+                }
+
+                SECTION("Leaf-list")
+                {
+                    SECTION("Basic")
+                    {
+                        EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='4th']", "4th"));
+                        REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=first", R"({"example:ll":["4th"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                        EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='5th']", "5th"));
+                        REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=last", R"({"example:ll":["5th"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                        EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='1st']", "1st"));
+                        REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=first", R"({"example:ll":["1st"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                        EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='2nd']", "2nd"));
+                        REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=after&point=/example:ordered-lists/ll=1st", R"({"example:ll":["2nd"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                        EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='3rd']", "3rd"));
+                        REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=before&point=/example:ordered-lists/ll=4th", R"({"example:ll":["3rd"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+
+                        REQUIRE(get(RESTCONF_DATA_ROOT "/example:ordered-lists", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "example:ordered-lists": {
+    "ll": [
+      "1st",
+      "2nd",
+      "3rd",
+      "4th",
+      "5th"
+    ]
+  }
+}
+)"});
+                    }
+
+                    SECTION("Insertion point key does not exists")
+                    {
+                        REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=after&point=/example:ordered-lists/ll=bar", R"({"example:ll":["foo"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"EOF({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Session::applyChanges: Couldn't apply changes: SR_ERR_NOT_FOUND\u000A Node \"ll\" instance to insert next to not found. (SR_ERR_NOT_FOUND)\u000A Applying operation \"create\" failed. (SR_ERR_NOT_FOUND)"
+      }
+    ]
+  }
+}
+)EOF"});
+                    }
+
+                    SECTION("Insertion point unspecified")
+                    {
+                        REQUIRE(post(RESTCONF_DATA_ROOT "/example:ordered-lists?insert=after", R"({"example:ll":["foo"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Query parameter 'point' must always come with parameter 'insert' set to 'before' or 'after'"
+      }
+    ]
+  }
+}
+)"});
+                    }
                 }
             }
         }
