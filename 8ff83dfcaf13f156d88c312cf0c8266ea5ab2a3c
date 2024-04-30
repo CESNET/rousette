@@ -115,6 +115,30 @@
       },
       "revId": "8ff83dfcaf13f156d88c312cf0c8266ea5ab2a3c",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c73ae7ec_7af8d29a",
+        "filename": "src/restconf/Server.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-04-30T08:37:52Z",
+      "side": 1,
+      "message": "lgtm",
+      "parentUuid": "107ff9c8_e8967e4f",
+      "range": {
+        "startLine": 35,
+        "startChar": 21,
+        "endLine": 35,
+        "endChar": 27
+      },
+      "revId": "8ff83dfcaf13f156d88c312cf0c8266ea5ab2a3c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
