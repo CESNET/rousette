@@ -26,6 +26,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "0bdef1d2_e3915428",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 9
+      },
+      "lineNbr": 686,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-05-06T09:21:05Z",
+      "side": 1,
+      "message": "Yeah I thought about that but it is not that easy. Other parameters usually need to be mapped from our type to some sysrepo/libyang enum member.",
+      "parentUuid": "47e34372_6e05af0c",
+      "range": {
+        "startLine": 683,
+        "startChar": 0,
+        "endLine": 686,
+        "endChar": 21
+      },
+      "revId": "4cc2cf52171dd8e297eb097d2e7b4b545bd3d140",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "573cab19_e66559c5",
         "filename": "tests/pretty_printers.h",
         "patchSetId": 9
@@ -58,6 +82,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "7e13f5f5_b4c6949d",
+        "filename": "tests/pretty_printers.h",
+        "patchSetId": 9
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-05-06T09:21:05Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cc8a5e5b_4fe068fd",
+      "revId": "4cc2cf52171dd8e297eb097d2e7b4b545bd3d140",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "a7572ef3_690352f6",
@@ -71,6 +113,24 @@
       "writtenOn": "2024-04-29T08:23:48Z",
       "side": 1,
       "message": "could you please also test for other wrong input like `depth\u003d-1` or `depth\u003dfoo`?",
+      "revId": "4cc2cf52171dd8e297eb097d2e7b4b545bd3d140",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "91034664_77cbce66",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 9
+      },
+      "lineNbr": 792,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-05-06T09:21:05Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a7572ef3_690352f6",
       "revId": "4cc2cf52171dd8e297eb097d2e7b4b545bd3d140",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
