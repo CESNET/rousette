@@ -32,63 +32,9 @@ REGISTER_EXCEPTION_TRANSLATOR(const ErrorResponse& e)
     return serializeErrorResponse(e.code, e.errorType, e.errorTag, e.errorMessage).c_str();
 }
 
-std::ostream& operator<<(std::ostream& os, const ApiIdentifier& obj)
-{
-    os << "ApiIdentifier{";
-    os << "prefix=";
-    if (obj.prefix) {
-        os << "'" << *obj.prefix << "'";
-    } else {
-        os << "nullopt{}";
-    }
-
-    return os << ", ident='" << obj.identifier << "'}";
-}
-
-std::ostream& operator<<(std::ostream& os, const PathSegment& obj)
-{
-
-    os << "Segment{" << obj.apiIdent << " "
-       << "keys=";
-    os << "[";
-    std::copy(obj.keys.begin(), obj.keys.end(), std::experimental::make_ostream_joiner(os, ", "));
-    return os << "]}";
-}
-
-std::ostream& operator<<(std::ostream& os, const std::vector<PathSegment>& v)
-{
-    os << "[";
-    std::copy(v.begin(), v.end(), std::experimental::make_ostream_joiner(os, ", "));
-    return os << "]";
-}
-}
-
-namespace rousette::restconf::impl {
-std::ostream& operator<<(std::ostream& os, const URIPath& obj)
-{
-    os << "[";
-    std::copy(obj.segments.begin(), obj.segments.end(), std::experimental::make_ostream_joiner(os, ", "));
-    return os << "]";
-}
 }
 
 namespace doctest {
-
-template <>
-struct StringMaker<std::optional<rousette::restconf::impl::URIPath>> {
-    static String convert(const std::optional<rousette::restconf::impl::URIPath>& obj)
-    {
-        std::ostringstream oss;
-
-        if (obj) {
-            oss << "optional{" << obj->segments << "}";
-        } else {
-            oss << "nullopt{}";
-        }
-
-        return oss.str().c_str();
-    }
-};
 
 template <>
 struct StringMaker<std::optional<rousette::restconf::impl::YangModule>> {

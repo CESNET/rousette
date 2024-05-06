@@ -15,18 +15,6 @@ using namespace std::string_literals;
 namespace doctest {
 
 template <>
-struct StringMaker<std::vector<std::string>> {
-    static String convert(const std::vector<std::string>& obj)
-    {
-        std::ostringstream oss;
-        oss << '[';
-        std::copy(obj.begin(), obj.end(), std::experimental::make_ostream_joiner(oss, ", "));
-        oss << ']';
-        return oss.str().c_str();
-    }
-};
-
-template <>
 struct StringMaker<rousette::http::ProtoAndHost> {
     static String convert(const rousette::http::ProtoAndHost& obj)
     {
