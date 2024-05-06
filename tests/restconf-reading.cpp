@@ -34,10 +34,12 @@ TEST_CASE("reading data")
     srSess.setItem("/ietf-system:system/clock/timezone-utc-offset", "2");
     srSess.setItem("/ietf-system:system/radius/server[name='a']/udp/address", "1.1.1.1");
     srSess.setItem("/ietf-system:system/radius/server[name='a']/udp/shared-secret", "shared-secret");
+    srSess.setItem("/example:config-nonconfig/nonconfig-node", "foo-config-false");
     srSess.applyChanges();
 
     srSess.switchDatastore(sysrepo::Datastore::Running);
     srSess.setItem("/example:top-level-leaf", "moo");
+    srSess.setItem("/example:config-nonconfig/config-node", "foo-config-true");
     srSess.applyChanges();
 
     // setup real-like NACM
@@ -68,6 +70,10 @@ TEST_CASE("reading data")
         // this relies on a NACM rule for anonymous access that filters out "a lot of stuff"
         REQUIRE(get(RESTCONF_DATA_ROOT, {}) == Response{200, jsonHeaders, R"({
   "example:top-level-leaf": "moo",
+  "example:config-nonconfig": {
+    "config-node": "foo-config-true",
+    "nonconfig-node": "foo-config-false"
+  },
   "ietf-restconf-monitoring:restconf-state": {
     "capabilities": {
       "capability": [
@@ -87,6 +93,10 @@ TEST_CASE("reading data")
 
         REQUIRE(get(RESTCONF_ROOT_DS("operational"), {}) == Response{200, jsonHeaders, R"({
   "example:top-level-leaf": "moo",
+  "example:config-nonconfig": {
+    "config-node": "foo-config-true",
+    "nonconfig-node": "foo-config-false"
+  },
   "ietf-restconf-monitoring:restconf-state": {
     "capabilities": {
       "capability": [
@@ -105,7 +115,10 @@ TEST_CASE("reading data")
 )"});
 
         REQUIRE(get(RESTCONF_ROOT_DS("running"), {}) == Response{200, jsonHeaders, R"({
-  "example:top-level-leaf": "moo"
+  "example:top-level-leaf": "moo",
+  "example:config-nonconfig": {
+    "config-node": "foo-config-true"
+  }
 }
 )"});
     }
@@ -666,6 +679,39 @@ TEST_CASE("reading data")
         }
       }
     }
+  }
+}
+)"});
+    }
+
+    SECTION("content query param")
+    {
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:config-nonconfig", {}) == Response{200, jsonHeaders, R"({
+  "example:config-nonconfig": {
+    "config-node": "foo-config-true",
+    "nonconfig-node": "foo-config-false"
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:config-nonconfig?content=config", {}) == Response{200, jsonHeaders, R"({
+  "example:config-nonconfig": {
+    "config-node": "foo-config-true"
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:config-nonconfig?content=nonconfig", {}) == Response{200, jsonHeaders, R"({
+  "example:config-nonconfig": {
+    "nonconfig-node": "foo-config-false"
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:config-nonconfig?content=all", {}) == Response{200, jsonHeaders, R"({
+  "example:config-nonconfig": {
+    "config-node": "foo-config-true",
+    "nonconfig-node": "foo-config-false"
   }
 }
 )"});

@@ -725,7 +725,16 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         withDefaults = it->second;
                     }
 
-                    if (auto data = sess.getData(restconfRequest.path, maxDepth); data) {
+                    sysrepo::GetOptions getOptions = sysrepo::GetOptions::Default; /* default get options: return all nodes */
+                    if (auto it = restconfRequest.queryParams.find("content"); it != restconfRequest.queryParams.end()) {
+                        if(std::holds_alternative<queryParams::content::OnlyNonConfigNodes>(it->second)) {
+                            getOptions = sysrepo::GetOptions::OperNoConfig;
+                        } else if(std::holds_alternative<queryParams::content::OnlyConfigNodes>(it->second)) {
+                            getOptions = sysrepo::GetOptions::OperNoState;
+                        }
+                    }
+
+                    if (auto data = sess.getData(restconfRequest.path, maxDepth, getOptions); data) {
                         res.write_head(
                             200,
                             {
