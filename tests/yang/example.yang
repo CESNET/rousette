@@ -77,6 +77,17 @@ module example {
     leaf b { type string; }
   }
 
+  container config-nonconfig {
+    leaf config-node {
+      config true;
+      type string;
+    }
+    leaf nonconfig-node {
+      config false;
+      type string;
+    }
+  }
+
   rpc test-rpc {
     input {
       leaf i {

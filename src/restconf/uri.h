@@ -69,7 +69,28 @@ struct ReportAllTagged {
 };
 }
 
-using QueryParamValue = std::variant<UnboundedDepth, unsigned int, withDefaults::Trim, withDefaults::Explicit, withDefaults::ReportAll, withDefaults::ReportAllTagged>;
+namespace content {
+struct AllNodes {
+    bool operator==(const AllNodes&) const = default;
+};
+struct OnlyConfigNodes {
+    bool operator==(const OnlyConfigNodes&) const = default;
+};
+struct OnlyNonConfigNodes {
+    bool operator==(const OnlyNonConfigNodes&) const = default;
+};
+}
+
+using QueryParamValue = std::variant<
+    UnboundedDepth,
+    unsigned int,
+    withDefaults::Trim,
+    withDefaults::Explicit,
+    withDefaults::ReportAll,
+    withDefaults::ReportAllTagged,
+    content::AllNodes,
+    content::OnlyNonConfigNodes,
+    content::OnlyConfigNodes>;
 using QueryParams = std::multimap<std::string, QueryParamValue>;
 }
 
