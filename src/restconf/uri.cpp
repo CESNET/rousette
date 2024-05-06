@@ -88,10 +88,21 @@ struct withDefaultsTable : x3::symbols<queryParams::QueryParamValue> {
     }
 } const withDefaultsParam;
 
+struct contentTable : x3::symbols<queryParams::QueryParamValue> {
+    contentTable()
+    {
+        add
+            ("all", queryParams::content::AllNodes{})
+            ("nonconfig", queryParams::content::OnlyNonConfigNodes{})
+            ("config", queryParams::content::OnlyConfigNodes{});
+    }
+} const contentParam;
+
 const auto depthParam = x3::rule<class depthParam, queryParams::QueryParamValue>{"depthParam"} = x3::uint_[validDepthValues] | (x3::string("unbounded") >> x3::attr(queryParams::UnboundedDepth{}));
 const auto queryParamPair = x3::rule<class queryParamPair, std::pair<std::string, queryParams::QueryParamValue>>{"queryParamPair"} =
         (x3::string("depth") >> "=" >> depthParam) |
-        (x3::string("with-defaults") >> "=" >> withDefaultsParam);
+        (x3::string("with-defaults") >> "=" >> withDefaultsParam) |
+        (x3::string("content") >> "=" >> contentParam);
 
 const auto queryParamGrammar = x3::rule<class grammar, queryParams::QueryParams>{"queryParamGrammar"} = queryParamPair % "&" | x3::eps;
 
@@ -358,7 +369,7 @@ void validateQueryParameters(const std::multimap<std::string, queryParams::Query
         }
     }
 
-    for (const auto& param : {"depth", "with-defaults"}) {
+    for (const auto& param : {"depth", "with-defaults", "content"}) {
         if (auto it = params.find(param); it != params.end() && httpMethod != "GET" && httpMethod != "HEAD") {
             throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter '"s + param + "' can be used only with GET and HEAD methods");
         }

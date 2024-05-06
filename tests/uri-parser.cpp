@@ -820,6 +820,8 @@ TEST_CASE("URI path parser")
             REQUIRE(parseQueryParams("with-defaults=report-all-tagged") == QueryParams{{"with-defaults", withDefaults::ReportAllTagged{}}});
             REQUIRE(parseQueryParams("depth=3&with-defaults=report-all") == QueryParams{{"depth", 3u}, {"with-defaults", withDefaults::ReportAll{}}});
             REQUIRE(parseQueryParams("with-defaults=") == std::nullopt);
+            REQUIRE(parseQueryParams("content=all&content=nonconfig&content=config") == QueryParams{{"content", content::AllNodes{}}, {"content", content::OnlyNonConfigNodes{}}, {"content", content::OnlyConfigNodes{}}});
+            REQUIRE(parseQueryParams("content=ahoj") == std::nullopt);
         }
 
         SECTION("Full requests with validation")
@@ -852,6 +854,16 @@ TEST_CASE("URI path parser")
 
                 REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "POST", "/restconf/data/example:tlc", "with-defaults=report-all"),
                                        serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'with-defaults' can be used only with GET and HEAD methods").c_str(),
+                                       rousette::restconf::ErrorResponse);
+            }
+
+            SECTION("content")
+            {
+                auto resp = asRestconfRequest(ctx, "GET", "/restconf/data/example:tlc", "content=nonconfig");
+                REQUIRE(resp.queryParams == QueryParams({{"content", content::OnlyNonConfigNodes{}}}));
+
+                REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "POST", "/restconf/data/example:tlc", "content=config"),
+                                       serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'content' can be used only with GET and HEAD methods").c_str(),
                                        rousette::restconf::ErrorResponse);
             }
 
