@@ -72,6 +72,9 @@ struct StringMaker<rousette::restconf::queryParams::QueryParamValue> {
             [](const rousette::restconf::queryParams::withDefaults::ReportAll&) -> std::string { return "ReportAll{}"; },
             [](const rousette::restconf::queryParams::withDefaults::ReportAllTagged&) -> std::string { return "ReportAllTagged{}"; },
             [](const rousette::restconf::queryParams::withDefaults::Trim&) -> std::string { return "Trim{}"; },
+            [](const rousette::restconf::queryParams::content::AllNodes&) -> std::string { return "AllNodes{}"; },
+            [](const rousette::restconf::queryParams::content::OnlyConfigNodes&) -> std::string { return "Config{}"; },
+            [](const rousette::restconf::queryParams::content::OnlyNonConfigNodes&) -> std::string { return "Nonconfig{}"; },
         }, obj).c_str();
     }
 };
