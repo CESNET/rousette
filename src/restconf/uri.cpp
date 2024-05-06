@@ -11,6 +11,7 @@
 #include "restconf/Exceptions.h"
 #include "restconf/uri.h"
 #include "restconf/uri_impl.h"
+#include "restconf/utils.h"
 
 using namespace std::string_literals;
 
@@ -280,24 +281,6 @@ std::string maybeQualified(const libyang::SchemaNode& currentNode)
     return res + std::string{currentNode.name()};
 }
 
-/** @brief Escapes key with the other type of quotes than found in the string.
- *
- *  @throws ErrorResponse if both single and double quotes used in the input
- * */
-std::string escapeListKey(const std::string& str)
-{
-    auto singleQuotes = str.find('\'') != std::string::npos;
-    auto doubleQuotes = str.find('\"') != std::string::npos;
-
-    if (singleQuotes && doubleQuotes) {
-        throw ErrorResponse(400, "application", "operation-failed", "Encountered mixed single and double quotes in XPath. Can't properly escape.");
-    } else if (singleQuotes) {
-        return '\"' + str + '\"';
-    } else {
-        return '\'' + str + '\'';
-    }
-}
-
 std::string apiIdentName(const ApiIdentifier& apiIdent)
 {
     if (!apiIdent.prefix) {
@@ -429,17 +412,21 @@ SchemaNodeAndPath asLibyangPath(const libyang::Context& ctx, const std::vector<P
                 throw ErrorResponse(400, "application", "operation-failed", "List '" + currentNode->path() + "' requires " + std::to_string(listKeys.size()) + " keys");
             }
 
-            // FIXME: use std::views::zip in C++23
-            auto itKeyValue = it->keys.begin();
-            for (auto itKeyName = listKeys.begin(); itKeyName != listKeys.end(); ++itKeyName, ++itKeyValue) {
-                res += '[' + std::string{itKeyName->name()} + "=" + escapeListKey(*itKeyValue) + ']';
+            try {
+                res += listKeyPredicate(listKeys, it->keys);
+            } catch (const std::invalid_argument& e) {
+                throw ErrorResponse(400, "application", "operation-failed", e.what());
             }
         } else if (currentNode->nodeType() == libyang::NodeType::Leaflist) {
             if (it->keys.size() != 1) {
                 throw ErrorResponse(400, "application", "operation-failed", "Leaf-list '" + currentNode->path() + "' requires exactly one key");
             }
 
-            res += "[.=" + escapeListKey(it->keys.front()) + ']';
+            try {
+                res += "[.=" + escapeListKey(it->keys.front()) + ']';
+            } catch (const std::invalid_argument& e) {
+                throw ErrorResponse(400, "application", "operation-failed", e.what());
+            }
         } else if (it->keys.size() > 0) {
             throw ErrorResponse(400, "application", "operation-failed", "No keys allowed for node '" + currentNode->path() + "'");
         }

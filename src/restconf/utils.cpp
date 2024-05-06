@@ -7,6 +7,7 @@
 
 #include <chrono>
 #include <iomanip>
+#include <libyang-cpp/SchemaNode.hpp>
 
 namespace rousette::restconf {
 
@@ -45,4 +46,35 @@ std::string yangDateTime(const std::chrono::time_point<Clock>& timePoint)
 }
 
 template std::string yangDateTime<std::chrono::system_clock, std::chrono::nanoseconds>(const std::chrono::time_point<std::chrono::system_clock>&);
+
+/** @brief Escapes key with the other type of quotes than found in the string.
+ *
+ *  @throws std::invalid_argument if both single and double quotes used in the input
+ * */
+std::string escapeListKey(const std::string& str)
+{
+    auto singleQuotes = str.find('\'') != std::string::npos;
+    auto doubleQuotes = str.find('\"') != std::string::npos;
+
+    if (singleQuotes && doubleQuotes) {
+        throw std::invalid_argument("Encountered mixed single and double quotes in XPath. Can't properly escape.");
+    } else if (singleQuotes) {
+        return '\"' + str + '\"';
+    } else {
+        return '\'' + str + '\'';
+    }
+}
+
+std::string listKeyPredicate(const std::vector<libyang::Leaf>& listKeyLeafs, const std::vector<std::string>& keyValues)
+{
+    std::string res;
+
+    // FIXME: use std::views::zip in C++23
+    auto itKeyValue = keyValues.begin();
+    for (auto itKeyName = listKeyLeafs.begin(); itKeyName != listKeyLeafs.end(); ++itKeyName, ++itKeyValue) {
+        res += '[' + std::string{itKeyName->name()} + "=" + escapeListKey(*itKeyValue) + ']';
+    }
+
+    return res;
+}
 }
