@@ -14,6 +14,7 @@
 #include <trompeloeil.hpp>
 #include "datastoreUtils.h"
 #include "restconf/uri.h"
+#include "restconf/uri_impl.h"
 
 // helper type for the visitor
 template<class... Ts>
@@ -58,6 +59,62 @@ struct StringMaker<std::optional<T>> {
         } else {
             return "nullopt{}";
         }
+    }
+};
+
+template <class T>
+struct StringMaker<std::vector<T>> {
+    static String convert(const std::vector<T>& vec)
+    {
+        std::ostringstream oss;
+        oss << "[";
+
+        for (auto it = vec.begin(); it != vec.end(); ++it) {
+            if (it != vec.begin()) {
+                oss << ", ";
+            }
+            oss << StringMaker<T>::convert(*it);
+        }
+
+        oss << "]";
+        return oss.str().c_str();
+    }
+};
+
+template <>
+struct StringMaker<rousette::restconf::impl::URIPath> {
+    static String convert(const rousette::restconf::impl::URIPath& obj)
+    {
+        return StringMaker<decltype(obj.segments)>::convert(obj.segments);
+    }
+};
+
+template <>
+struct StringMaker<rousette::restconf::ApiIdentifier> {
+    static String convert(const rousette::restconf::ApiIdentifier& obj)
+    {
+        std::string ret = "ApiIdentifier{prefix=";
+        if (obj.prefix) {
+            ret += "'" + *obj.prefix + "'";
+        } else {
+            ret += "nullopt{}";
+        }
+
+        ret += ", ident='" + obj.identifier + "'}";
+        return ret.c_str();
+    }
+};
+
+template <>
+struct StringMaker<rousette::restconf::PathSegment> {
+    static String convert(const rousette::restconf::PathSegment& obj)
+    {
+        std::string ret = "Segment{";
+        ret += StringMaker<decltype(obj.apiIdent)>::convert(obj.apiIdent).c_str();
+        ret += " keys=";
+        ret += StringMaker<decltype(obj.keys)>::convert(obj.keys).c_str();
+        ret += "}";
+        return ret.c_str();
     }
 };
 
