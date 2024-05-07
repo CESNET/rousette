@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "19841273_ca3f97ee",
+        "filename": "tests/restconf-reading.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 591,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-07T09:14:39Z",
+      "side": 1,
+      "message": "This is about that empty container, right? I think it wouldn\u0027t hurt to add that explicitly to the comment, but not a big deal",
+      "revId": "94e382f1d0875576ce4d4a8ddef18a9c1d6554f4",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1293fc37_17cc1b40",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 823,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-07T09:14:39Z",
+      "side": 1,
+      "message": "please add another \"clearly invalid\" string",
+      "revId": "94e382f1d0875576ce4d4a8ddef18a9c1d6554f4",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
