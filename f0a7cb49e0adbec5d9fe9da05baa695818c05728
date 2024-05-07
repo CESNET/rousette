@@ -34,6 +34,24 @@
       "parentUuid": "67f688e1_365f365c",
       "revId": "f0a7cb49e0adbec5d9fe9da05baa695818c05728",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6b4b7116_3d3e11a9",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 498,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-07T11:25:13Z",
+      "side": 1,
+      "message": "that\u0027s because of possible side effects which are needed for RAII; stackoverflow-searching led me to https://gcc.gnu.org/bugzilla/show_bug.cgi?id\u003d17006",
+      "parentUuid": "d784d77a_998b63cd",
+      "revId": "f0a7cb49e0adbec5d9fe9da05baa695818c05728",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
