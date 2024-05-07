@@ -72,6 +72,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "bbd13e98_e6f0c629",
+        "filename": "tests/restconf-reading.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 591,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-05-07T12:07:11Z",
+      "side": 1,
+      "message": "Comment deleted because now it behaves as expected.",
+      "parentUuid": "88e55bd8_d71b650b",
+      "revId": "94e382f1d0875576ce4d4a8ddef18a9c1d6554f4",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "1293fc37_17cc1b40",
