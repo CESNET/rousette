@@ -50,6 +50,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "f678a698_2a2200bb",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 9
+      },
+      "lineNbr": 686,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-07T09:07:30Z",
+      "side": 1,
+      "message": "ack",
+      "parentUuid": "0bdef1d2_e3915428",
+      "range": {
+        "startLine": 683,
+        "startChar": 0,
+        "endLine": 686,
+        "endChar": 21
+      },
+      "revId": "4cc2cf52171dd8e297eb097d2e7b4b545bd3d140",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "573cab19_e66559c5",
         "filename": "tests/pretty_printers.h",
         "patchSetId": 9
