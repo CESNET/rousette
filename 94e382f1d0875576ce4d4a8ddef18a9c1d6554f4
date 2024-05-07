@@ -36,6 +36,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4c7f09d8_acff5b5b",
+        "filename": "tests/restconf-reading.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 591,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-05-07T11:13:02Z",
+      "side": 1,
+      "message": "Done.",
+      "parentUuid": "fdb3d759_e62bcb80",
+      "revId": "94e382f1d0875576ce4d4a8ddef18a9c1d6554f4",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "1293fc37_17cc1b40",
@@ -49,6 +67,24 @@
       "writtenOn": "2024-05-07T09:14:39Z",
       "side": 1,
       "message": "please add another \"clearly invalid\" string",
+      "revId": "94e382f1d0875576ce4d4a8ddef18a9c1d6554f4",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d28e1073_716fca22",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 823,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-05-07T11:13:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1293fc37_17cc1b40",
       "revId": "94e382f1d0875576ce4d4a8ddef18a9c1d6554f4",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
