@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cde2a9f6_bb48adb8",
+        "filename": "src/restconf/utils.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-07T09:30:23Z",
+      "side": 1,
+      "message": "nit: \"are\" is missing",
+      "range": {
+        "startLine": 52,
+        "startChar": 60,
+        "endLine": 52,
+        "endChar": 71
+      },
+      "revId": "a4f2a43e5028b87849f5c4d2e1d11b642d2c2fe2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
