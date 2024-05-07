@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "12708d66_d0ed0bd4",
+        "filename": "tests/restconf-delete.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 256,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-07T09:03:32Z",
+      "side": 1,
+      "message": "let\u0027s link to https://github.com/sysrepo/sysrepo/issues/3283 from here",
+      "revId": "8cd1801ea27ec8a0af87ed9f568913fb81b0163e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
