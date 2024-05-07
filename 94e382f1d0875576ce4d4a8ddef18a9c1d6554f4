@@ -20,6 +20,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "fdb3d759_e62bcb80",
+        "filename": "tests/restconf-reading.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 591,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-05-07T09:49:57Z",
+      "side": 1,
+      "message": "yeah, this was fixed by https://github.com/CESNET/libyang/commit/ee3539a64c241334fbe0f252d8899784b069eb47 so I need to update libyang first",
+      "parentUuid": "19841273_ca3f97ee",
+      "revId": "94e382f1d0875576ce4d4a8ddef18a9c1d6554f4",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "1293fc37_17cc1b40",
         "filename": "tests/uri-parser.cpp",
         "patchSetId": 7
