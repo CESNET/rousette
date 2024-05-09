@@ -28,7 +28,7 @@ OpticalEvents::OpticalEvents(sysrepo::Session session)
 
     // Because it's "tricky" to request data from several top-level modules via sysrepo (and nothing else),
     // just pick a first module to listen for.
-    for (const auto& mod : {"czechlight-roadm-device", "czechlight-coherent-add-drop", "czechlight-inline-amp"}) {
+    for (const auto& mod : {"czechlight-roadm-device", "czechlight-coherent-add-drop", "czechlight-inline-amp", "czechlight-bidi-amp"}) {
         try {
             sysrepo::ModuleChangeCb cb = [this](const auto sess, auto, auto name, auto, auto, auto) {
                 return onChange(sess, std::string{name});
