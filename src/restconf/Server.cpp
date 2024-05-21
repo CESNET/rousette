@@ -117,29 +117,6 @@ void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat
     res.end(*errors->printStr(dataFormat, libyang::PrintFlags::WithSiblings));
 }
 
-std::optional<std::string> getHeaderValue(const nghttp2::asio_http2::header_map& headers, const std::string& header)
-{
-    auto it = headers.find(header);
-    if (it == headers.end()) {
-        return std::nullopt;
-    }
-
-    return it->second.value;
-}
-
-std::optional<std::string> parseUrlPrefix(const nghttp2::asio_http2::header_map& headers) {
-    if (auto forward = getHeaderValue(headers, "forward")) {
-        auto [proto, host] = http::parseForwardedHeader(*forward);
-        if (!proto || !host) {
-            return std::nullopt;
-        }
-
-        return *proto + "://" + *host;
-    }
-
-    return std::nullopt;
-}
-
 struct DataFormat {
     std::optional<libyang::DataFormat> request; // request encoding is not always needed (e.g. GET)
     libyang::DataFormat response;
@@ -153,10 +130,10 @@ DataFormat chooseDataEncoding(const nghttp2::asio_http2::header_map& headers)
     std::vector<std::string> acceptTypes;
     std::optional<std::string> contentType;
 
-    if (auto value = getHeaderValue(headers, "accept")) {
+    if (auto value = http::getHeaderValue(headers, "accept")) {
         acceptTypes = http::parseAcceptHeader(*value);
     }
-    if (auto value = getHeaderValue(headers, "content-type")) {
+    if (auto value = http::getHeaderValue(headers, "content-type")) {
         auto contentTypes = http::parseAcceptHeader(*value); // content type doesn't have the same syntax as accept but content-type is a singleton object similar to those in accept header (RFC 9110) so this should be fine
 
         if (contentTypes.size() > 1) {
@@ -558,7 +535,7 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
 void authorizeRequest(const Nacm& nacm, sysrepo::Session& sess, const request& req)
 {
     std::string nacmUser;
-    if (auto authHeader = getHeaderValue(req.header(), "authorization")) {
+    if (auto authHeader = http::getHeaderValue(req.header(), "authorization")) {
         nacmUser = rousette::auth::authenticate_pam(*authHeader, http::peer_from_request(req));
     } else {
         nacmUser = ANONYMOUS_USER;
@@ -801,7 +778,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                                 {"access-control-allow-origin", {"*", false}},
                             });
 
-                        res.end(*replaceYangLibraryLocations(parseUrlPrefix(req.header()), yangSchemaRoot, *data).printStr(dataFormat.response, libyangPrintFlags(*data, restconfRequest.path, withDefaults)));
+                        res.end(*replaceYangLibraryLocations(http::parseUrlPrefix(req.header()), yangSchemaRoot, *data).printStr(dataFormat.response, libyangPrintFlags(*data, restconfRequest.path, withDefaults)));
                     } else {
                         throw ErrorResponse(404, "application", "invalid-value", "No data from sysrepo.");
                     }
