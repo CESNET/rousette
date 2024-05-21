@@ -9,6 +9,8 @@
 #include <iomanip>
 #include <libyang-cpp/SchemaNode.hpp>
 
+using namespace std::string_literals;
+
 namespace rousette::restconf {
 
 namespace {
@@ -74,6 +76,10 @@ std::string escapeListKey(const std::string& str)
 std::string listKeyPredicate(const std::vector<libyang::Leaf>& listKeyLeafs, const std::vector<std::string>& keyValues)
 {
     std::string res;
+
+    if (keyValues.size() != listKeyLeafs.size()) {
+        throw std::invalid_argument("Number of key values ("s + std::to_string(keyValues.size()) + ") is not equal to the number of keys in the list (" + std::to_string(listKeyLeafs.size()) + ")");
+    }
 
     // FIXME: use std::views::zip in C++23
     auto itKeyValue = keyValues.begin();
