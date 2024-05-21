@@ -8,7 +8,6 @@
 #include <boost/algorithm/string.hpp>
 #include <libyang-cpp/Enum.hpp>
 #include <nghttp2/asio_http2_server.h>
-#include <regex>
 #include <spdlog/spdlog.h>
 #include <sysrepo-cpp/Enum.hpp>
 #include <sysrepo-cpp/utils/exception.hpp>
