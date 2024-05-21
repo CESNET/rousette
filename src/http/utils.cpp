@@ -161,4 +161,28 @@ ProtoAndHost parseForwardedHeader(const std::string& headerValue)
 
     return res;
 }
+
+std::optional<std::string> getHeaderValue(const nghttp2::asio_http2::header_map& headers, const std::string& header)
+{
+    auto it = headers.find(header);
+    if (it == headers.end()) {
+        return std::nullopt;
+    }
+
+    return it->second.value;
+}
+
+std::optional<std::string> parseUrlPrefix(const nghttp2::asio_http2::header_map& headers)
+{
+    if (auto forward = getHeaderValue(headers, "forward")) {
+        auto [proto, host] = http::parseForwardedHeader(*forward);
+        if (!proto || !host) {
+            return std::nullopt;
+        }
+
+        return *proto + "://" + *host;
+    }
+
+    return std::nullopt;
+}
 }
