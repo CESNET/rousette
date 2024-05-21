@@ -121,19 +121,6 @@ std::optional<libyang::DataNode> checkKeysMismatch(const libyang::DataNode& node
     return std::nullopt;
 }
 
-bool isUserOrderedList(const libyang::DataNode& node)
-{
-    if (node.schema().nodeType() == libyang::NodeType::List) {
-        return node.schema().asList().isUserOrdered();
-    }
-
-    if (node.schema().nodeType() == libyang::NodeType::Leaflist) {
-        return node.schema().asLeafList().isUserOrdered();
-    }
-
-    return false;
-}
-
 struct RequestContext {
     const nghttp2::asio_http2::server::request& req;
     const nghttp2::asio_http2::server::response& res;
