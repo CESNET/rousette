@@ -65,6 +65,14 @@ std::string escapeListKey(const std::string& str)
     }
 }
 
+/**
+ * @brief Constructs list key predicate part of the XPath.
+ *
+ * @pre The listKeyLeafs and keyValues are of same length. This is not checked in the function because as of now the check is already done before the call.
+ * @param listKeyLeafs libyang::Leaf nodes corresponding to keys
+ * @param keyValues key values
+ * @returns a string in the format "[key_1='value_1']...[key_n='value_n']"
+ */
 std::string listKeyPredicate(const std::vector<libyang::Leaf>& listKeyLeafs, const std::vector<std::string>& keyValues)
 {
     std::string res;
