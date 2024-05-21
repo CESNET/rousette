@@ -48,11 +48,6 @@ bool isSameNode(const libyang::DataNode& child, const PathSegment& lastPathSegme
     return child.schema().module().name() == *lastPathSegment.apiIdent.prefix && child.schema().name() == lastPathSegment.apiIdent.identifier;
 }
 
-bool isSameNode(const libyang::DataNode& a, const libyang::SchemaNode& b)
-{
-    return a.schema() == b;
-}
-
 void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath = std::nullopt)
 {
     spdlog::debug("{}: Rejected with {}: {}", http::peer_from_request(req), errorTag, errorMessage);
@@ -78,18 +73,6 @@ bool dataExists(sysrepo::Session session, const std::string& path)
         if (data->findPath(path)) {
             return true;
         }
-    }
-    return false;
-}
-
-/** @brief Checks if node is a key node in a maybeList node list */
-bool isKeyNode(const auto& maybeList, const auto& node)
-{
-    if (maybeList.schema().nodeType() == libyang::NodeType::List) {
-        auto listKeys = maybeList.schema().asList().keys();
-        return std::any_of(listKeys.begin(), listKeys.end(), [&node](const auto& key) {
-            return isSameNode(node, key);
-        });
     }
     return false;
 }
