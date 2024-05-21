@@ -5,6 +5,7 @@
  *
 */
 
+#include <algorithm>
 #include <chrono>
 #include <iomanip>
 #include <libyang-cpp/DataNode.hpp>
@@ -101,6 +102,18 @@ bool isUserOrderedList(const libyang::DataNode& node)
         return node.schema().asLeafList().isUserOrdered();
     }
 
+    return false;
+}
+
+/** @brief Checks if node is a key node in a maybeList node list */
+bool isKeyNode(const libyang::DataNode& maybeList, const libyang::DataNode& node)
+{
+    if (maybeList.schema().nodeType() == libyang::NodeType::List) {
+        auto listKeys = maybeList.schema().asList().keys();
+        return std::any_of(listKeys.begin(), listKeys.end(), [&node](const auto& key) {
+            return node.schema() == key;
+        });
+    }
     return false;
 }
 }
