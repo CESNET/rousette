@@ -20,4 +20,5 @@ std::string yangDateTime(const std::chrono::time_point<Clock>& timePoint);
 std::string escapeListKey(const std::string& str);
 std::string listKeyPredicate(const std::vector<libyang::Leaf>& listKeyLeafs, const std::vector<std::string>& keyValues);
 bool isUserOrderedList(const libyang::DataNode& node);
+bool isKeyNode(const libyang::DataNode& maybeList, const libyang::DataNode& node);
 }
