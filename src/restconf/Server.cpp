@@ -18,6 +18,7 @@
 #include "restconf/YangSchemaLocations.h"
 #include "restconf/uri.h"
 #include "restconf/utils/dataformat.h"
+#include "restconf/utils/sysrepo.h"
 #include "restconf/utils/yang.h"
 #include "sr/OpticalEvents.h"
 #include "NacmIdentities.h"
@@ -65,16 +66,6 @@ void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat
 
     res.write_head(code, {{"content-type", {asMimeType(dataFormat), false}}, {"access-control-allow-origin", {"*", false}}});
     res.end(*errors->printStr(dataFormat, libyang::PrintFlags::WithSiblings));
-}
-
-bool dataExists(sysrepo::Session session, const std::string& path)
-{
-    if (auto data = session.getData(path)) {
-        if (data->findPath(path)) {
-            return true;
-        }
-    }
-    return false;
 }
 
 /** @brief In case node is a (leaf-)list check if the key values are the same as the keys specified in the lastPathSegment.
