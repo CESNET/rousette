@@ -9,6 +9,7 @@
 
 namespace libyang {
 class Leaf;
+class DataNode;
 }
 
 namespace rousette::restconf {
@@ -18,4 +19,5 @@ std::string yangDateTime(const std::chrono::time_point<Clock>& timePoint);
 
 std::string escapeListKey(const std::string& str);
 std::string listKeyPredicate(const std::vector<libyang::Leaf>& listKeyLeafs, const std::vector<std::string>& keyValues);
+bool isUserOrderedList(const libyang::DataNode& node);
 }

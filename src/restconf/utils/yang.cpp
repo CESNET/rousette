@@ -7,6 +7,7 @@
 
 #include <chrono>
 #include <iomanip>
+#include <libyang-cpp/DataNode.hpp>
 #include <libyang-cpp/SchemaNode.hpp>
 
 namespace rousette::restconf {
@@ -84,5 +85,18 @@ std::string listKeyPredicate(const std::vector<libyang::Leaf>& listKeyLeafs, con
     }
 
     return res;
+}
+
+bool isUserOrderedList(const libyang::DataNode& node)
+{
+    if (node.schema().nodeType() == libyang::NodeType::List) {
+        return node.schema().asList().isUserOrdered();
+    }
+
+    if (node.schema().nodeType() == libyang::NodeType::Leaflist) {
+        return node.schema().asLeafList().isUserOrdered();
+    }
+
+    return false;
 }
 }
