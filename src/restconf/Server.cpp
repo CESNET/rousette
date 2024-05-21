@@ -18,7 +18,7 @@
 #include "restconf/Server.h"
 #include "restconf/YangSchemaLocations.h"
 #include "restconf/uri.h"
-#include "restconf/utils.h"
+#include "restconf/utils/yang.h"
 #include "sr/OpticalEvents.h"
 #include "NacmIdentities.h"
 

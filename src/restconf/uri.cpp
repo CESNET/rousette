@@ -11,7 +11,7 @@
 #include "restconf/Exceptions.h"
 #include "restconf/uri.h"
 #include "restconf/uri_impl.h"
-#include "restconf/utils.h"
+#include "restconf/utils/yang.h"
 
 using namespace std::string_literals;
 
