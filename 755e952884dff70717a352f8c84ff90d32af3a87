@@ -1,0 +1,107 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b9eff1a6_7c4d74d5",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 5
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-22T10:56:23Z",
+      "side": 1,
+      "message": "OK, so if I understand the code correctly, the \"weird/complex\" part is that you keep both the string-based list of tokens that were parsed from the URL (in `pathSegments`), and also a resolved SchemaNode that is only added after parsing. The parsed strings must be present in the structure because spirit::x3 is designed to work on strings, and because the schema node itself is \"not enough\" since we absolutely need all the key values, recursively.\n\nDo we really need that `listSchemaNode` to be present, though? It\u0027s only checked in yangInsertKey, so why not have the normalizeQueryPointParameter() return the schema node, not storing in the query parameters, and simply check it at that point? It will also make it possible to use the default operator\u003d\u003d.\n\nIf this is not possible, please explain this better in the commit message. In fact, since you said on the call that you aren\u0027t happy with this patch, please explain any \"tricky points\" in the commit message, please.",
+      "range": {
+        "startLine": 12,
+        "startChar": 0,
+        "endLine": 15,
+        "endChar": 10
+      },
+      "revId": "755e952884dff70717a352f8c84ff90d32af3a87",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "323e1e3c_34e77c75",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 282,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-22T10:56:23Z",
+      "side": 1,
+      "message": "this might be improved by printing both of these paths into the error message, but nah, it ain\u0027t needed for sure",
+      "revId": "755e952884dff70717a352f8c84ff90d32af3a87",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e01fbf30_d26749cb",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 322,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-22T10:56:23Z",
+      "side": 1,
+      "message": "nit: since the only difference is in a single meta value and because the second line is \"simple, but not trivial\", consider:\n \n} else if (auto hasBefore \u003d std::holds_alternative\u003cqueryParams::insert::Before\u003e(it-\u003esecond); hasBefore || std::holds_alternative\u003cqueryParams::insert::After\u003e(it-\u003esecond)) {\n    listEntryNode.newMeta(*modYang, \"insert\", hasBefore ? \"before\" : \"after\");\n    listEntryNode.newMeta(*modYang, keyOrValue, yangInsertKey(listEntryNode.schema(), requestCtx.restconfRequest.queryParams));\n}\n\n(I hope that it\u0027s OK to introduce variables within the else-if like this; even if not, I still think this might be nicer)",
+      "range": {
+        "startLine": 316,
+        "startChar": 0,
+        "endLine": 322,
+        "endChar": 9
+      },
+      "revId": "755e952884dff70717a352f8c84ff90d32af3a87",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "412b81cf_2dd39af1",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 458,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-22T10:56:23Z",
+      "side": 1,
+      "message": "missing docs",
+      "revId": "755e952884dff70717a352f8c84ff90d32af3a87",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "014f9ba3_e73b873f",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 459,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-22T10:56:23Z",
+      "side": 1,
+      "message": "maybe `resolveQueryPointParameter` because it\u0027s not really about \"normalization\" (which implies having multiple accepted forms at the beginning, and somehow picking the \"canonical one\" later on for e.g. easy comparing), it\u0027s about translating/resolving something in form A and computing a form B as a result",
+      "range": {
+        "startLine": 459,
+        "startChar": 5,
+        "endLine": 459,
+        "endChar": 33
+      },
+      "revId": "755e952884dff70717a352f8c84ff90d32af3a87",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
