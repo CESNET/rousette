@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "473db132_f7f14d2e",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-22T11:01:39Z",
+      "side": 1,
+      "message": "If I understand the entire series correctly, this means that the check is done twice, which is not that great.",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 7
+      },
+      "revId": "f0021cc2359c567ff4df0b0b13e94bce8a5a0080",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
