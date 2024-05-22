@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "08f56a1c_8df25538",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-05-22T13:36:14Z",
+      "side": 1,
+      "message": "This function can actually be a one-liner so there is no need for it to exist. I am abandoning in favour of https://gerrit.cesnet.cz/c/CzechLight/rousette/+/7180",
+      "parentUuid": "2e0c9248_623f229f",
+      "revId": "8329d0dbfb347159a9719f04a4d9109bf25e0204",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "645d243d_901ce3d4",
