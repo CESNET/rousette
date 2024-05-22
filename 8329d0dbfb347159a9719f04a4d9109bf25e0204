@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2e0c9248_623f229f",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-22T11:08:38Z",
+      "side": 1,
+      "message": "Is this wort it just for the sake of an 8-line function? I guess it is because you\u0027ll likely need that in multiple TUs in future, once you split the Server.cpp into multiple files, but in that case it\u0027s better to say *why* you\u0027re making such a change in the commit message.",
+      "revId": "8329d0dbfb347159a9719f04a4d9109bf25e0204",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "645d243d_901ce3d4",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-22T11:08:38Z",
+      "side": 1,
+      "message": "I",
+      "revId": "8329d0dbfb347159a9719f04a4d9109bf25e0204",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
