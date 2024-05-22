@@ -6,14 +6,23 @@
 
 ## Usage
 
-One day, this might become a [RESTCONF](https://www.rfc-editor.org/rfc/rfc8040.html) server on top of [sysrepo](https://www.sysrepo.org/).
-Before that happens, it will, hopefully, be a small HTTP wrapper around sysrepo which publishes some data in a RESTCONF format.
+A [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server with [NMDA](https://datatracker.ietf.org/doc/html/rfc8527.html) support built on top of [sysrepo](https://www.sysrepo.org/)
 
 Since this service only talks cleartext HTTP/2, it's recommended to run it behind a reverse proxy.
 
+These features from the [RESTCONF RFC](https://datatracker.ietf.org/doc/html/rfc8040.html) are not yet implemented:
+
+- TLS certificate authentication. See [Access control model](#access-control-model) below.
+- No support for [OPTIONS](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.1), [HEAD](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.2), and [PATCH](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.6) HTTP methods.
+- Datastore resource responses do not contain the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1.1) and [`ETag`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1.2) headers for [edit collision prevention](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1)
+- Data resource responses do not contain the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.1) and [`ETag`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.2) headers.
+- [API resource](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.3), i.e., the top-level `{+restconf}` endpoint
+- [Event stream resource](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.8), [notifications](https://datatracker.ietf.org/doc/html/rfc8040.html#section-6) and related query parameters [`start-time`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.8.7) and [`stop-time`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.8.8).
+- The [`fields`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.8.3) and [`filter`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.8.4) query parameter.
+
 ### Access control model
 
-Rousette implements [RFC 8341 (NACM)](https://www.rfc-editor.org/rfc/rfc8341).
+Rousette implements [RFC 8341 (NACM)](https://datatracker.ietf.org/doc/html/rfc8341.html)
 The access rights for users (and groups) are configurable via `ietf-netconf-acm` YANG model.
 
 The reverse proxy must pass the `authorization` header as-is and delegate authentication/authorization to the RESTCONF server.
