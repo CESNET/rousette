@@ -17,10 +17,10 @@
 #include "restconf/Server.h"
 #include "restconf/YangSchemaLocations.h"
 #include "restconf/uri.h"
+#include "restconf/utils/auth.h"
 #include "restconf/utils/dataformat.h"
 #include "restconf/utils/yang.h"
 #include "sr/OpticalEvents.h"
-#include "NacmIdentities.h"
 
 using namespace std::literals;
 
@@ -393,45 +393,6 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
         } else {
             rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception: "s + e.what());
         }
-    }
-}
-
-void authorizeRequest(const Nacm& nacm, sysrepo::Session& sess, const request& req)
-{
-    std::string nacmUser;
-    if (auto authHeader = http::getHeaderValue(req.header(), "authorization")) {
-        nacmUser = rousette::auth::authenticate_pam(*authHeader, http::peer_from_request(req));
-    } else {
-        nacmUser = ANONYMOUS_USER;
-    }
-
-    if (!nacm.authorize(sess, nacmUser)) {
-        throw ErrorResponse(401, "protocol", "access-denied", "Access denied.");
-    }
-}
-
-void processAuthError(const request& req, const response& res, const auth::Error& error, const std::function<void()>& errorResponseCb)
-{
-    if (error.delay) {
-        spdlog::info("{}: Authentication failed (delay {}us): {}", http::peer_from_request(req), error.delay->count(), error.what());
-        auto timer = std::make_shared<boost::asio::steady_timer>(res.io_service(), *error.delay);
-        res.on_close([timer](uint32_t code) {
-            (void)code;
-            // Signal that the timer should be cancelled, so that its completion callback knows that
-            // a conneciton is gone already.
-            timer->cancel();
-        });
-        timer->async_wait([timer, errorResponseCb](const boost::system::error_code& ec) {
-            if (ec.failed()) {
-                // The `req` request has been already freed at this point and it's a dangling reference.
-                // There's nothing else to do at this point.
-            } else {
-                errorResponseCb();
-            }
-        });
-    } else {
-        spdlog::error("{}: Authentication failed: {}", http::peer_from_request(req), error.what());
-        errorResponseCb();
     }
 }
 

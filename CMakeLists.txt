@@ -100,6 +100,7 @@ add_library(rousette-restconf STATIC
     src/restconf/Server.cpp
     src/restconf/YangSchemaLocations.cpp
     src/restconf/uri.cpp
+    src/restconf/utils/auth.cpp
     src/restconf/utils/dataformat.cpp
     src/restconf/utils/yang.cpp
 )
