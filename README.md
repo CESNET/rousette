@@ -6,10 +6,18 @@
 
 ## Usage
 
-One day, this might become a [RESTCONF](https://www.rfc-editor.org/rfc/rfc8040.html) server on top of [sysrepo](https://www.sysrepo.org/).
-Before that happens, it will, hopefully, be a small HTTP wrapper around sysrepo which publishes some data in a RESTCONF format.
+A [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server supporting [NMDA](https://datatracker.ietf.org/doc/html/rfc8527.html) built on top of [sysrepo](https://www.sysrepo.org/)
 
 Since this service only talks cleartext HTTP/2, it's recommended to run it behind a reverse proxy.
+
+These features are not yet implemented:
+
+- TLS certificate authentication. See [Access control model](#access-control-model) below.
+- No support for OPTIONS (RFC 8040, sec. 4.1), HEAD (4.2), and PATCH (4.6) methods.
+- Data/Datastore Resources do not contain `Last-Modified` and `ETag` headers  (3.4.1, 3.5.1, 3.5.2).
+- API resource (3.3).
+- Event stream resource (3.8), notifications (6) and related query parameters start-time and stop-time (4.8.7, 4.8.8).
+- The fields (4.8.3) and filter (4.8.4) query parameter.
 
 ### Access control model
 
