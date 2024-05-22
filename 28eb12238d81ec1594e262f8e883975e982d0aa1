@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "71558280_27553747",
+        "filename": "tests/restconf-yang-schema.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 290,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-22T11:16:26Z",
+      "side": 1,
+      "message": "looks like this test fails, strange",
+      "revId": "28eb12238d81ec1594e262f8e883975e982d0aa1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
