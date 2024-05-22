@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1217f813_ec6f8138",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-22T11:07:03Z",
+      "side": 1,
+      "message": "If the commit message said that the `isSameNode` overload was only used in `isKeyNode` function, and that it\u0027s a trivial one-liner which probably doesn\u0027t deserve a function of its own, it would\u0027ve been a bit easier to review. No need to change anything now, though.",
+      "revId": "555fda2e29fa5ecc13e080960748493ee824d567",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
