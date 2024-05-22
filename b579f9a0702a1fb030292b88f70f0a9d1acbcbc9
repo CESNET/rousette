@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "57a6a6e7_872837f4",
+        "filename": "tests/restconf-yang-schema.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 312,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-05-22T15:54:14Z",
+      "side": 1,
+      "message": "@jkt:\n\nWhat do you expect from this test you wrote?\n- The rule 09 does not match the request\n- The rule 10 matches and permits reading everything, i.e., even the location leaf.\nThat means the test on line 295 is incorrect, because it also outputs the location leaf.\nHowever, the test on 312 then returns 404. That is because we check for the location leaf only and then the rule 09 matches -\u003e the location leaf read is unauthorized -\u003e yang schema is not provided.\n\nI think this is illogical a bit. Not sure if this only the NACM logic is wrong, or the code.",
+      "range": {
+        "startLine": 295,
+        "startChar": 0,
+        "endLine": 312,
+        "endChar": 9
+      },
+      "revId": "b579f9a0702a1fb030292b88f70f0a9d1acbcbc9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
