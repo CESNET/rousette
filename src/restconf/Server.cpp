@@ -67,16 +67,6 @@ void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat
     res.end(*errors->printStr(dataFormat, libyang::PrintFlags::WithSiblings));
 }
 
-bool dataExists(sysrepo::Session session, const std::string& path)
-{
-    if (auto data = session.getData(path)) {
-        if (data->findPath(path)) {
-            return true;
-        }
-    }
-    return false;
-}
-
 /** @brief In case node is a (leaf-)list check if the key values are the same as the keys specified in the lastPathSegment.
  * @return The node where the mismatch occurs */
 std::optional<libyang::DataNode> checkKeysMismatch(const libyang::DataNode& node, const PathSegment& lastPathSegment)
@@ -175,7 +165,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
         if (rpcSchemaNode.nodeType() == libyang::NodeType::Action) {
             // FIXME: This is race-prone: we check for existing action data node but before we send the RPC the node may be gone
             auto [pathToParent, pathSegment] = asLibyangPathSplit(ctx, requestCtx->req.uri().path);
-            if (!dataExists(requestCtx->sess, pathToParent)) {
+            if (!requestCtx->sess.getData(pathToParent)) {
                 throw ErrorResponse(400, "application", "operation-failed", "Action data node '" + requestCtx->restconfRequest.path + "' does not exist.");
             }
         }
@@ -324,7 +314,7 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
             return;
         }
 
-        bool nodeExisted = dataExists(requestCtx->sess, requestCtx->restconfRequest.path);
+        bool nodeExisted = !!requestCtx->sess.getData(requestCtx->restconfRequest.path);
         std::optional<libyang::DataNode> edit;
         std::optional<libyang::DataNode> replacementNode;
 
