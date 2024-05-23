@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "18072ea4_15d3328a",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-23T11:45:37Z",
+      "side": 1,
+      "message": "What exactly is missing? Is this about the top-level \"{+restconf}\" resource? If so, please adjust this sentence (and I wonder WTF one is supposed to return at that particular URL, the RFC doesn\u0027t make a lot of sense to me on this regard...)",
+      "range": {
+        "startLine": 18,
+        "startChar": 2,
+        "endLine": 18,
+        "endChar": 20
+      },
+      "revId": "adc0a531b93015657ff32edcf5f228673eed6e5c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "458273cf_8846e1a2",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-23T11:45:37Z",
+      "side": 1,
+      "message": "- let\u0027s make these chapters clickable\n- please prettify it as well (`fields` and `filter`, etc)",
+      "range": {
+        "startLine": 15,
+        "startChar": 0,
+        "endLine": 20,
+        "endChar": 56
+      },
+      "revId": "adc0a531b93015657ff32edcf5f228673eed6e5c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c2745f2a_39258266",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-23T11:45:37Z",
+      "side": 1,
+      "message": "please also change this one",
+      "range": {
+        "startLine": 24,
+        "startChar": 38,
+        "endLine": 24,
+        "endChar": 76
+      },
+      "revId": "adc0a531b93015657ff32edcf5f228673eed6e5c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
