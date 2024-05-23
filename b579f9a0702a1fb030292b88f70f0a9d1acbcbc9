@@ -22,6 +22,30 @@
       },
       "revId": "b579f9a0702a1fb030292b88f70f0a9d1acbcbc9",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5a2d7259_32c67c5b",
+        "filename": "tests/restconf-yang-schema.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 312,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-23T11:19:25Z",
+      "side": 1,
+      "message": "\u003e - The rule 09 does not match the request\n\u003e - The rule 10 matches and permits reading everything, i.e., even the location leaf.\n\nIt was supposed to match; my intention was to have a rule which hides one particular `location` leaf. If you can spot the mistake in the ACL, please fix it.\n\n(If I\u0027m fetching a parent node and there\u0027s an ACL which matches a child node (and denies reading on that node), that child node should not be part of the returned results.)",
+      "parentUuid": "57a6a6e7_872837f4",
+      "range": {
+        "startLine": 295,
+        "startChar": 0,
+        "endLine": 312,
+        "endChar": 9
+      },
+      "revId": "b579f9a0702a1fb030292b88f70f0a9d1acbcbc9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
