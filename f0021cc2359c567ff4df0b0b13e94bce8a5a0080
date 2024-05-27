@@ -22,6 +22,30 @@
       },
       "revId": "f0021cc2359c567ff4df0b0b13e94bce8a5a0080",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "39665871_a5fed57d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-05-27T10:11:58Z",
+      "side": 1,
+      "message": "You are right, this is only used for URIs that went through parser. And parser checks for that. I am abandoning this and updating the documentation in parent commit.",
+      "parentUuid": "473db132_f7f14d2e",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 7
+      },
+      "revId": "f0021cc2359c567ff4df0b0b13e94bce8a5a0080",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
