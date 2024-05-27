@@ -46,6 +46,30 @@
       },
       "revId": "b579f9a0702a1fb030292b88f70f0a9d1acbcbc9",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "41c8d9f3_56a8ba20",
+        "filename": "tests/restconf-yang-schema.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 312,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-05-27T10:58:42Z",
+      "side": 1,
+      "message": "So, it turns out that the ACL is probably correct but we do not respect NACM in the code that recreates the location leafs (replaceYangLibraryLocations in YangSchemaLocations.cpp). This code just blindly inserts new location entry... \n\nThere is an ongoing discussion in sysrepo slack how to solve this.",
+      "parentUuid": "5a2d7259_32c67c5b",
+      "range": {
+        "startLine": 295,
+        "startChar": 0,
+        "endLine": 312,
+        "endChar": 9
+      },
+      "revId": "b579f9a0702a1fb030292b88f70f0a9d1acbcbc9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
