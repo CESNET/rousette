@@ -1,6 +1,23 @@
 {
   "comments": [
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "07187206_7a99c832",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-05-27T10:56:50Z",
+      "side": 1,
+      "message": "This can be abandonded, the patch is squashed into https://gerrit.cesnet.cz/c/CzechLight/rousette/+/6991",
+      "revId": "28eb12238d81ec1594e262f8e883975e982d0aa1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "71558280_27553747",
