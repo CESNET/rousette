@@ -9,7 +9,13 @@
 #include <cstdio>
 #include <cstdlib>
 #include <inttypes.h>
-#include <spdlog/sinks/systemd_sink.h>
+#include "configure.cmake.h" /* Expose SYSTEMD_FOUND */
+
+#ifdef HAVE_SYSTEMD
+   #include <spdlog/sinks/systemd_sink.h>
+#else
+   #include <spdlog/sinks/syslog_sink.h>
+#endif
 #include <spdlog/sinks/ansicolor_sink.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -19,6 +25,7 @@
 #include "restconf/Server.h"
 
 namespace {
+#ifdef HAVE_SYSTEMD
 /** @short Is stderr connected to journald? Not thread safe. */
 bool is_journald_active()
 {
@@ -53,15 +60,28 @@ public:
               /* spdlog::level::off        */ LOG_ALERT};
     }
 };
+#else
+void configure_syslog_logger()
+{
+    auto syslog_sink = std::make_shared<spdlog::sinks::syslog_sink_mt>("rousette", LOG_PID, LOG_USER, true);
+    auto logger = std::make_shared<spdlog::logger>("rousette", syslog_sink);
+    spdlog::set_default_logger(logger);
+    spdlog::set_level(spdlog::level::trace);
+}
+#endif
 }
 
 int main(int argc [[maybe_unused]], char* argv [[maybe_unused]] [])
 {
+#ifdef HAVE_SYSTEMD
     if (is_journald_active()) {
         auto sink = std::make_shared<journald_sink<std::mutex>>();
         auto logger = std::make_shared<spdlog::logger>("rousette", sink);
         spdlog::set_default_logger(logger);
     }
+#else
+    configure_syslog_logger();
+#endif
     spdlog::set_level(spdlog::level::trace);
 
     /* We will parse URIs using boost::spirit's alnum/alpha/... matchers which are locale-dependent.

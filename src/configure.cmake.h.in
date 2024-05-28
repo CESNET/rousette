@@ -1,0 +1,4 @@
+#ifndef ROUSETTE_CONFIG_H_
+#define ROUSETTE_CONFIG_H_
+#cmakedefine HAVE_SYSTEMD
+#endif
