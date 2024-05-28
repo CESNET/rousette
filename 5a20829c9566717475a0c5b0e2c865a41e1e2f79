@@ -34,6 +34,24 @@
       "parentUuid": "6bdd0b35_947f29e9",
       "revId": "5a20829c9566717475a0c5b0e2c865a41e1e2f79",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c1f59542_776d5065",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 9
+      },
+      "lineNbr": 309,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-28T16:02:34Z",
+      "side": 1,
+      "message": "The wording on line 300 is perfectly OK, what I had an issue with was this other, duplicate check. It\u0027s removed now, so you have my +2.",
+      "parentUuid": "4c8dd64e_1d7c4f4d",
+      "revId": "5a20829c9566717475a0c5b0e2c865a41e1e2f79",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
