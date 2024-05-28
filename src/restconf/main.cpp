@@ -3,13 +3,17 @@
  *
  * Written by Jan Kundrát <jan.kundrat@cesnet.cz>
  *
-*/
+ */
 
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <inttypes.h>
+#ifdef USE_SYSTEMD
 #include <spdlog/sinks/systemd_sink.h>
+#else
+#include <spdlog/sinks/syslog_sink.h>
+#endif
 #include <spdlog/sinks/ansicolor_sink.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -19,6 +23,7 @@
 #include "restconf/Server.h"
 
 namespace {
+#ifdef USE_SYSTEMD
 /** @short Is stderr connected to journald? Not thread safe. */
 bool is_journald_active()
 {
@@ -39,29 +44,42 @@ bool is_journald_active()
 }
 
 /** @short Provide better levels, see https://github.com/gabime/spdlog/pull/1292#discussion_r340777258 */
-template<typename Mutex>
+template <typename Mutex>
 class journald_sink : public spdlog::sinks::systemd_sink<Mutex> {
 public:
     journald_sink()
     {
         this->syslog_levels_ = {/* spdlog::level::trace      */ LOG_DEBUG,
-              /* spdlog::level::debug      */ LOG_INFO,
-              /* spdlog::level::info       */ LOG_NOTICE,
-              /* spdlog::level::warn       */ LOG_WARNING,
-              /* spdlog::level::err        */ LOG_ERR,
-              /* spdlog::level::critical   */ LOG_CRIT,
-              /* spdlog::level::off        */ LOG_ALERT};
+                                /* spdlog::level::debug      */ LOG_INFO,
+                                /* spdlog::level::info       */ LOG_NOTICE,
+                                /* spdlog::level::warn       */ LOG_WARNING,
+                                /* spdlog::level::err        */ LOG_ERR,
+                                /* spdlog::level::critical   */ LOG_CRIT,
+                                /* spdlog::level::off        */ LOG_ALERT};
     }
 };
+#else
+void configure_syslog_logger()
+{
+    auto syslog_sink = std::make_shared<spdlog::sinks::syslog_sink_mt>("rousette", LOG_PID, LOG_USER, true);
+    auto logger = std::make_shared<spdlog::logger>("rousette", syslog_sink);
+    spdlog::set_default_logger(logger);
+    spdlog::set_level(spdlog::level::trace);
+}
+#endif
 }
 
-int main(int argc [[maybe_unused]], char* argv [[maybe_unused]] [])
+int main(int argc [[maybe_unused]], char* argv [[maybe_unused]][])
 {
+#ifdef USE_SYSTEMD
     if (is_journald_active()) {
         auto sink = std::make_shared<journald_sink<std::mutex>>();
         auto logger = std::make_shared<spdlog::logger>("rousette", sink);
         spdlog::set_default_logger(logger);
     }
+#else
+    configure_syslog_logger();
+#endif
     spdlog::set_level(spdlog::level::trace);
 
     /* We will parse URIs using boost::spirit's alnum/alpha/... matchers which are locale-dependent.
