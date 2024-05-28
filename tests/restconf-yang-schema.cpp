@@ -267,6 +267,38 @@ TEST_CASE("obtaining YANG schemas")
 )"});
     }
 
+    SECTION("Location leaf is not added if sysrepo does not report it")
+    {
+        srSess.switchDatastore(sysrepo::Datastore::Running);
+        srSess.setItem("/ietf-netconf-acm:nacm/enable-external-groups", "false");
+        srSess.setItem("/ietf-netconf-acm:nacm/groups/group[name='dwdm']/user-name[.='dwdm']", "");
+
+        srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/group[.='dwdm']", "");
+        srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='10']/module-name", "ietf-yang-library");
+        srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='10']/action", "deny");
+        srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='10']/access-operations", "*");
+        srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='rule']/rule[name='10']/path", "/ietf-yang-library:yang-library/module-set[name='complete']/module[name='ietf-yang-library']/location");
+        srSess.applyChanges();
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-yang-library:yang-library/module-set=complete/module=ietf-yang-library", {AUTH_DWDM, FORWARDED}) == Response{200, jsonHeaders, R"({
+  "ietf-yang-library:yang-library": {
+    "module-set": [
+      {
+        "name": "complete",
+        "module": [
+          {
+            "name": "ietf-yang-library",
+            "revision": "2019-01-04",
+            "namespace": "urn:ietf:params:xml:ns:yang:ietf-yang-library"
+          }
+        ]
+      }
+    ]
+  }
+}
+)"});
+    }
+
     SECTION("Submodules are reported")
     {
         REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-yang-library:yang-library/module-set=complete/module=root-mod", {AUTH_DWDM, FORWARDED}) == Response{200, jsonHeaders, R"({

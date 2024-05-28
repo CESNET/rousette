@@ -22,6 +22,7 @@ namespace rousette::restconf {
 libyang::DataNode replaceYangLibraryLocations(const std::optional<std::string>& schemeAndHost, const std::string& urlPrefix, libyang::DataNode& node)
 {
     std::vector<libyang::DataNode> moduleNodes;
+    std::vector<libyang::DataNode> moduleNodesWithLocation;
     for (const auto& n : node.findXPath(moduleNodesXPath)) {
         moduleNodes.emplace_back(n);
     }
@@ -42,6 +43,10 @@ libyang::DataNode replaceYangLibraryLocations(const std::optional<std::string>& 
         for (auto& child : locationNodes) {
             child.unlink();
         }
+
+        if (!locationNodes.empty()) {
+            moduleNodesWithLocation.emplace_back(n);
+        }
     }
 
     // if we were unable to parse scheme and hosts, end without providing URLs of the YANG modules
@@ -49,7 +54,7 @@ libyang::DataNode replaceYangLibraryLocations(const std::optional<std::string>& 
         return node;
     }
 
-    for (const auto& n : moduleNodes) {
+    for (const auto& n : moduleNodesWithLocation) {
         const std::string moduleName = std::string{n.findPath("name")->asTerm().valueStr()};
 
         std::optional<std::string> revision; // in some lists the revision leaf is optional, in some lists it is mandatory but can be empty string
