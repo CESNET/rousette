@@ -847,6 +847,63 @@ TEST_CASE("writing data")
 }
 )"});
         }
+
+        SECTION("sysrepo modifying meta data not allowed")
+        {
+            REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs/a", R"({"example:a": "a-value", "@a": {"ietf-netconf:operation": "replace"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-path": "/example:two-leafs/a",
+        "error-message": "Meta attribute 'ietf-netconf:operation' not allowed."
+      }
+    ]
+  }
+}
+)"});
+            REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs/a", R"({"example:a": "a-value", "@a": {"sysrepo:operation": "none"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-path": "/example:two-leafs/a",
+        "error-message": "Meta attribute 'sysrepo:operation' not allowed."
+      }
+    ]
+  }
+}
+)"});
+            REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs/a", R"({"example:a": "a-value", "@a": {"yang:insert": "before"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-path": "/example:two-leafs/a",
+        "error-message": "Meta attribute 'yang:insert' not allowed."
+      }
+    ]
+  }
+}
+)"});
+
+            REQUIRE(put(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "a-value", "@example:top-level-leaf": {"ietf-netconf:operation": "replace"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-path": "/example:top-level-leaf",
+        "error-message": "Meta attribute 'ietf-netconf:operation' not allowed."
+      }
+    ]
+  }
+}
+)"});
+        }
     }
 
     SECTION("PUT with NMDA")
@@ -1440,6 +1497,63 @@ TEST_CASE("writing data")
                     }
                 }
             }
+        }
+
+        SECTION("sysrepo modifying meta data not allowed")
+        {
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:a": "a-value", "@a": {"ietf-netconf:operation": "replace"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-path": "/example:two-leafs/a",
+        "error-message": "Meta attribute 'ietf-netconf:operation' not allowed."
+      }
+    ]
+  }
+}
+)"});
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:a": "a-value", "@a": {"sysrepo:operation": "none"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-path": "/example:two-leafs/a",
+        "error-message": "Meta attribute 'sysrepo:operation' not allowed."
+      }
+    ]
+  }
+}
+)"});
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:a": "a-value", "@a": {"yang:insert": "before"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-path": "/example:two-leafs/a",
+        "error-message": "Meta attribute 'yang:insert' not allowed."
+      }
+    ]
+  }
+}
+)"});
+
+            REQUIRE(post(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "a-value", "@example:top-level-leaf": {"ietf-netconf:operation": "replace"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-path": "/example:top-level-leaf",
+        "error-message": "Meta attribute 'ietf-netconf:operation' not allowed."
+      }
+    ]
+  }
+}
+)"});
         }
     }
 
