@@ -143,6 +143,25 @@ void yangInsert(const RequestContext& requestCtx, libyang::DataNode& listEntryNo
     }
 }
 
+/** @brief Iterates through parsed tree and rejects the input if any meta attributes that could possibly alter sysrepo's behaviour are found */
+void validateInputMetaAttributes(const libyang::Context& ctx, const libyang::DataNode& tree)
+{
+    const std::vector<libyang::Module> mods({
+        *ctx.getModuleLatest("ietf-netconf"),
+        *ctx.getModuleLatest("yang"),
+        *ctx.getModuleLatest("sysrepo")
+    });
+
+    for (const auto& node : tree.childrenDfs()) {
+        const auto meta = node.meta();
+        for (const auto& metaEntry : node.meta()) {
+            if (auto it = std::find(mods.begin(), mods.end(), metaEntry.module()); it != mods.end()) {
+                throw ErrorResponse(400, "application", "invalid-value", "Meta attribute from '" + it->name() + "' module found in data tree");
+            }
+        }
+    }
+}
+
 void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
 {
     requestCtx->sess.switchDatastore(sysrepo::Datastore::Operational);
@@ -239,6 +258,8 @@ void processPost(std::shared_ptr<RequestContext> requestCtx)
             }
         }
 
+        validateInputMetaAttributes(ctx, *edit);
+
         // filter out list key nodes, they can appear automatically when creating path that corresponds to a libyang list node
         for (auto it = createdNodes.begin(); it != createdNodes.end();) {
             if (node->schema().nodeType() == libyang::NodeType::List && it->schema().nodeType() == libyang::NodeType::Leaf && it->schema().asLeaf().isKey()) {
@@ -254,7 +275,7 @@ void processPost(std::shared_ptr<RequestContext> requestCtx)
 
         auto modNetconf = ctx.getModuleImplemented("ietf-netconf");
 
-        createdNodes.begin()->newMeta(*modNetconf, "operation", "create"); // FIXME: check no other nc:operations in the tree
+        createdNodes.begin()->newMeta(*modNetconf, "operation", "create");
         yangInsert(*requestCtx, *createdNodes.begin());
 
         requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
@@ -296,6 +317,7 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
         // PUT / means replace everything
         if (requestCtx->restconfRequest.path == "/") {
             auto edit = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+            validateInputMetaAttributes(ctx, *edit);
             requestCtx->sess.replaceConfig(edit);
 
             requestCtx->res.write_head(edit ? 201 : 204,
@@ -353,9 +375,10 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
             throw ErrorResponse(400, "protocol", "invalid-value", "Invalid data for PUT (node indicated by URI is missing).");
         }
 
-        auto modNetconf = ctx.getModuleImplemented("ietf-netconf");
+        validateInputMetaAttributes(ctx, *edit);
 
-        replacementNode->newMeta(*modNetconf, "operation", "replace"); // FIXME: check no other nc:operations in the tree
+        auto modNetconf = ctx.getModuleImplemented("ietf-netconf");
+        replacementNode->newMeta(*modNetconf, "operation", "replace");
         yangInsert(*requestCtx, *replacementNode);
 
         requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
@@ -649,6 +672,9 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
                     try {
                         auto [edit, deletedNode] = sess.getContext().newPath2(restconfRequest.path, std::nullopt, libyang::CreationOptions::Opaque);
+
+                        validateInputMetaAttributes(sess.getContext(), *edit);
+
                         // If the node could be created, it will not be opaque. However, setting meta attributes to opaque and standard nodes is a different process.
                         if (deletedNode->isOpaque()) {
                             deletedNode->newAttrOpaqueJSON("ietf-netconf", "operation", "delete");
