@@ -847,6 +847,59 @@ TEST_CASE("writing data")
 }
 )"});
         }
+
+        SECTION("sysrepo modifying meta data not allowed")
+        {
+            REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs/a", R"({"example:a": "a-value", "@a": {"ietf-netconf:operation": "replace"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "Meta attribute from 'ietf-netconf' module found in data tree"
+      }
+    ]
+  }
+}
+)"});
+            REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs/a", R"({"example:a": "a-value", "@a": {"sysrepo:operation": "none"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "Meta attribute from 'sysrepo' module found in data tree"
+      }
+    ]
+  }
+}
+)"});
+            REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs/a", R"({"example:a": "a-value", "@a": {"yang:insert": "before"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "Meta attribute from 'yang' module found in data tree"
+      }
+    ]
+  }
+}
+)"});
+
+            REQUIRE(put(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "a-value", "@example:top-level-leaf": {"ietf-netconf:operation": "replace"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "Meta attribute from 'ietf-netconf' module found in data tree"
+      }
+    ]
+  }
+}
+)"});
+        }
     }
 
     SECTION("PUT with NMDA")
@@ -1440,6 +1493,59 @@ TEST_CASE("writing data")
                     }
                 }
             }
+        }
+
+        SECTION("sysrepo modifying meta data not allowed")
+        {
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:a": "a-value", "@a": {"ietf-netconf:operation": "replace"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "Meta attribute from 'ietf-netconf' module found in data tree"
+      }
+    ]
+  }
+}
+)"});
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:a": "a-value", "@a": {"sysrepo:operation": "none"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "Meta attribute from 'sysrepo' module found in data tree"
+      }
+    ]
+  }
+}
+)"});
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:a": "a-value", "@a": {"yang:insert": "before"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "Meta attribute from 'yang' module found in data tree"
+      }
+    ]
+  }
+}
+)"});
+
+            REQUIRE(post(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "a-value", "@example:top-level-leaf": {"ietf-netconf:operation": "replace"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "Meta attribute from 'ietf-netconf' module found in data tree"
+      }
+    ]
+  }
+}
+)"});
         }
     }
 
