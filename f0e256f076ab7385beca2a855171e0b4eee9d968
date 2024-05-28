@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9ca14a61_6aa86632",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-28T21:07:21Z",
+      "side": 1,
+      "message": "Depends-on: https://gerrit.cesnet.cz/c/CzechLight/dependencies/+/7190 should fix the CI failure",
+      "revId": "f0e256f076ab7385beca2a855171e0b4eee9d968",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5787c5b9_cde7a1bf",
+        "filename": "src/restconf/YangSchemaLocations.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-28T21:07:21Z",
+      "side": 1,
+      "message": "I\u0027m not particularly happy that this loop effectively performs three passes, but I guess it can be always cleaned up afterwards. I\u0027m tempted to simply move lines 57-75 here (with an early `continue` if line 52 is true).",
+      "revId": "f0e256f076ab7385beca2a855171e0b4eee9d968",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
