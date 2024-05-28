@@ -60,10 +60,10 @@ libyang::DataNode replaceYangLibraryLocations(const std::optional<std::string>& 
 
         std::string locationLeafName;
 
-        if (n.parent()->schema().name() == "module-set") {
-            locationLeafName = "location";
-        } else if (n.parent()->schema().name() == "modules-state") {
+        if (n.parent()->schema().name() == "modules-state" || (n.parent()->parent() && n.parent()->parent()->schema().name() == "modules-state")) {
             locationLeafName = "schema";
+        } else {
+            locationLeafName = "location";
         }
 
         const std::string path = moduleName + (revision ? ("@" + *revision) : "");

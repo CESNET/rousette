@@ -266,4 +266,57 @@ TEST_CASE("obtaining YANG schemas")
 }
 )"});
     }
+
+    SECTION("Submodules are reported")
+    {
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-yang-library:yang-library/module-set=complete/module=root-mod", {AUTH_DWDM, FORWARDED}) == Response{200, jsonHeaders, R"({
+  "ietf-yang-library:yang-library": {
+    "module-set": [
+      {
+        "name": "complete",
+        "module": [
+          {
+            "name": "root-mod",
+            "namespace": "rm",
+            "location": [
+              "http://example.net/yang/root-mod"
+            ],
+            "submodule": [
+              {
+                "name": "root-submod",
+                "location": [
+                  "http://example.net/yang/root-submod"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-yang-library:modules-state/module=root-mod,", {AUTH_DWDM, FORWARDED}) == Response{200, jsonHeaders, R"({
+  "ietf-yang-library:modules-state": {
+    "module": [
+      {
+        "name": "root-mod",
+        "revision": "",
+        "schema": "http://example.net/yang/root-mod",
+        "namespace": "rm",
+        "conformance-type": "implement",
+        "submodule": [
+          {
+            "name": "root-submod",
+            "revision": "",
+            "schema": "http://example.net/yang/root-submod"
+          }
+        ]
+      }
+    ]
+  }
+}
+)"});
+    }
 }
