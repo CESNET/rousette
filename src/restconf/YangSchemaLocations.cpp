@@ -4,6 +4,7 @@
  * Written by Tomáš Pecka <tomas.pecka@cesnet.cz>
  */
 
+#include <boost/algorithm/string/predicate.hpp>
 #include <libyang-cpp/Collection.hpp>
 #include <libyang-cpp/Set.hpp>
 #include "YangSchemaLocations.h"
@@ -60,10 +61,10 @@ libyang::DataNode replaceYangLibraryLocations(const std::optional<std::string>& 
 
         std::string locationLeafName;
 
-        if (n.parent()->schema().name() == "module-set") {
-            locationLeafName = "location";
-        } else if (n.parent()->schema().name() == "modules-state") {
+        if (boost::algorithm::starts_with(n.path(), "/ietf-yang-library:modules-state")) {
             locationLeafName = "schema";
+        } else {
+            locationLeafName = "location";
         }
 
         const std::string path = moduleName + (revision ? ("@" + *revision) : "");
