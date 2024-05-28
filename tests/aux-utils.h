@@ -77,7 +77,7 @@ struct StringMaker<Response> {
 };
 }
 
-static const auto SERVER_ADDRESS = "::1";
+static const auto SERVER_ADDRESS = "127.0.0.1";
 static const auto SERVER_ADDRESS_AND_PORT = "http://["s + SERVER_ADDRESS + "]" + ":" + SERVER_PORT;
 
 #define AUTH_DWDM {"authorization", "Basic ZHdkbTpEV0RN"}
