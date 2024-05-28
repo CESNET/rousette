@@ -9,14 +9,33 @@
 #include <cstdio>
 #include <cstdlib>
 #include <inttypes.h>
-#include <spdlog/sinks/systemd_sink.h>
+
+#include "configure.cmake.h" /* Expose HAVE_SYSTEMD */
+#include "ROUSETTE_VERSION.h"
+
+#ifdef HAVE_SYSTEMD
+   #include <spdlog/sinks/systemd_sink.h>
+#else
+   #include <spdlog/sinks/syslog_sink.h>
+#endif
 #include <spdlog/sinks/ansicolor_sink.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <docopt.h>
 #include <spdlog/spdlog.h>
 #include <sysrepo-cpp/Session.hpp>
 #include "restconf/Server.h"
+static const char usage[] =
+  R"(Rousette - RESTCONF server
+Usage:
+  rousette [--syslog] [--help] [--version]
+Options:
+  -h --help                         Show this screen.
+  --version                         Show version.
+  --syslog                          Log to syslog.
+)";
+#ifdef HAVE_SYSTEMD
 
 namespace {
 /** @short Is stderr connected to journald? Not thread safe. */
@@ -54,12 +73,25 @@ public:
     }
 };
 }
-
-int main(int argc [[maybe_unused]], char* argv [[maybe_unused]] [])
+#endif
+int main(int argc, char* argv [])
 {
-    if (is_journald_active()) {
+    auto args = docopt::docopt(usage, {argv + 1, argv + argc}, true, "Rousette " ROUSETTE_VERSION, true);
+
+    if (args["--syslog"].asBool()) {
+        auto syslog_sink = std::make_shared<spdlog::sinks::syslog_sink_mt>("rousette", LOG_PID, LOG_USER, true);
+        auto logger = std::make_shared<spdlog::logger>("rousette", syslog_sink);
+        spdlog::set_default_logger(logger);
+#ifdef HAVE_SYSTEMD
+    } else if (is_journald_active()) {
         auto sink = std::make_shared<journald_sink<std::mutex>>();
         auto logger = std::make_shared<spdlog::logger>("rousette", sink);
+        spdlog::set_default_logger(logger);
+    }
+#endif
+    } else {
+        auto stdout_sink = std::make_shared<spdlog::sinks::ansicolor_stdout_sink_mt>();
+        auto logger = std::make_shared<spdlog::logger>("rousette", stdout_sink);
         spdlog::set_default_logger(logger);
     }
     spdlog::set_level(spdlog::level::trace);
