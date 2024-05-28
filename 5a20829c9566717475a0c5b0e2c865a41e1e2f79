@@ -16,6 +16,24 @@
       "message": "Will this branch be hit, ever? If not, maybe inlining this into the newMeta call on line 318 might make sense; and either way, the wording of the error is a bit confusing IMHO.",
       "revId": "5a20829c9566717475a0c5b0e2c865a41e1e2f79",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4c8dd64e_1d7c4f4d",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 9
+      },
+      "lineNbr": 309,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-05-28T15:59:59Z",
+      "side": 1,
+      "message": "No, it won\u0027t be hit. This check is already done in isUserOrderedList few lines before.\nGood idea, after the previous PS, this makes sense.\n\nThe error wording is the same as on line 300. Do you want to improve it? I don\u0027t see why it might be confusing.",
+      "parentUuid": "6bdd0b35_947f29e9",
+      "revId": "5a20829c9566717475a0c5b0e2c865a41e1e2f79",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
