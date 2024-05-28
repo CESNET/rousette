@@ -1,0 +1,135 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2991518e_c1b4100e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-28T10:09:26Z",
+      "side": 1,
+      "message": "Thanks for your patch!\n\nFor now our only use of systemd is for journald logging, which is not a required feature. However, the application itself does not contain any code for daemonization, so when using a \"legacy\" init system you\u0027ll need \"something\" which keeps running rousette in the background (the usual double-fork method). We have no intention of including such code in future, so I hope you\u0027re OK with running rousette under such a wrapper.\n\nAlso, I wonder if these wrappers maybe offer a way to forward stdout/stderr to syslog automatically; if they did that, maybe we could drop that extra syslog sink? What do you think?\n\nWe were thinking about using, say, socket activation and nft packet filtering when we were designing the auth model, but in the end I *hope* that we can keep not depending on systemd going forward. No hard guarantees from me, though, since we do have systemd in our target platform, and it\u0027s very convenient to rely on features in a 3rd-party library like these. I can promise that we\u0027ll keep you in the loop if we find a feature in systemd that we like hard enough to consider depending on it.\n\nAlso please update the README so that it\u0027s listed as an optional dependency.",
+      "revId": "d6dfc53d7b6ee16afe9d9be1176580aae35d234d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6ff79e71_8c9666f1",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-28T10:09:26Z",
+      "side": 1,
+      "message": "This changes the build in a way that systemd support is not a default choice anymore, and that it requires passing an extra option. That\u0027s not a default behavior that I would be happy with :).\n\nCMake unfortunately is not that great when it comes to \"auto/on/off\" options, they require some rather long code. I think it\u0027s actually easier to simply drop the `REQUIRED` keyword, and do just:\n \npkg_check_modules(SYSTEMD IMPORTED_TARGET libsystemd)\n...\nif(SYSTEMD_FOUND)\n  target_link_libraries(...)\nendif()\n\nYes, it\u0027s still an automagic dependency, but one can always override package detection via standard CMake options, so it should keep doing \"the right thing\" for us by default, while still allowing you to build without systemd.",
+      "revId": "d6dfc53d7b6ee16afe9d9be1176580aae35d234d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0442d43c_1be990db",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-28T10:09:26Z",
+      "side": 1,
+      "message": "In modern CMake, this is usually done via `configure_file`. For an example, see https://github.com/CESNET/velia/blob/baf289c6de9131db8ff87ad618000520698f4b00/CMakeLists.txt#L324 (and https://github.com/CESNET/velia/blob/baf289c6de9131db8ff87ad618000520698f4b00/tests/configure.cmake.h.in for how that file looks like). Keeping these definitions in include files makes it easier to track them, and it also only affects translation units which need these data -- leading to quicker build times upon changes, etc.",
+      "revId": "d6dfc53d7b6ee16afe9d9be1176580aae35d234d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b1665cd6_983ec971",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-28T10:09:26Z",
+      "side": 1,
+      "message": "This repeats some bits, so let\u0027s do it this way please:\n \ntarget_link_libraries(rousette PUBLIC rousette-restconf)\nif(SYSTEMD_FOUND)\n  target_link_libraries(rousette PUBLIC PkgConfig::SYSTEMD)\nendif()",
+      "range": {
+        "startLine": 122,
+        "startChar": 0,
+        "endLine": 126,
+        "endChar": 7
+      },
+      "revId": "d6dfc53d7b6ee16afe9d9be1176580aae35d234d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "039acf6d_8168db65",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-28T10:09:26Z",
+      "side": 1,
+      "message": "nit: when doing conditional includes, please make the conditional statements indented like this:\n \n#if ...\n#  include ...",
+      "revId": "d6dfc53d7b6ee16afe9d9be1176580aae35d234d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "34176870_e8aef1e5",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-28T10:09:26Z",
+      "side": 1,
+      "message": "nit: this is a whitespace change which does not belong to this patch; please remove it from your commit.",
+      "range": {
+        "startLine": 47,
+        "startChar": 0,
+        "endLine": 58,
+        "endChar": 75
+      },
+      "revId": "d6dfc53d7b6ee16afe9d9be1176580aae35d234d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a87d2137_517515be",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-28T10:09:26Z",
+      "side": 1,
+      "message": "@Tomas, do you think it\u0027s reasonable to always, unconditionally log to syslog when built without libsystemd?",
+      "revId": "d6dfc53d7b6ee16afe9d9be1176580aae35d234d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
