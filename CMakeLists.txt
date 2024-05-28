@@ -72,11 +72,16 @@ find_package(spdlog REQUIRED)
 find_package(PkgConfig)
 pkg_check_modules(nghttp2 REQUIRED IMPORTED_TARGET libnghttp2_asio>=0.0.90 libnghttp2)
 find_package(Boost REQUIRED COMPONENTS system thread)
-
 pkg_check_modules(SYSREPO-CPP REQUIRED IMPORTED_TARGET sysrepo-cpp>=1.1.0)
 pkg_check_modules(LIBYANG-CPP REQUIRED IMPORTED_TARGET libyang-cpp>=1.1.0)
-pkg_check_modules(SYSTEMD REQUIRED IMPORTED_TARGET libsystemd)
+pkg_check_modules(SYSTEMD IMPORTED_TARGET libsystemd)
 pkg_check_modules(PAM REQUIRED IMPORTED_TARGET pam)
+pkg_check_modules(DOCOPT REQUIRED IMPORTED_TARGET docopt)
+if(SYSTEMD_FOUND)
+ set(HAVE_SYSTEMD TRUE)
+endif()
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/configure.cmake.h.in ${CMAKE_CURRENT_BINARY_DIR}/configure.cmake.h)
 
 add_library(rousette-http STATIC
     src/http/EventStream.cpp
@@ -116,7 +121,11 @@ add_executable(watch-operational-ds
 target_link_libraries(watch-operational-ds PUBLIC rousette-sysrepo)
 
 add_executable(rousette src/restconf/main.cpp)
-target_link_libraries(rousette PUBLIC rousette-restconf PkgConfig::SYSTEMD)
+add_dependencies(rousette target-ROUSETTE_VERSION)
+target_link_libraries(rousette PUBLIC rousette-restconf PkgConfig::DOCOPT)
+if(SYSTEMD_FOUND)
+  target_link_libraries(rousette PUBLIC PkgConfig::SYSTEMD)
+endif()
 
 install(TARGETS
     # clock-demo

@@ -37,12 +37,12 @@ The anonymous user access is disabled whenever these rules are not met.
 - [nghttp2-asio](https://github.com/nghttp2/nghttp2-asio) - asynchronous C++ library for HTTP/2
 - [sysrepo-cpp](https://github.com/sysrepo/sysrepo-cpp) - object-oriented bindings of the [*sysrepo*](https://github.com/sysrepo/sysrepo) library
 - [libyang-cpp](https://github.com/CESNET/libyang-cpp) - C++ bindings for *libyang*
-- systemd - the shared library for logging to `sd-journal`
 - [PAM](http://www.linux-pam.org/) - for authentication
 - [spdlog](https://github.com/gabime/spdlog) - Very fast, header-only/compiled, C++ logging library
 - Boost's system and thread
 - C++20 compiler (e.g., GCC 10.x+, clang 10+)
 - CMake 3.19+
+- optionally systemd - the shared library for logging to `sd-journal`
 - optionally for built-in tests, [Doctest](https://github.com/onqtam/doctest/) as a C++ unit test framework
 - optionally for built-in tests, [trompeloeil](https://github.com/rollbear/trompeloeil) for mock objects in C++
 - optionally for built-in tests, [`pam_matrix` and `pam_wrapper`](https://cwrap.org/pam_wrapper.html) for PAM mocking
