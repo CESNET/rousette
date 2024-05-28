@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ed0e8004_99c96347",
+        "filename": "tests/restconf-yang-schema.cpp",
+        "patchSetId": 12
+      },
+      "lineNbr": 335,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-28T21:41:29Z",
+      "side": 1,
+      "message": "\"imp\", not \"inp\" (and everywhere else as well)",
+      "range": {
+        "startLine": 335,
+        "startChar": 36,
+        "endLine": 335,
+        "endChar": 39
+      },
+      "revId": "11e932aa9af80fbce3f6e6fd8906ca83d6530e6f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a7ddc120_8c3a653e",
+        "filename": "tests/restconf-yang-schema.cpp",
+        "patchSetId": 12
+      },
+      "lineNbr": 356,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-28T21:41:29Z",
+      "side": 1,
+      "message": "please merge this with the previous section, like this:\n \nSECTION(\"modules, submodules, and import-only\") {\n  // [all common setItem() calls go here, except for the `rule[name\u003d\u002711\u0027]/path`]\n  int rootMod, rootSubmod, importMod, importSubmod;\n\n  SECTION(\"accessible root-mod\")\n  {\n    srSess.setItem(\"/ietf-netconf-acm:nacm/rule-list[name\u003d\u0027rule\u0027]/rule[name\u003d\u002711\u0027]/path\", \"/ietf-yang-library:yang-library/module-set[name\u003d\u0027complete\u0027]/module[name\u003d\u0027root-mod\u0027]\");\n    rootMod \u003d rootSubmod \u003d 200;\n    importMod \u003d importSubmod \u003d 404;\n  }\n \n  SECTION(\"accessible root-submod\")\n  {\n    srSess.setItem(\"/ietf-netconf-acm:nacm/rule-list[name\u003d\u0027rule\u0027]/rule[name\u003d\u002711\u0027]/path\", \"/ietf-yang-library:yang-library/module-set[name\u003d\u0027complete\u0027]/module[name\u003d\u0027root-mod\u0027]/submodule[name\u003d\u0027root-submod\u0027]\");\n    rootMod \u003d impMod \u003d impSubmod \u003d 404;\n    rootSubmod \u003d 200;\n  }\n \n  SECTION(...other sections go here...)\n \n  srSess.applyChanges();\n  REQUIRE(get(YANG_ROOT \"/imp-mod\", {AUTH_DWDM}).statusCode \u003d\u003d importMod);\n  REQUIRE(get(YANG_ROOT \"/imp-submod\", {AUTH_DWDM}).statusCode \u003d\u003d importSubmod);\n  REQUIRE(get(YANG_ROOT \"/root-mod\", {AUTH_DWDM}).statusCode \u003d\u003d rootMod);\n  REQUIRE(get(YANG_ROOT \"/root-submod\", {AUTH_DWDM}).statusCode \u003d\u003d rootSubmod);\n}",
+      "range": {
+        "startLine": 341,
+        "startChar": 0,
+        "endLine": 356,
+        "endChar": 9
+      },
+      "revId": "11e932aa9af80fbce3f6e6fd8906ca83d6530e6f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
