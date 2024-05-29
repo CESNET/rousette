@@ -16,6 +16,24 @@
       "message": "I think that checking whether the n.path() start with \"/ietf-yang-library:modules-state\" would be much more readable (and I hope that also less error prone).",
       "revId": "d8ef23fc84b9e9e026957c08e047d910eedb897d",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "34823638_2f9575ba",
+        "filename": "src/restconf/YangSchemaLocations.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-05-29T07:40:21Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "498be10f_2688c759",
+      "revId": "d8ef23fc84b9e9e026957c08e047d910eedb897d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
