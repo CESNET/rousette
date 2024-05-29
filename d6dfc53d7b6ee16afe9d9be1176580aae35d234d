@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "513ed7a5_b2e9d9ce",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-05-29T08:18:51Z",
+      "side": 1,
+      "message": "We are using finit (https://github.com/troglobit/finit) as init process, which also rely on that process are kept in foreground.\n\nNo, sorry, stdout from processes spawned by finit is lost, so syslog is required.\n\nIt would be great to not have hard dependency on systemd, if so we hopefully can help a little with the development.",
+      "parentUuid": "2991518e_c1b4100e",
+      "revId": "d6dfc53d7b6ee16afe9d9be1176580aae35d234d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "6ff79e71_8c9666f1",
@@ -35,6 +53,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "e522f002_c61c43eb",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-05-29T08:18:51Z",
+      "side": 1,
+      "message": "Thanks a lot for this! Seems like a great solution. I am not used of cmake so i was not really sure on how to solve it in cmake.",
+      "parentUuid": "6ff79e71_8c9666f1",
+      "revId": "d6dfc53d7b6ee16afe9d9be1176580aae35d234d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "0442d43c_1be990db",
@@ -48,6 +84,24 @@
       "writtenOn": "2024-05-28T10:09:26Z",
       "side": 1,
       "message": "In modern CMake, this is usually done via `configure_file`. For an example, see https://github.com/CESNET/velia/blob/baf289c6de9131db8ff87ad618000520698f4b00/CMakeLists.txt#L324 (and https://github.com/CESNET/velia/blob/baf289c6de9131db8ff87ad618000520698f4b00/tests/configure.cmake.h.in for how that file looks like). Keeping these definitions in include files makes it easier to track them, and it also only affects translation units which need these data -- leading to quicker build times upon changes, etc.",
+      "revId": "d6dfc53d7b6ee16afe9d9be1176580aae35d234d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "93e5415f_4c32b96c",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-05-29T08:18:51Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "0442d43c_1be990db",
       "revId": "d6dfc53d7b6ee16afe9d9be1176580aae35d234d",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -75,6 +129,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "199f128d_d9065a3c",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-05-29T08:18:51Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "b1665cd6_983ec971",
+      "range": {
+        "startLine": 122,
+        "startChar": 0,
+        "endLine": 126,
+        "endChar": 7
+      },
+      "revId": "d6dfc53d7b6ee16afe9d9be1176580aae35d234d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "039acf6d_8168db65",
@@ -92,6 +170,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "9951d771_49b770e1",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-05-29T08:18:51Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "039acf6d_8168db65",
+      "revId": "d6dfc53d7b6ee16afe9d9be1176580aae35d234d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "34176870_e8aef1e5",
@@ -105,6 +201,30 @@
       "writtenOn": "2024-05-28T10:09:26Z",
       "side": 1,
       "message": "nit: this is a whitespace change which does not belong to this patch; please remove it from your commit.",
+      "range": {
+        "startLine": 47,
+        "startChar": 0,
+        "endLine": 58,
+        "endChar": 75
+      },
+      "revId": "d6dfc53d7b6ee16afe9d9be1176580aae35d234d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "76903338_28357c02",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-05-29T08:18:51Z",
+      "side": 1,
+      "message": "I formatted the whole file (using your .clang-format), to ensure i followed coding style. But yes, should not be in my commit.\n\nAck",
+      "parentUuid": "34176870_e8aef1e5",
       "range": {
         "startLine": 47,
         "startChar": 0,
@@ -146,6 +266,24 @@
       "side": 1,
       "message": "Hello.\n\nConsidering rousette always runs on foreground I think it does not make sense to redirect everything to syslog. This might be confusing a bit because nothing is outputted. I would prefer that this syslog redirection is done by the daemonizing wrapper.\n\nAn alternative solution might be a \"--syslog\" parameter. In that way user can explicitly ask for syslog logging.",
       "parentUuid": "a87d2137_517515be",
+      "revId": "d6dfc53d7b6ee16afe9d9be1176580aae35d234d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b3900852_0345bb96",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-05-29T08:18:51Z",
+      "side": 1,
+      "message": "A runtime option for syslog maybe is a good solution, but do you see a need for syslog AND journal logging at the same time?\n\nMaybe this is way you want?\n1. systemd (default)\n2. syslog (instead of systemd) (--syslog)\n3. stdout (instead of systemd) (--log-to-stdout)",
+      "parentUuid": "d657d82e_8b0520b0",
       "revId": "d6dfc53d7b6ee16afe9d9be1176580aae35d234d",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
