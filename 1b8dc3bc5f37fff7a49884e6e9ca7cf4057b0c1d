@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7b3c2344_974f3f35",
+        "filename": "src/restconf/YangSchemaLocations.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-29T10:00:49Z",
+      "side": 1,
+      "message": "Let\u0027s just do a:\n \nif (locationNodes.empty() || !schemeAndHost) {\n    continue;\n}\n\nI like this \"early return\" pattern :).",
+      "revId": "1b8dc3bc5f37fff7a49884e6e9ca7cf4057b0c1d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
