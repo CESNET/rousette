@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "53a10152_9fb98c5c",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 2
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-29T10:46:46Z",
+      "side": 1,
+      "message": "without `src/` (that\u0027s the reason for the CI failure)",
+      "range": {
+        "startLine": 83,
+        "startChar": 96,
+        "endLine": 83,
+        "endChar": 100
+      },
+      "revId": "4bfabdda673bc82c22534afac084043e8684c4a7",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "138cc40f_88bbdce8",
+        "filename": "src/configure.cmake.h.in",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-29T10:46:46Z",
+      "side": 1,
+      "message": "we\u0027re relying on `#pragma once` in this project, so let\u0027s use that instead of the #if/define/endif combo please",
+      "revId": "4bfabdda673bc82c22534afac084043e8684c4a7",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3bfe4419_803e3b6e",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-29T10:46:46Z",
+      "side": 1,
+      "message": "The generated header uses HAVE_SYSTEMD, not SYSTEMD_FOUND. I would be OK with using just that one variable SYSTEMD_FOUND as well, but I think I garee with you that HAVE_XXX looks nicer in the C++ code.",
+      "range": {
+        "startLine": 12,
+        "startChar": 39,
+        "endLine": 12,
+        "endChar": 52
+      },
+      "revId": "4bfabdda673bc82c22534afac084043e8684c4a7",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
