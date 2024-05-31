@@ -41,6 +41,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "5304807f_d457ae07",
+        "filename": "src/configure.cmake.h.in",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-31T21:32:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "138cc40f_88bbdce8",
+      "revId": "4bfabdda673bc82c22534afac084043e8684c4a7",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3bfe4419_803e3b6e",
@@ -54,6 +72,30 @@
       "writtenOn": "2024-05-29T10:46:46Z",
       "side": 1,
       "message": "The generated header uses HAVE_SYSTEMD, not SYSTEMD_FOUND. I would be OK with using just that one variable SYSTEMD_FOUND as well, but I think I garee with you that HAVE_XXX looks nicer in the C++ code.",
+      "range": {
+        "startLine": 12,
+        "startChar": 39,
+        "endLine": 12,
+        "endChar": 52
+      },
+      "revId": "4bfabdda673bc82c22534afac084043e8684c4a7",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c1bf542d_3d4b89b8",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-31T21:32:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3bfe4419_803e3b6e",
       "range": {
         "startLine": 12,
         "startChar": 39,

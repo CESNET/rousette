@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3c17ea11_3e3acd44",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 5
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-31T21:32:00Z",
+      "side": 1,
+      "message": "that would need a bit more cmake magic; in our other projects it’s done this way because of the --version parameter which gets initialized at build time from git version. doing that is out of scope for this patch, so feel free to drop that extra target magic",
+      "revId": "7be4d9181e822a5d415ebb49b069ee0840a1ea05",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0c56ba76_47f9263b",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-31T21:32:00Z",
+      "side": 1,
+      "message": "let’s remove this one for now",
+      "revId": "7be4d9181e822a5d415ebb49b069ee0840a1ea05",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d9bcc5d9_9d08aefd",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-31T21:32:00Z",
+      "side": 1,
+      "message": "the CLI option works even when building with systemd, so don’t make this one conditional",
+      "revId": "7be4d9181e822a5d415ebb49b069ee0840a1ea05",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "49d0a6a6_7e88fd5a",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-05-31T21:32:00Z",
+      "side": 1,
+      "message": "this would require some extra code, let’s drop this line for now",
+      "revId": "7be4d9181e822a5d415ebb49b069ee0840a1ea05",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
