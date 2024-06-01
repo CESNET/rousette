@@ -33,6 +33,24 @@
       "message": "please also mention docopt-cpp here , it’s a new dependency",
       "revId": "5bb16ea738e0d77c422371faa878a45dfd3d7774",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "777bb5db_9155251d",
+        "filename": "README.md",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-06-01T15:48:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "0c1944c8_1b008572",
+      "revId": "5bb16ea738e0d77c422371faa878a45dfd3d7774",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
