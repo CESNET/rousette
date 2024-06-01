@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "a712afd3_85bde94a",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 5
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-06-01T06:15:38Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "3c17ea11_3e3acd44",
+      "revId": "7be4d9181e822a5d415ebb49b069ee0840a1ea05",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "0c56ba76_47f9263b",
@@ -31,6 +49,24 @@
       "writtenOn": "2024-05-31T21:32:00Z",
       "side": 1,
       "message": "let’s remove this one for now",
+      "revId": "7be4d9181e822a5d415ebb49b069ee0840a1ea05",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8b8ca6e5_26c8014c",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-06-01T06:15:38Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "0c56ba76_47f9263b",
       "revId": "7be4d9181e822a5d415ebb49b069ee0840a1ea05",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -52,6 +88,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "26df87dd_8fa72156",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-06-01T06:15:38Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "d9bcc5d9_9d08aefd",
+      "revId": "7be4d9181e822a5d415ebb49b069ee0840a1ea05",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "49d0a6a6_7e88fd5a",
@@ -65,6 +119,24 @@
       "writtenOn": "2024-05-31T21:32:00Z",
       "side": 1,
       "message": "this would require some extra code, let’s drop this line for now",
+      "revId": "7be4d9181e822a5d415ebb49b069ee0840a1ea05",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "46762e6a_0fe290c1",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-06-01T06:15:38Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "49d0a6a6_7e88fd5a",
       "revId": "7be4d9181e822a5d415ebb49b069ee0840a1ea05",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
