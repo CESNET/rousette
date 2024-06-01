@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f43e4bd6_8d899649",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-06-01T11:09:31Z",
+      "side": 1,
+      "message": "congrats for passing the CI :), it’s awesome that you figured it all out",
+      "revId": "5bb16ea738e0d77c422371faa878a45dfd3d7774",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0c1944c8_1b008572",
+        "filename": "README.md",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-06-01T11:09:31Z",
+      "side": 1,
+      "message": "please also mention docopt-cpp here , it’s a new dependency",
+      "revId": "5bb16ea738e0d77c422371faa878a45dfd3d7774",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
