@@ -16,6 +16,23 @@
       "message": "thanks, this looks good to me now. there’s a bunch of conflicts with the libyang v3 patch series, so I would like to merge that first, and then I’ll rebase this one.",
       "revId": "561c28496691fc1ac17e755bcc0ff3ec8c3b1bf0",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c7cb85be_700cbf5b",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 9
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-06-03T16:15:34Z",
+      "side": 1,
+      "message": "(just resolving all pending comments)",
+      "revId": "561c28496691fc1ac17e755bcc0ff3ec8c3b1bf0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
