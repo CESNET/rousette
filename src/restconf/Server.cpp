@@ -331,6 +331,17 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
             return;
         }
 
+        /*
+         * FIXME: This operation is done in two phases. First, we check if the node already existed (because the HTTP status depends on that) and only then
+         * we perform the edit. However, in between the initial query and the actual edit the node could have been created/removed. That is why we use lock here.
+         * But sysrepo candidate datastore resets itself back to mirroring running when lock unlocks (sr_unlock is called).
+         * Therefore, we do not lock candidate DS. The race is therefore still present in cadidate DS edits.
+         */
+        std::unique_ptr<sysrepo::Lock> lock;
+        if (requestCtx->sess.activeDatastore() != sysrepo::Datastore::Candidate) {
+            lock = std::make_unique<sysrepo::Lock>(requestCtx->sess);
+        }
+
         bool nodeExisted = !!requestCtx->sess.getData(requestCtx->restconfRequest.path);
         std::optional<libyang::DataNode> edit;
         std::optional<libyang::DataNode> replacementNode;
