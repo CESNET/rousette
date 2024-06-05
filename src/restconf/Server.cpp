@@ -218,7 +218,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
         } else if (e.code() == sysrepo::ErrorCode::ValidationFailed) {
             /*
              * FIXME: This happens on invalid input data (e.g., missing mandatory nodes) or missing action data node.
-             * The former input should probably be validated by libyang's parseOp but it only parses. Is there better way? At least somehow extract logs?
+             * The former (invalid input data) should probably be validated by libyang's parseOp but it only parses. Is there better way? At least somehow extract logs?
              * We check on the missing action data node, but it is racy.
              */
             rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "application", "operation-failed", "Input data validation failed");
