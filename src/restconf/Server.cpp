@@ -163,6 +163,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
 {
     requestCtx->sess.switchDatastore(sysrepo::Datastore::Operational);
     auto ctx = requestCtx->sess.getContext();
+    bool isAction = false;
 
     try {
         auto rpcSchemaNode = ctx.findPath(requestCtx->restconfRequest.path);
@@ -170,14 +171,21 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
             throw ErrorResponse(400, "protocol", "invalid-value", "Content-type header missing.");
         }
 
-        // validate if action node's parent is present
-        if (rpcSchemaNode.nodeType() == libyang::NodeType::Action) {
-            // FIXME: This is race-prone: we check for existing action data node but before we send the RPC the node may be gone
+        isAction = rpcSchemaNode.nodeType() == libyang::NodeType::Action;
+
+        // check if action node's parent is present
+        if (isAction) {
+            /*
+             * This is race-prone:
+             *  - The data node exists but might get deleted right after this check: Sysrepo throws an error when this happens.
+             *  - The data node does not exist but might get created right after this check: The node was not there when the request was issues so it should not be a problem
+             */
             auto [pathToParent, pathSegment] = asLibyangPathSplit(ctx, requestCtx->req.uri().path);
             if (!requestCtx->sess.getData(pathToParent)) {
                 throw ErrorResponse(400, "application", "operation-failed", "Action data node '" + requestCtx->restconfRequest.path + "' does not exist.");
             }
         }
+
 
         auto [parent, rpcNode] = ctx.newPath2(requestCtx->restconfRequest.path);
 
@@ -219,9 +227,10 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
             /*
              * FIXME: This happens on invalid input data (e.g., missing mandatory nodes) or missing action data node.
              * The former (invalid input data) should probably be validated by libyang's parseOp but it only parses. Is there better way? At least somehow extract logs?
-             * We check on the missing action data node, but it is racy.
+             * We can check if the action node exists before sending the RPC but that is racy because two sysrepo operations must be done (query + rpc) and operational DS cannot be locked.
              */
-            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "application", "operation-failed", "Input data validation failed");
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "application", "operation-failed",
+                    "Validation failed. Invalid input data"s + (isAction ? " or the action node is not present" : "") + ".");
         } else {
             rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception: "s + e.what());
         }
