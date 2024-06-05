@@ -217,7 +217,7 @@ TEST_CASE("invoking actions and rpcs")
       {
         "error-type": "application",
         "error-tag": "operation-failed",
-        "error-message": "Input data validation failed"
+        "error-message": "Validation failed. Invalid input data."
       }
     ]
   }
@@ -233,7 +233,7 @@ TEST_CASE("invoking actions and rpcs")
       {
         "error-type": "application",
         "error-tag": "operation-failed",
-        "error-message": "Input data validation failed"
+        "error-message": "Validation failed. Invalid input data."
       }
     ]
   }
