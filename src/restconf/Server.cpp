@@ -14,6 +14,7 @@
 #include "http/utils.hpp"
 #include "restconf/Exceptions.h"
 #include "restconf/Nacm.h"
+#include "restconf/NotificationStream.h"
 #include "restconf/PAM.h"
 #include "restconf/Server.h"
 #include "restconf/YangSchemaLocations.h"
@@ -43,6 +44,7 @@ auto as_restconf_push_update(const std::string& content, const T& time)
 
 constexpr auto restconfRoot = "/restconf/";
 constexpr auto yangSchemaRoot = "/yang/";
+constexpr auto netconfStreamRoot = "/streams/";
 
 bool isSameNode(const libyang::DataNode& child, const PathSegment& lastPathSegment)
 {
@@ -540,6 +542,47 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     server->handle("/telemetry/optics", [this](const auto& req, const auto& res) {
         auto client = std::make_shared<http::EventStream>(req, res, opticsChange, as_restconf_push_update(dwdmEvents->currentData(), std::chrono::system_clock::now()));
         client->activate();
+    });
+
+    server->handle(netconfStreamRoot, [this, conn](const auto& req, const auto& res) mutable {
+        auto sess = conn.sessionStart();
+        libyang::DataFormat dataFormat;
+
+        try {
+            authorizeRequest(nacm, sess, req);
+
+            auto streamRequest = asRestconfStreamRequest(req.uri().path);
+
+            switch(streamRequest.type) {
+            case RestconfStreamRequest::Type::NetconfNotificationJSON:
+                dataFormat = libyang::DataFormat::JSON;
+                break;
+            case RestconfStreamRequest::Type::NetconfNotificationXML:
+                dataFormat = libyang::DataFormat::XML;
+                break;
+            }
+
+            // The signal is constructed outside NotificationStream class because it is required to be passed to
+            // NotificationStream's parent (EventStream) constructor where it already must be constructed
+            // Yes, this is a hack.
+            auto client = std::make_shared<NotificationStream>(req, res, std::make_shared<rousette::http::EventStream::Signal>(), sess, dataFormat);
+            client->activate();
+        } catch (const auth::Error& e) {
+            processAuthError(req, res, e, [&res]() {
+                res.write_head(401, {
+                                        {"content-type", {"text/plain", false}},
+                                        {"access-control-allow-origin", {"*", false}},
+                                    });
+                res.end("Access denied.");
+            });
+        } catch (const ErrorResponse& e) {
+            // RFC does not specify how the errors should look like so let's just report the HTTP code and print the error message
+            res.write_head(e.code, {
+                                       {"content-type", {"text/plain", false}},
+                                       {"access-control-allow-origin", {"*", false}},
+                                   });
+            res.end(e.errorMessage);
+        }
     });
 
     server->handle(yangSchemaRoot, [this, conn /* intentional copy */](const auto& req, const auto& res) mutable {
