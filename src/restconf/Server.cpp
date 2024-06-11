@@ -13,6 +13,7 @@
 #include "http/utils.hpp"
 #include "restconf/Exceptions.h"
 #include "restconf/Nacm.h"
+#include "restconf/NotificationStream.h"
 #include "restconf/PAM.h"
 #include "restconf/Server.h"
 #include "restconf/YangSchemaLocations.h"
@@ -539,6 +540,22 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     server->handle("/telemetry/optics", [this](const auto& req, const auto& res) {
         auto client = std::make_shared<http::EventStream>(req, res);
         client->activate(opticsChange, as_restconf_push_update(dwdmEvents->currentData(), std::chrono::system_clock::now()));
+    });
+
+    server->handle("/streams/NETCONF/", [conn](const auto& req, const auto& res) mutable {
+        libyang::DataFormat dataFormat;
+
+        if (req.uri().path == "/streams/NETCONF/XML") {
+            dataFormat = libyang::DataFormat::XML;
+        } else if (req.uri().path == "/streams/NETCONF/json") {
+            dataFormat = libyang::DataFormat::JSON;
+        } else {
+            res.write_head(404, {{"access-control-allow-origin", {"*", false}}});
+            res.end();
+        }
+
+        auto client = std::make_shared<NotificationStream>(req, res, conn.sessionStart(), dataFormat);
+        client->activate();
     });
 
     server->handle(yangSchemaRoot, [this, conn /* intentional copy */](const auto& req, const auto& res) mutable {
