@@ -40,6 +40,7 @@ module example {
           leaf o { type string; }
         }
       }
+      notification notif { }
     }
     list key-less-list {
       config false;
@@ -134,4 +135,18 @@ module example {
   rpc test-rpc-no-input-no-output {
 
   }
+
+  notification eventA {
+    leaf message {
+      type string;
+    }
+
+    leaf progress {
+      type int8 {
+        range "0 .. 100";
+      }
+    }
+  }
+
+  notification eventB { }
 }
