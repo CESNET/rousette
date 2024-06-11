@@ -559,4 +559,20 @@ std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> asYangMod
     }
     return std::nullopt;
 }
+
+RestconfStreamRequest asRestconfStreamRequest(const std::string& uriPath)
+{
+    static const auto netconfStreamRoot = "/streams/NETCONF/";
+    RestconfStreamRequest::Type type;
+
+    if (uriPath == netconfStreamRoot + "XML"s) {
+        type = RestconfStreamRequest::Type::NetconfNotificationXML;
+    } else if (uriPath == netconfStreamRoot + "JSON"s) {
+        type = RestconfStreamRequest::Type::NetconfNotificationJSON;
+    } else {
+        throw ErrorResponse(404, "application", "invalid-value", "Invalid stream");
+    }
+
+    return {type};
+}
 }
