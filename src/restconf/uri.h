@@ -136,8 +136,17 @@ struct RestconfRequest {
     RestconfRequest(Type type, const boost::optional<ApiIdentifier>& datastore, const std::string& path, const queryParams::QueryParams& queryParams);
 };
 
+struct RestconfStreamRequest {
+    enum class Type {
+        NetconfNotificationJSON,
+        NetconfNotificationXML,
+    };
+    Type type;
+};
+
 RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString = "");
 std::optional<libyang::SchemaNode> asLibyangSchemaNode(const libyang::Context& ctx, const std::vector<PathSegment>& pathSegments);
 std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath);
 std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> asYangModule(const libyang::Context& ctx, const std::string& uriPath);
+RestconfStreamRequest asRestconfStreamRequest(const std::string& uriPath);
 }

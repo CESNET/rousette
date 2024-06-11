@@ -98,6 +98,7 @@ add_library(rousette-auth STATIC
 target_link_libraries(rousette-auth PUBLIC spdlog::spdlog PkgConfig::SYSREPO-CPP PkgConfig::PAM)
 
 add_library(rousette-restconf STATIC
+    src/restconf/NotificationStream.cpp
     src/restconf/Server.cpp
     src/restconf/YangSchemaLocations.cpp
     src/restconf/uri.cpp
@@ -186,13 +187,15 @@ if(BUILD_TESTING)
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf-monitoring@2017-01-26.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang --enable-feature f1
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-delete.yang
-        --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-augment.yang)
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-augment.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-notif.yang)
     rousette_test(NAME restconf-reading LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
     rousette_test(NAME restconf-writing LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
     rousette_test(NAME restconf-delete LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
     rousette_test(NAME restconf-rpc LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
     rousette_test(NAME restconf-nacm LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
     rousette_test(NAME restconf-defaults LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
+    rousette_test(NAME restconf-notifications LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
     set(nested-models
         ${common-models}
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/root-mod.yang)
