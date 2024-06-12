@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e266e084_0211a136",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-06-12T17:14:52Z",
+      "side": 1,
+      "message": "Since we have \"some\" date formatting thing in cla-sysrepo, velia, sysrpeo-ietf-alarms and rousette (and they are different, of course), I wonder if it makes sense to push them to libyang-cpp -- maybe into an optional header so that the dependency on, say, fmt or date/tz libraries is only relevant for those who include that file.\n\nAlso, the implementation in sysrepo-ietf-alarms is TZ-aware, and this one here in rousette can do fractional time formatting. I wonder if we might have all of them, and in just one place.",
+      "revId": "2a536377957233d5820e1cb18dd24dcd9cbfdf94",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1fcf70ce_4b6cb0e5",
+        "filename": "tests/restconf-utils.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-06-12T17:14:52Z",
+      "side": 1,
+      "message": "mktime() depends on local TZ settings, which means that this test will only work when localtime is UTC+2, so it will break in October on your laptop (and today in the CI which uses UTC I think)",
+      "revId": "2a536377957233d5820e1cb18dd24dcd9cbfdf94",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
