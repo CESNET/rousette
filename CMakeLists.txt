@@ -68,6 +68,7 @@ endif()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+find_package(fmt "9.0.0" REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(PkgConfig)
 pkg_check_modules(nghttp2 REQUIRED IMPORTED_TARGET libnghttp2_asio>=0.0.90 libnghttp2)
@@ -104,7 +105,7 @@ add_library(rousette-restconf STATIC
     src/restconf/utils/dataformat.cpp
     src/restconf/utils/yang.cpp
 )
-target_link_libraries(rousette-restconf PUBLIC rousette-http rousette-sysrepo rousette-auth Boost::system Threads::Threads)
+target_link_libraries(rousette-restconf PUBLIC rousette-http rousette-sysrepo rousette-auth Boost::system Threads::Threads PRIVATE fmt::fmt)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/restconf/NacmIdentities.h.in ${CMAKE_CURRENT_BINARY_DIR}/NacmIdentities.h @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -176,6 +177,7 @@ if(BUILD_TESTING)
     endfunction()
 
     rousette_test(NAME http-utils LIBRARIES rousette-http)
+    rousette_test(NAME restconf-utils LIBRARIES rousette-restconf)
     rousette_test(NAME uri-parser LIBRARIES rousette-restconf)
     rousette_test(NAME pam LIBRARIES rousette-auth WRAP_PAM)
 
