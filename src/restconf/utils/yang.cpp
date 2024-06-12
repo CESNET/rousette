@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <fmt/chrono.h>
 #include <iomanip>
 #include <libyang-cpp/DataNode.hpp>
 #include <libyang-cpp/SchemaNode.hpp>
@@ -23,28 +24,26 @@ template <typename Clock, typename Precision>
 std::string yangDateTime(const std::chrono::time_point<Clock>& timePoint)
 {
     auto tt = Clock::to_time_t(timePoint);
-    std::ostringstream ss;
-    ss << std::put_time(std::gmtime(&tt), "%Y-%m-%dT%H:%M:%S");
+    auto res = fmt::format("{:%Y-%m-%dT%H:%M:%S}", fmt::localtime(tt));
 
     if constexpr (std::is_same_v<Precision, std::chrono::seconds>) {
         // do nothing
     } else {
         static_assert(Precision::period::num == 1, "Unrecognized fraction format");
         auto frac = std::chrono::time_point_cast<Precision>(timePoint).time_since_epoch().count() % Precision::period::den;
-        ss << '.';
-        ss.fill('0');
+        res += '.';
         if constexpr (std::is_same_v<Precision, std::chrono::nanoseconds>) {
-            ss.width(9);
+            res += fmt::format("{:0>9}", frac);
         } else if constexpr (std::is_same_v<Precision, std::chrono::microseconds>) {
-            ss.width(6);
+            res += fmt::format("{:0>6}", frac);
         } else if constexpr (std::is_same_v<Precision, std::chrono::milliseconds>) {
-            ss.width(3);
+            res += fmt::format("{:0>3}", frac);
         } else {
             error_wrong_precision();
         }
-        ss << frac << "-00:00";
+        res += "-00:00";
     }
-    return ss.str();
+    return res;
 }
 
 template std::string yangDateTime<std::chrono::system_clock, std::chrono::nanoseconds>(const std::chrono::time_point<std::chrono::system_clock>&);
