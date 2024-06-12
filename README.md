@@ -60,6 +60,7 @@ In practical terms, this means that the NACM access rules for the following XPat
 - systemd - the shared library for logging to `sd-journal`
 - [PAM](http://www.linux-pam.org/) - for authentication
 - [spdlog](https://github.com/gabime/spdlog) - Very fast, header-only/compiled, C++ logging library
+- [fmtlib](https://github.com/fmtlib/fmt) - A modern formatting library
 - Boost's system and thread
 - C++20 compiler (e.g., GCC 10.x+, clang 10+)
 - CMake 3.19+
