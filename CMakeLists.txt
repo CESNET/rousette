@@ -69,6 +69,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 find_package(spdlog REQUIRED)
+find_package(date REQUIRED) # FIXME: Remove when we have STL with __cpp_lib_chrono >= 201907 (gcc 14)
 find_package(PkgConfig)
 pkg_check_modules(nghttp2 REQUIRED IMPORTED_TARGET libnghttp2_asio>=0.0.90 libnghttp2)
 find_package(Boost REQUIRED COMPONENTS system thread)
@@ -104,7 +105,7 @@ add_library(rousette-restconf STATIC
     src/restconf/utils/dataformat.cpp
     src/restconf/utils/yang.cpp
 )
-target_link_libraries(rousette-restconf PUBLIC rousette-http rousette-sysrepo rousette-auth Boost::system Threads::Threads)
+target_link_libraries(rousette-restconf PUBLIC rousette-http rousette-sysrepo rousette-auth Boost::system Threads::Threads PRIVATE date::date-tz)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/restconf/NacmIdentities.h.in ${CMAKE_CURRENT_BINARY_DIR}/NacmIdentities.h @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})

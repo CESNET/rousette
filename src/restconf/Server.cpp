@@ -6,6 +6,7 @@
 */
 
 #include <libyang-cpp/Enum.hpp>
+#include <libyang-cpp/Time.hpp>
 #include <nghttp2/asio_http2_server.h>
 #include <spdlog/spdlog.h>
 #include <sysrepo-cpp/Enum.hpp>
@@ -37,7 +38,7 @@ constexpr auto notifSuffix = R"json(}}})json";
 template <typename T>
 auto as_restconf_push_update(const std::string& content, const T& time)
 {
-    return notifPrefix + yangDateTime<typename T::clock, std::chrono::nanoseconds>(time) + notifMid + content + notifSuffix;
+    return notifPrefix + libyang::yangTimeFormat(time, libyang::TimezoneInterpretation::Local) + notifMid + content + notifSuffix;
 }
 
 constexpr auto restconfRoot = "/restconf/";
