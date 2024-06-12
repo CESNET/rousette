@@ -20,7 +20,7 @@ int main(int argc [[maybe_unused]], char** argv [[maybe_unused]])
     spdlog::set_level(spdlog::level::trace);
 
     rousette::http::EventStream::Signal sig;
-    std::thread timer{[&sig]() {
+    std::jthread timer{[&sig]() {
         for (int i = 0; /* forever */; ++i) {
             std::this_thread::sleep_for(666ms);
             spdlog::info("tick: {}", i);
