@@ -125,16 +125,15 @@ Response clientRequest(auto method,
         const boost::posix_time::time_duration timeout=boost::posix_time::seconds(3))
 {
     boost::asio::io_service io_service;
-    ng_client::session client(io_service, SERVER_ADDRESS, SERVER_PORT);
+    auto client = std::make_shared<ng_client::session>(io_service, SERVER_ADDRESS, SERVER_PORT);
 
-    client.read_timeout(timeout);
+    client->read_timeout(timeout);
 
     std::ostringstream oss;
     ng::header_map resHeaders;
     int statusCode;
-    std::optional<std::string> clientError;
 
-    client.on_connect([&](auto) {
+    client->on_connect([&](auto) {
         boost::system::error_code ec;
 
         ng::header_map reqHeaders;
@@ -142,7 +141,7 @@ Response clientRequest(auto method,
             reqHeaders.insert({name, {value, false}});
         }
 
-        auto req = client.submit(ec, method, SERVER_ADDRESS_AND_PORT + uri, data, reqHeaders);
+        auto req = client->submit(ec, method, SERVER_ADDRESS_AND_PORT + uri, data, reqHeaders);
         req->on_response([&](const ng_client::response& res) {
             res.on_data([&oss](const uint8_t* data, std::size_t len) {
                 oss.write(reinterpret_cast<const char*>(data), len);
@@ -150,18 +149,16 @@ Response clientRequest(auto method,
             statusCode = res.status_code();
             resHeaders = res.header();
         });
-        req->on_close([&client](auto) {
-            client.shutdown();
+        req->on_close([maybeClient = std::weak_ptr<ng_client::session>{client}](auto) {
+            if (auto client = maybeClient.lock()) {
+                client->shutdown();
+            }
         });
     });
-    client.on_error([&clientError](const boost::system::error_code& ec) {
-        clientError = ec.message();
+    client->on_error([](const boost::system::error_code& ec) {
+        throw std::runtime_error{"HTTP client error: " + ec.message()};
     });
     io_service.run();
-
-    if (clientError) {
-        throw std::runtime_error{"HTTP client error: " + *clientError};
-    }
 
     return {statusCode, resHeaders, oss.str()};
 }
