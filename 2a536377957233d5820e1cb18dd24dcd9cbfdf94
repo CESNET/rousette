@@ -33,6 +33,24 @@
       "message": "mktime() depends on local TZ settings, which means that this test will only work when localtime is UTC+2, so it will break in October on your laptop (and today in the CI which uses UTC I think)",
       "revId": "2a536377957233d5820e1cb18dd24dcd9cbfdf94",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ed5d13c0_6a9790fd",
+        "filename": "tests/restconf-utils.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-06-18T15:01:23Z",
+      "side": 1,
+      "message": "Yes, you are right. But the comment is no more relevant because after the rewrite the code now uses libyang-cpp",
+      "parentUuid": "1fcf70ce_4b6cb0e5",
+      "revId": "2a536377957233d5820e1cb18dd24dcd9cbfdf94",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
