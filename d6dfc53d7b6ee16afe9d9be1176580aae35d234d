@@ -364,6 +364,24 @@
       "parentUuid": "335ff2fd_dbe5d8b6",
       "revId": "d6dfc53d7b6ee16afe9d9be1176580aae35d234d",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c27821a4_30e034ba",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-06-18T10:59:53Z",
+      "side": 1,
+      "message": "Rebased to solve merge conflicts.",
+      "parentUuid": "6688f63a_d66dea1f",
+      "revId": "d6dfc53d7b6ee16afe9d9be1176580aae35d234d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
