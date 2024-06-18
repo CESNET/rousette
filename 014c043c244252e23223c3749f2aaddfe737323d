@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "530ab41b_d4161b93",
+        "filename": "README.md",
+        "patchSetId": 5
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-06-18T16:17:41Z",
+      "side": 1,
+      "message": "technically speaking, it\u0027s the HH\u0027s date and tz libraries now, right?",
+      "revId": "014c043c244252e23223c3749f2aaddfe737323d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
