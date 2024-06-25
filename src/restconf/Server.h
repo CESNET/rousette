@@ -24,11 +24,10 @@ class OpticalEvents;
 namespace restconf {
 
 std::optional<std::string> as_subtree_path(const std::string& path);
-
 /** @short A RESTCONF-ish server */
 class Server {
 public:
-    explicit Server(sysrepo::Connection conn, const std::string& address, const std::string& port);
+    explicit Server(sysrepo::Connection conn, const std::string& address, const std::string& port, const std::chrono::milliseconds timeout = std::chrono::milliseconds{0});
     ~Server();
 
 private:
