@@ -386,7 +386,7 @@ libyang::CreatedNodes createEditForPutAndPatch(libyang::Context& ctx, const std:
     return {editNode, replacementNode};
 }
 
-void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
+void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx, const std::chrono::milliseconds timeout)
 {
     requestCtx->sess.switchDatastore(sysrepo::Datastore::Operational);
     auto ctx = requestCtx->sess.getContext();
@@ -404,7 +404,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
          *  - The data node does not exist but might get created right after this check: The node was not there when the request was issues so it should not be a problem
          */
         auto [pathToParent, pathSegment] = asLibyangPathSplit(ctx, requestCtx->req.uri().path);
-        if (!requestCtx->sess.getData(pathToParent)) {
+        if (!requestCtx->sess.getData(pathToParent, 0, sysrepo::GetOptions::Default, timeout)) {
             throw ErrorResponse(400, "application", "operation-failed", "Action data node '" + requestCtx->restconfRequest.path + "' does not exist.");
         }
     }
@@ -416,7 +416,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
         rpcNode->parseOp(requestCtx->payload, *requestCtx->dataFormat.request, libyang::OperationType::RpcRestconf);
     }
 
-    auto rpcReply = requestCtx->sess.sendRPC(*rpcNode);
+    auto rpcReply = requestCtx->sess.sendRPC(*rpcNode, timeout);
 
     if (rpcReply.immediateChildren().empty()) {
         requestCtx->res.write_head(204, {CORS});
@@ -437,7 +437,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
     requestCtx->res.end(*envelope->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::WithSiblings));
 }
 
-void processPost(std::shared_ptr<RequestContext> requestCtx)
+void processPost(std::shared_ptr<RequestContext> requestCtx, const std::chrono::milliseconds timeout)
 {
     auto ctx = requestCtx->sess.getContext();
 
@@ -486,7 +486,7 @@ void processPost(std::shared_ptr<RequestContext> requestCtx)
     yangInsert(*requestCtx, *createdNodes.begin());
 
     requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
-    requestCtx->sess.applyChanges();
+    requestCtx->sess.applyChanges(timeout);
 
     requestCtx->res.write_head(201,
                                {
@@ -560,7 +560,7 @@ void processYangPatchEdit(const std::shared_ptr<RequestContext>& requestCtx, con
 }
 
 /** @short RFC 8072 "YANG patch" processing once the patch-id is known */
-void processYangPatchImpl(const std::shared_ptr<RequestContext>& requestCtx, const libyang::DataNode& patch, const std::string& patchId)
+void processYangPatchImpl(const std::shared_ptr<RequestContext>& requestCtx, const libyang::DataNode& patch, const std::string& patchId, const std::chrono::milliseconds timeout)
 {
     // create one big edit from all the edits because we need to apply all at once.
     std::optional<libyang::DataNode> mergedEdits;
@@ -574,11 +574,11 @@ void processYangPatchImpl(const std::shared_ptr<RequestContext>& requestCtx, con
 
     if (mergedEdits) {
         requestCtx->sess.editBatch(*mergedEdits, sysrepo::DefaultOperation::Merge);
-        requestCtx->sess.applyChanges();
+        requestCtx->sess.applyChanges(timeout);
     }
 }
 
-void processYangPatch(std::shared_ptr<RequestContext> requestCtx)
+void processYangPatch(std::shared_ptr<RequestContext> requestCtx, const std::chrono::milliseconds timeout)
 {
     auto ctx = requestCtx->sess.getContext();
     auto yangPatchMod = *ctx.getModule("ietf-yang-patch", "2017-02-22");
@@ -592,7 +592,7 @@ void processYangPatch(std::shared_ptr<RequestContext> requestCtx)
 
     // now we have patch-id so we can respond to errors with yang-patch-status
     auto patchId = childLeafValue(*patch, "patch-id");
-    WITH_RESTCONF_EXCEPTIONS(processYangPatchImpl, rejectYangPatch(patchId))(requestCtx, *patch, patchId);
+    WITH_RESTCONF_EXCEPTIONS(processYangPatchImpl, rejectYangPatch(patchId))(requestCtx, *patch, patchId, timeout);
 
     // everything went well
     auto yangPatchStatus = ctx.newExtPath("/ietf-yang-patch:yang-patch-status", std::nullopt, yangPatchStatusExt);
@@ -603,7 +603,7 @@ void processYangPatch(std::shared_ptr<RequestContext> requestCtx)
     requestCtx->res.end(*yangPatchStatus->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::WithSiblings));
 }
 
-void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx)
+void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx, const std::chrono::milliseconds timeout)
 {
     auto ctx = requestCtx->sess.getContext();
 
@@ -617,12 +617,12 @@ void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx)
         validateInputMetaAttributes(ctx, *edit);
 
         if (requestCtx->req.method() == "PUT") {
-            requestCtx->sess.replaceConfig(edit);
+            requestCtx->sess.replaceConfig(edit, std::nullopt, timeout);
 
             requestCtx->res.write_head(edit ? 201 : 204, {CORS});
         } else {
             requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
-            requestCtx->sess.applyChanges();
+            requestCtx->sess.applyChanges(timeout);
             requestCtx->res.write_head(204, {CORS});
         }
         requestCtx->res.end();
@@ -639,7 +639,7 @@ void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx)
         lock = std::make_unique<sysrepo::Lock>(requestCtx->sess);
     }
 
-    bool nodeExisted = !!requestCtx->sess.getData(requestCtx->restconfRequest.path);
+    bool nodeExisted = !!requestCtx->sess.getData(requestCtx->restconfRequest.path, 0, sysrepo::GetOptions::Default, timeout);
 
     if (requestCtx->req.method() == "PATCH" && !nodeExisted) {
         throw ErrorResponse(400, "protocol", "invalid-value", "Target resource does not exist");
@@ -655,7 +655,7 @@ void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx)
     }
 
     requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
-    requestCtx->sess.applyChanges();
+    requestCtx->sess.applyChanges(timeout);
 
     if (requestCtx->req.method() == "PUT") {
         requestCtx->res.write_head(nodeExisted ? 204 : 201, {CORS});
@@ -767,7 +767,7 @@ Server::~Server()
     server->join();
 }
 
-Server::Server(sysrepo::Connection conn, const std::string& address, const std::string& port)
+Server::Server(sysrepo::Connection conn, const std::string& address, const std::string& port, const std::chrono::milliseconds timeout)
     : m_monitoringSession(conn.sessionStart(sysrepo::Datastore::Operational))
     , nacm(conn)
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
@@ -928,7 +928,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     });
 
     server->handle(restconfRoot,
-        [conn /* intentionally by value, otherwise conn gets destroyed when the ctor returns */, this](const auto& req, const auto& res) mutable {
+        [conn /* intentionally by value, otherwise conn gets destroyed when the ctor returns */, this, timeout](const auto& req, const auto& res) mutable {
             const auto& peer = http::peer_from_request(req);
             spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
 
@@ -973,7 +973,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         }
                     }
 
-                    if (auto data = sess.getData(restconfRequest.path, maxDepth, getOptions); data) {
+                    if (auto data = sess.getData(restconfRequest.path, maxDepth, getOptions, timeout); data) {
                         res.write_head(
                             200,
                             {
@@ -1005,18 +1005,18 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
                     auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, restconfRequest);
 
-                    req.on_data([requestCtx, restconfRequest /* intentional copy */](const uint8_t* data, std::size_t length) {
+                    req.on_data([requestCtx, restconfRequest /* intentional copy */, timeout](const uint8_t* data, std::size_t length) {
                         if (length > 0) { // there are still some data to be read
                             requestCtx->payload.append(reinterpret_cast<const char*>(data), length);
                             return;
                         }
 
                         if (restconfRequest.type == RestconfRequest::Type::CreateChildren) {
-                            WITH_RESTCONF_EXCEPTIONS(processPost, rejectWithError)(requestCtx);
+                            WITH_RESTCONF_EXCEPTIONS(processPost, rejectWithError)(requestCtx, timeout);
                         } else if (restconfRequest.type == RestconfRequest::Type::MergeData && isYangPatch(requestCtx->req)) {
-                            WITH_RESTCONF_EXCEPTIONS(processYangPatch, rejectWithError)(requestCtx);
+                            WITH_RESTCONF_EXCEPTIONS(processYangPatch, rejectWithError)(requestCtx, timeout);
                         } else {
-                            WITH_RESTCONF_EXCEPTIONS(processPutOrPlainPatch, rejectWithError)(requestCtx);
+                            WITH_RESTCONF_EXCEPTIONS(processPutOrPlainPatch, rejectWithError)(requestCtx, timeout);
                         }
                     });
                     break;
@@ -1044,7 +1044,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         }
 
                         sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
-                        sess.applyChanges();
+                        sess.applyChanges(timeout);
                     } catch (const sysrepo::ErrorWithCode& e) {
                         if (e.code() == sysrepo::ErrorCode::Unauthorized) {
                             throw ErrorResponse(403, "application", "access-denied", "Access denied.", restconfRequest.path);
@@ -1068,11 +1068,11 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 case RestconfRequest::Type::Execute: {
                     auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, restconfRequest);
 
-                    req.on_data([requestCtx](const uint8_t* data, std::size_t length) {
+                    req.on_data([requestCtx, timeout](const uint8_t* data, std::size_t length) {
                         if (length > 0) {
                             requestCtx->payload.append(reinterpret_cast<const char*>(data), length);
                         } else {
-                            WITH_RESTCONF_EXCEPTIONS(processActionOrRPC, rejectWithError)(requestCtx);
+                            WITH_RESTCONF_EXCEPTIONS(processActionOrRPC, rejectWithError)(requestCtx, timeout);
                         }
                     });
                     break;
