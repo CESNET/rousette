@@ -27,9 +27,10 @@
 static const char usage[] =
   R"(Rousette - RESTCONF server
 Usage:
-  rousette [--syslog] [--help]
+  rousette [--syslog] [--timeout <SECONDS>] [--help]
 Options:
   -h --help                         Show this screen.
+  -t --timeout <SECONDS>            Change default timeout in sysrepo (if not set, use sysrepo internal).
   --syslog                          Log to syslog.
 )";
 #ifdef HAVE_SYSTEMD
@@ -74,7 +75,11 @@ public:
 int main(int argc, char* argv [])
 {
     auto args = docopt::docopt(usage, {argv + 1, argv + argc}, true,""/* version */, true);
+    auto timeout = std::chrono::milliseconds{0};
 
+    if (args["--timeout"]) {
+        timeout = std::chrono::milliseconds{args["--timeout"].asLong() * 1000};
+    }
     if (args["--syslog"].asBool()) {
         auto syslog_sink = std::make_shared<spdlog::sinks::syslog_sink_mt>("rousette", LOG_PID, LOG_USER, true);
         auto logger = std::make_shared<spdlog::logger>("rousette", syslog_sink);
@@ -100,8 +105,7 @@ int main(int argc, char* argv [])
     }
 
     auto conn = sysrepo::Connection{};
-    auto server = rousette::restconf::Server{conn, "::1", "10080"};
-
+    auto server = rousette::restconf::Server{conn, "::1", "10080", timeout};
     signal(SIGTERM, [](int) {});
     signal(SIGINT, [](int) {});
     pause();
