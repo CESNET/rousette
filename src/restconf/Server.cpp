@@ -513,6 +513,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[1]", "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=explicit");
     m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[2]", "urn:ietf:params:restconf:capability:depth:1.0");
     m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[3]", "urn:ietf:params:restconf:capability:with-defaults:1.0");
+    m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[4]", "urn:ietf:params:restconf:capability:filter:1.0");
     m_monitoringSession.applyChanges();
 
     dwdmEvents->change.connect([this](const std::string& content) {
@@ -547,11 +548,12 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     server->handle(netconfStreamRoot, [this, conn](const auto& req, const auto& res) mutable {
         auto sess = conn.sessionStart();
         libyang::DataFormat dataFormat;
+        std::optional<std::string> xpathFilter;
 
         try {
             authorizeRequest(nacm, sess, req);
 
-            auto streamRequest = asRestconfStreamRequest(req.uri().path);
+            auto streamRequest = asRestconfStreamRequest(req.uri().path, req.uri().raw_query);
 
             switch(streamRequest.type) {
             case RestconfStreamRequest::Type::NetconfNotificationJSON:
@@ -560,6 +562,10 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             case RestconfStreamRequest::Type::NetconfNotificationXML:
                 dataFormat = libyang::DataFormat::XML;
                 break;
+            }
+
+            if (auto it = streamRequest.queryParams.find("filter"); it != streamRequest.queryParams.end()) {
+                xpathFilter = std::get<std::string>(it->second);
             }
         } catch (const auth::Error& e) {
             processAuthError(req, res, e, [&res]() {
@@ -577,7 +583,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             return;
         }
 
-        auto client = std::make_shared<NotificationStream>(req, res, sess, dataFormat);
+        auto client = std::make_shared<NotificationStream>(req, res, sess, dataFormat, xpathFilter);
         client->activate();
     });
 

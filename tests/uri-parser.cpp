@@ -738,6 +738,7 @@ TEST_CASE("URI path parser")
     SECTION("query params")
     {
         using rousette::restconf::asRestconfRequest;
+        using rousette::restconf::asRestconfStreamRequest;
         using rousette::restconf::RestconfRequest;
         using rousette::restconf::impl::parseQueryParams;
         using namespace rousette::restconf::queryParams;
@@ -782,6 +783,14 @@ TEST_CASE("URI path parser")
             REQUIRE(parseQueryParams("insert=before") == QueryParams{{"insert", insert::Before{}}});
             REQUIRE(parseQueryParams("insert=after") == QueryParams{{"insert", insert::After{}}});
             REQUIRE(parseQueryParams("insert=uwu") == std::nullopt);
+            REQUIRE(parseQueryParams("filter=asd") == QueryParams{{"filter", "asd"s}});
+            REQUIRE(parseQueryParams("filter=/") == QueryParams{{"filter", "/"s}});
+            REQUIRE(parseQueryParams("filter=") == std::nullopt);
+            REQUIRE(parseQueryParams("filter=/example:mod[name='GigabitEthernet0/0']") == QueryParams{{"filter", "/example:mod[name='GigabitEthernet0/0']"s}});
+            REQUIRE(parseQueryParams("filter=/example:mod/statistics[errors>0]") == QueryParams{{"filter", "/example:mod/statistics[errors>0]"s}});
+            REQUIRE(parseQueryParams("filter=/example:mod/statistics[errors>0]&depth=1") == QueryParams{{"filter", "/example:mod/statistics[errors>0]"s}, {"depth", 1u}});
+            REQUIRE(parseQueryParams("filter=/example:mod/statistics[errors>0]&") == std::nullopt);
+            REQUIRE(parseQueryParams("filter=/example:mod[name='&amp;']&depth=1") == QueryParams{{"filter", "/example:mod[name='&']"s}, {"depth", 1u}});
         }
 
         SECTION("Full requests with validation")
@@ -805,6 +814,10 @@ TEST_CASE("URI path parser")
                 REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "POST", "/restconf/data/example:tlc", "depth=1"),
                                        serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'depth' can be used only with GET and HEAD methods").c_str(),
                                        rousette::restconf::ErrorResponse);
+
+                REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("/streams/NETCONF/XML", "depth=1"),
+                                       serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'depth' can't be used with streams").c_str(),
+                                       rousette::restconf::ErrorResponse);
             }
 
             SECTION("with-default")
@@ -815,6 +828,10 @@ TEST_CASE("URI path parser")
                 REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "POST", "/restconf/data/example:tlc", "with-defaults=report-all"),
                                        serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'with-defaults' can be used only with GET and HEAD methods").c_str(),
                                        rousette::restconf::ErrorResponse);
+
+                REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("/streams/NETCONF/XML", "with-defaults=report-all"),
+                                       serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'with-defaults' can't be used with streams").c_str(),
+                                       rousette::restconf::ErrorResponse);
             }
 
             SECTION("content")
@@ -824,6 +841,10 @@ TEST_CASE("URI path parser")
 
                 REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "POST", "/restconf/data/example:tlc", "content=config"),
                                        serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'content' can be used only with GET and HEAD methods").c_str(),
+                                       rousette::restconf::ErrorResponse);
+
+                REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("/streams/NETCONF/XML", "content=config"),
+                                       serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'content' can't be used with streams").c_str(),
                                        rousette::restconf::ErrorResponse);
             }
 
@@ -837,6 +858,10 @@ TEST_CASE("URI path parser")
 
                 REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "GET", "/restconf/data/example:tlc", "insert=first"),
                                        serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'insert' can be used only with POST and PUT methods").c_str(),
+                                       rousette::restconf::ErrorResponse);
+
+                REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("/streams/NETCONF/XML", "insert=first"),
+                                       serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'insert' can't be used with streams").c_str(),
                                        rousette::restconf::ErrorResponse);
             }
 
@@ -865,6 +890,22 @@ TEST_CASE("URI path parser")
                                        rousette::restconf::ErrorResponse);
                 REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "POST", "/restconf/data/example:ordered-lists", "point=/example:ordered-lists/ll=key"),
                                        serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'point' must always come with parameter 'insert' set to 'before' or 'after'").c_str(),
+                                       rousette::restconf::ErrorResponse);
+                REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("/streams/NETCONF/XML", "insert=after"),
+                                       serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'insert' can't be used with streams").c_str(),
+                                       rousette::restconf::ErrorResponse);
+                REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("/streams/NETCONF/XML", "insert=after&point=/example:mod"),
+                                       serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'insert' can't be used with streams").c_str(),
+                                       rousette::restconf::ErrorResponse);
+            }
+
+            SECTION("filter")
+            {
+                auto resp = asRestconfStreamRequest("/streams/NETCONF/XML", "filter=/asd");
+                REQUIRE(resp.queryParams == QueryParams({{"filter", "/asd"s}}));
+
+                REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "GET", "/restconf/data/example:ordered-lists", "filter=something"),
+                                       serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'filter' can be used only with streams").c_str(),
                                        rousette::restconf::ErrorResponse);
             }
 
