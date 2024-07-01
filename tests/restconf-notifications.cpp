@@ -138,10 +138,19 @@ TEST_CASE("NETCONF notification streams")
 
         SECTION("XML stream")
         {
-            uri = "/streams/NETCONF/XML";
             dataFormat = libyang::DataFormat::XML;
             headers = {AUTH_ROOT};
-            expectedNotificationsJSON = notificationsJSON;
+
+            SECTION("No filter")
+            {
+                uri = "/streams/NETCONF/XML";
+                expectedNotificationsJSON = notificationsJSON;
+            }
+            SECTION("Filter")
+            {
+                uri = "/streams/NETCONF/XML?filter=/example:eventA";
+                expectedNotificationsJSON = {notificationsJSON[0], notificationsJSON[3]};
+            }
         }
 
         SECTION("JSON stream")
@@ -200,5 +209,11 @@ TEST_CASE("NETCONF notification streams")
         REQUIRE(get("/streams/NETCONF/", {}) == Response{404, noContentTypeHeaders, ""});
         REQUIRE(get("/streams/NETCONF/", {AUTH_ROOT}) == Response{404, noContentTypeHeaders, ""});
         REQUIRE(get("/streams/NETCONF/bla", {}) == Response{404, noContentTypeHeaders, ""});
+    }
+
+    SECTION("Invalid parameters")
+    {
+        REQUIRE(get("/streams/NETCONF/XML?filter=.878", {}) == Response{400, noContentTypeHeaders, ""});
+        REQUIRE(get("/streams/NETCONF/XML?filter=", {}) == Response{400, noContentTypeHeaders, ""});
     }
 }
