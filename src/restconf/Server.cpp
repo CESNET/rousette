@@ -513,6 +513,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[1]", "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=explicit");
     m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[2]", "urn:ietf:params:restconf:capability:depth:1.0");
     m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[3]", "urn:ietf:params:restconf:capability:with-defaults:1.0");
+    m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[4]", "urn:ietf:params:restconf:capability:filter:1.0");
     m_monitoringSession.applyChanges();
 
     dwdmEvents->change.connect([this](const std::string& content) {
@@ -547,11 +548,12 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     server->handle(netconfStreamRoot, [this, conn](const auto& req, const auto& res) mutable {
         auto sess = conn.sessionStart();
         libyang::DataFormat dataFormat;
+        std::optional<std::string> xpathFilter;
 
         try {
             authorizeRequest(nacm, sess, req);
 
-            auto streamRequest = asRestconfStreamRequest(req.uri().path);
+            auto streamRequest = asRestconfStreamRequest(req.uri().path, req.uri().raw_query);
 
             switch(streamRequest.type) {
             case RestconfStreamRequest::Type::NetconfNotificationJSON:
@@ -562,10 +564,14 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 break;
             }
 
+            if (auto it = streamRequest.queryParams.find("filter"); it != streamRequest.queryParams.end()) {
+                xpathFilter = std::get<std::string>(it->second);
+            }
+
             // The signal is constructed outside NotificationStream class because it is required to be passed to
             // NotificationStream's parent (EventStream) constructor where it already must be constructed
             // Yes, this is a hack.
-            auto client = std::make_shared<NotificationStream>(req, res, std::make_shared<rousette::http::EventStream::Signal>(), sess, dataFormat);
+            auto client = std::make_shared<NotificationStream>(req, res, std::make_shared<rousette::http::EventStream::Signal>(), sess, dataFormat, xpathFilter);
             client->activate();
         } catch (const auth::Error& e) {
             processAuthError(req, res, e, [&res]() {

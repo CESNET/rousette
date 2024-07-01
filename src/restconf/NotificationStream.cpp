@@ -10,6 +10,7 @@
 #include <sysrepo-cpp/Subscription.hpp>
 #include <sysrepo-cpp/utils/exception.hpp>
 #include "http/EventStream.h"
+#include "restconf/Exceptions.h"
 #include "restconf/NotificationStream.h"
 #include "utils/yang.h"
 
@@ -49,7 +50,13 @@ std::string as_restconf_notification(const libyang::Context& ctx, libyang::DataF
     return res;
 }
 
-void subscribe(std::optional<sysrepo::Subscription>& sub, sysrepo::Session& session, const std::string& moduleName, rousette::http::EventStream::Signal& signal, libyang::DataFormat dataFormat)
+void subscribe(
+    std::optional<sysrepo::Subscription>& sub,
+    sysrepo::Session& session,
+    const std::string& moduleName,
+    rousette::http::EventStream::Signal& signal,
+    libyang::DataFormat dataFormat,
+    const std::optional<std::string>& filter)
 {
     auto notifCb = [&signal, dataFormat](auto session, auto, sysrepo::NotificationType type, const std::optional<libyang::DataNode>& notificationTree, const sysrepo::NotificationTimeStamp& time) {
         if (type != sysrepo::NotificationType::Realtime) {
@@ -60,9 +67,9 @@ void subscribe(std::optional<sysrepo::Subscription>& sub, sysrepo::Session& sess
     };
 
     if (!sub) {
-        sub = session.onNotification(moduleName, std::move(notifCb));
+        sub = session.onNotification(moduleName, std::move(notifCb), filter);
     } else {
-        sub->onNotification(moduleName, std::move(notifCb));
+        sub->onNotification(moduleName, std::move(notifCb), filter);
     }
 }
 
@@ -80,11 +87,13 @@ NotificationStream::NotificationStream(
     const nghttp2::asio_http2::server::response& res,
     std::shared_ptr<rousette::http::EventStream::Signal> signal,
     sysrepo::Session session,
-    libyang::DataFormat dataFormat)
+    libyang::DataFormat dataFormat,
+    const std::optional<std::string>& filter)
     : EventStream(req, res, *signal)
     , m_notificationSignal(signal)
     , m_session(std::move(session))
     , m_dataFormat(dataFormat)
+    , m_filter(filter)
 {
 }
 
@@ -96,8 +105,12 @@ void NotificationStream::activate()
         }
 
         try {
-            subscribe(m_notifSubs, m_session, mod.name(), *m_notificationSignal, m_dataFormat);
+            subscribe(m_notifSubs, m_session, mod.name(), *m_notificationSignal, m_dataFormat, m_filter);
         } catch (sysrepo::ErrorWithCode& e) {
+            if (e.code() == sysrepo::ErrorCode::InvalidArgument) {
+                throw ErrorResponse(400, "application", "invalid-argument", e.what());
+            }
+
             /* We are iterating through all modules in order to subscribe to every possible module.
              * If the module does not define any notifications or the module does not exist then sysrepo throws with ErrorCode::NotFound
              * (see sysrepo's sr_notif_subscribe and sr_subscr_notif_xpath_check).
