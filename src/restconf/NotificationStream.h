@@ -32,10 +32,11 @@ class NotificationStream : public rousette::http::EventStream {
     std::shared_ptr<rousette::http::EventStream::Signal> m_notificationSignal;
     sysrepo::Session m_session;
     libyang::DataFormat m_dataFormat;
+    std::optional<std::string> m_filter;
     std::optional<sysrepo::Subscription> m_notifSubs;
 
 public:
-    NotificationStream(const nghttp2::asio_http2::server::request& req, const nghttp2::asio_http2::server::response& res, std::shared_ptr<rousette::http::EventStream::Signal> signal, sysrepo::Session sess, libyang::DataFormat dataFormat);
+    NotificationStream(const nghttp2::asio_http2::server::request& req, const nghttp2::asio_http2::server::response& res, std::shared_ptr<rousette::http::EventStream::Signal> signal, sysrepo::Session session, libyang::DataFormat dataFormat, const std::optional<std::string>& filter);
     void activate();
 };
 }
