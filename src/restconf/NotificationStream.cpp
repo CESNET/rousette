@@ -43,7 +43,7 @@ std::string as_restconf_notification(const libyang::Context& ctx, libyang::DataF
     return res;
 }
 
-sysrepo::Subscription createNotificationSub(sysrepo::Session& session, const std::string& moduleName, rousette::http::EventStream::Signal& signal, libyang::DataFormat dataFormat)
+sysrepo::Subscription createNotificationSub(sysrepo::Session& session, const std::string& moduleName, rousette::http::EventStream::Signal& signal, libyang::DataFormat dataFormat, const std::optional<std::string>& filter)
 {
     return session.onNotification(
         moduleName,
@@ -53,19 +53,20 @@ sysrepo::Subscription createNotificationSub(sysrepo::Session& session, const std
             }
 
             signal(as_restconf_notification(session.getContext(), dataFormat, *notificationTree, time));
-        });
+        },
+        filter);
 }
 }
 
 namespace rousette::restconf {
 
-NotificationStream::NotificationStream(const nghttp2::asio_http2::server::request& req, const nghttp2::asio_http2::server::response& res, sysrepo::Session session, libyang::DataFormat dataFormat)
+NotificationStream::NotificationStream(const nghttp2::asio_http2::server::request& req, const nghttp2::asio_http2::server::response& res, sysrepo::Session session, libyang::DataFormat dataFormat, const std::optional<std::string>& filter)
     : EventStream(req, res)
 {
     for (const auto& mod : session.getContext().modules()) {
         if (mod.implemented()) {
             try {
-                m_notifSubs.emplace_back(createNotificationSub(session, mod.name(), m_notificationSignal, dataFormat));
+                m_notifSubs.emplace_back(createNotificationSub(session, mod.name(), m_notificationSignal, dataFormat, filter));
             } catch (sysrepo::ErrorWithCode& e) {
             }
         }

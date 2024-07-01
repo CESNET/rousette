@@ -133,10 +133,19 @@ TEST_CASE("NETCONF notification streams")
 
         SECTION("XML stream")
         {
-            uri = "/streams/NETCONF/XML";
             dataFormat = libyang::DataFormat::XML;
             headers = {AUTH_ROOT};
-            expectedNotificationsJSON = notificationsJSON;
+
+            SECTION("No filter")
+            {
+                uri = "/streams/NETCONF/XML";
+                expectedNotificationsJSON = notificationsJSON;
+            }
+            SECTION("Filter")
+            {
+                uri = "/streams/NETCONF/XML?filter=/example:eventA";
+                expectedNotificationsJSON = {notificationsJSON[0], notificationsJSON[3]};
+            }
         }
 
         SECTION("JSON stream")
