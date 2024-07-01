@@ -110,13 +110,15 @@ struct insertTable: x3::symbols<queryParams::QueryParamValue> {
     }
 } const insertParam;
 
+const auto filter = x3::rule<class filter, std::string>{"filter"} = +(urlEncodedChar | (x3::char_ - '&'));
 const auto depthParam = x3::rule<class depthParam, queryParams::QueryParamValue>{"depthParam"} = x3::uint_[validDepthValues] | (x3::string("unbounded") >> x3::attr(queryParams::UnboundedDepth{}));
 const auto queryParamPair = x3::rule<class queryParamPair, std::pair<std::string, queryParams::QueryParamValue>>{"queryParamPair"} =
         (x3::string("depth") >> "=" >> depthParam) |
         (x3::string("with-defaults") >> "=" >> withDefaultsParam) |
         (x3::string("content") >> "=" >> contentParam) |
         (x3::string("insert") >> "=" >> insertParam) |
-        (x3::string("point") >> "=" >> uriPath);
+        (x3::string("point") >> "=" >> uriPath) |
+        (x3::string("filter") >> "=" >> filter);
 
 const auto queryParamGrammar = x3::rule<class grammar, queryParams::QueryParams>{"queryParamGrammar"} = queryParamPair % "&" | x3::eps;
 
@@ -377,6 +379,10 @@ void validateQueryParameters(const std::multimap<std::string, queryParams::Query
         }
     }
 
+    if (auto it = params.find("filter"); it != params.end()) {
+        throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter 'filter' can be used only with streams");
+    }
+
     {
         auto itInsert = params.find("insert");
         auto itPoint = params.find("point");
@@ -385,6 +391,21 @@ void validateQueryParameters(const std::multimap<std::string, queryParams::Query
 
         if (hasPointParam != hasInsertParamBeforeOrAfter) {
             throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter 'point' must always come with parameter 'insert' set to 'before' or 'after'");
+        }
+    }
+}
+
+void validateQueryParametersForStream(const std::multimap<std::string, queryParams::QueryParamValue>& params_)
+{
+    std::map<std::string, queryParams::QueryParamValue> params;
+    for (const auto& [k, v] : params_) {
+        auto [it, inserted] = params.emplace(k, v);
+        if (!inserted) {
+            throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter '" + k + "' already specified");
+        }
+
+        if (k != "filter") {
+            throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter '" + k + "' can't be used with streams");
         }
     }
 }
@@ -560,7 +581,7 @@ std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> asYangMod
     return std::nullopt;
 }
 
-RestconfStreamRequest asRestconfStreamRequest(const std::string& uriPath)
+RestconfStreamRequest asRestconfStreamRequest(const std::string& uriPath, const std::string& uriQueryString)
 {
     static const auto netconfStreamRoot = "/streams/NETCONF/";
     RestconfStreamRequest::Type type;
@@ -573,6 +594,13 @@ RestconfStreamRequest asRestconfStreamRequest(const std::string& uriPath)
         throw ErrorResponse(404, "application", "invalid-value", "Invalid stream");
     }
 
-    return {type};
+    auto queryParameters = impl::parseQueryParams(uriQueryString);
+    if (!queryParameters) {
+        throw ErrorResponse(400, "protocol", "invalid-value", "Query parameters syntax error");
+    }
+
+    validateQueryParametersForStream(*queryParameters);
+
+    return {type, *queryParameters};
 }
 }
