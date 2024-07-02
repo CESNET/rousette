@@ -8,6 +8,7 @@
 #include "trompeloeil_doctest.h"
 static const auto SERVER_PORT = "10088";
 #include <latch>
+#include <libyang-cpp/Time.hpp>
 #include <nghttp2/asio_http2.h>
 #include <spdlog/spdlog.h>
 #include "restconf/Server.h"
@@ -224,8 +225,122 @@ TEST_CASE("NETCONF notification streams")
 
     SECTION("Invalid parameters")
     {
-        REQUIRE(get("/streams/NETCONF/XML?filter=.878", {}) == Response{400, plaintextHeaders,
-                "Couldn't create notification subscription: SR_ERR_INVAL_ARG\n XPath \".878\" does not select any notifications. (SR_ERR_INVAL_ARG)"});
+        REQUIRE(get("/streams/NETCONF/XML?filter=.878", {}) == Response{400, plaintextHeaders, "Couldn't create notification subscription: SR_ERR_INVAL_ARG\n XPath \".878\" does not select any notifications. (SR_ERR_INVAL_ARG)"});
         REQUIRE(get("/streams/NETCONF/XML?filter=", {}) == Response{400, plaintextHeaders, "Query parameters syntax error"});
+    }
+
+    SECTION("RESTCONF state")
+    {
+        // no replays so sending a notification does not trigger replay-* leafs
+        srSess.sendNotification(*srSess.getContext().parseOp(R"({"example:eventB": {}})", libyang::DataFormat::JSON, libyang::OperationType::NotificationYang).op, sysrepo::Wait::No);
+
+        SECTION("Stream location rewriting")
+        {
+            REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-restconf-monitoring:restconf-state/streams", {AUTH_ROOT, FORWARDED}) == Response{200, jsonHeaders, R"({
+  "ietf-restconf-monitoring:restconf-state": {
+    "streams": {
+      "stream": [
+        {
+          "name": "NETCONF",
+          "description": "Default NETCONF notification stream",
+          "access": [
+            {
+              "encoding": "xml",
+              "location": "http://example.net/streams/NETCONF/XML"
+            },
+            {
+              "encoding": "json",
+              "location": "http://example.net/streams/NETCONF/JSON"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+)"});
+
+            // no forwarded header means we can't add schema and host prefix
+            REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-restconf-monitoring:restconf-state/streams", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "ietf-restconf-monitoring:restconf-state": {
+    "streams": {
+      "stream": [
+        {
+          "name": "NETCONF",
+          "description": "Default NETCONF notification stream",
+          "access": [
+            {
+              "encoding": "xml",
+              "location": "/streams/NETCONF/XML"
+            },
+            {
+              "encoding": "json",
+              "location": "/streams/NETCONF/JSON"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+)"});
+        }
+
+        SECTION("Replays on")
+        {
+            // announce replay support
+            srConn.setModuleReplaySupport("example", true);
+            REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-restconf-monitoring:restconf-state/streams/stream=NETCONF/replay-support", {AUTH_ROOT, FORWARDED}) == Response{200, jsonHeaders, R"({
+  "ietf-restconf-monitoring:restconf-state": {
+    "streams": {
+      "stream": [
+        {
+          "name": "NETCONF",
+          "replay-support": true
+        }
+      ]
+    }
+  }
+}
+)"});
+
+            // sending a notification with replay support on means that the timestamp leaf appears
+            srSess.sendNotification(*srSess.getContext().parseOp(R"({"example:eventB": {}})", libyang::DataFormat::JSON, libyang::OperationType::NotificationYang).op, sysrepo::Wait::No);
+            {
+                // check HTTP response code and headers
+                auto resp = get(RESTCONF_DATA_ROOT "/ietf-restconf-monitoring:restconf-state/streams/stream=NETCONF/replay-log-creation-time", {AUTH_ROOT, FORWARDED});
+                REQUIRE(resp.equalStatusCodeAndHeaders({200, jsonHeaders, ""}));
+
+                // the replay-log-creation-time node must be present in the output
+                auto responseDataTree = srSess.getContext().parseData(resp.data, libyang::DataFormat::JSON, libyang::ParseOptions::ParseOnly);
+                REQUIRE(!!responseDataTree->findPath("/ietf-restconf-monitoring:restconf-state/streams/stream[name='NETCONF']/replay-log-creation-time"));
+            }
+
+            // no more replays
+            srConn.setModuleReplaySupport("example", false);
+            REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-restconf-monitoring:restconf-state/streams", {AUTH_ROOT, FORWARDED}) == Response{200, jsonHeaders, R"({
+  "ietf-restconf-monitoring:restconf-state": {
+    "streams": {
+      "stream": [
+        {
+          "name": "NETCONF",
+          "description": "Default NETCONF notification stream",
+          "access": [
+            {
+              "encoding": "xml",
+              "location": "http://example.net/streams/NETCONF/XML"
+            },
+            {
+              "encoding": "json",
+              "location": "http://example.net/streams/NETCONF/JSON"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+)"});
+        }
     }
 }
