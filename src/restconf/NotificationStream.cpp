@@ -14,6 +14,8 @@
 #include "restconf/NotificationStream.h"
 #include "utils/yang.h"
 
+using namespace std::string_literals;
+
 namespace {
 /** @brief Wraps a notification data tree with RESTCONF notification envelope. */
 std::string as_restconf_notification(const libyang::Context& ctx, libyang::DataFormat dataFormat, libyang::DataNode notification, const sysrepo::NotificationTimeStamp& time)
@@ -80,5 +82,38 @@ NotificationStream::NotificationStream(const nghttp2::asio_http2::server::reques
 void NotificationStream::activate()
 {
     EventStream::activate(m_notificationSignal);
+}
+
+/** @brief */
+void notificationStreamList(sysrepo::Session& session, std::optional<libyang::DataNode>& parent)
+{
+    static const auto prefix = "/ietf-restconf-monitoring:restconf-state/streams/stream[name='NETCONF']"s;
+
+    decltype(sysrepo::ModuleReplaySupport::earliestNotification) globalEarliestNotification;
+
+    for (const auto& mod : session.getContext().modules()) {
+        if (mod.implemented()) {
+            try {
+                auto replay = session.getConnection().getModuleReplaySupport(mod.name());
+                if (replay.earliestNotification) {
+                    globalEarliestNotification = std::min(*replay.earliestNotification, *globalEarliestNotification);
+                }
+            } catch (sysrepo::ErrorWithCode& e) {
+            }
+        }
+    }
+
+    if (!parent) {
+        parent = session.getContext().newPath(prefix + "/description", "Default NETCONF notification stream");
+    } else {
+        parent->newPath(prefix + "/description", "Default NETCONF notification stream");
+    }
+    parent->newPath(prefix + "/access[encoding='xml']/location", "http://example.com/streams/NETCONF/XML");
+    parent->newPath(prefix + "/access[encoding='json']/location", "http://example.com/streams/NETCONF/json");
+
+    if (globalEarliestNotification) {
+        parent->newPath(prefix + "/replay-support", "true");
+        parent->newPath(prefix + "/replay-log-creation-time", libyang::yangTimeFormat(*globalEarliestNotification, libyang::TimezoneInterpretation::Local));
+    }
 }
 }
