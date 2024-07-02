@@ -8,6 +8,7 @@
 #include "trompeloeil_doctest.h"
 static const auto SERVER_PORT = "10088";
 #include <latch>
+#include <libyang-cpp/Time.hpp>
 #include <nghttp2/asio_http2.h>
 #include <spdlog/spdlog.h>
 #include "restconf/Server.h"
@@ -16,6 +17,7 @@ static const auto SERVER_PORT = "10088";
 
 #define EXPECT_NOTIFICATION(DATA) expectations.emplace_back(NAMED_REQUIRE_CALL(netconfWatcher, data(DATA)).IN_SEQUENCE(seq1));
 #define SEND_NOTIFICATION(DATA) notifSession.sendNotification(*ctx.parseOp(DATA, libyang::DataFormat::JSON, libyang::OperationType::NotificationYang).op, sysrepo::Wait::No);
+#define FORWARDED {"forward", "proto=https;host=example.net"}
 
 using namespace std::chrono_literals;
 
@@ -227,5 +229,182 @@ TEST_CASE("NETCONF notification streams")
         REQUIRE(get("/streams/NETCONF/XML?filter=.878", {}) == Response{400, plaintextHeaders, R"EOF(Couldn't create notification subscription: SR_ERR_INVAL_ARG
  XPath ".878" does not select any notifications. (SR_ERR_INVAL_ARG))EOF"});
         REQUIRE(get("/streams/NETCONF/XML?filter=", {}) == Response{400, plaintextHeaders, "Query parameters syntax error"});
+    }
+
+    SECTION("RESTCONF state")
+    {
+        SECTION("Stream location rewriting")
+        {
+            REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-restconf-monitoring:restconf-state/streams", {AUTH_ROOT, FORWARDED}) == Response{200, jsonHeaders, R"({
+  "ietf-restconf-monitoring:restconf-state": {
+    "streams": {
+      "stream": [
+        {
+          "name": "NETCONF",
+          "description": "Default NETCONF notification stream",
+          "access": [
+            {
+              "encoding": "xml",
+              "location": "https://example.net/streams/NETCONF/XML"
+            },
+            {
+              "encoding": "json",
+              "location": "https://example.net/streams/NETCONF/JSON"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+)"});
+            REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-restconf-monitoring:restconf-state/streams", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+
+}
+)"});
+        }
+
+        SECTION("Replays")
+        {
+            srConn.setModuleReplaySupport("example", false);
+
+            SECTION("Without replay-log-creation-time")
+            {
+                std::string expected = R"({
+  "ietf-restconf-monitoring:restconf-state": {
+    "streams": {
+      "stream": [
+        {
+          "name": "NETCONF",
+          "description": "Default NETCONF notification stream",
+          "access": [
+            {
+              "encoding": "xml",
+              "location": "https://example.net/streams/NETCONF/XML"
+            },
+            {
+              "encoding": "json",
+              "location": "https://example.net/streams/NETCONF/JSON"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+)";
+
+                SECTION("No replay enabled")
+                {
+                    SECTION("Notifications sent")
+                    {
+                        srSess.sendNotification(*srSess.getContext().parseOp(R"({"example:eventB": {}})", libyang::DataFormat::JSON, libyang::OperationType::NotificationYang).op, sysrepo::Wait::No);
+                    }
+                }
+
+                SECTION("Replay enabled")
+                {
+                    srConn.setModuleReplaySupport("example", true);
+
+                    SECTION("No notifications")
+                    {
+                        expected = R"({
+  "ietf-restconf-monitoring:restconf-state": {
+    "streams": {
+      "stream": [
+        {
+          "name": "NETCONF",
+          "description": "Default NETCONF notification stream",
+          "replay-support": true,
+          "access": [
+            {
+              "encoding": "xml",
+              "location": "https://example.net/streams/NETCONF/XML"
+            },
+            {
+              "encoding": "json",
+              "location": "https://example.net/streams/NETCONF/JSON"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+)";
+                    }
+
+                    /* TODO: It would be also nice to test what happends when replay is disabled after a notification is sent
+                       but doing so would set the earliest notif. time in sysrepo and it seems that I can't reset it
+                    SECTION("Replay disabled after notification sent")
+                    {
+                        srSess.sendNotification(*srSess.getContext().parseOp(R"({"example:eventB": {}})", libyang::DataFormat::JSON, libyang::OperationType::NotificationYang).op, sysrepo::Wait::No);
+                        srConn.setModuleReplaySupport("example", false);
+                    }
+                    */
+                }
+
+                REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-restconf-monitoring:restconf-state/streams", {AUTH_ROOT, FORWARDED}) == Response{200, jsonHeaders, expected});
+            }
+
+            SECTION("Replay log creation time")
+            {
+                std::string expectedWithoutReplayLogCreationTime = R"({
+  "ietf-restconf-monitoring:restconf-state": {
+    "streams": {
+      "stream": [
+        {
+          "name": "NETCONF",
+          "description": "Default NETCONF notification stream",
+          "replay-support": true,
+          "access": [
+            {
+              "encoding": "xml",
+              "location": "https://example.net/streams/NETCONF/XML"
+            },
+            {
+              "encoding": "json",
+              "location": "https://example.net/streams/NETCONF/JSON"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+)";
+
+                srConn.setModuleReplaySupport("example", true);
+
+                auto start = std::chrono::system_clock::now();
+                srSess.sendNotification(*srSess.getContext().parseOp(R"({"example:eventB": {}})", libyang::DataFormat::JSON, libyang::OperationType::NotificationYang).op, sysrepo::Wait::No);
+                auto end = std::chrono::system_clock::now();
+
+                // We have to compare timestamps in the output so bear with me please
+
+                // check HTTP response code and headers
+                auto resp = get(RESTCONF_DATA_ROOT "/ietf-restconf-monitoring:restconf-state/streams", {AUTH_ROOT, FORWARDED});
+                REQUIRE(resp.equalStatusCodeAndHeaders({200, jsonHeaders, ""}));
+
+                // parse the real output and the expected output back to libyang trees
+                auto responseDataTree = srSess.getContext().parseData(resp.data, libyang::DataFormat::JSON, libyang::ParseOptions::ParseOnly);
+                auto expectedDataTree = srSess.getContext().parseData(expectedWithoutReplayLogCreationTime, libyang::DataFormat::JSON, libyang::ParseOptions::ParseOnly);
+
+                // the replay-log-creation-time node should must be present in the output
+                auto replayLogCreationNode = responseDataTree->findPath("/ietf-restconf-monitoring:restconf-state/streams/stream[name='NETCONF']/replay-log-creation-time");
+                REQUIRE(!!replayLogCreationNode);
+
+                // check that the timestamp corresponds to the notification time
+                auto reaplyLogCreationTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(replayLogCreationNode->asTerm().valueStr());
+                REQUIRE(start <= reaplyLogCreationTime);
+                REQUIRE(reaplyLogCreationTime <= end);
+
+                // finally, compare outputs with the timestamp node removed
+                replayLogCreationNode->unlink();
+                auto respDataTreeStr = *responseDataTree->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings);
+                auto expeDataTreeStr = *expectedDataTree->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings);
+                REQUIRE(respDataTreeStr == expeDataTreeStr);
+            }
+        }
     }
 }
