@@ -17,7 +17,7 @@ These features from the [RESTCONF RFC](https://datatracker.ietf.org/doc/html/rfc
 - Datastore resource responses do not contain the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1.1) and [`ETag`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1.2) headers for [edit collision prevention](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1)
 - Data resource responses do not contain the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.1) and [`ETag`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.2) headers.
 - [API resource](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.3), i.e., the top-level `{+restconf}` endpoint
-- [Event stream resource](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.8), and query parameters related to notifications [`start-time`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.8.7), and [`stop-time`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.8.8).
+- Query parameters [`start-time`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.8.7), and [`stop-time`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.8.8).
 - The [`fields`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.8.3).
 
 ### Access control model
