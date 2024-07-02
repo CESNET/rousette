@@ -514,6 +514,12 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[2]", "urn:ietf:params:restconf:capability:depth:1.0");
     m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[3]", "urn:ietf:params:restconf:capability:with-defaults:1.0");
     m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[4]", "urn:ietf:params:restconf:capability:filter:1.0");
+
+    // set event stream list
+    m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/streams/stream[name='NETCONF']/description", "Default NETCONF notification stream");
+    m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/streams/stream[name='NETCONF']/access[encoding='xml']/location", "http://example.com/streams/NETCONF/XML");
+    m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/streams/stream[name='NETCONF']/access[encoding='json']/location", "http://example.com/streams/NETCONF/json");
+
     m_monitoringSession.applyChanges();
 
     dwdmEvents->change.connect([this](const std::string& content) {

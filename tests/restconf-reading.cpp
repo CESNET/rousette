@@ -82,6 +82,24 @@ TEST_CASE("reading data")
         "urn:ietf:params:restconf:capability:with-defaults:1.0",
         "urn:ietf:params:restconf:capability:filter:1.0"
       ]
+    },
+    "streams": {
+      "stream": [
+        {
+          "name": "NETCONF",
+          "description": "Default NETCONF notification stream",
+          "access": [
+            {
+              "encoding": "xml",
+              "location": "http://example.com/streams/NETCONF/XML"
+            },
+            {
+              "encoding": "json",
+              "location": "http://example.com/streams/NETCONF/json"
+            }
+          ]
+        }
+      ]
     }
   },
   "ietf-system:system": {
@@ -105,6 +123,24 @@ TEST_CASE("reading data")
         "urn:ietf:params:restconf:capability:depth:1.0",
         "urn:ietf:params:restconf:capability:with-defaults:1.0",
         "urn:ietf:params:restconf:capability:filter:1.0"
+      ]
+    },
+    "streams": {
+      "stream": [
+        {
+          "name": "NETCONF",
+          "description": "Default NETCONF notification stream",
+          "access": [
+            {
+              "encoding": "xml",
+              "location": "http://example.com/streams/NETCONF/XML"
+            },
+            {
+              "encoding": "json",
+              "location": "http://example.com/streams/NETCONF/json"
+            }
+          ]
+        }
       ]
     }
   },
@@ -512,6 +548,24 @@ TEST_CASE("reading data")
         "urn:ietf:params:restconf:capability:depth:1.0",
         "urn:ietf:params:restconf:capability:with-defaults:1.0",
         "urn:ietf:params:restconf:capability:filter:1.0"
+      ]
+    },
+    "streams": {
+      "stream": [
+        {
+          "name": "NETCONF",
+          "description": "Default NETCONF notification stream",
+          "access": [
+            {
+              "encoding": "xml",
+              "location": "http://example.com/streams/NETCONF/XML"
+            },
+            {
+              "encoding": "json",
+              "location": "http://example.com/streams/NETCONF/json"
+            }
+          ]
+        }
       ]
     }
   }
