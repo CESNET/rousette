@@ -39,4 +39,7 @@ public:
     NotificationStream(const nghttp2::asio_http2::server::request& req, const nghttp2::asio_http2::server::response& res, std::shared_ptr<rousette::http::EventStream::Signal> signal, sysrepo::Session session, libyang::DataFormat dataFormat, const std::optional<std::string>& filter);
     void activate();
 };
+
+void notificationStreamList(sysrepo::Session& session, std::optional<libyang::DataNode>& parent, const std::string& streamsPrefix);
+libyang::DataNode replaceStreamLocations(const std::optional<std::string>& schemeAndHost, libyang::DataNode& node);
 }
