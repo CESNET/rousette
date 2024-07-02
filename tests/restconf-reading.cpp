@@ -82,6 +82,24 @@ TEST_CASE("reading data")
         "urn:ietf:params:restconf:capability:with-defaults:1.0",
         "urn:ietf:params:restconf:capability:filter:1.0"
       ]
+    },
+    "streams": {
+      "stream": [
+        {
+          "name": "NETCONF",
+          "description": "Default NETCONF notification stream",
+          "access": [
+            {
+              "encoding": "xml",
+              "location": "/streams/NETCONF/XML"
+            },
+            {
+              "encoding": "json",
+              "location": "/streams/NETCONF/JSON"
+            }
+          ]
+        }
+      ]
     }
   },
   "ietf-system:system": {
@@ -105,6 +123,24 @@ TEST_CASE("reading data")
         "urn:ietf:params:restconf:capability:depth:1.0",
         "urn:ietf:params:restconf:capability:with-defaults:1.0",
         "urn:ietf:params:restconf:capability:filter:1.0"
+      ]
+    },
+    "streams": {
+      "stream": [
+        {
+          "name": "NETCONF",
+          "description": "Default NETCONF notification stream",
+          "access": [
+            {
+              "encoding": "xml",
+              "location": "/streams/NETCONF/XML"
+            },
+            {
+              "encoding": "json",
+              "location": "/streams/NETCONF/JSON"
+            }
+          ]
+        }
       ]
     }
   },
@@ -504,7 +540,8 @@ TEST_CASE("reading data")
 
     SECTION("restconf monitoring")
     {
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-restconf-monitoring:restconf-state", {}) == Response{200, jsonHeaders, R"({
+        // with forwarded header we can report full stream location
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-restconf-monitoring:restconf-state", {FORWARDED}) == Response{200, jsonHeaders, R"({
   "ietf-restconf-monitoring:restconf-state": {
     "capabilities": {
       "capability": [
@@ -512,6 +549,24 @@ TEST_CASE("reading data")
         "urn:ietf:params:restconf:capability:depth:1.0",
         "urn:ietf:params:restconf:capability:with-defaults:1.0",
         "urn:ietf:params:restconf:capability:filter:1.0"
+      ]
+    },
+    "streams": {
+      "stream": [
+        {
+          "name": "NETCONF",
+          "description": "Default NETCONF notification stream",
+          "access": [
+            {
+              "encoding": "xml",
+              "location": "http://example.net/streams/NETCONF/XML"
+            },
+            {
+              "encoding": "json",
+              "location": "http://example.net/streams/NETCONF/JSON"
+            }
+          ]
+        }
       ]
     }
   }
