@@ -211,4 +211,6 @@ TEST_CASE("NETCONF notification streams")
         REQUIRE(get("/streams/NETCONF/XML?filter=.878", {}) == Response{400, noContentTypeHeaders, ""});
         REQUIRE(get("/streams/NETCONF/XML?filter=", {}) == Response{400, noContentTypeHeaders, ""});
     }
+
+    SECTION("Replay support")
 }
