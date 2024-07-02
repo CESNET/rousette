@@ -48,4 +48,7 @@ public:
         const std::optional<std::string>& filter);
     void activate();
 };
+
+void notificationStreamList(sysrepo::Session& session, std::optional<libyang::DataNode>& parent, const std::string& streamsPrefix);
+libyang::DataNode replaceStreamLocations(const std::optional<std::string>& schemeAndHost, libyang::DataNode& node);
 }
