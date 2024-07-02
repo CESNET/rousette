@@ -516,6 +516,13 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[4]", "urn:ietf:params:restconf:capability:filter:1.0");
     m_monitoringSession.applyChanges();
 
+    m_monitoringOperSub = m_monitoringSession.onOperGet(
+        "ietf-restconf-monitoring", [](auto session, auto, auto, auto, auto, auto, auto& parent) {
+            notificationStreamList(session, parent);
+            return sysrepo::ErrorCode::Ok;
+        },
+        "/ietf-restconf-monitoring:restconf-state/streams/stream");
+
     dwdmEvents->change.connect([this](const std::string& content) {
         opticsChange(as_restconf_push_update(content, std::chrono::system_clock::now()));
     });

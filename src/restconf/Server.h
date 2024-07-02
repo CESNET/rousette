@@ -33,6 +33,7 @@ public:
 
 private:
     sysrepo::Session m_monitoringSession;
+    std::optional<sysrepo::Subscription> m_monitoringOperSub;
     Nacm nacm;
     std::unique_ptr<nghttp2::asio_http2::server::http2> server;
     std::unique_ptr<sr::OpticalEvents> dwdmEvents;
