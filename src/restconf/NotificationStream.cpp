@@ -61,10 +61,12 @@ void createNotificationSub(
     const std::string& moduleName,
     rousette::http::EventStream::Signal& signal,
     libyang::DataFormat dataFormat,
-    const std::optional<std::string>& filter)
+    const std::optional<std::string>& filter,
+    const std::optional<sysrepo::NotificationTimeStamp>& startTime,
+    const std::optional<sysrepo::NotificationTimeStamp>& stopTime)
 {
     auto notifCb = [&signal, dataFormat](auto session, auto, sysrepo::NotificationType type, const std::optional<libyang::DataNode>& notificationTree, const sysrepo::NotificationTimeStamp& time) {
-        if (type != sysrepo::NotificationType::Realtime) {
+        if (type != sysrepo::NotificationType::Realtime && type != sysrepo::NotificationType::Replay) {
             return;
         }
 
@@ -72,9 +74,9 @@ void createNotificationSub(
     };
 
     if (!sub) {
-        sub = session.onNotification(moduleName, std::move(notifCb), filter);
+        sub = session.onNotification(moduleName, std::move(notifCb), filter, startTime, stopTime);
     } else {
-        sub->onNotification(moduleName, std::move(notifCb), filter);
+        sub->onNotification(moduleName, std::move(notifCb), filter, startTime, stopTime);
     }
 }
 }
@@ -87,13 +89,26 @@ NotificationStream::NotificationStream(
     std::shared_ptr<rousette::http::EventStream::Signal> signal,
     sysrepo::Session session,
     libyang::DataFormat dataFormat,
-    const std::optional<std::string>& filter)
+    const std::optional<std::string>& filter,
+    const std::optional<sysrepo::NotificationTimeStamp>& startTime,
+    const std::optional<sysrepo::NotificationTimeStamp>& stopTime)
     : EventStream(req, res, *signal)
     , m_notificationSignal(signal)
     , m_session(std::move(session))
     , m_dataFormat(dataFormat)
     , m_filter(filter)
+    , m_startTime(startTime)
+    , m_stopTime(stopTime)
 {
+    auto now = std::chrono::system_clock::now();
+
+    if (startTime && stopTime && startTime >= stopTime) {
+        throw ErrorResponse(400, "application", "invalid-argument", "stop-time must be greater than start-time");
+    } else if (startTime && startTime > now) {
+        throw ErrorResponse(400, "application", "invalid-argument", "start-time is in the future");
+    } else if (!startTime && stopTime) {
+        throw ErrorResponse(400, "application", "invalid-argument", "stop-time must be used with start-time");
+    }
 }
 
 void NotificationStream::activate()
@@ -101,7 +116,7 @@ void NotificationStream::activate()
     for (const auto& mod : m_session.getContext().modules()) {
         if (mod.implemented() && mod.name() != "sysrepo" /* unsupported to subscribe to sysrepo module */) {
             try {
-                createNotificationSub(m_notifSubs, m_session, mod.name(), *m_notificationSignal, m_dataFormat, m_filter);
+                createNotificationSub(m_notifSubs, m_session, mod.name(), *m_notificationSignal, m_dataFormat, m_filter, m_startTime, m_stopTime);
             } catch (sysrepo::ErrorWithCode& e) {
                 if (e.code() == sysrepo::ErrorCode::InvalidArgument) {
                     throw ErrorResponse(400, "application", "invalid-argument", e.what());
