@@ -10,6 +10,7 @@
 #include <nghttp2/asio_http2_server.h>
 #include <spdlog/spdlog.h>
 #include <sysrepo-cpp/Enum.hpp>
+#include <sysrepo-cpp/Subscription.hpp>
 #include <sysrepo-cpp/utils/exception.hpp>
 #include "http/utils.hpp"
 #include "restconf/Exceptions.h"
@@ -556,6 +557,8 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
         auto sess = conn.sessionStart();
         libyang::DataFormat dataFormat;
         std::optional<std::string> xpathFilter;
+        std::optional<sysrepo::NotificationTimeStamp> startTime;
+        std::optional<sysrepo::NotificationTimeStamp> stopTime;
 
         try {
             authorizeRequest(nacm, sess, req);
@@ -575,7 +578,14 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 xpathFilter = std::get<std::string>(it->second);
             }
 
-            auto client = std::make_shared<NotificationStream>(req, res, sess, dataFormat, xpathFilter);
+            if (auto it = streamRequest.queryParams.find("start-time"); it != streamRequest.queryParams.end()) {
+                startTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
+            }
+            if (auto it = streamRequest.queryParams.find("stop-time"); it != streamRequest.queryParams.end()) {
+                stopTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
+            }
+
+            auto client = std::make_shared<NotificationStream>(req, res, sess, dataFormat, xpathFilter, startTime, stopTime);
             client->activate();
         } catch (const auth::Error& e) {
             processAuthError(req, res, e, [&res]() {

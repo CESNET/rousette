@@ -14,6 +14,8 @@
 #include "restconf/NotificationStream.h"
 #include "utils/yang.h"
 
+using namespace std::string_literals;
+
 namespace {
 /** @brief Wraps a notification data tree with RESTCONF notification envelope. */
 std::string as_restconf_notification(const libyang::Context& ctx, libyang::DataFormat dataFormat, libyang::DataNode notification, const sysrepo::NotificationTimeStamp& time)
@@ -44,30 +46,47 @@ std::string as_restconf_notification(const libyang::Context& ctx, libyang::DataF
     return res;
 }
 
-sysrepo::Subscription createNotificationSub(sysrepo::Session& session, const std::string& moduleName, rousette::http::EventStream::Signal& signal, libyang::DataFormat dataFormat, const std::optional<std::string>& filter)
+sysrepo::Subscription createNotificationSub(
+    sysrepo::Session& session,
+    const std::string& moduleName,
+    rousette::http::EventStream::Signal& signal,
+    libyang::DataFormat dataFormat,
+    const std::optional<std::string>& filter,
+    const std::optional<sysrepo::NotificationTimeStamp>& startTime,
+    const std::optional<sysrepo::NotificationTimeStamp>& stopTime)
 {
     return session.onNotification(
         moduleName,
         [&signal, dataFormat](auto session, auto, sysrepo::NotificationType type, const std::optional<libyang::DataNode>& notificationTree, const sysrepo::NotificationTimeStamp& time) {
-            if (type != sysrepo::NotificationType::Realtime) {
+            if (type != sysrepo::NotificationType::Realtime && type != sysrepo::NotificationType::Replay) {
                 return;
             }
 
+            spdlog::error("....notif={}", *notificationTree->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings | libyang::PrintFlags::Shrink));
             signal(as_restconf_notification(session.getContext(), dataFormat, *notificationTree, time));
         },
-        filter);
+        filter,
+        startTime,
+        stopTime);
 }
 }
 
 namespace rousette::restconf {
 
-NotificationStream::NotificationStream(const nghttp2::asio_http2::server::request& req, const nghttp2::asio_http2::server::response& res, sysrepo::Session session, libyang::DataFormat dataFormat, const std::optional<std::string>& filter)
+NotificationStream::NotificationStream(
+    const nghttp2::asio_http2::server::request& req,
+    const nghttp2::asio_http2::server::response& res,
+    sysrepo::Session session,
+    libyang::DataFormat dataFormat,
+    const std::optional<std::string>& filter,
+    const std::optional<sysrepo::NotificationTimeStamp>& startTime,
+    const std::optional<sysrepo::NotificationTimeStamp>& stopTime)
     : EventStream(req, res)
 {
     for (const auto& mod : session.getContext().modules()) {
         if (mod.implemented()) {
             try {
-                m_notifSubs.emplace_back(createNotificationSub(session, mod.name(), m_notificationSignal, dataFormat, filter));
+                m_notifSubs.emplace_back(createNotificationSub(session, mod.name(), m_notificationSignal, dataFormat, filter, startTime, stopTime));
             } catch (sysrepo::ErrorWithCode& e) {
                 if (e.code() == sysrepo::ErrorCode::InvalidArgument) {
                     throw ErrorResponse(400, "application", "invalid-argument", e.what());
