@@ -110,6 +110,10 @@ struct insertTable: x3::symbols<queryParams::QueryParamValue> {
     }
 } const insertParam;
 
+const auto dateAndTime = x3::rule<class dateAndTime, std::string>{"dateAndTime"} =
+    x3::repeat(4)[x3::digit] >> x3::char_('-') >> x3::repeat(2)[x3::digit] >> x3::char_('-') >> x3::repeat(2)[x3::digit] >> x3::char_('T') >>
+    x3::repeat(2)[x3::digit] >> x3::char_(':') >> x3::repeat(2)[x3::digit] >> x3::char_(':') >> x3::repeat(2)[x3::digit] >> -(x3::char_('.') >> +x3::digit) >>
+    (x3::char_('Z') | (-(x3::char_('+')|x3::char_('-')) >> x3::repeat(2)[x3::digit] >> x3::char_(':') >> x3::repeat(2)[x3::digit]));
 const auto xpathExpr = x3::rule<class xpathExpr , std::string>{"xpathExpr"} = x3::lexeme[+((x3::lit("&amp;") >> x3::attr('&')) | (x3::char_ - '&'))];
 const auto depthParam = x3::rule<class depthParam, queryParams::QueryParamValue>{"depthParam"} = x3::uint_[validDepthValues] | (x3::string("unbounded") >> x3::attr(queryParams::UnboundedDepth{}));
 const auto queryParamPair = x3::rule<class queryParamPair, std::pair<std::string, queryParams::QueryParamValue>>{"queryParamPair"} =
@@ -118,7 +122,9 @@ const auto queryParamPair = x3::rule<class queryParamPair, std::pair<std::string
         (x3::string("content") >> "=" >> contentParam) |
         (x3::string("insert") >> "=" >> insertParam) |
         (x3::string("point") >> "=" >> uriPath) |
-        (x3::string("filter") >> "=" >> xpathExpr);
+        (x3::string("filter") >> "=" >> xpathExpr) |
+        (x3::string("start-time") >> "=" >> dateAndTime) |
+        (x3::string("stop-time") >> "=" >> dateAndTime);
 
 const auto queryParamGrammar = x3::rule<class grammar, queryParams::QueryParams>{"queryParamGrammar"} = queryParamPair % "&" | x3::eps;
 
@@ -379,8 +385,10 @@ void validateQueryParameters(const std::multimap<std::string, queryParams::Query
         }
     }
 
-    if (auto it = params.find("filter"); it != params.end()) {
-        throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter 'filter' can be used only with streams");
+    for (const auto& param : {"filter", "start-time", "stop-time"}) {
+        if (auto it = params.find(param); it != params.end()) {
+            throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter '"s + param + "' can be used only with streams");
+        }
     }
 
     {
@@ -404,7 +412,7 @@ void validateQueryParametersForStream(const std::multimap<std::string, queryPara
             throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter '" + k + "' already specified");
         }
 
-        if (k != "filter") {
+        if (k != "filter" && k != "start-time" && k != "stop-time") {
             throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter '" + k + "' can't be used with streams");
         }
     }
