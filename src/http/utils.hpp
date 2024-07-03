@@ -6,6 +6,7 @@
  */
 
 #include <nghttp2/asio_http2_server.h>
+#include <optional>
 
 namespace rousette::http {
 
