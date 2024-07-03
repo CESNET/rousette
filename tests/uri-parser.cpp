@@ -792,6 +792,17 @@ TEST_CASE("URI path parser")
             REQUIRE(parseQueryParams("filter=/example:mod/statistics[errors>0]&") == std::nullopt);
             REQUIRE(parseQueryParams("filter=/example:mod[name='&amp;']") == std::nullopt);
             REQUIRE(parseQueryParams("filter=/example:mod[name='%26']&depth=1") == QueryParams{{"filter", "/example:mod[name='&']"s}, {"depth", 1u}});
+            REQUIRE(parseQueryParams("filter=/example:mod[name='&amp;']&depth=1") == QueryParams{{"filter", "/example:mod[name='&']"s}, {"depth", 1u}});
+            REQUIRE(parseQueryParams("filter=/example:mod[name='&amp;']&depth=1") == QueryParams{{"filter", "/example:mod[name='&']"s}, {"depth", 1u}});
+            REQUIRE(parseQueryParams("start-time=2023-01-01T00:00:00.23232Z") == QueryParams{{"start-time", "2023-01-01T00:00:00.23232Z"}});
+            REQUIRE(parseQueryParams("start-time=2023-01-01T12:30:00+01:00") == QueryParams{{"start-time", "2023-01-01T12:30:00+01:00"}});
+            REQUIRE(parseQueryParams("start-time=2023-01-01T23:59:59.123-05:00") == QueryParams{{"start-time", "2023-01-01T23:59:59.123-05:00"}});
+            REQUIRE(parseQueryParams("stop-time=2023-02-28T12:00:00.1+09:00") == QueryParams{{"stop-time", "2023-02-28T12:00:00.1+09:00"}});
+            REQUIRE(parseQueryParams("stop-time=2023-05-20T18:30:00+05:30") == QueryParams{{"stop-time", "2023-05-20T18:30:00+05:30"}});
+            REQUIRE(parseQueryParams("stop-time=2023-05-20E18:30:00+05:30") == std::nullopt);
+            REQUIRE(parseQueryParams("stop-time=2023-05-20T18:30:00") == std::nullopt);
+            REQUIRE(parseQueryParams("stop-time=20230520T18:30:00Z") == std::nullopt);
+            REQUIRE(parseQueryParams("stop-time=2023-05-a0T18:30:00+05:30") == std::nullopt);
         }
 
         SECTION("Full requests with validation")
@@ -907,6 +918,26 @@ TEST_CASE("URI path parser")
 
                 REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "GET", "/restconf/data/example:ordered-lists", "filter=something"),
                                        serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'filter' can be used only with streams").c_str(),
+                                       rousette::restconf::ErrorResponse);
+            }
+
+            SECTION("start-time")
+            {
+                auto resp = asRestconfStreamRequest("/streams/NETCONF/XML", "start-time=2024-01-01T01:01:01Z");
+                REQUIRE(resp.queryParams == QueryParams({{"start-time", "2024-01-01T01:01:01Z"s}}));
+
+                REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "GET", "/restconf/data/example:ordered-lists", "start-time=2024-01-01T01:01:01Z"),
+                                       serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'start-time' can be used only with streams").c_str(),
+                                       rousette::restconf::ErrorResponse);
+            }
+
+            SECTION("stop-time")
+            {
+                auto resp = asRestconfStreamRequest("/streams/NETCONF/XML", "stop-time=2024-01-01T01:01:01Z");
+                REQUIRE(resp.queryParams == QueryParams({{"stop-time", "2024-01-01T01:01:01Z"s}}));
+
+                REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "GET", "/restconf/data/example:ordered-lists", "stop-time=2024-01-01T01:01:01Z"),
+                                       serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'stop-time' can be used only with streams").c_str(),
                                        rousette::restconf::ErrorResponse);
             }
 
