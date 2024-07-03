@@ -128,22 +128,22 @@ TEST_CASE("NETCONF notification streams")
     auto server = rousette::restconf::Server{srConn, SERVER_ADDRESS, SERVER_PORT};
     setupRealNacm(srSess);
 
+    // parent for nested notification
+    srSess.switchDatastore(sysrepo::Datastore::Operational);
+    srSess.setItem("/example:tlc/list[name='k1']/choice1", "something must me here");
+    srSess.applyChanges();
+
+    std::vector<std::string> notificationsJSON{
+        R"({"example:eventA":{"message":"blabla","progress":11}})",
+        R"({"example:eventB":{}})",
+        R"({"example-notif:something-happened":{}})",
+        R"({"example:eventA":{"message":"almost finished","progress":99}})",
+        R"({"example:tlc":{"list":[{"name":"k1","notif":{"message":"nested"}}]}})",
+    };
+    std::vector<std::string> expectedNotificationsJSON;
+
     SECTION("NETCONF streams")
     {
-        // parent for nested notification
-        srSess.switchDatastore(sysrepo::Datastore::Operational);
-        srSess.setItem("/example:tlc/list[name='k1']/choice1", "something must me here");
-        srSess.applyChanges();
-
-        std::vector<std::string> notificationsJSON{
-            R"({"example:eventA":{"message":"blabla","progress":11}})",
-            R"({"example:eventB":{}})",
-            R"({"example-notif:something-happened":{}})",
-            R"({"example:eventA":{"message":"almost finished","progress":99}})",
-            R"({"example:tlc":{"list":[{"name":"k1","notif":{"message":"nested"}}]}})",
-        };
-        std::vector<std::string> expectedNotificationsJSON;
-
         std::string uri;
         libyang::DataFormat dataFormat;
         std::map<std::string, std::string> headers;
@@ -227,6 +227,10 @@ TEST_CASE("NETCONF notification streams")
     {
         REQUIRE(get("/streams/NETCONF/XML?filter=.878", {}) == Response{400, plaintextHeaders, "Couldn't create notification subscription: SR_ERR_INVAL_ARG\n XPath \".878\" does not select any notifications. (SR_ERR_INVAL_ARG)"});
         REQUIRE(get("/streams/NETCONF/XML?filter=", {}) == Response{400, plaintextHeaders, "Query parameters syntax error"});
+
+        REQUIRE(get("/streams/NETCONF/XML?start-time=2000-01-01T00:00:00+00:00&stop-time=1990-01-01T00:00:00+00:00", {}) == Response{400, plaintextHeaders, "stop-time must be greater than start-time"});
+        REQUIRE(get("/streams/NETCONF/XML?stop-time=1990-01-01T00:00:00+00:00", {}) == Response{400, plaintextHeaders, "stop-time must be used with start-time"});
+        REQUIRE(get("/streams/NETCONF/XML?start-time=" + libyang::yangTimeFormat(std::chrono::system_clock::now() + std::chrono::hours(1), libyang::TimezoneInterpretation::Local), {}) == Response{400, plaintextHeaders, "start-time is in the future"});
     }
 
     SECTION("Replays")
@@ -260,5 +264,101 @@ TEST_CASE("NETCONF notification streams")
         srConn.setModuleReplaySupport("example", false);
         REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-restconf-monitoring:restconf-state/streams/stream=NETCONF/replay-support", {AUTH_ROOT, FORWARDED}).statusCode == 404);
         REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-restconf-monitoring:restconf-state/streams/stream=NETCONF/replay-log-creation-time", {AUTH_ROOT, FORWARDED}).statusCode == 404);
+    }
+
+    SECTION("Replay support")
+    {
+        srConn.setModuleReplaySupport("example", true);
+        srConn.setModuleReplaySupport("example-notif", true);
+
+        std::string uri = "/streams/NETCONF/XML";
+
+        boost::asio::io_service io;
+
+        std::latch requestSent(1);
+        std::jthread notificationThread;
+
+        SECTION("Start time")
+        {
+            expectedNotificationsJSON = notificationsJSON;
+            uri += "?start-time=" + libyang::yangTimeFormat(std::chrono::system_clock::now(), libyang::TimezoneInterpretation::Local);
+
+            SECTION("All notifications before client connects")
+            {
+                notificationThread = std::jthread([&]() {
+                    auto notifSession = sysrepo::Connection{}.sessionStart();
+                    auto ctx = notifSession.getContext();
+
+                    SEND_NOTIFICATION(notificationsJSON[0]);
+                    SEND_NOTIFICATION(notificationsJSON[1]);
+                    SEND_NOTIFICATION(notificationsJSON[2]);
+                    SEND_NOTIFICATION(notificationsJSON[3]);
+                    SEND_NOTIFICATION(notificationsJSON[4]);
+                    requestSent.count_down();
+
+                    waitForCompletionAndBitMore(seq1);
+                    io.stop();
+                });
+            }
+
+            SECTION("Some notifications before client connects")
+            {
+                notificationThread = std::jthread([&]() {
+                    auto notifSession = sysrepo::Connection{}.sessionStart();
+                    auto ctx = notifSession.getContext();
+
+                    SEND_NOTIFICATION(notificationsJSON[0]);
+                    SEND_NOTIFICATION(notificationsJSON[1]);
+
+                    std::this_thread::sleep_for(250ms);
+                    requestSent.count_down();
+                    std::this_thread::sleep_for(250ms);
+
+                    SEND_NOTIFICATION(notificationsJSON[2]);
+                    SEND_NOTIFICATION(notificationsJSON[3]);
+                    SEND_NOTIFICATION(notificationsJSON[4]);
+
+                    waitForCompletionAndBitMore(seq1);
+                    io.stop();
+                });
+            }
+        }
+
+        SECTION("Start and stop time")
+        {
+            auto notifSession = sysrepo::Connection{}.sessionStart();
+            auto ctx = notifSession.getContext();
+
+            expectedNotificationsJSON = {notificationsJSON[2]};
+
+            SEND_NOTIFICATION(notificationsJSON[0]);
+            SEND_NOTIFICATION(notificationsJSON[1]);
+
+            auto start = std::chrono::system_clock::now();
+            SEND_NOTIFICATION(notificationsJSON[2]);
+            auto end = std::chrono::system_clock::now();
+
+            uri += "?start-time=" + libyang::yangTimeFormat(start, libyang::TimezoneInterpretation::Local) + "&stop-time=" + libyang::yangTimeFormat(end, libyang::TimezoneInterpretation::Local);
+
+            requestSent.count_down();
+            notificationThread = std::jthread([&]() {
+                auto notifSession = sysrepo::Connection{}.sessionStart();
+                auto ctx = notifSession.getContext();
+                SEND_NOTIFICATION(notificationsJSON[3]);
+                SEND_NOTIFICATION(notificationsJSON[4]);
+
+                waitForCompletionAndBitMore(seq1);
+                io.stop();
+            });
+        }
+
+        NotificationWatcher netconfWatcher(srConn.sessionStart().getContext(), libyang::DataFormat::XML);
+        SSEClient cli(io, requestSent, netconfWatcher, uri, {AUTH_ROOT});
+
+        for (const auto& notif : expectedNotificationsJSON) {
+            EXPECT_NOTIFICATION(notif);
+        }
+
+        io.run();
     }
 }
