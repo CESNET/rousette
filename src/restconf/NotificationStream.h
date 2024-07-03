@@ -36,6 +36,8 @@ class NotificationStream : public rousette::http::EventStream {
     sysrepo::Session m_session;
     libyang::DataFormat m_dataFormat;
     std::optional<std::string> m_filter;
+    std::optional<sysrepo::NotificationTimeStamp> m_startTime;
+    std::optional<sysrepo::NotificationTimeStamp> m_stopTime;
     std::optional<sysrepo::Subscription> m_notifSubs;
 
 public:
@@ -45,7 +47,9 @@ public:
         std::shared_ptr<rousette::http::EventStream::Signal> signal,
         sysrepo::Session sess,
         libyang::DataFormat dataFormat,
-        const std::optional<std::string>& filter);
+        const std::optional<std::string>& filter,
+        const std::optional<sysrepo::NotificationTimeStamp>& startTime,
+        const std::optional<sysrepo::NotificationTimeStamp>& stopTime);
     void activate();
 };
 
