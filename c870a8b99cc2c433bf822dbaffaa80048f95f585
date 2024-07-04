@@ -16,6 +16,92 @@
       "message": "recheck",
       "revId": "c870a8b99cc2c433bf822dbaffaa80048f95f585",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e30f6eea_466b823f",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 738,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-04T10:52:04Z",
+      "side": 1,
+      "message": "nit: space",
+      "range": {
+        "startLine": 738,
+        "startChar": 43,
+        "endLine": 738,
+        "endChar": 44
+      },
+      "revId": "c870a8b99cc2c433bf822dbaffaa80048f95f585",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6919cc07_a413fad1",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 742,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-04T10:52:04Z",
+      "side": 1,
+      "message": "nit: space",
+      "range": {
+        "startLine": 742,
+        "startChar": 57,
+        "endLine": 742,
+        "endChar": 58
+      },
+      "revId": "c870a8b99cc2c433bf822dbaffaa80048f95f585",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "608b493b_342bc55f",
+        "filename": "src/restconf/Server.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-04T10:52:04Z",
+      "side": 1,
+      "message": "there\u0027s no harm in using std::chrono::milliseconds here; in fact, that way the type info tells you what the units are. Perform the conversion in main() directly.",
+      "range": {
+        "startLine": 30,
+        "startChar": 99,
+        "endLine": 30,
+        "endChar": 103
+      },
+      "revId": "c870a8b99cc2c433bf822dbaffaa80048f95f585",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "030543fc_91d91a40",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-04T10:52:04Z",
+      "side": 1,
+      "message": "please change that variable\u0027s type to std::chrono::milliseconds, and make the multiplication here",
+      "revId": "c870a8b99cc2c433bf822dbaffaa80048f95f585",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
