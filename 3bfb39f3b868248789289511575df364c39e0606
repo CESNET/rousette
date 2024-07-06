@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "22a891cf_e653d3b5",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-06T10:10:40Z",
+      "side": 1,
+      "message": "These dependencies are not brought in \"directly\", this will require a change to sync them via the `CzechLight/dependencies` repo. I would prefer you to leave this as-is for now, and we will sort it out along some other updates (also, libyang will need fixes to fix that ODR violation).",
+      "range": {
+        "startLine": 12,
+        "startChar": 0,
+        "endLine": 12,
+        "endChar": 1
+      },
+      "revId": "3bfb39f3b868248789289511575df364c39e0606",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6451dfb9_3e2cd3ac",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-06T10:10:40Z",
+      "side": 1,
+      "message": "nit: const (also everywhere else)",
+      "range": {
+        "startLine": 162,
+        "startChar": 68,
+        "endLine": 162,
+        "endChar": 93
+      },
+      "revId": "3bfb39f3b868248789289511575df364c39e0606",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d3327f74_eb3198a0",
+        "filename": "src/restconf/Server.h",
+        "patchSetId": 7
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-06T10:10:40Z",
+      "side": 1,
+      "message": "nit: const",
+      "range": {
+        "startLine": 30,
+        "startChar": 99,
+        "endLine": 30,
+        "endChar": 124
+      },
+      "revId": "3bfb39f3b868248789289511575df364c39e0606",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fe04b9f7_d21b6f70",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-06T10:10:40Z",
+      "side": 1,
+      "message": "nit: there\u0027s no need to repeat the type info twice; please do one of:\n\n- auto timeout \u003d std::chrono::milliseconds{0};\n- std::chrono::milliseconds timeout{0};",
+      "range": {
+        "startLine": 78,
+        "startChar": 4,
+        "endLine": 78,
+        "endChar": 29
+      },
+      "revId": "3bfb39f3b868248789289511575df364c39e0606",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
