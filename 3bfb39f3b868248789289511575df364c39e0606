@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "ba8e3034_a8d01080",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-07-07T19:40:16Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "22a891cf_e653d3b5",
+      "range": {
+        "startLine": 12,
+        "startChar": 0,
+        "endLine": 12,
+        "endChar": 1
+      },
+      "revId": "3bfb39f3b868248789289511575df364c39e0606",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "6451dfb9_3e2cd3ac",
@@ -37,6 +61,30 @@
       "writtenOn": "2024-07-06T10:10:40Z",
       "side": 1,
       "message": "nit: const (also everywhere else)",
+      "range": {
+        "startLine": 162,
+        "startChar": 68,
+        "endLine": 162,
+        "endChar": 93
+      },
+      "revId": "3bfb39f3b868248789289511575df364c39e0606",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "55390941_44999943",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-07-07T19:40:16Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6451dfb9_3e2cd3ac",
       "range": {
         "startLine": 162,
         "startChar": 68,
@@ -70,6 +118,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "b925b285_821156f7",
+        "filename": "src/restconf/Server.h",
+        "patchSetId": 7
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-07-07T19:40:16Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d3327f74_eb3198a0",
+      "range": {
+        "startLine": 30,
+        "startChar": 99,
+        "endLine": 30,
+        "endChar": 124
+      },
+      "revId": "3bfb39f3b868248789289511575df364c39e0606",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "fe04b9f7_d21b6f70",
@@ -83,6 +155,30 @@
       "writtenOn": "2024-07-06T10:10:40Z",
       "side": 1,
       "message": "nit: there\u0027s no need to repeat the type info twice; please do one of:\n\n- auto timeout \u003d std::chrono::milliseconds{0};\n- std::chrono::milliseconds timeout{0};",
+      "range": {
+        "startLine": 78,
+        "startChar": 4,
+        "endLine": 78,
+        "endChar": 29
+      },
+      "revId": "3bfb39f3b868248789289511575df364c39e0606",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7186e127_fb7a0147",
+        "filename": "src/restconf/main.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-07-07T19:40:16Z",
+      "side": 1,
+      "message": "Thanks! Done",
+      "parentUuid": "fe04b9f7_d21b6f70",
       "range": {
         "startLine": 78,
         "startChar": 4,
