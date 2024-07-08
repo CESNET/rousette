@@ -46,6 +46,30 @@
       },
       "revId": "74840cd2165d221662b3c56b5e82eb48bda5cf5a",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fcac10c0_491b90bf",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-08T15:01:32Z",
+      "side": 1,
+      "message": "Making a change to use a local TZ offset is safe here, any consumer should be ready to accept timestamps in any TZ.",
+      "parentUuid": "5f03cd7b_8a91b885",
+      "range": {
+        "startLine": 41,
+        "startChar": 88,
+        "endLine": 41,
+        "endChar": 99
+      },
+      "revId": "74840cd2165d221662b3c56b5e82eb48bda5cf5a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
