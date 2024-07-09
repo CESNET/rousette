@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "be7ebb2f_b3cd3b0e",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T13:24:54Z",
+      "side": 1,
+      "message": "This is an XML escape syntax which is not used in HTTP query strings. I spent some time trying to find the actual RFC which defines this (https://datatracker.ietf.org/doc/html/rfc3986#section-3.4 is not the answer), and I ended up at the site I do not want to ever end up at, the whatwg living spec at https://url.spec.whatwg.org/#interface-urlsearchparams and https://url.spec.whatwg.org/#concept-urlencoded .\n\nThe TL;DR is that you simply eat anything up to EOI or \u0027\u0026\u0027, and then you apply percent-decoding (https://datatracker.ietf.org/doc/html/rfc3986#section-2.1) to this string. (If you want to be standard-compliant, it apparently applies to parameter *names* as well, and also to trivial input like insert\u003dlast, but please let\u0027s ignore that for now).",
+      "range": {
+        "startLine": 113,
+        "startChar": 100,
+        "endLine": 113,
+        "endChar": 107
+      },
+      "revId": "48c695cf901a88eb3691bfe27b71391b1712ae02",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "932fd879_64778b0f",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 792,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T13:24:54Z",
+      "side": 1,
+      "message": "whatwg says that this is equivalent to a version without the trialing \u0027\u0026\u0027, but we can ignore this for now",
+      "range": {
+        "startLine": 792,
+        "startChar": 38,
+        "endLine": 792,
+        "endChar": 79
+      },
+      "revId": "48c695cf901a88eb3691bfe27b71391b1712ae02",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "682f771d_4687ce52",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 793,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T13:24:54Z",
+      "side": 1,
+      "message": "this should really be preserved as \"\u0027\u0026amp;\u0027\"",
+      "range": {
+        "startLine": 793,
+        "startChar": 128,
+        "endLine": 793,
+        "endChar": 129
+      },
+      "revId": "48c695cf901a88eb3691bfe27b71391b1712ae02",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
