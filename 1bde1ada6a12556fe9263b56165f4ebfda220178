@@ -287,6 +287,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "a8d14ccb_c0b7492f",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-09T14:48:02Z",
+      "side": 1,
+      "message": "I have followed your suggestion with waitForCompletionAndBitMore() from the other comment. Then I think that for this commit the generic callback is probably not neccessary. Maybe the neccessity comes in the future but this commit is already quite large.",
+      "parentUuid": "e966ac2a_fa29801a",
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "fff0f71d_8ca4b6c9",
@@ -300,6 +318,24 @@
       "writtenOn": "2024-07-09T11:57:25Z",
       "side": 1,
       "message": "waitForCompletionAndBitMore(seq) should do the trick even without event counting; it looks at the number of unfulfilled expectations and once all mock calls are spent, it waits a bit and returns",
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a0c616fc_de872c63",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-09T14:48:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fff0f71d_8ca4b6c9",
       "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
