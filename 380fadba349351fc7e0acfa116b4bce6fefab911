@@ -1,0 +1,101 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "940740fc_2930086f",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T14:45:47Z",
+      "side": 1,
+      "message": "missing docs",
+      "revId": "380fadba349351fc7e0acfa116b4bce6fefab911",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ec6c62d0_eeaf048c",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T14:45:47Z",
+      "side": 1,
+      "message": "this will dereference a nullopt for the first YANG model which actually has the timestamp set (please add a test for all of \"no replay supported\", \"some modules support replay, but there are no events\" and \"some modules support replay and there are some stored notifications\")",
+      "range": {
+        "startLine": 99,
+        "startChar": 88,
+        "endLine": 99,
+        "endChar": 115
+      },
+      "revId": "380fadba349351fc7e0acfa116b4bce6fefab911",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "604321b9_948ee842",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T14:45:47Z",
+      "side": 1,
+      "message": "please add a code comment why this needs to be silently ignored",
+      "revId": "380fadba349351fc7e0acfa116b4bce6fefab911",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4024d991_4b8c6a96",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 112,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T14:45:47Z",
+      "side": 1,
+      "message": "any reason for using uppercase \"XML\" and lowercase \"json\"?",
+      "range": {
+        "startLine": 111,
+        "startChar": 0,
+        "endLine": 112,
+        "endChar": 109
+      },
+      "revId": "380fadba349351fc7e0acfa116b4bce6fefab911",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "56ef82fb_4e67bed0",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T14:45:47Z",
+      "side": 1,
+      "message": "This will only say \"replay supported\" once there are some notification events in the datastore. The code should instead look at all modules, and if any of them supports notificaiton playback, then it should return true, IMHO. At least that\u0027s my reading of https://netopeer.liberouter.org/doc/sysrepo/master/html/group__schema__api.html#ga7737b9e63f0ccf3fac33a9220956683a and the `replay-support`\u0027s description from RFC 8040.",
+      "revId": "380fadba349351fc7e0acfa116b4bce6fefab911",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
