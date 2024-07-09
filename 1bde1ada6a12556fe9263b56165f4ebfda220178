@@ -143,6 +143,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "d0ead5a2_650bab08",
+        "filename": "src/restconf/NotificationStream.h",
+        "patchSetId": 11
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T15:13:56Z",
+      "side": 1,
+      "message": "nit: please line-wrap this",
+      "parentUuid": "583998a6_df152ae8",
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "3510ab43_064ea92a",
         "filename": "src/restconf/Server.cpp",
         "patchSetId": 11
@@ -213,6 +231,30 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "b053ab87_5ab6308f",
+      "range": {
+        "startLine": 50,
+        "startChar": 20,
+        "endLine": 50,
+        "endChar": 33
+      },
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b60e0460_7f26e951",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T15:13:56Z",
+      "side": 1,
+      "message": "This might be a tiny difference, but I think that a latch called \"waiting for SSE data\" should be only released once some SSE data have arrived. This is not the case here; the latch gets triggered when the client has sent its request (before we even know whether it got an HTTP server error, etc).",
+      "parentUuid": "6a18c96d_59a53251",
       "range": {
         "startLine": 50,
         "startChar": 20,
@@ -301,6 +343,24 @@
       "side": 1,
       "message": "I have followed your suggestion with waitForCompletionAndBitMore() from the other comment. Then I think that for this commit the generic callback is probably not neccessary. Maybe the neccessity comes in the future but this commit is already quite large.",
       "parentUuid": "e966ac2a_fa29801a",
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f4ff2497_e4ceb61e",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T15:13:56Z",
+      "side": 1,
+      "message": "that looks good to me, thanks",
+      "parentUuid": "a8d14ccb_c0b7492f",
       "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
