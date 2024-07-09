@@ -22,6 +22,30 @@
       },
       "revId": "1bc4c0f5e58dc141a6ddb86d2d03584562270b04",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e1829012_6099e402",
+        "filename": "src/restconf/utils/yang.h",
+        "patchSetId": 11
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-09T14:21:42Z",
+      "side": 0,
+      "message": "Done",
+      "parentUuid": "97927628_3e633457",
+      "range": {
+        "startLine": 17,
+        "startChar": 0,
+        "endLine": 18,
+        "endChar": 74
+      },
+      "revId": "1bc4c0f5e58dc141a6ddb86d2d03584562270b04",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }

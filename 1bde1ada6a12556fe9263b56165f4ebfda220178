@@ -20,6 +20,24 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "37d20884_36bb7174",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-09T14:21:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "95e45f1b_13d3fe24",
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "1e023f88_dbb4a824",
         "filename": "src/restconf/NotificationStream.cpp",
         "patchSetId": 11
@@ -64,6 +82,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "6dae1656_517f2386",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-09T14:21:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "472e73d2_7418dd62",
+      "range": {
+        "startLine": 69,
+        "startChar": 48,
+        "endLine": 70,
+        "endChar": 13
+      },
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "b5ec0988_1b1f411c",
@@ -81,6 +123,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "583998a6_df152ae8",
+        "filename": "src/restconf/NotificationStream.h",
+        "patchSetId": 11
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-09T14:21:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b5ec0988_1b1f411c",
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3510ab43_064ea92a",
@@ -94,6 +154,24 @@
       "writtenOn": "2024-07-09T11:57:25Z",
       "side": 1,
       "message": "that\u0027s a bit unfriendly; as a minimum please print out the error message as a text/plain blob",
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "92c8ce4b_6664153c",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 574,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-09T14:21:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3510ab43_064ea92a",
       "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -121,6 +199,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "6a18c96d_59a53251",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-09T14:21:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b053ab87_5ab6308f",
+      "range": {
+        "startLine": 50,
+        "startChar": 20,
+        "endLine": 50,
+        "endChar": 33
+      },
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "1b32fa7b_ae1c7774",
@@ -134,6 +236,30 @@
       "writtenOn": "2024-07-09T11:57:25Z",
       "side": 1,
       "message": "please add a comment, e.g.:\n \n// shutdown the client after a period of no traffic",
+      "range": {
+        "startLine": 64,
+        "startChar": 0,
+        "endLine": 68,
+        "endChar": 11
+      },
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9f5e9e4d_6945fc28",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-09T14:21:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1b32fa7b_ae1c7774",
       "range": {
         "startLine": 64,
         "startChar": 0,
@@ -191,6 +317,24 @@
       "writtenOn": "2024-07-09T11:57:25Z",
       "side": 1,
       "message": "please also add a notification that\u0027s nested below some containers to see how these are parsed",
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a555e88d_e5d8ed79",
+        "filename": "tests/yang/example.yang",
+        "patchSetId": 11
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-09T14:21:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a590da16_38103566",
       "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
