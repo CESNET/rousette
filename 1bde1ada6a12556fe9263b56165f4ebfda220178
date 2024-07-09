@@ -1,0 +1,198 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "95e45f1b_13d3fe24",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T11:57:25Z",
+      "side": 1,
+      "message": "I think this needs a comment: `notification` is a node that\u0027s unmanaged from C++ (it\u0027s something that will get freed by sysrepo C library), but when it gets linked to a node `envelope` that\u0027s managed by libyang-cpp, the `envelope`\u0027s destructor would try to free the `notification` as well -- hence the need to unlink().\n\n(Thanks for the ASAN trace in the chat.)",
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1e023f88_dbb4a824",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T11:57:25Z",
+      "side": 1,
+      "message": "I RTFMed a bit in sysrepo-cpp, and as a result I wrote https://gerrit.cesnet.cz/c/CzechLight/sysrepo-cpp/+/7289 .",
+      "range": {
+        "startLine": 55,
+        "startChar": 78,
+        "endLine": 55,
+        "endChar": 95
+      },
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "472e73d2_7418dd62",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T11:57:25Z",
+      "side": 1,
+      "message": "This empty catch is here because there\u0027s \"no way\" to tell whether a module has any YANG notifications, right? This deserves a code comment -- and, if possible, only ignoring those exceptions which are \"known\" to be thrown in that case (please check with a YANG model with no notifications at all, and with a YANG model with no NACM-accessible notifications).",
+      "range": {
+        "startLine": 69,
+        "startChar": 48,
+        "endLine": 70,
+        "endChar": 13
+      },
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b5ec0988_1b1f411c",
+        "filename": "src/restconf/NotificationStream.h",
+        "patchSetId": 11
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T11:57:25Z",
+      "side": 1,
+      "message": "I would like the docs to mention some of the special handling that this class needs, e.g.:\n\nThis class must be instantiated as a shared_ptr. Once created and activate()d, a self-referencing shared_ptr instance is bound to HTTP-level callbacks which keep an instance around as long as the HTTP request is alive. This magic happens via code in the EventStream base class.",
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3510ab43_064ea92a",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 574,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T11:57:25Z",
+      "side": 1,
+      "message": "that\u0027s a bit unfriendly; as a minimum please print out the error message as a text/plain blob",
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b053ab87_5ab6308f",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T11:57:25Z",
+      "side": 1,
+      "message": "nit: let\u0027s rename this to \"requestSent\" or \"waitingForHttpResponse\" or something; to me the current name strongly implies that it\u0027s somehow \"counting requests\", which is not the case",
+      "range": {
+        "startLine": 50,
+        "startChar": 20,
+        "endLine": 50,
+        "endChar": 33
+      },
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1b32fa7b_ae1c7774",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T11:57:25Z",
+      "side": 1,
+      "message": "please add a comment, e.g.:\n \n// shutdown the client after a period of no traffic",
+      "range": {
+        "startLine": 64,
+        "startChar": 0,
+        "endLine": 68,
+        "endChar": 11
+      },
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e966ac2a_fa29801a",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T11:57:25Z",
+      "side": 1,
+      "message": "This is UB in case the counter goes below zero. Since this class tries to be a generic SSE client with no knowledge of RESTCONF, it might make sense to simply accept an external CB that will be executed for each \"event\". That thing can then do the NotificationWatcher\u0027s business and maybe also a LR_SIDE_EFFECT(unprocessedNotifications.count_down())",
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fff0f71d_8ca4b6c9",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T11:57:25Z",
+      "side": 1,
+      "message": "waitForCompletionAndBitMore(seq) should do the trick even without event counting; it looks at the number of unfulfilled expectations and once all mock calls are spent, it waits a bit and returns",
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a590da16_38103566",
+        "filename": "tests/yang/example.yang",
+        "patchSetId": 11
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T11:57:25Z",
+      "side": 1,
+      "message": "please also add a notification that\u0027s nested below some containers to see how these are parsed",
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
