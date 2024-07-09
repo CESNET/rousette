@@ -60,6 +60,29 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "74dfa196_c85d7b6b",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 111,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-09T15:02:13Z",
+      "side": 1,
+      "message": "example.com is not what we want. I think similar approach as in YANG schema listing should be used, i.e., parse forward header and use the value.",
+      "range": {
+        "startLine": 111,
+        "startChar": 66,
+        "endLine": 111,
+        "endChar": 84
+      },
+      "revId": "380fadba349351fc7e0acfa116b4bce6fefab911",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "4024d991_4b8c6a96",
         "filename": "src/restconf/NotificationStream.cpp",
         "patchSetId": 7
