@@ -1,0 +1,78 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "64b74240_ff236909",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T15:02:37Z",
+      "side": 1,
+      "message": "(an incomplete review because I haven\u0027t read the tests properly just yet)",
+      "revId": "6707a84b8ba2feac475e014c1116faf2142a403a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d36ef311_334822ac",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T15:02:37Z",
+      "side": 1,
+      "message": "I think it\u0027s OK to print out notifications\u0027 XPaths with, say, the debug level",
+      "revId": "6707a84b8ba2feac475e014c1116faf2142a403a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "237bf402_24633c84",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 116,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T15:02:37Z",
+      "side": 1,
+      "message": "Please add a comment which says that libyang::fromYangTimeFormat is still used internally, and that this is \"just\" some early string sanity check.\n\nThat said, even the RFC examples use URL percent encoding, so maybe this is overkill and it is OK to extend this variant to work with chrono/system_time directly?",
+      "range": {
+        "startLine": 113,
+        "startChar": 0,
+        "endLine": 116,
+        "endChar": 132
+      },
+      "revId": "6707a84b8ba2feac475e014c1116faf2142a403a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2aa2e5dc_539a1048",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-09T15:02:37Z",
+      "side": 1,
+      "message": "this can be solved outside of this class, IMHO -- if you need the test code to wait until the server is \"ready enough\", just move that clientCanConnect.wait() to the main thread right befode the SSEClient is constructed",
+      "revId": "6707a84b8ba2feac475e014c1116faf2142a403a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
