@@ -16,6 +16,24 @@
       "message": "Is there any other error scenario which might result in SR_ERR_NOT_FOUND? I\u0027m asking because checking for error strings is rather fragile. If we could always ignore any SR_ERR_NOT_FOUND, that would be great.",
       "revId": "b0300384b79fde61781688fbdb665ec405273f2d",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "22395816_fbe5b421",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 15
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-10T19:29:15Z",
+      "side": 1,
+      "message": "I went through some parts (hopefully the relevant ones) of the notif sub code and it seems that this error is used only for non-existent module and modules without notifications. So I am going to check for this particular error only.",
+      "parentUuid": "748a0dce_adc41db3",
+      "revId": "b0300384b79fde61781688fbdb665ec405273f2d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
