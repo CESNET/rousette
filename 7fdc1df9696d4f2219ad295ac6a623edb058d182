@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c9ef083d_5ca7003b",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 227,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-10T20:01:54Z",
+      "side": 1,
+      "message": "nit: I would prefer to not use strings like these because they will break when using \"naive\" editors. IMHO, it\u0027s cleaner to capture the newlines as \\n, even if it\u0027s a bit tedious -- it certainly feels safer to me.",
+      "range": {
+        "startLine": 227,
+        "startChar": 95,
+        "endLine": 227,
+        "endChar": 101
+      },
+      "revId": "7fdc1df9696d4f2219ad295ac6a623edb058d182",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
