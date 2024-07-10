@@ -1,0 +1,136 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c677b275_69631dc2",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 144,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-10T21:53:10Z",
+      "side": 1,
+      "message": "let\u0027s just skip this module by simple continue right in the for cycle, without matching some exception\u0027s error code",
+      "range": {
+        "startLine": 138,
+        "startChar": 0,
+        "endLine": 144,
+        "endChar": 13
+      },
+      "revId": "2bddccf964d71e8bc1ea688327170fef9ef950bf",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bf461aa5_d5c98ce2",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 180,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-10T21:53:10Z",
+      "side": 1,
+      "message": "Is this worth the effort? If we are unable to determine the host, the notifications are still advertised through the server capability list, so we\u0027re still \"violating the standard\". Maybe it makes sense to keep stuff simple and not bother with a cleanup? It can only happen when the client is not standard-compliant, right?",
+      "range": {
+        "startLine": 167,
+        "startChar": 0,
+        "endLine": 180,
+        "endChar": 5
+      },
+      "revId": "2bddccf964d71e8bc1ea688327170fef9ef950bf",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "dee0d671_a677e66d",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 261,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-10T21:53:10Z",
+      "side": 1,
+      "message": "if you decide to keep this test, please add a comment, e.g., no request header about the hostname -\u003e no data returned",
+      "revId": "2bddccf964d71e8bc1ea688327170fef9ef950bf",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5889e082_07a0c36c",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 300,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-10T21:53:10Z",
+      "side": 1,
+      "message": "What\u0027s the intention here? If you have something like this:\n \nSECTION(\"a\") {\n  log(\"a\");\n  SECTION(\"a.1\") {\n    log(\"a.1\");\n  }\n}\nSECTION(\"b\") {\n  log(\"b\");\n}\n\n...then you\u0027ll you\u0027ll only get the following two runs from doctest:\n\n- a, a.1\n- b\n\nFrom the test it seems that you want to have a matrix of:\n\n- replay disabled, no notifications sent\n- replay disabled, notifications sent\n- replay enabled, no notifications sent\n- replay enabled, some notifications sent\n\nThese nested sections (especially the initial bit about \"without log creation time\") are hard to read, and this test can be written sequentially, into a single SECTION, like this:\n\n- start with replay disabled\n- fetch stuff, see that replay-support is not set\n- send a notification\n- fetch stuff, there should be no change\n- enable replay\n- fetch stuff, there should be a replay-support set, but no timestamp (feel free to fetch a single leaf to save on some JSON repetition)\n- send a notification\n- fetch stuff, there should be both replay-support \u003d true and some timestamp",
+      "range": {
+        "startLine": 297,
+        "startChar": 0,
+        "endLine": 300,
+        "endChar": 21
+      },
+      "revId": "2bddccf964d71e8bc1ea688327170fef9ef950bf",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "936f50cd_1c61aac8",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 338,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-10T21:53:10Z",
+      "side": 1,
+      "message": "why is that a problem?",
+      "range": {
+        "startLine": 338,
+        "startChar": 27,
+        "endLine": 338,
+        "endChar": 81
+      },
+      "revId": "2bddccf964d71e8bc1ea688327170fef9ef950bf",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "025fd45c_85a35cb5",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 406,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-10T21:53:10Z",
+      "side": 1,
+      "message": "This looks like testing some sysrepo\u0027s functionality (\"does it update the timestamp properly?\"), and in this case I think it\u0027s maybe a bit too much. How would you feel about removing that?",
+      "range": {
+        "startLine": 377,
+        "startChar": 0,
+        "endLine": 406,
+        "endChar": 60
+      },
+      "revId": "2bddccf964d71e8bc1ea688327170fef9ef950bf",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
