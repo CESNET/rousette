@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "748a0dce_adc41db3",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 15
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-10T09:33:44Z",
+      "side": 1,
+      "message": "Is there any other error scenario which might result in SR_ERR_NOT_FOUND? I\u0027m asking because checking for error strings is rather fragile. If we could always ignore any SR_ERR_NOT_FOUND, that would be great.",
+      "revId": "b0300384b79fde61781688fbdb665ec405273f2d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
