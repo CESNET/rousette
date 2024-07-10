@@ -159,6 +159,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "b053a6d4_cac28228",
+        "filename": "src/restconf/NotificationStream.h",
+        "patchSetId": 11
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-10T08:33:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d0ead5a2_650bab08",
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3510ab43_064ea92a",
@@ -255,6 +273,30 @@
       "side": 1,
       "message": "This might be a tiny difference, but I think that a latch called \"waiting for SSE data\" should be only released once some SSE data have arrived. This is not the case here; the latch gets triggered when the client has sent its request (before we even know whether it got an HTTP server error, etc).",
       "parentUuid": "6a18c96d_59a53251",
+      "range": {
+        "startLine": 50,
+        "startChar": 20,
+        "endLine": 50,
+        "endChar": 33
+      },
+      "revId": "1bde1ada6a12556fe9263b56165f4ebfda220178",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f7300d06_5789c2b9",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-10T08:33:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b60e0460_7f26e951",
       "range": {
         "startLine": 50,
         "startChar": 20,
