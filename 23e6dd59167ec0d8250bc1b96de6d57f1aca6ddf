@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "112c190f_a8d8dcc4",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-10T08:53:56Z",
+      "side": 1,
+      "message": "This is wrong. The exception string should be different and also nothing in the code here rethrows.\n\nAlso, subscribing to sysrepo module throws SR_ERR_INTERNAL.",
+      "range": {
+        "startLine": 87,
+        "startChar": 0,
+        "endLine": 89,
+        "endChar": 17
+      },
+      "revId": "23e6dd59167ec0d8250bc1b96de6d57f1aca6ddf",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
