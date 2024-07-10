@@ -26,6 +26,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "d77bb1c2_6a12fcb7",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-10T19:29:15Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "be7ebb2f_b3cd3b0e",
+      "range": {
+        "startLine": 113,
+        "startChar": 100,
+        "endLine": 113,
+        "endChar": 107
+      },
+      "revId": "48c695cf901a88eb3691bfe27b71391b1712ae02",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "932fd879_64778b0f",
         "filename": "tests/uri-parser.cpp",
         "patchSetId": 5
@@ -60,6 +84,30 @@
       "writtenOn": "2024-07-09T13:24:54Z",
       "side": 1,
       "message": "this should really be preserved as \"\u0027\u0026amp;\u0027\"",
+      "range": {
+        "startLine": 793,
+        "startChar": 128,
+        "endLine": 793,
+        "endChar": 129
+      },
+      "revId": "48c695cf901a88eb3691bfe27b71391b1712ae02",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c1197c6f_c29d4bba",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 793,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-10T19:29:15Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "682f771d_4687ce52",
       "range": {
         "startLine": 793,
         "startChar": 128,
