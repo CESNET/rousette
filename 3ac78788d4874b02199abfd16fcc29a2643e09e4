@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "611813f3_1ef19e37",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 164,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-11T15:12:14Z",
+      "side": 1,
+      "message": "nit: since I\u0027m commenting on the test, I also noticed this typo",
+      "range": {
+        "startLine": 164,
+        "startChar": 16,
+        "endLine": 164,
+        "endChar": 18
+      },
+      "revId": "3ac78788d4874b02199abfd16fcc29a2643e09e4",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "20b0e1f3_6016b87a",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 312,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-11T15:12:14Z",
+      "side": 1,
+      "message": "The comment explains what this test is testing, but still -- I would prefer to only keep code which actively test what\u0027s relevant. Here, the test cares about the \"replay-support\" leaf not being there, and maybe also \"replay-log-creation-time\" also being absent. What\u0027s in the rest of the data is not relevant. Also below.\n\nIn short, we have almost 200 lines of code for a test which checks two leafs appearing and disappearing; I think that\u0027s too much noise.",
+      "range": {
+        "startLine": 290,
+        "startChar": 12,
+        "endLine": 312,
+        "endChar": 5
+      },
+      "revId": "3ac78788d4874b02199abfd16fcc29a2643e09e4",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
