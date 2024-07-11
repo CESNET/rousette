@@ -12,8 +12,6 @@ static const auto SERVER_PORT = "10085";
 #include "restconf/Server.h"
 #include "tests/aux-utils.h"
 
-#define FORWARDED {"forward", "proto=http;host=example.net"}
-
 TEST_CASE("obtaining YANG schemas")
 {
     spdlog::set_level(spdlog::level::trace);
