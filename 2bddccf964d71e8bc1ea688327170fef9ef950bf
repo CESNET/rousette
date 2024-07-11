@@ -95,6 +95,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "54a3bf4f_b09c5226",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 180,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-11T14:40:34Z",
+      "side": 1,
+      "message": "We agreed in chat that it is not worth the effort.",
+      "parentUuid": "2534e82b_f85e0373",
+      "range": {
+        "startLine": 167,
+        "startChar": 0,
+        "endLine": 180,
+        "endChar": 5
+      },
+      "revId": "2bddccf964d71e8bc1ea688327170fef9ef950bf",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "dee0d671_a677e66d",
