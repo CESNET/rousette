@@ -84,6 +84,8 @@ static const auto SERVER_ADDRESS_AND_PORT = "http://["s + SERVER_ADDRESS + "]" +
 #define AUTH_NORULES {"authorization", "Basic bm9ydWxlczplbXB0eQ=="}
 #define AUTH_ROOT {"authorization", "Basic cm9vdDpzZWtyaXQ="}
 
+#define FORWARDED {"forward", "proto=http;host=example.net"}
+
 #define CONTENT_TYPE_JSON {"content-type", "application/yang-data+json"}
 #define CONTENT_TYPE_XML {"content-type", "application/yang-data+xml"}
 
