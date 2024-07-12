@@ -293,6 +293,30 @@
       },
       "revId": "2bddccf964d71e8bc1ea688327170fef9ef950bf",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "53e2fda4_164e886d",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 406,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-12T08:57:57Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "325439e5_ab30f14d",
+      "range": {
+        "startLine": 377,
+        "startChar": 0,
+        "endLine": 406,
+        "endChar": 60
+      },
+      "revId": "2bddccf964d71e8bc1ea688327170fef9ef950bf",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
