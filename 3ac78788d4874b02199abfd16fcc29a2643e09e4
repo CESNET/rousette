@@ -93,6 +93,30 @@
       },
       "revId": "3ac78788d4874b02199abfd16fcc29a2643e09e4",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9cd90e70_8e66108c",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 312,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-12T08:57:12Z",
+      "side": 1,
+      "message": "It is actually enough to check for the status code only, not the output. Thanks.",
+      "parentUuid": "ce05f561_1458b1e2",
+      "range": {
+        "startLine": 290,
+        "startChar": 12,
+        "endLine": 312,
+        "endChar": 5
+      },
+      "revId": "3ac78788d4874b02199abfd16fcc29a2643e09e4",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
