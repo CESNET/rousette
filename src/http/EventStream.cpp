@@ -32,6 +32,12 @@ shared_from_this() throws bad_weak_ptr, so we need a two-phase construction.
 */
 void EventStream::activate(Signal& signal, const std::optional<std::string>& initialEvent)
 {
+    activateClient();
+    activateSignal(signal, initialEvent);
+}
+
+void EventStream::activateClient()
+{
     auto client = shared_from_this();
     res.write_head(200, {
         {"content-type", {"text/event-stream", false}},
@@ -48,7 +54,10 @@ void EventStream::activate(Signal& signal, const std::optional<std::string>& ini
     res.end([client](uint8_t* destination, std::size_t len, uint32_t* data_flags) {
         return client->process(destination, len, data_flags);
     });
+}
 
+void EventStream::activateSignal(Signal& signal, const std::optional<std::string>& initialEvent)
+{
     if (initialEvent) {
         enqueue(*initialEvent);
     }

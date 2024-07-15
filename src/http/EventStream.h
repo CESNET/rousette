@@ -31,6 +31,11 @@ public:
 
     EventStream(const nghttp2::asio_http2::server::request& req, const nghttp2::asio_http2::server::response& res);
     void activate(Signal& signal, const std::optional<std::string>& initialEvent = std::nullopt);
+
+protected:
+    void activateSignal(Signal& signal, const std::optional<std::string>& initialEvent = std::nullopt);
+    void activateClient();
+
 private:
     const nghttp2::asio_http2::server::response& res;
     enum State {
