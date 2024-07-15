@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a9a2a0dd_99336340",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 13
+      },
+      "lineNbr": 284,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-15T07:31:48Z",
+      "side": 1,
+      "message": "this is already tested via restconf-reading; please remove this along with the enclosing SECTION(\"RESTCONF state\"), and use just the internal SECTION(\"Replays\")",
+      "range": {
+        "startLine": 234,
+        "startChar": 0,
+        "endLine": 284,
+        "endChar": 9
+      },
+      "revId": "c8419596131f7c709e2dcee21ce237d8b7f6083f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
