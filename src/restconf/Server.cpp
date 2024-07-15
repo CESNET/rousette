@@ -538,8 +538,8 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     });
 
     server->handle("/telemetry/optics", [this](const auto& req, const auto& res) {
-        auto client = std::make_shared<http::EventStream>(req, res);
-        client->activate(opticsChange, as_restconf_push_update(dwdmEvents->currentData(), std::chrono::system_clock::now()));
+        auto client = std::make_shared<http::EventStream>(req, res, opticsChange);
+        client->activate(as_restconf_push_update(dwdmEvents->currentData(), std::chrono::system_clock::now()));
     });
 
     server->handle(yangSchemaRoot, [this, conn /* intentional copy */](const auto& req, const auto& res) mutable {

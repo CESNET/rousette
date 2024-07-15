@@ -18,11 +18,15 @@ using namespace nghttp2::asio_http2;
 namespace rousette::http {
 
 /** @short After constructing, make sure to call activate() immediately. */
-EventStream::EventStream(const server::request& req, const server::response& res)
+EventStream::EventStream(const server::request& req, const server::response& res, Signal& signal)
     : res{res}
     , peer{peer_from_request(req)}
 {
     spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
+
+    subscription = signal.connect([this](const auto& msg) {
+        enqueue(msg);
+    });
 }
 
 /** @short Start event processing and data delivery
@@ -30,7 +34,7 @@ EventStream::EventStream(const server::request& req, const server::response& res
 This cannot be a part of the constructor because of enable_shared_from_this<> semantics. When in constructor,
 shared_from_this() throws bad_weak_ptr, so we need a two-phase construction.
 */
-void EventStream::activate(Signal& signal, const std::optional<std::string>& initialEvent)
+void EventStream::activate(const std::optional<std::string>& initialEvent)
 {
     auto client = shared_from_this();
     res.write_head(200, {
@@ -52,10 +56,6 @@ void EventStream::activate(Signal& signal, const std::optional<std::string>& ini
     if (initialEvent) {
         enqueue(*initialEvent);
     }
-
-    subscription = signal.connect([this](const auto& msg) {
-        enqueue(msg);
-    });
 }
 
 size_t EventStream::send_chunk(uint8_t* destination, std::size_t len, uint32_t* data_flags [[maybe_unused]])
