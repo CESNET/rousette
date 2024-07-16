@@ -612,7 +612,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
         const auto& peer = http::peer_from_request(req);
         spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
 
-        if (req.method() != "GET") {
+        if (req.method() != "GET" && req.method() != "HEAD") {
             res.write_head(405, {{"access-control-allow-origin", {"*", false}}});
             res.end();
             return;

@@ -611,7 +611,6 @@ TEST_CASE("URI path parser")
             SECTION("Unsupported HTTP methods")
             {
                 auto exc = serializeErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
-                REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "HEAD", "/restconf/data/example:top-level-leaf"), exc.c_str(), rousette::restconf::ErrorResponse);
                 REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "OPTIONS", "/restconf/data/example:top-level-leaf"), exc.c_str(), rousette::restconf::ErrorResponse);
                 REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "PATCH", "/restconf/data"), exc.c_str(), rousette::restconf::ErrorResponse);
             }
@@ -976,7 +975,7 @@ TEST_CASE("URI path parser")
                 rousette::restconf::ErrorResponse);
 
 
-        for (const auto& httpMethod : {"HEAD", "OPTIONS", "PATCH", "DELETE", "POST", "PUT"}) {
+        for (const auto& httpMethod : {"OPTIONS", "PATCH", "DELETE", "POST", "PUT"}) {
             CAPTURE(httpMethod);
             REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest(httpMethod, "/streams/NETCONF", ""),
                     serializeErrorResponse(405, "application", "operation-not-supported", "Method not allowed.").c_str(),

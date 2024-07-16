@@ -119,6 +119,11 @@ const ng::header_map plaintextHeaders{
     {"content-type", {"text/plain", false}},
 };
 
+const ng::header_map eventStreamHeaders {
+    {"access-control-allow-origin", {"*", false}},
+    {"content-type", {"text/event-stream", false}},
+};
+
 Response clientRequest(auto method,
         auto uri,
         const std::string& data,
@@ -168,6 +173,11 @@ Response clientRequest(auto method,
 Response get(auto uri, const std::map<std::string, std::string>& headers)
 {
     return clientRequest("GET", uri, "", headers);
+}
+
+Response head(auto uri, const std::map<std::string, std::string>& headers)
+{
+    return clientRequest("HEAD", uri, "", headers);
 }
 
 Response put(auto xpath, const std::string& data, const std::map<std::string, std::string>& headers)

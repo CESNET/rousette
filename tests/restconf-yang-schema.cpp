@@ -182,11 +182,14 @@ TEST_CASE("obtaining YANG schemas")
                 {
                     REQUIRE(get(YANG_ROOT "/ietf-system@1999-12-13", {AUTH_ROOT}) == Response{404, plaintextHeaders, "YANG schema not found"});
                     REQUIRE(get(YANG_ROOT "/ietf-system@abcd-ef-gh", {AUTH_ROOT}) == Response{404, plaintextHeaders, "YANG schema not found"});
+                    REQUIRE(head(YANG_ROOT "/ietf-system@abcd-ef-gh", {AUTH_ROOT}) == Response{404, plaintextHeaders, ""});
                 }
                 SECTION("wrong password")
                 {
                     REQUIRE(clientRequest("GET", YANG_ROOT "/ietf-system@2014-08-06", "", {{"authorization", "Basic ZHdkbTpGQUlM"}}, boost::posix_time::seconds{5})
                             == Response{401, plaintextHeaders, "Access denied."});
+                    REQUIRE(clientRequest("HEAD", YANG_ROOT "/ietf-system@2014-08-06", "", {{"authorization", "Basic ZHdkbTpGQUlM"}}, boost::posix_time::seconds{5})
+                            == Response{401, plaintextHeaders, ""});
                 }
             }
 
@@ -221,6 +224,8 @@ TEST_CASE("obtaining YANG schemas")
                         moduleName = "imp-submod";
                         expectedResponseStart = "submodule imp-submod {";
                     }
+
+                    REQUIRE(head(YANG_ROOT "/" + moduleName, {AUTH_ROOT}) == Response{200, yangHeaders, ""});
 
                     auto resp = get(YANG_ROOT "/" + moduleName, {AUTH_ROOT});
                     auto expectedShortenedResp = Response{200, yangHeaders, expectedResponseStart};
@@ -307,6 +312,7 @@ TEST_CASE("obtaining YANG schemas")
   }
 }
 )"});
+                REQUIRE(head(YANG_ROOT "/ietf-yang-library@2019-01-04", {AUTH_DWDM, FORWARDED}) == Response{404, plaintextHeaders, ""});
                 REQUIRE(get(YANG_ROOT "/ietf-yang-library@2019-01-04", {AUTH_DWDM, FORWARDED}) == Response{404, plaintextHeaders, "YANG schema not found"});
             }
 
