@@ -110,6 +110,8 @@ TEST_CASE("reading data")
 }
 )"});
 
+        REQUIRE(head(RESTCONF_DATA_ROOT, {}) == Response{200, jsonHeaders, ""});
+
         REQUIRE(get(RESTCONF_ROOT_DS("operational"), {}) == Response{200, jsonHeaders, R"({
   "example:top-level-leaf": "moo",
   "example:config-nonconfig": {
@@ -151,6 +153,8 @@ TEST_CASE("reading data")
   }
 }
 )"});
+
+        REQUIRE(head(RESTCONF_ROOT_DS("operational"), {}) == Response{200, jsonHeaders, ""});
 
         REQUIRE(get(RESTCONF_ROOT_DS("running"), {}) == Response{200, jsonHeaders, R"({
   "example:top-level-leaf": "moo",
@@ -233,6 +237,7 @@ TEST_CASE("reading data")
   }
 }
 )"});
+        REQUIRE(head(RESTCONF_DATA_ROOT "/ietf-system:system/radius?depth=1&depth=1", {AUTH_DWDM}) == Response{400, jsonHeaders, ""});
 
         REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/radius?depth=unbounded", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
@@ -292,6 +297,7 @@ TEST_CASE("reading data")
   }
 }
 )"});
+        REQUIRE(head(RESTCONF_DATA_ROOT "/ietf-system:system-restart", {AUTH_DWDM}) == Response{405, jsonHeaders, ""});
 
         REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action", {AUTH_DWDM}) == Response{405, jsonHeaders, R"({
   "ietf-restconf:errors": {
@@ -379,6 +385,7 @@ TEST_CASE("reading data")
   }
 }
 )"});
+        REQUIRE(head(RESTCONF_DATA_ROOT "/ietf-system:system", {{"content-type", "text/plain"}}) == Response{415, jsonHeaders, ""});
         REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system", {{"accept", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
     "contact": "contact",
@@ -536,6 +543,9 @@ TEST_CASE("reading data")
         REQUIRE(get(RESTCONF_ROOT "/yang-library-version", {{"accept", "application/yang-data+xml"}}) == Response{200, xmlHeaders,
                 R"(<yang-library-version xmlns="urn:ietf:params:xml:ns:yang:ietf-restconf">2019-01-04</yang-library-version>
 )"});
+
+        REQUIRE(head(RESTCONF_ROOT "/yang-library-version", {}) == Response{200, jsonHeaders, ""});
+        REQUIRE(head(RESTCONF_ROOT "/yang-library-version", {{"accept", "application/yang-data+xml"}}) == Response{200, xmlHeaders, ""});
     }
 
     SECTION("restconf monitoring")
