@@ -944,4 +944,35 @@ TEST_CASE("URI path parser")
                                    rousette::restconf::ErrorResponse);
         }
     }
+
+    SECTION("Streams")
+    {
+        using rousette::restconf::asRestconfStreamRequest;
+        using rousette::restconf::RestconfStreamRequest;
+
+        {
+            auto [type, queryParams] = asRestconfStreamRequest("/streams/NETCONF/XML", "");
+            REQUIRE(type == RestconfStreamRequest::Type::NetconfNotificationXML);
+            REQUIRE(queryParams.empty());
+        }
+
+        {
+            auto [type, queryParams] = asRestconfStreamRequest("/streams/NETCONF/JSON", "");
+            REQUIRE(type == RestconfStreamRequest::Type::NetconfNotificationJSON);
+            REQUIRE(queryParams.empty());
+        }
+
+        REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("/streams/NETCONF", ""),
+                serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
+                rousette::restconf::ErrorResponse);
+        REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("/restconf/data", ""),
+                serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
+                rousette::restconf::ErrorResponse);
+        REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("/streams/NETCONF/xml", ""),
+                serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
+                rousette::restconf::ErrorResponse);
+        REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("/streams/NETCONF/XM", ""),
+                serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
+                rousette::restconf::ErrorResponse);
+    }
 }
