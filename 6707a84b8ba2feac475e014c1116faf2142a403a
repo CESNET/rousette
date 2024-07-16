@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "efda17b8_9155f945",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-16T16:11:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "64b74240_ff236909",
+      "revId": "6707a84b8ba2feac475e014c1116faf2142a403a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "d36ef311_334822ac",
@@ -113,6 +131,24 @@
       "writtenOn": "2024-07-09T15:02:37Z",
       "side": 1,
       "message": "this can be solved outside of this class, IMHO -- if you need the test code to wait until the server is \"ready enough\", just move that clientCanConnect.wait() to the main thread right befode the SSEClient is constructed",
+      "revId": "6707a84b8ba2feac475e014c1116faf2142a403a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "831f0e67_e68866df",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-16T16:11:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2aa2e5dc_539a1048",
       "revId": "6707a84b8ba2feac475e014c1116faf2142a403a",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
