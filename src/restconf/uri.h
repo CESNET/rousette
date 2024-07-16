@@ -150,5 +150,5 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
 std::optional<libyang::SchemaNode> asLibyangSchemaNode(const libyang::Context& ctx, const std::vector<PathSegment>& pathSegments);
 std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath);
 std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> asYangModule(const libyang::Context& ctx, const std::string& uriPath);
-RestconfStreamRequest asRestconfStreamRequest(const std::string& uriPath, const std::string& uriQueryString);
+RestconfStreamRequest asRestconfStreamRequest(const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString);
 }

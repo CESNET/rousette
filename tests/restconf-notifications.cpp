@@ -225,6 +225,15 @@ TEST_CASE("NETCONF notification streams")
         io.run();
     }
 
+    SECTION("Invalid methods")
+    {
+        REQUIRE(clientRequest("PUT", "/streams/NETCONF/XML", "", {AUTH_ROOT}) == Response{405, plaintextHeaders, "Method not allowed."});
+        REQUIRE(clientRequest("POST", "/streams/NETCONF/XML", "", {AUTH_ROOT}) == Response{405, plaintextHeaders, "Method not allowed."});
+        REQUIRE(clientRequest("PATCH", "/streams/NETCONF/XML", "", {AUTH_ROOT}) == Response{405, plaintextHeaders, "Method not allowed."});
+        REQUIRE(clientRequest("OPTIONS", "/streams/NETCONF/XML", "", {AUTH_ROOT}) == Response{405, plaintextHeaders, "Method not allowed."});
+        REQUIRE(clientRequest("DELETE", "/streams/NETCONF/XML", "", {AUTH_ROOT}) == Response{405, plaintextHeaders, "Method not allowed."});
+    }
+
     SECTION("Invalid URLs")
     {
         REQUIRE(get("/streams/NETCONF/", {}) == Response{404, plaintextHeaders, "Invalid stream"});

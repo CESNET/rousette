@@ -563,7 +563,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
         try {
             authorizeRequest(nacm, sess, req);
 
-            auto streamRequest = asRestconfStreamRequest(req.uri().path, req.uri().raw_query);
+            auto streamRequest = asRestconfStreamRequest(req.method(), req.uri().path, req.uri().raw_query);
 
             switch(streamRequest.type) {
             case RestconfStreamRequest::Type::NetconfNotificationJSON:

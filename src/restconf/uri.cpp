@@ -590,10 +590,14 @@ std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> asYangMod
     return std::nullopt;
 }
 
-RestconfStreamRequest asRestconfStreamRequest(const std::string& uriPath, const std::string& uriQueryString)
+RestconfStreamRequest asRestconfStreamRequest(const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString)
 {
     static const auto netconfStreamRoot = "/streams/NETCONF/";
     RestconfStreamRequest::Type type;
+
+    if (httpMethod != "GET") {
+        throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
+    }
 
     if (uriPath == netconfStreamRoot + "XML"s) {
         type = RestconfStreamRequest::Type::NetconfNotificationXML;
