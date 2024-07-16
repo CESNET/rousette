@@ -170,6 +170,11 @@ Response get(auto uri, const std::map<std::string, std::string>& headers)
     return clientRequest("GET", uri, "", headers);
 }
 
+Response head(auto uri, const std::map<std::string, std::string>& headers)
+{
+    return clientRequest("HEAD", uri, "", headers);
+}
+
 Response put(auto xpath, const std::string& data, const std::map<std::string, std::string>& headers)
 {
     return clientRequest("PUT", xpath, data, headers);
