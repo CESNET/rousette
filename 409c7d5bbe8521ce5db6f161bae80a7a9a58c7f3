@@ -1,0 +1,227 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "895705f6_12966cfc",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-16T12:12:43Z",
+      "side": 1,
+      "message": "nit: \"envelopes\"",
+      "range": {
+        "startLine": 27,
+        "startChar": 39,
+        "endLine": 27,
+        "endChar": 48
+      },
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ca7c8f6b_04df9b26",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-16T12:12:43Z",
+      "side": 1,
+      "message": "nit: maybe just `subscribe` since it\u0027s an internal helper which is already kinda-qualified because it lives in a source file that\u0027s only dealing with notifications?",
+      "range": {
+        "startLine": 52,
+        "startChar": 5,
+        "endLine": 52,
+        "endChar": 26
+      },
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c8afc50a_f333f456",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-16T12:12:43Z",
+      "side": 1,
+      "message": "nit: I prefer an early return to reduce the level of nesting",
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e88913b3_8a663ceb",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 565,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-16T12:12:43Z",
+      "side": 1,
+      "message": "It\u0027s a FIXME, which means that we want to fix this, but we\u0027re blocked on something, like a bug in other projects, or something that we can fix it a follow-up commit. This one is a permanent solution, isn\u0027t it?",
+      "range": {
+        "startLine": 565,
+        "startChar": 15,
+        "endLine": 565,
+        "endChar": 20
+      },
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "dc43c045_9417157d",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 578,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-16T12:12:43Z",
+      "side": 1,
+      "message": "this can be removed because there\u0027s no more code under the try/catch (also the second one in the other catch)",
+      "range": {
+        "startLine": 578,
+        "startChar": 12,
+        "endLine": 578,
+        "endChar": 18
+      },
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "beabcb54_860e531d",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-16T12:12:43Z",
+      "side": 1,
+      "message": "nit: wrap this one please",
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "380e6b35_31a34376",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-16T12:12:43Z",
+      "side": 1,
+      "message": "I might have misunderstood this timer; it looks like it\u0027s initialized at once, and never reset when data arrive. Is that correct? If so, the comment needs updating because the client will simply run for `silenceTimeout` seconds all the time, while the comment says that it will run as long as the data keep coming at least every `sielnceTimeout` seconds. If that\u0027s the intention, reset/rerun/whatever-it\u0027s-called-in-boost the timer from `res.on_data`.",
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "94bb18d9_8a805299",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-16T12:12:43Z",
+      "side": 1,
+      "message": "I think that this should be called from on_response, otherwise there\u0027s still a race. At least from RTFMing it\u0027s obvious to me that `on_response` is called once the server has sent the initial HTTP-level response, e.g., \"200 OK\". Here, it looks like there\u0027s an \"async race\" between the submit() call above and the server actually handling the request, setting up subscriptions, etc.",
+      "range": {
+        "startLine": 79,
+        "startChar": 12,
+        "endLine": 79,
+        "endChar": 37
+      },
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c39c5493_23bfe5d9",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-16T12:12:43Z",
+      "side": 1,
+      "message": "This code is not reliable for \"real notifications\". If this on_data() CB gets called with an incomplete event (maybe the blob is \"too big\" to fit into some nghttp2 buffer at once?), the code should stash the incomplete data somewhere, and use them as a prefix the next time a new bunch of data arrive. The way it\u0027s coded now it will probably just throw an exception because of incomplete data.\n\nIt\u0027s OK for a test code I think (i.e., I don\u0027t think we need this functionality which supports \"long buffer sizes\" for a test code), but please add a comment which says that this is not \"production-ready\" because of that reason.",
+      "range": {
+        "startLine": 82,
+        "startChar": 45,
+        "endLine": 82,
+        "endChar": 111
+      },
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "847f94e0_8b4e7722",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 109,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-16T12:12:43Z",
+      "side": 1,
+      "message": "IMHO this needs error handling -- if it\u0027s neither prefixed with \"data:\" nor empty, then it must be an error, right?",
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a1fbce43_9b9df69b",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 188,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-16T12:12:43Z",
+      "side": 1,
+      "message": "what for? If the intention is to make sure that the test code lives \"long enough\" to be robust to handle server being \"too slow\", please say so in a comment",
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
