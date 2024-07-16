@@ -16,6 +16,24 @@
       "message": "Nice trick, maybe it\u0027s better to simply let the server framework do the \"hard work\" here. At first I was a bit on the edge about this (\"why print stuff needlessly if we know it\u0027s gonna be discarded\"), but I love the simplicity.\n\nConsider also supporting this for:\n\n- schema retrieval (Server.cpp:615)\n- notification streams (are they checked now?)",
       "revId": "63ed0e81c523cbdd3949147b42db5a8200db7580",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "40253e0d_16628dd6",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-16T18:56:31Z",
+      "side": 1,
+      "message": "Done. Also added few commits for the wrong http methods for notification streams.",
+      "parentUuid": "697d95c2_fffe3cd7",
+      "revId": "63ed0e81c523cbdd3949147b42db5a8200db7580",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
