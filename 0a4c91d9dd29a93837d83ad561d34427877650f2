@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ea5b1567_ffdef581",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 18
+      },
+      "lineNbr": 140,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-16T12:18:55Z",
+      "side": 1,
+      "message": "consider DRY with the code that\u0027s in https://gerrit.cesnet.cz/c/CzechLight/rousette/+/7225/20/src/restconf/NotificationStream.cpp , e.g.:\n \nbool isNotifiable(const libyang::Module\u0026 mod)\n{\n    return mod.implemented() \u0026\u0026 mod.name() !\u003d \"sysrepo\";\n}",
+      "range": {
+        "startLine": 135,
+        "startChar": 0,
+        "endLine": 140,
+        "endChar": 32
+      },
+      "revId": "0a4c91d9dd29a93837d83ad561d34427877650f2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
