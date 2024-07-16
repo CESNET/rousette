@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "89e1c941_a7da2cf4",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-16T10:26:07Z",
+      "side": 1,
+      "message": "This is to make sure that no events are lost, and it\u0027s important not just because of the unit tests, but also because of notification replay -- once we activate the replay, it would ve wrong to lose some real events which happen \"after\" the replay getting activated and \"before\" a proper signal connection is made.\n\nNo need to edit this now, I\u0027m adding this just for the archeology purposes.",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 12,
+        "endChar": 65
+      },
+      "revId": "370bad0b9d726858e074865c4658243b23852160",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
