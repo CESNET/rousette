@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "ec3d0cb2_e61b5ff4",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-16T16:11:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "895705f6_12966cfc",
+      "range": {
+        "startLine": 27,
+        "startChar": 39,
+        "endLine": 27,
+        "endChar": 48
+      },
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "ca7c8f6b_04df9b26",
@@ -37,6 +61,30 @@
       "writtenOn": "2024-07-16T12:12:43Z",
       "side": 1,
       "message": "nit: maybe just `subscribe` since it\u0027s an internal helper which is already kinda-qualified because it lives in a source file that\u0027s only dealing with notifications?",
+      "range": {
+        "startLine": 52,
+        "startChar": 5,
+        "endLine": 52,
+        "endChar": 26
+      },
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "81e2d50f_503734b2",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-16T16:11:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ca7c8f6b_04df9b26",
       "range": {
         "startLine": 52,
         "startChar": 5,
@@ -64,6 +112,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "b5fe9f5e_25249666",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-16T16:11:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c8afc50a_f333f456",
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e88913b3_8a663ceb",
@@ -77,6 +143,30 @@
       "writtenOn": "2024-07-16T12:12:43Z",
       "side": 1,
       "message": "It\u0027s a FIXME, which means that we want to fix this, but we\u0027re blocked on something, like a bug in other projects, or something that we can fix it a follow-up commit. This one is a permanent solution, isn\u0027t it?",
+      "range": {
+        "startLine": 565,
+        "startChar": 15,
+        "endLine": 565,
+        "endChar": 20
+      },
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a1a8e456_2a77e1b9",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 565,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-16T16:11:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e88913b3_8a663ceb",
       "range": {
         "startLine": 565,
         "startChar": 15,
@@ -110,6 +200,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f9f75528_7172954c",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 578,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-16T16:11:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dc43c045_9417157d",
+      "range": {
+        "startLine": 578,
+        "startChar": 12,
+        "endLine": 578,
+        "endChar": 18
+      },
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "beabcb54_860e531d",
@@ -123,6 +237,24 @@
       "writtenOn": "2024-07-16T12:12:43Z",
       "side": 1,
       "message": "nit: wrap this one please",
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5a366058_d70dee3a",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-16T16:11:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "beabcb54_860e531d",
       "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -144,6 +276,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2aa6515e_4959027a",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-16T16:11:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "380e6b35_31a34376",
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "94bb18d9_8a805299",
@@ -157,6 +307,30 @@
       "writtenOn": "2024-07-16T12:12:43Z",
       "side": 1,
       "message": "I think that this should be called from on_response, otherwise there\u0027s still a race. At least from RTFMing it\u0027s obvious to me that `on_response` is called once the server has sent the initial HTTP-level response, e.g., \"200 OK\". Here, it looks like there\u0027s an \"async race\" between the submit() call above and the server actually handling the request, setting up subscriptions, etc.",
+      "range": {
+        "startLine": 79,
+        "startChar": 12,
+        "endLine": 79,
+        "endChar": 37
+      },
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7530f157_3186cd86",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-16T16:11:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "94bb18d9_8a805299",
       "range": {
         "startLine": 79,
         "startChar": 12,
@@ -190,6 +364,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c7c75d34_976608b1",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-16T16:11:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c39c5493_23bfe5d9",
+      "range": {
+        "startLine": 82,
+        "startChar": 45,
+        "endLine": 82,
+        "endChar": 111
+      },
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "847f94e0_8b4e7722",
@@ -207,6 +405,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "b9fb41fc_f60e6771",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 109,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-16T16:11:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "847f94e0_8b4e7722",
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "a1fbce43_9b9df69b",
@@ -220,6 +436,24 @@
       "writtenOn": "2024-07-16T12:12:43Z",
       "side": 1,
       "message": "what for? If the intention is to make sure that the test code lives \"long enough\" to be robust to handle server being \"too slow\", please say so in a comment",
+      "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "901cf499_9eed69ec",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 20
+      },
+      "lineNbr": 188,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-16T16:11:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a1fbce43_9b9df69b",
       "revId": "409c7d5bbe8521ce5db6f161bae80a7a9a58c7f3",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
