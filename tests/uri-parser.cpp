@@ -60,6 +60,10 @@ TEST_CASE("URI path parser")
     using rousette::restconf::impl::URIPath;
     using rousette::restconf::impl::URIPrefix;
 
+    auto ctx = libyang::Context{std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "tests" / "yang"};
+    ctx.loadModule("example", std::nullopt, {"f1"});
+    ctx.loadModule("example-augment");
+
     SECTION("Valid paths")
     {
         for (const auto& [uriPath, expected] : {
@@ -258,10 +262,6 @@ TEST_CASE("URI path parser")
 
     SECTION("Translation to libyang path")
     {
-        auto ctx = libyang::Context{std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "tests" / "yang"};
-        ctx.loadModule("example", std::nullopt, {"f1"});
-        ctx.loadModule("example-augment");
-
         SECTION("Contextually valid paths")
         {
             SECTION("GET, PUT, DELETE, POST (data)")
@@ -611,7 +611,6 @@ TEST_CASE("URI path parser")
             SECTION("Unsupported HTTP methods")
             {
                 auto exc = serializeErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
-                REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "OPTIONS", "/restconf/data/example:top-level-leaf"), exc.c_str(), rousette::restconf::ErrorResponse);
                 REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "PATCH", "/restconf/data"), exc.c_str(), rousette::restconf::ErrorResponse);
             }
         }
@@ -962,24 +961,60 @@ TEST_CASE("URI path parser")
         }
 
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF", ""),
-                serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
-                rousette::restconf::ErrorResponse);
+                               serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
+                               rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/restconf/data", ""),
-                serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
-                rousette::restconf::ErrorResponse);
+                               serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
+                               rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF/xml", ""),
-                serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
-                rousette::restconf::ErrorResponse);
+                               serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
+                               rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF/XM", ""),
-                serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
-                rousette::restconf::ErrorResponse);
+                               serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
+                               rousette::restconf::ErrorResponse);
 
 
         for (const auto& httpMethod : {"OPTIONS", "PATCH", "DELETE", "POST", "PUT"}) {
             CAPTURE(httpMethod);
             REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest(httpMethod, "/streams/NETCONF", ""),
-                    serializeErrorResponse(405, "application", "operation-not-supported", "Method not allowed.").c_str(),
-                    rousette::restconf::ErrorResponse);
+                                   serializeErrorResponse(405, "application", "operation-not-supported", "Method not allowed.").c_str(),
+                                   rousette::restconf::ErrorResponse);
+        }
+    }
+
+    SECTION("OPTIONS")
+    {
+        SECTION("RESTCONF")
+        {
+            std::string uri;
+            std::optional<std::string> expected;
+
+            SECTION("Data resource")
+            {
+                expected = "DELETE, GET, HEAD, OPTIONS, POST, PUT";
+                SECTION("Leaf node") { uri = "/restconf/data/example:top-level-leaf"; }
+                SECTION("List node") { uri = "/restconf/data/example:tlc/list=key"; }
+                SECTION("Container") { uri = "/restconf/data/example:tlc"; }
+                SECTION("With NMDA") { uri = "/restconf/ds/ietf-datastores:running/example:tlc"; }
+            }
+            SECTION("Operations resource")
+            {
+                expected = "OPTIONS, POST";
+                SECTION("RPC") { uri = "/restconf/operations/example:test-rpc"; }
+                SECTION("Action") { uri = "/restconf/data/example:tlc/list=key/example-action"; }
+            }
+            SECTION("Datastore resource")
+            {
+                expected = "GET, HEAD, OPTIONS, POST, PUT";
+                SECTION("Basic root") { uri = "/restconf/data"; }
+                SECTION("NMDA running") { uri = "/restconf/ds/ietf-datastores:running"; }
+            }
+            SECTION("Invalid path")
+            {
+                expected = std::nullopt;
+                uri = "/restconf/data/blabla:bla";
+            }
+            REQUIRE(rousette::restconf::getAllowedHttpMethodsForUri(ctx, uri) == expected);
         }
     }
 }

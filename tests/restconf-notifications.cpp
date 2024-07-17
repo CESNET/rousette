@@ -228,11 +228,11 @@ TEST_CASE("NETCONF notification streams")
     SECTION("Other methods")
     {
         REQUIRE(clientRequest("HEAD", "/streams/NETCONF/XML", "", {AUTH_ROOT}) == Response{200, eventStreamHeaders, ""});
+        REQUIRE(clientRequest("OPTIONS", "/streams/NETCONF/XML", "", {AUTH_ROOT}) == Response{200, {{"access-control-allow-origin", {"*", false}}, {"allow", {"GET, HEAD, OPTIONS", false}}}, ""});
 
         REQUIRE(clientRequest("PUT", "/streams/NETCONF/XML", "", {AUTH_ROOT}) == Response{405, plaintextHeaders, "Method not allowed."});
         REQUIRE(clientRequest("POST", "/streams/NETCONF/XML", "", {AUTH_ROOT}) == Response{405, plaintextHeaders, "Method not allowed."});
         REQUIRE(clientRequest("PATCH", "/streams/NETCONF/XML", "", {AUTH_ROOT}) == Response{405, plaintextHeaders, "Method not allowed."});
-        REQUIRE(clientRequest("OPTIONS", "/streams/NETCONF/XML", "", {AUTH_ROOT}) == Response{405, plaintextHeaders, "Method not allowed."});
         REQUIRE(clientRequest("DELETE", "/streams/NETCONF/XML", "", {AUTH_ROOT}) == Response{405, plaintextHeaders, "Method not allowed."});
     }
 
