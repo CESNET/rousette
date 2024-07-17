@@ -81,6 +81,25 @@ struct StringMaker<std::vector<T>> {
     }
 };
 
+template <class T>
+struct StringMaker<std::set<T>> {
+    static String convert(const std::set<T>& vec)
+    {
+        std::ostringstream oss;
+        oss << "{";
+
+        for (auto it = vec.begin(); it != vec.end(); ++it) {
+            if (it != vec.begin()) {
+                oss << ", ";
+            }
+            oss << StringMaker<T>::convert(*it);
+        }
+
+        oss << "}";
+        return oss.str().c_str();
+    }
+};
+
 template <>
 struct StringMaker<rousette::restconf::impl::URIPath> {
     static String convert(const rousette::restconf::impl::URIPath& obj)

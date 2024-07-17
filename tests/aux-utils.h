@@ -142,6 +142,8 @@ const ng::header_map eventStreamHeaders {
     {"content-type", {"text/event-stream", false}},
 };
 
+#define ACCESS_CONTROL_ALLOW_ORIGIN {"access-control-allow-origin", "*"}
+
 Response clientRequest(auto method,
         auto uri,
         const std::string& data,
@@ -191,6 +193,11 @@ Response clientRequest(auto method,
 Response get(auto uri, const std::map<std::string, std::string>& headers)
 {
     return clientRequest("GET", uri, "", headers);
+}
+
+Response options(auto uri, const std::map<std::string, std::string>& headers)
+{
+    return clientRequest("OPTIONS", uri, "", headers);
 }
 
 Response head(auto uri, const std::map<std::string, std::string>& headers)
