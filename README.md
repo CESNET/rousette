@@ -13,7 +13,7 @@ Since this service only talks cleartext HTTP/2, it's recommended to run it behin
 These features from the [RESTCONF RFC](https://datatracker.ietf.org/doc/html/rfc8040.html) are not yet implemented:
 
 - TLS certificate authentication. See [Access control model](#access-control-model) below.
-- No support for [OPTIONS](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.1), and [PATCH](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.6) HTTP methods.
+- No support for [PATCH](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.6) HTTP method.
 - Datastore resource responses do not contain the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1.1) and [`ETag`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1.2) headers for [edit collision prevention](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1)
 - Data resource responses do not contain the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.1) and [`ETag`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.2) headers.
 - [API resource](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.3), i.e., the top-level `{+restconf}` endpoint
