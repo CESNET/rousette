@@ -5,6 +5,7 @@
  */
 
 #include <boost/fusion/include/std_pair.hpp>
+#include <experimental/iterator>
 #include <libyang-cpp/Enum.hpp>
 #include <map>
 #include <string>
@@ -500,7 +501,7 @@ std::optional<libyang::SchemaNode> asLibyangSchemaNode(const libyang::Context& c
  */
 RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString)
 {
-    if (httpMethod != "GET" && httpMethod != "PUT" && httpMethod != "POST" && httpMethod != "DELETE" && httpMethod != "HEAD") {
+    if (httpMethod != "GET" && httpMethod != "PUT" && httpMethod != "POST" && httpMethod != "DELETE" && httpMethod != "HEAD" && httpMethod != "OPTIONS") {
         throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
     }
 
@@ -515,6 +516,10 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
     }
 
     auto [lyPath, schemaNode] = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
+
+    if (httpMethod == "OPTIONS") {
+        return {RestconfRequest::Type::OptionsQuery, boost::none, ""s, {}};
+    }
 
     validateQueryParameters(*queryParameters, httpMethod);
 
@@ -615,5 +620,30 @@ RestconfStreamRequest asRestconfStreamRequest(const std::string& httpMethod, con
     validateQueryParametersForStream(*queryParameters);
 
     return {type, *queryParameters};
+}
+
+/** @brief Returns a comma-delimited list of allowed HTTP methods for given URI. Usable for the 'allow' header */
+std::optional<std::string> allowedHttpMethodsForUri(const libyang::Context& ctx, const std::string& uriPath)
+{
+    std::set<std::string> allowedHttpMethods;
+
+    for (const auto& httpMethod : {"GET", "PUT", "POST", "DELETE", "HEAD"}) {
+        try {
+            asRestconfRequest(ctx, httpMethod, uriPath, "");
+            allowedHttpMethods.insert(httpMethod);
+        } catch (const ErrorResponse&) {
+            // httpMethod is not allowed for this uri path
+        }
+    }
+
+    if (allowedHttpMethods.empty()) {
+        return std::nullopt;
+    }
+
+    allowedHttpMethods.insert("OPTIONS");
+
+    std::ostringstream oss;
+    std::copy(std::begin(allowedHttpMethods), std::end(allowedHttpMethods), std::experimental::make_ostream_joiner(oss, ", "));
+    return oss.str();
 }
 }
