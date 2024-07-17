@@ -500,7 +500,7 @@ std::optional<libyang::SchemaNode> asLibyangSchemaNode(const libyang::Context& c
  */
 RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString)
 {
-    if (httpMethod != "GET" && httpMethod != "PUT" && httpMethod != "POST" && httpMethod != "DELETE" && httpMethod != "HEAD") {
+    if (httpMethod != "GET" && httpMethod != "PUT" && httpMethod != "POST" && httpMethod != "DELETE" && httpMethod != "HEAD" && httpMethod != "OPTIONS") {
         throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
     }
 
@@ -515,6 +515,10 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
     }
 
     auto [lyPath, schemaNode] = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
+
+    if (httpMethod == "OPTIONS") {
+        return {RestconfRequest::Type::OptionsQuery, boost::none, ""s, {}};
+    }
 
     validateQueryParameters(*queryParameters, httpMethod);
 

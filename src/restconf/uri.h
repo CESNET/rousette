@@ -10,6 +10,7 @@
 #include <libyang-cpp/SchemaNode.hpp>
 #include <map>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <sysrepo-cpp/Enum.hpp>
@@ -126,7 +127,8 @@ struct RestconfRequest {
         DeleteNode, ///< DELETE on a data resource
         Execute, ///< POST on a operation resource (Execute an RPC or an action)
         CreateChildren, ///< POST on a data resource
-        YangLibraryVersion ///< Report ietf-yang-library version
+        YangLibraryVersion, ///< Report ietf-yang-library version
+        OptionsQuery, ///< Return
     };
 
     Type type;

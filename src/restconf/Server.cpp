@@ -5,6 +5,7 @@
  *
 */
 
+#include <experimental/iterator>
 #include <libyang-cpp/Enum.hpp>
 #include <libyang-cpp/Time.hpp>
 #include <nghttp2/asio_http2_server.h>
@@ -560,6 +561,15 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
         std::optional<sysrepo::NotificationTimeStamp> startTime;
         std::optional<sysrepo::NotificationTimeStamp> stopTime;
 
+        if (req.method() == "OPTIONS") {
+            res.write_head(200, {
+                                    {"access-control-allow-origin", {"*", false}},
+                                    {"allow", {"GET, HEAD, OPTIONS", false}},
+                                });
+            res.end();
+            return;
+        }
+
         try {
             authorizeRequest(nacm, sess, req);
 
@@ -611,6 +621,15 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     server->handle(yangSchemaRoot, [this, conn /* intentional copy */](const auto& req, const auto& res) mutable {
         const auto& peer = http::peer_from_request(req);
         spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
+
+        if (req.method() == "OPTIONS") {
+            res.write_head(200, {
+                                    {"access-control-allow-origin", {"*", false}},
+                                    {"allow", {"GET, HEAD, OPTIONS", false}},
+                                });
+            res.end();
+            return;
+        }
 
         if (req.method() != "GET" && req.method() != "HEAD") {
             res.write_head(405, {{"access-control-allow-origin", {"*", false}}});
@@ -810,6 +829,41 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                             processActionOrRPC(requestCtx);
                         }
                     });
+                    break;
+                }
+
+                case RestconfRequest::Type::OptionsQuery: {
+                    /* Just try to call this function with all possible HTTP methods and return those which do not fail */
+                    std::set<std::string> allowedHttpMethods;
+                    for (const auto& httpMethod : {"GET", "PUT", "POST", "DELETE", "HEAD"}) {
+                        try {
+                            asRestconfRequest(sess.getContext(), httpMethod, req.uri().path, "");
+                            allowedHttpMethods.insert(httpMethod);
+                        } catch (const ErrorResponse&) {
+                            // httpMethod is not allowed for this uri path
+                        }
+                    }
+
+                    if (allowedHttpMethods.empty()) {
+                        res.write_head(404,
+                                       {
+                                           {"access-control-allow-origin", {"*", false}},
+                                       });
+                        res.end();
+                        return;
+                    }
+
+                    allowedHttpMethods.insert("OPTIONS");
+
+                    std::ostringstream oss;
+                    std::copy(std::begin(allowedHttpMethods), std::end(allowedHttpMethods), std::experimental::make_ostream_joiner(oss, ", "));
+
+                    res.write_head(200,
+                                   {
+                                       {"allow", {oss.str(), false}},
+                                       {"access-control-allow-origin", {"*", false}},
+                                   });
+                    res.end();
                     break;
                 }
                 }

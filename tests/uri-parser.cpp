@@ -60,6 +60,10 @@ TEST_CASE("URI path parser")
     using rousette::restconf::impl::URIPath;
     using rousette::restconf::impl::URIPrefix;
 
+    auto ctx = libyang::Context{std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "tests" / "yang"};
+    ctx.loadModule("example", std::nullopt, {"f1"});
+    ctx.loadModule("example-augment");
+
     SECTION("Valid paths")
     {
         for (const auto& [uriPath, expected] : {
@@ -258,10 +262,6 @@ TEST_CASE("URI path parser")
 
     SECTION("Translation to libyang path")
     {
-        auto ctx = libyang::Context{std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "tests" / "yang"};
-        ctx.loadModule("example", std::nullopt, {"f1"});
-        ctx.loadModule("example-augment");
-
         SECTION("Contextually valid paths")
         {
             SECTION("GET, PUT, DELETE, POST (data)")
@@ -611,7 +611,6 @@ TEST_CASE("URI path parser")
             SECTION("Unsupported HTTP methods")
             {
                 auto exc = serializeErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
-                REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "OPTIONS", "/restconf/data/example:top-level-leaf"), exc.c_str(), rousette::restconf::ErrorResponse);
                 REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "PATCH", "/restconf/data"), exc.c_str(), rousette::restconf::ErrorResponse);
             }
         }
