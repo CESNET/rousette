@@ -126,7 +126,8 @@ struct RestconfRequest {
         DeleteNode, ///< DELETE on a data resource
         Execute, ///< POST on a operation resource (Execute an RPC or an action)
         CreateChildren, ///< POST on a data resource
-        YangLibraryVersion ///< Report ietf-yang-library version
+        YangLibraryVersion, ///< Report ietf-yang-library version
+        OptionsQuery, ///< Request for allowed HTTP methods for a path
     };
 
     Type type;
@@ -151,4 +152,5 @@ std::optional<libyang::SchemaNode> asLibyangSchemaNode(const libyang::Context& c
 std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath);
 std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> asYangModule(const libyang::Context& ctx, const std::string& uriPath);
 RestconfStreamRequest asRestconfStreamRequest(const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString);
+std::optional<std::string> allowedHttpMethodsForUri(const libyang::Context& ctx, const std::string& uriPath);
 }

@@ -48,7 +48,7 @@ TEST_CASE("reading data")
     DOCTEST_SUBCASE("unsupported methods")
     {
         // we do not support these http methods yet
-        for (const auto& httpMethod : {"OPTIONS"s, "PATCH"s}) {
+        for (const auto& httpMethod : {"PATCH"s}) {
             CAPTURE(httpMethod);
             REQUIRE(clientRequest(httpMethod, RESTCONF_DATA_ROOT "/ietf-system:system", "", {AUTH_ROOT}) == Response{405, jsonHeaders, R"({
   "ietf-restconf:errors": {
@@ -775,6 +775,44 @@ TEST_CASE("reading data")
   "example:config-nonconfig": {
     "config-node": "foo-config-true",
     "nonconfig-node": "foo-config-false"
+  }
+}
+)"});
+    }
+
+    SECTION("OPTIONS method")
+    {
+        // RPC node
+        REQUIRE(options(RESTCONF_OPER_ROOT "/example:test-rpc", {}) == Response{200, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "OPTIONS, POST"}}, ""});
+
+        // data resource
+        REQUIRE(options(RESTCONF_DATA_ROOT "/example:tlc/list=a", {}) == Response{200, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "DELETE, GET, HEAD, OPTIONS, POST, PUT"}}, ""});
+
+        // ds root
+        REQUIRE(options(RESTCONF_DATA_ROOT, {}) == Response{200, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS, POST, PUT"}}, ""});
+        REQUIRE(options(RESTCONF_ROOT_DS("operational"), {}) == Response{200, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS, POST, PUT"}}, ""});
+
+        REQUIRE(options(RESTCONF_DATA_ROOT "/example:tlc/list", {}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-failed",
+        "error-message": "List '/example:tlc/list' requires 1 keys"
+      }
+    ]
+  }
+}
+)"});
+        REQUIRE(options(RESTCONF_OPER_ROOT "/example:test-rpc/i", {}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-failed",
+        "error-message": "'/example:test-rpc' is an RPC/Action node, any child of it can't be requested"
+      }
+    ]
   }
 }
 )"});
