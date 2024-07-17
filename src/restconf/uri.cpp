@@ -252,11 +252,12 @@ std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> getModule
 }
 }
 
-RestconfRequest::RestconfRequest(Type type, const boost::optional<ApiIdentifier>& datastore, const std::string& path, const queryParams::QueryParams& queryParams)
+RestconfRequest::RestconfRequest(Type type, const boost::optional<ApiIdentifier>& datastore, const std::string& path, const queryParams::QueryParams& queryParams, const std::set<std::string>& optionsQuery)
     : type(type)
     , datastore(datastoreFromApiIdentifier(datastore))
     , path(path)
     , queryParams(queryParams)
+    , optionsQuery(optionsQuery)
 {
 }
 
@@ -500,7 +501,7 @@ std::optional<libyang::SchemaNode> asLibyangSchemaNode(const libyang::Context& c
  */
 RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString)
 {
-    if (httpMethod != "GET" && httpMethod != "PUT" && httpMethod != "POST" && httpMethod != "DELETE" && httpMethod != "HEAD") {
+    if (httpMethod != "GET" && httpMethod != "PUT" && httpMethod != "POST" && httpMethod != "DELETE" && httpMethod != "HEAD" && httpMethod != "OPTIONS") {
         throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
     }
 
@@ -515,6 +516,21 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
     }
 
     auto [lyPath, schemaNode] = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
+
+    /* Just try to call this function with all possible HTTP methods and return those which do not fail */
+    if (httpMethod == "OPTIONS") {
+        std::set<std::string> methods;
+        for (const auto& m : {"GET", "PUT", "POST", "DELETE", "HEAD"}) {
+            try {
+                asRestconfRequest(ctx, m, uriPath, "");
+                methods.insert(m);
+            } catch (const ErrorResponse&) {
+                // m is not allowed for this uri
+            }
+        }
+
+        return {RestconfRequest::Type::OptionsQuery, boost::none, ""s, {}, methods};
+    }
 
     validateQueryParameters(*queryParameters, httpMethod);
 

@@ -60,6 +60,10 @@ TEST_CASE("URI path parser")
     using rousette::restconf::impl::URIPath;
     using rousette::restconf::impl::URIPrefix;
 
+    auto ctx = libyang::Context{std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "tests" / "yang"};
+    ctx.loadModule("example", std::nullopt, {"f1"});
+    ctx.loadModule("example-augment");
+
     SECTION("Valid paths")
     {
         for (const auto& [uriPath, expected] : {
@@ -258,10 +262,6 @@ TEST_CASE("URI path parser")
 
     SECTION("Translation to libyang path")
     {
-        auto ctx = libyang::Context{std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "tests" / "yang"};
-        ctx.loadModule("example", std::nullopt, {"f1"});
-        ctx.loadModule("example-augment");
-
         SECTION("Contextually valid paths")
         {
             SECTION("GET, PUT, DELETE, POST (data)")
@@ -306,7 +306,7 @@ TEST_CASE("URI path parser")
                         CAPTURE(expectedRequestType);
                         CAPTURE(uriPath);
                         REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
-                        auto [requestType, datastore, path, queryParams] = rousette::restconf::asRestconfRequest(ctx, httpMethod, uriPath);
+                        auto [requestType, datastore, path, queryParams, optionsQuery] = rousette::restconf::asRestconfRequest(ctx, httpMethod, uriPath);
                         REQUIRE(requestType == expectedRequestType);
                         REQUIRE(path == expectedLyPath);
                         REQUIRE(datastore == expectedDatastore);
@@ -346,21 +346,21 @@ TEST_CASE("URI path parser")
                     }
 
                     {
-                        auto [requestType, datastore, path, queryParams] = rousette::restconf::asRestconfRequest(ctx, "GET", uriPath);
+                        auto [requestType, datastore, path, queryParams, optionsQuery] = rousette::restconf::asRestconfRequest(ctx, "GET", uriPath);
                         REQUIRE(requestType == RestconfRequest::Type::GetData);
                         REQUIRE(path == "/*");
                         REQUIRE(datastore == expectedDatastore);
                         REQUIRE(queryParams.empty());
                     }
                     {
-                        auto [requestType, datastore, path, queryParams] = rousette::restconf::asRestconfRequest(ctx, "PUT", uriPath);
+                        auto [requestType, datastore, path, queryParams, optionsQuery] = rousette::restconf::asRestconfRequest(ctx, "PUT", uriPath);
                         REQUIRE(requestType == RestconfRequest::Type::CreateOrReplaceThisNode);
                         REQUIRE(path == "/");
                         REQUIRE(datastore == expectedDatastore);
                         REQUIRE(queryParams.empty());
                     }
                     {
-                        auto [requestType, datastore, path, queryParams] = rousette::restconf::asRestconfRequest(ctx, "POST", uriPath);
+                        auto [requestType, datastore, path, queryParams, optionsQuery] = rousette::restconf::asRestconfRequest(ctx, "POST", uriPath);
                         REQUIRE(requestType == RestconfRequest::Type::CreateChildren);
                         REQUIRE(path == "/");
                         REQUIRE(datastore == expectedDatastore);
@@ -386,7 +386,7 @@ TEST_CASE("URI path parser")
                 }
 
                 CAPTURE(uri);
-                auto [action, datastore, path, queryParams] = rousette::restconf::asRestconfRequest(ctx, "POST", uri);
+                auto [action, datastore, path, queryParams, optionsQuery] = rousette::restconf::asRestconfRequest(ctx, "POST", uri);
                 REQUIRE(path == expectedPath);
                 REQUIRE(datastore == std::nullopt);
                 REQUIRE(action == RestconfRequest::Type::Execute);
@@ -611,7 +611,6 @@ TEST_CASE("URI path parser")
             SECTION("Unsupported HTTP methods")
             {
                 auto exc = serializeErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
-                REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "OPTIONS", "/restconf/data/example:top-level-leaf"), exc.c_str(), rousette::restconf::ErrorResponse);
                 REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "PATCH", "/restconf/data"), exc.c_str(), rousette::restconf::ErrorResponse);
             }
         }
@@ -980,6 +979,54 @@ TEST_CASE("URI path parser")
             REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest(httpMethod, "/streams/NETCONF", ""),
                     serializeErrorResponse(405, "application", "operation-not-supported", "Method not allowed.").c_str(),
                     rousette::restconf::ErrorResponse);
+        }
+    }
+
+    SECTION("OPTIONS")
+    {
+        SECTION("Valid paths")
+        {
+            SECTION("RESTCONF")
+            {
+                std::string uri;
+                std::set<std::string> expectedMethods;
+                SECTION("Data resource")
+                {
+                    expectedMethods = std::set<std::string>{"HEAD", "GET", "DELETE", "POST", "PUT"};
+
+                    SECTION("Leaf node") { uri = "/restconf/data/example:top-level-leaf"; }
+                    SECTION("List node") { uri = "/restconf/data/example:tlc/list=key"; }
+                    SECTION("Container") { uri = "/restconf/data/example:tlc"; }
+                    SECTION("With NMDA") { uri = "/restconf/ds/ietf-datastores:running/example:tlc"; }
+                }
+
+                SECTION("Operations resource")
+                {
+                    expectedMethods = std::set<std::string>{"POST"};
+
+                    SECTION("RPC") { uri = "/restconf/operations/example:test-rpc"; }
+                    SECTION("Action") { uri = "/restconf/data/example:tlc/list=key/example-action"; }
+                }
+
+                SECTION("Datastore resource")
+                {
+                    expectedMethods = std::set<std::string>{"POST", "PUT", "GET", "HEAD"};
+
+                    SECTION("Basic root") { uri = "/restconf/data"; }
+                    SECTION("NMDA running") { uri = "/restconf/ds/ietf-datastores:running"; }
+                }
+
+                auto req = rousette::restconf::asRestconfRequest(ctx, "OPTIONS", uri);
+                REQUIRE(req.type == rousette::restconf::RestconfRequest::Type::OptionsQuery);
+                REQUIRE(req.optionsQuery == expectedMethods);
+            }
+        }
+
+        SECTION("Invalid paths")
+        {
+            REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "OPTIONS", "/restconf/data/blabla:bla"),
+                                   serializeErrorResponse(400, "application", "operation-failed", "Couldn't find schema node: /blabla:bla").c_str(),
+                                   rousette::restconf::ErrorResponse);
         }
     }
 }
