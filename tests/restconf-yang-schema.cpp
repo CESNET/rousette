@@ -156,11 +156,13 @@ TEST_CASE("obtaining YANG schemas")
     {
         SECTION("unsupported methods")
         {
-            for (const std::string httpMethod : {"POST", "PUT", "OPTIONS", "PATCH", "DELETE"}) {
+            for (const std::string httpMethod : {"POST", "PUT", "PATCH", "DELETE"}) {
                 CAPTURE(httpMethod);
                 REQUIRE(clientRequest(httpMethod, YANG_ROOT "/ietf-yang-library@2019-01-04", "", {AUTH_ROOT}) == Response{405, noContentTypeHeaders, ""});
             }
         }
+
+        REQUIRE(options(YANG_ROOT "/ietf-yang-library@2019-01-04", {}) == Response{200, {{"access-control-allow-origin", {"*", false}}, {"allow", {"GET, HEAD", false}}}, ""});
 
         SECTION("loaded modules")
         {

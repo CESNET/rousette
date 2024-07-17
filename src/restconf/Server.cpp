@@ -5,6 +5,7 @@
  *
 */
 
+#include <experimental/iterator>
 #include <libyang-cpp/Enum.hpp>
 #include <libyang-cpp/Time.hpp>
 #include <nghttp2/asio_http2_server.h>
@@ -560,6 +561,15 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
         std::optional<sysrepo::NotificationTimeStamp> startTime;
         std::optional<sysrepo::NotificationTimeStamp> stopTime;
 
+        if (req.method() == "OPTIONS") {
+            res.write_head(200, {
+                                    {"access-control-allow-origin", {"*", false}},
+                                    {"allow", {"GET, HEAD", false}},
+                                });
+            res.end();
+            return;
+        }
+
         try {
             authorizeRequest(nacm, sess, req);
 
@@ -611,6 +621,15 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     server->handle(yangSchemaRoot, [this, conn /* intentional copy */](const auto& req, const auto& res) mutable {
         const auto& peer = http::peer_from_request(req);
         spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
+
+        if (req.method() == "OPTIONS") {
+            res.write_head(200, {
+                                    {"access-control-allow-origin", {"*", false}},
+                                    {"allow", {"GET, HEAD", false}},
+                                });
+            res.end();
+            return;
+        }
 
         if (req.method() != "GET" && req.method() != "HEAD") {
             res.write_head(405, {{"access-control-allow-origin", {"*", false}}});
@@ -810,6 +829,21 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                             processActionOrRPC(requestCtx);
                         }
                     });
+                    break;
+                }
+
+                case RestconfRequest::Type::OptionsQuery: {
+                    std::ostringstream oss;
+                    std::copy(std::begin(restconfRequest.optionsQuery),
+                              std::end(restconfRequest.optionsQuery),
+                              std::experimental::make_ostream_joiner(oss, ", "));
+
+                    res.write_head(200,
+                                   {
+                                       {"allow", {oss.str(), false}},
+                                       {"access-control-allow-origin", {"*", false}},
+                                   });
+                    res.end();
                     break;
                 }
                 }

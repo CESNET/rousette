@@ -175,6 +175,11 @@ Response get(auto uri, const std::map<std::string, std::string>& headers)
     return clientRequest("GET", uri, "", headers);
 }
 
+Response options(auto uri, const std::map<std::string, std::string>& headers)
+{
+    return clientRequest("OPTIONS", uri, "", headers);
+}
+
 Response head(auto uri, const std::map<std::string, std::string>& headers)
 {
     return clientRequest("HEAD", uri, "", headers);
