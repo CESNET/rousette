@@ -50,7 +50,8 @@ TEST_CASE("reading data")
         // we do not support these http methods yet
         for (const auto& httpMethod : {"PATCH"s}) {
             CAPTURE(httpMethod);
-            REQUIRE(clientRequest(httpMethod, RESTCONF_DATA_ROOT "/ietf-system:system", "", {AUTH_ROOT}) == Response{405, jsonHeaders, R"({
+            REQUIRE(clientRequest(httpMethod, RESTCONF_DATA_ROOT "/ietf-system:system", "", {AUTH_ROOT}) == Response{405,
+                    {{"access-control-allow-origin", {"*", false}}, {"allow", {"DELETE, GET, HEAD, OPTIONS, POST, PUT", false}}, {"content-type", {"application/yang-data+json", false}}}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -285,7 +286,8 @@ TEST_CASE("reading data")
 
     DOCTEST_SUBCASE("RPCs")
     {
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system-restart", {AUTH_DWDM}) == Response{405, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system-restart", {AUTH_DWDM}) == Response{405,
+                {{"access-control-allow-origin", {"*", false}}, {"allow", {"", false}}, {"content-type", {"application/yang-data+json", false}}}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -297,9 +299,11 @@ TEST_CASE("reading data")
   }
 }
 )"});
-        REQUIRE(head(RESTCONF_DATA_ROOT "/ietf-system:system-restart", {AUTH_DWDM}) == Response{405, jsonHeaders, ""});
+        REQUIRE(head(RESTCONF_DATA_ROOT "/ietf-system:system-restart", {AUTH_DWDM}) == Response{405,
+                {{"access-control-allow-origin", {"*", false}}, {"allow", {"", false}}, {"content-type", {"application/yang-data+json", false}}}, ""});
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action", {AUTH_DWDM}) == Response{405, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action", {AUTH_DWDM}) == Response{405,
+                {{"access-control-allow-origin", {"*", false}}, {"allow", {"OPTIONS, POST", false}}, {"content-type", {"application/yang-data+json", false}}}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -783,14 +787,18 @@ TEST_CASE("reading data")
     SECTION("OPTIONS method")
     {
         // RPC node
-        REQUIRE(options(RESTCONF_OPER_ROOT "/example:test-rpc", {}) == Response{200, {{"access-control-allow-origin", {"*", false}}, {"allow", {"OPTIONS, POST", false}}}, ""});
+        REQUIRE(options(RESTCONF_OPER_ROOT "/example:test-rpc", {}) == Response{200,
+                {{"access-control-allow-origin", {"*", false}}, {"allow", {"OPTIONS, POST", false}}}, ""});
 
         // data resource
-        REQUIRE(options(RESTCONF_DATA_ROOT "/example:tlc/list=a", {}) == Response{200, {{"access-control-allow-origin", {"*", false}}, {"allow", {"DELETE, GET, HEAD, OPTIONS, POST, PUT", false}}}, ""});
+        REQUIRE(options(RESTCONF_DATA_ROOT "/example:tlc/list=a", {}) == Response{200,
+                {{"access-control-allow-origin", {"*", false}}, {"allow", {"DELETE, GET, HEAD, OPTIONS, POST, PUT", false}}}, ""});
 
         // ds root
-        REQUIRE(options(RESTCONF_DATA_ROOT, {}) == Response{200, {{"access-control-allow-origin", {"*", false}}, {"allow", {"GET, HEAD, OPTIONS, POST, PUT", false}}}, ""});
-        REQUIRE(options(RESTCONF_ROOT_DS("operational"), {}) == Response{200, {{"access-control-allow-origin", {"*", false}}, {"allow", {"GET, HEAD, OPTIONS, POST, PUT", false}}}, ""});
+        REQUIRE(options(RESTCONF_DATA_ROOT, {}) == Response{200,
+                {{"access-control-allow-origin", {"*", false}}, {"allow", {"GET, HEAD, OPTIONS, POST, PUT", false}}}, ""});
+        REQUIRE(options(RESTCONF_ROOT_DS("operational"), {}) == Response{200,
+                {{"access-control-allow-origin", {"*", false}}, {"allow", {"GET, HEAD, OPTIONS, POST, PUT", false}}}, ""});
 
         REQUIRE(options(RESTCONF_DATA_ROOT "/example:tlc/list", {}) == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
