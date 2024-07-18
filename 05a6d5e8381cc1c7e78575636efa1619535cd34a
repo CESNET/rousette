@@ -35,6 +35,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "d4b8e4f1_9f23599e",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 531,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-18T10:49:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "023d6914_2b73a443",
+      "revId": "05a6d5e8381cc1c7e78575636efa1619535cd34a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f0aef84b_3a4b8f50",
@@ -58,6 +76,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "bb78414b_7b7b624c",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 533,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-18T10:49:45Z",
+      "side": 1,
+      "message": "Thanks, your solution sounds better.",
+      "parentUuid": "f0aef84b_3a4b8f50",
+      "range": {
+        "startLine": 519,
+        "startChar": 0,
+        "endLine": 533,
+        "endChar": 5
+      },
+      "revId": "05a6d5e8381cc1c7e78575636efa1619535cd34a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "ed38ea3e_99cf324c",
@@ -71,6 +113,30 @@
       "writtenOn": "2024-07-18T08:54:16Z",
       "side": 1,
       "message": "404 I think",
+      "range": {
+        "startLine": 1028,
+        "startChar": 58,
+        "endLine": 1028,
+        "endChar": 61
+      },
+      "revId": "05a6d5e8381cc1c7e78575636efa1619535cd34a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a593c31e_03ffd75d",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1028,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-18T10:49:45Z",
+      "side": 1,
+      "message": "I removed the tests as a consequence of the other comment.",
+      "parentUuid": "ed38ea3e_99cf324c",
       "range": {
         "startLine": 1028,
         "startChar": 58,
