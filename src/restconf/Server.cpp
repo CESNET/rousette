@@ -67,7 +67,13 @@ void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat
         errors->newExtPath("/ietf-restconf:errors/error[1]/error-path", *errorPath, ext);
     }
 
-    res.write_head(code, {{"content-type", {asMimeType(dataFormat), false}}, {"access-control-allow-origin", {"*", false}}});
+    nghttp2::asio_http2::header_map headers = {{"content-type", {asMimeType(dataFormat), false}}, {"access-control-allow-origin", {"*", false}}};
+
+    if (code == 405) {
+        headers.emplace("allow", nghttp2::asio_http2::header_value{allowedHttpMethodsForUri(ctx, req.uri().path).value_or(""), false});
+    }
+
+    res.write_head(code, headers);
     res.end(*errors->printStr(dataFormat, libyang::PrintFlags::WithSiblings));
 }
 
@@ -609,10 +615,16 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             });
         } catch (const ErrorResponse& e) {
             // RFC does not specify how the errors should look like so let's just report the HTTP code and print the error message
-            res.write_head(e.code, {
-                                       {"content-type", {"text/plain", false}},
-                                       {"access-control-allow-origin", {"*", false}},
-                                   });
+            nghttp2::asio_http2::header_map headers = {
+                {"content-type", {"text/plain", false}},
+                {"access-control-allow-origin", {"*", false}},
+            };
+
+            if (e.code == 405) {
+                headers.emplace("allow", nghttp2::asio_http2::header_value{"GET, HEAD, OPTIONS", false});
+            }
+
+            res.write_head(e.code, headers);
             res.end(e.errorMessage);
         }
     });
@@ -621,17 +633,11 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
         const auto& peer = http::peer_from_request(req);
         spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
 
-        if (req.method() == "OPTIONS") {
-            res.write_head(200, {
+        if (req.method() == "OPTIONS" || (req.method() != "GET" && req.method() != "HEAD")) {
+            res.write_head(req.method() == "OPTIONS" ? 200 : 405, {
                                     {"access-control-allow-origin", {"*", false}},
                                     {"allow", {"GET, HEAD, OPTIONS", false}},
                                 });
-            res.end();
-            return;
-        }
-
-        if (req.method() != "GET" && req.method() != "HEAD") {
-            res.write_head(405, {{"access-control-allow-origin", {"*", false}}});
             res.end();
             return;
         }
