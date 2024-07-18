@@ -795,7 +795,9 @@ TEST_CASE("writing data")
 
         DOCTEST_SUBCASE("RPCs")
         {
-            REQUIRE(put(RESTCONF_DATA_ROOT "/ietf-system:system-restart", "", {AUTH_DWDM}) == Response{405, jsonHeaders, R"({
+            // empty allow header because the rpc is requested using /restconf/data and not /restconf/operations prefix
+            REQUIRE(put(RESTCONF_DATA_ROOT "/ietf-system:system-restart", "", {AUTH_DWDM}) ==
+                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", ""}}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -808,7 +810,8 @@ TEST_CASE("writing data")
 }
 )"});
 
-            REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action", "", {AUTH_DWDM}) == Response{405, jsonHeaders, R"({
+            REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action", "", {AUTH_DWDM}) ==
+                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", "OPTIONS, POST"}}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -999,7 +1002,8 @@ TEST_CASE("writing data")
                 uri = RESTCONF_ROOT_DS("factory-default");
             }
 
-            REQUIRE(put(uri + "/example:top-level-leaf", R"({"example:top-level-leaf": "str"})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{405, jsonHeaders, R"({
+            REQUIRE(put(uri + "/example:top-level-leaf", R"({"example:top-level-leaf": "str"})", {CONTENT_TYPE_JSON, AUTH_ROOT}) ==
+                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", "DELETE, GET, HEAD, OPTIONS, POST, PUT"}}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -1661,7 +1665,8 @@ TEST_CASE("writing data")
                 uri = RESTCONF_ROOT_DS("factory-default");
             }
 
-            REQUIRE(post(uri + "/", R"({"example:top-level-leaf": "str"})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{405, jsonHeaders, R"({
+            REQUIRE(post(uri + "/", R"({"example:top-level-leaf": "str"})", {CONTENT_TYPE_JSON, AUTH_ROOT}) ==
+                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", "GET, HEAD, OPTIONS, POST, PUT"}}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
