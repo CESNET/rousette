@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "35702c6a_231a64cb",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 524,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-18T15:38:09Z",
+      "side": 1,
+      "message": "any particular reason for skipping this check for OPTIONS?",
+      "revId": "9857d4a71386aef4dc3741c816fecc2cb46a5d91",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "65d75382_d8121c44",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 155,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-18T15:38:09Z",
+      "side": 1,
+      "message": "I\u0027m a fan of shorter names, so let\u0027s drop at least the \"get\" part please",
+      "range": {
+        "startLine": 155,
+        "startChar": 27,
+        "endLine": 155,
+        "endChar": 54
+      },
+      "revId": "9857d4a71386aef4dc3741c816fecc2cb46a5d91",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
