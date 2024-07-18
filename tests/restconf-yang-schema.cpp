@@ -158,7 +158,7 @@ TEST_CASE("obtaining YANG schemas")
         {
             for (const std::string httpMethod : {"POST", "PUT", "PATCH", "DELETE"}) {
                 CAPTURE(httpMethod);
-                REQUIRE(clientRequest(httpMethod, YANG_ROOT "/ietf-yang-library@2019-01-04", "", {AUTH_ROOT}) == Response{405, noContentTypeHeaders, ""});
+                REQUIRE(clientRequest(httpMethod, YANG_ROOT "/ietf-yang-library@2019-01-04", "", {AUTH_ROOT}) == Response{405, {ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS"}}, ""});
             }
         }
 

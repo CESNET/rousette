@@ -50,7 +50,8 @@ TEST_CASE("reading data")
         // we do not support these http methods yet
         for (const auto& httpMethod : {"PATCH"s}) {
             CAPTURE(httpMethod);
-            REQUIRE(clientRequest(httpMethod, RESTCONF_DATA_ROOT "/ietf-system:system", "", {AUTH_ROOT}) == Response{405, jsonHeaders, R"({
+            REQUIRE(clientRequest(httpMethod, RESTCONF_DATA_ROOT "/ietf-system:system", "", {AUTH_ROOT}) == Response{405,
+                    {ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", "DELETE, GET, HEAD, OPTIONS, POST, PUT"}}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -285,7 +286,8 @@ TEST_CASE("reading data")
 
     DOCTEST_SUBCASE("RPCs")
     {
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system-restart", {AUTH_DWDM}) == Response{405, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system-restart", {AUTH_DWDM}) == Response{405,
+                {ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", ""}}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -297,9 +299,11 @@ TEST_CASE("reading data")
   }
 }
 )"});
-        REQUIRE(head(RESTCONF_DATA_ROOT "/ietf-system:system-restart", {AUTH_DWDM}) == Response{405, jsonHeaders, ""});
+        REQUIRE(head(RESTCONF_DATA_ROOT "/ietf-system:system-restart", {AUTH_DWDM}) == Response{405,
+                {ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", ""}}, ""});
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action", {AUTH_DWDM}) == Response{405, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action", {AUTH_DWDM}) == Response{405,
+                {ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", "OPTIONS, POST"}}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -783,14 +787,18 @@ TEST_CASE("reading data")
     SECTION("OPTIONS method")
     {
         // RPC node
-        REQUIRE(options(RESTCONF_OPER_ROOT "/example:test-rpc", {}) == Response{200, {ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "OPTIONS, POST"}}, ""});
+        REQUIRE(options(RESTCONF_OPER_ROOT "/example:test-rpc", {}) == Response{200,
+                {ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "OPTIONS, POST"}}, ""});
 
         // data resource
-        REQUIRE(options(RESTCONF_DATA_ROOT "/example:tlc/list=a", {}) == Response{200, {ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "DELETE, GET, HEAD, OPTIONS, POST, PUT"}}, ""});
+        REQUIRE(options(RESTCONF_DATA_ROOT "/example:tlc/list=a", {}) == Response{200,
+                {ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "DELETE, GET, HEAD, OPTIONS, POST, PUT"}}, ""});
 
         // ds root
-        REQUIRE(options(RESTCONF_DATA_ROOT, {}) == Response{200, {ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS, POST, PUT"}}, ""});
-        REQUIRE(options(RESTCONF_ROOT_DS("operational"), {}) == Response{200, {ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS, POST, PUT"}}, ""});
+        REQUIRE(options(RESTCONF_DATA_ROOT, {}) == Response{200,
+                {ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS, POST, PUT"}}, ""});
+        REQUIRE(options(RESTCONF_ROOT_DS("operational"), {}) == Response{200,
+                {ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS, POST, PUT"}}, ""});
 
         REQUIRE(options(RESTCONF_DATA_ROOT "/example:tlc/list", {}) == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {

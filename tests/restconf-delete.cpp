@@ -179,7 +179,7 @@ TEST_CASE("deleting data")
 
     SECTION("RPC nodes")
     {
-        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:test-rpc", {AUTH_ROOT}) == Response{405, jsonHeaders, R"({
+        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:test-rpc", {AUTH_ROOT}) == Response{405, {ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", ""}}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
