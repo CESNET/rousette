@@ -50,7 +50,8 @@ TEST_CASE("reading data")
         // we do not support these http methods yet
         for (const auto& httpMethod : {"PATCH"s}) {
             CAPTURE(httpMethod);
-            REQUIRE(clientRequest(httpMethod, RESTCONF_DATA_ROOT "/ietf-system:system", "", {AUTH_ROOT}) == Response{405, jsonHeaders, R"({
+            REQUIRE(clientRequest(httpMethod, RESTCONF_DATA_ROOT "/ietf-system:system", "", {AUTH_ROOT}) == Response{405,
+                    Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", "DELETE, GET, HEAD, OPTIONS, POST, PUT"}}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -285,7 +286,9 @@ TEST_CASE("reading data")
 
     DOCTEST_SUBCASE("RPCs")
     {
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system-restart", {AUTH_DWDM}) == Response{405, jsonHeaders, R"({
+        // empty allow header because the rpc is requested using /restconf/data and not /restconf/operations prefix
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system-restart", {AUTH_DWDM}) == Response{405,
+                Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", ""}}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -297,9 +300,12 @@ TEST_CASE("reading data")
   }
 }
 )"});
-        REQUIRE(head(RESTCONF_DATA_ROOT "/ietf-system:system-restart", {AUTH_DWDM}) == Response{405, jsonHeaders, ""});
+        // empty allow header because the rpc is requested using /restconf/data and not /restconf/operations prefix
+        REQUIRE(head(RESTCONF_DATA_ROOT "/ietf-system:system-restart", {AUTH_DWDM}) == Response{405,
+                Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", ""}}, ""});
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action", {AUTH_DWDM}) == Response{405, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action", {AUTH_DWDM}) == Response{405,
+                Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", "OPTIONS, POST"}}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
