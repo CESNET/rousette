@@ -1,0 +1,84 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d66c0fa7_786da4fb",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-18T08:54:16Z",
+      "side": 1,
+      "message": "https://datatracker.ietf.org/doc/html/rfc9110#field.allow says that in case we\u0027re sending 405 operation-not-supported, then the Allow header should be sent as well (in an extra commit please)",
+      "revId": "05a6d5e8381cc1c7e78575636efa1619535cd34a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "023d6914_2b73a443",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 531,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-18T08:54:16Z",
+      "side": 1,
+      "message": "If there are no results (i.e., all possible methods have thrown), return 404. If there are some results, please also return OPTIONS. I know that this isn\u0027t listed explicitly in the RFC, but I think it should still be included.",
+      "revId": "05a6d5e8381cc1c7e78575636efa1619535cd34a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f0aef84b_3a4b8f50",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 533,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-18T08:54:16Z",
+      "side": 1,
+      "message": "Do we actually need this code in the URI parser itself? IMHO, all that the `asRestconfRequest` should do is to return a simple thing saying \"this is an OPTIONS request\" -- similar to how the YangLibraryVersion is implemented. Then, in the actual handler for this kind of request, call this loop and return whatever methods have not thrown.",
+      "range": {
+        "startLine": 519,
+        "startChar": 0,
+        "endLine": 533,
+        "endChar": 5
+      },
+      "revId": "05a6d5e8381cc1c7e78575636efa1619535cd34a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ed38ea3e_99cf324c",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1028,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-18T08:54:16Z",
+      "side": 1,
+      "message": "404 I think",
+      "range": {
+        "startLine": 1028,
+        "startChar": 58,
+        "endLine": 1028,
+        "endChar": 61
+      },
+      "revId": "05a6d5e8381cc1c7e78575636efa1619535cd34a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
