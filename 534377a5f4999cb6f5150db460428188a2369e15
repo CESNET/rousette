@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8c02063c_10e4d1f1",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-18T12:55:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "51059123_a02037f5",
+      "revId": "534377a5f4999cb6f5150db460428188a2369e15",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "7cb1b6ec_c448ec58",
@@ -35,6 +53,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4a8bb07b_016b416a",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-18T12:55:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7cb1b6ec_c448ec58",
+      "revId": "534377a5f4999cb6f5150db460428188a2369e15",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "651e8a10_a0145e20",
@@ -48,6 +84,24 @@
       "writtenOn": "2024-07-18T11:06:51Z",
       "side": 1,
       "message": "nit: this looks like an extra change now",
+      "revId": "534377a5f4999cb6f5150db460428188a2369e15",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6a5cc1b7_7925bdbe",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-18T12:55:02Z",
+      "side": 1,
+      "message": "I have decided to bring the tests back due to changes in the latest PS. I would have to do something like this anyways for the next commit.",
+      "parentUuid": "651e8a10_a0145e20",
       "revId": "534377a5f4999cb6f5150db460428188a2369e15",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
