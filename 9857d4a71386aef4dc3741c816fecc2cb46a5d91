@@ -20,6 +20,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "d90b6a73_0b3bf077",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 524,
+      "author": {
+        "id": 1000062
+      },
+      "writtenOn": "2024-07-19T10:40:18Z",
+      "side": 1,
+      "message": "I am not sending the query part of the URI here. I think it is irrelevant. We only need to check if the path is parseable, don\u0027t we?",
+      "parentUuid": "35702c6a_231a64cb",
+      "revId": "9857d4a71386aef4dc3741c816fecc2cb46a5d91",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "65d75382_d8121c44",
         "filename": "src/restconf/uri.h",
         "patchSetId": 4
