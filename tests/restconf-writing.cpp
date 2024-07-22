@@ -1022,8 +1022,8 @@ TEST_CASE("writing data")
                 uri = RESTCONF_ROOT_DS("factory-default");
             }
 
-            REQUIRE(put(uri + "/example:top-level-leaf", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:top-level-leaf": "str"})") ==
-                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", "DELETE, GET, HEAD, OPTIONS, POST, PUT"}}, R"({
+            REQUIRE(put(uri + "/example:top-level-leaf", {CONTENT_TYPE_JSON, AUTH_ROOT}, R"({"example:top-level-leaf": "str"})") ==
+                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT"}, ACCEPT_PATCH}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -1714,8 +1714,8 @@ TEST_CASE("writing data")
                 uri = RESTCONF_ROOT_DS("factory-default");
             }
 
-            REQUIRE(post(uri + "/", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:top-level-leaf": "str"})") ==
-                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", "GET, HEAD, OPTIONS, POST, PUT"}}, R"({
+            REQUIRE(post(uri + "/", {CONTENT_TYPE_JSON, AUTH_ROOT}, R"({"example:top-level-leaf": "str"})") ==
+                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", "GET, HEAD, OPTIONS, PATCH, POST, PUT"}, ACCEPT_PATCH}, R"({
   "ietf-restconf:errors": {
     "error": [
       {

@@ -197,6 +197,7 @@ if(BUILD_TESTING)
     rousette_test(NAME restconf-nacm LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
     rousette_test(NAME restconf-defaults LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
     rousette_test(NAME restconf-notifications LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
+    rousette_test(NAME restconf-plain-patch LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
     set(nested-models
         ${common-models}
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/root-mod.yang)
