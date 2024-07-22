@@ -75,7 +75,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:a",
-        "error-message": "Invalid data for PUT (data contains invalid node)."
+        "error-message": "Data contains invalid node."
       }
     ]
   }
@@ -225,7 +225,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:a/b/c/blower",
-        "error-message": "Invalid data for PUT (data contains invalid node)."
+        "error-message": "Data contains invalid node."
       }
     ]
   }
@@ -240,7 +240,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:a/b/c/blower",
-        "error-message": "Invalid data for PUT (data contains invalid node)."
+        "error-message": "Data contains invalid node."
       }
     ]
   }
@@ -255,7 +255,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:top-level-leaf",
-        "error-message": "Invalid data for PUT (data contains invalid node)."
+        "error-message": "Data contains invalid node."
       }
     ]
   }
@@ -270,7 +270,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:top-level-leaf",
-        "error-message": "Invalid data for PUT (data contains invalid node)."
+        "error-message": "Data contains invalid node."
       }
     ]
   }
@@ -305,7 +305,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:a/b",
-        "error-message": "Invalid data for PUT (data contains invalid node)."
+        "error-message": "Data contains invalid node."
       }
     ]
   }
@@ -402,7 +402,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:tlc/list[name='ahoj']/name",
-        "error-message": "Invalid data for PUT (list key mismatch between URI path and data)."
+        "error-message": "List key mismatch between URI path and data."
       }
     ]
   }
@@ -417,7 +417,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:top-level-list[name='ahoj']/name",
-        "error-message": "Invalid data for PUT (list key mismatch between URI path and data)."
+        "error-message": "List key mismatch between URI path and data."
       }
     ]
   }
@@ -446,7 +446,7 @@ TEST_CASE("writing data")
       {
         "error-type": "protocol",
         "error-tag": "invalid-value",
-        "error-message": "Invalid data for PUT (node indicated by URI is missing)."
+        "error-message": "Node indicated by URI is missing."
       }
     ]
   }
@@ -460,7 +460,7 @@ TEST_CASE("writing data")
       {
         "error-type": "protocol",
         "error-tag": "invalid-value",
-        "error-message": "Invalid data for PUT (node indicated by URI is missing)."
+        "error-message": "Node indicated by URI is missing."
       }
     ]
   }
@@ -475,7 +475,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:tlc/list[name='netconf']/collection[.='666']",
-        "error-message": "Invalid data for PUT (list key mismatch between URI path and data)."
+        "error-message": "List key mismatch between URI path and data."
       }
     ]
   }
@@ -490,7 +490,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:top-level-leaf-list[.='666']",
-        "error-message": "Invalid data for PUT (list key mismatch between URI path and data)."
+        "error-message": "List key mismatch between URI path and data."
       }
     ]
   }
@@ -505,7 +505,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:tlc/list[name='sysrepo']/name",
-        "error-message": "Invalid data for PUT (list key mismatch between URI path and data)."
+        "error-message": "List key mismatch between URI path and data."
       }
     ]
   }
@@ -520,7 +520,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:tlc/list[name='sysrepo']/name",
-        "error-message": "Invalid data for PUT (list key mismatch between URI path and data)."
+        "error-message": "List key mismatch between URI path and data."
       }
     ]
   }
@@ -535,7 +535,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:tlc/list[name='libyang']/collection[.='42']",
-        "error-message": "Invalid data for PUT (list key mismatch between URI path and data)."
+        "error-message": "List key mismatch between URI path and data."
       }
     ]
   }
