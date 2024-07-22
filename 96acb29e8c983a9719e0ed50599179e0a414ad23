@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ed9424b4_b930650c",
+        "filename": "tests/restconf-reading.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-22T08:39:02Z",
+      "side": 1,
+      "message": "nit: please wrap this one, and also all the changes below and in the other file because they\u0027re way over the line width threshold now",
+      "revId": "96acb29e8c983a9719e0ed50599179e0a414ad23",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
