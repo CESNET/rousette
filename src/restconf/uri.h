@@ -129,6 +129,7 @@ struct RestconfRequest {
         CreateChildren, ///< POST on a data resource
         YangLibraryVersion, ///< Report ietf-yang-library version
         OptionsQuery, ///< Request for allowed HTTP methods for a path
+        MergeData, ///< PATCH on a data resource or a complete-datastore resource
     };
 
     Type type;
