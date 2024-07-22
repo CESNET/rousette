@@ -45,27 +45,6 @@ TEST_CASE("reading data")
     // setup real-like NACM
     setupRealNacm(srSess);
 
-    DOCTEST_SUBCASE("unsupported methods")
-    {
-        // we do not support these http methods yet
-        for (const auto& httpMethod : {"PATCH"s}) {
-            CAPTURE(httpMethod);
-            REQUIRE(clientRequest(httpMethod, RESTCONF_DATA_ROOT "/ietf-system:system", "", {AUTH_ROOT}) == Response{405,
-                    {{"access-control-allow-origin", {"*", false}}, {"allow", {"DELETE, GET, HEAD, OPTIONS, POST, PUT", false}}, {"content-type", {"application/yang-data+json", false}}}, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "operation-not-supported",
-        "error-message": "Method not allowed."
-      }
-    ]
-  }
-}
-)"});
-        }
-    }
-
     DOCTEST_SUBCASE("entire datastore")
     {
         // this relies on a NACM rule for anonymous access that filters out "a lot of stuff"

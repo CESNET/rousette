@@ -70,7 +70,12 @@ void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat
     nghttp2::asio_http2::header_map headers = {{"content-type", {asMimeType(dataFormat), false}}, {"access-control-allow-origin", {"*", false}}};
 
     if (code == 405) {
-        headers.emplace("allow", nghttp2::asio_http2::header_value{allowedHttpMethodsForUri(ctx, req.uri().path).value_or(""), false});
+        if (auto optionsHeaders = allowedHttpMethodsForUri(ctx, req.uri().path)) {
+            headers.emplace("allow", nghttp2::asio_http2::header_value{optionsHeaders->allow, false});
+            if (optionsHeaders->acceptPatch) {
+                headers.emplace("accept-patch", nghttp2::asio_http2::header_value{*optionsHeaders->acceptPatch, false});
+            }
+        }
     }
 
     res.write_head(code, headers);
@@ -327,7 +332,7 @@ void processPost(std::shared_ptr<RequestContext> requestCtx)
     }
 }
 
-void processPut(std::shared_ptr<RequestContext> requestCtx)
+void processPutOrPatch(std::shared_ptr<RequestContext> requestCtx)
 {
     try {
         auto ctx = requestCtx->sess.getContext();
@@ -339,13 +344,19 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
                 validateInputMetaAttributes(ctx, *edit);
             }
 
-            requestCtx->sess.replaceConfig(edit);
+            if (requestCtx->req.method() == "PUT") {
+                requestCtx->sess.replaceConfig(edit);
 
-            requestCtx->res.write_head(edit ? 201 : 204,
-                                       {
-                                           {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
-                                           {"access-control-allow-origin", {"*", false}},
-                                       });
+                requestCtx->res.write_head(edit ? 201 : 204,
+                                           {
+                                               {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
+                                               {"access-control-allow-origin", {"*", false}},
+                                           });
+            } else {
+                requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
+                requestCtx->sess.applyChanges();
+                requestCtx->res.write_head(204, {{"access-control-allow-origin", {"*", false}}});
+            }
             requestCtx->res.end();
             return;
         }
@@ -362,6 +373,11 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
         }
 
         bool nodeExisted = !!requestCtx->sess.getData(requestCtx->restconfRequest.path);
+
+        if (requestCtx->req.method() == "PATCH" && !nodeExisted) {
+            throw ErrorResponse(400, "protocol", "invalid-value", "Target resource does not exist");
+        }
+
         std::optional<libyang::DataNode> edit;
         std::optional<libyang::DataNode> replacementNode;
 
@@ -409,18 +425,25 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
 
         validateInputMetaAttributes(ctx, *edit);
 
-        auto modNetconf = ctx.getModuleImplemented("ietf-netconf");
-        replacementNode->newMeta(*modNetconf, "operation", "replace");
-        yangInsert(*requestCtx, *replacementNode);
+        if (requestCtx->req.method() == "PUT") {
+            auto modNetconf = ctx.getModuleImplemented("ietf-netconf");
+            replacementNode->newMeta(*modNetconf, "operation", "replace");
+            yangInsert(*requestCtx, *replacementNode);
+        }
 
         requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
         requestCtx->sess.applyChanges();
 
-        requestCtx->res.write_head(nodeExisted ? 204 : 201,
-                                   {
-                                       {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
-                                       {"access-control-allow-origin", {"*", false}},
-                                   });
+        if (requestCtx->req.method() == "PUT") {
+            requestCtx->res.write_head(nodeExisted ? 204 : 201,
+                                       {
+                                           {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
+                                           {"access-control-allow-origin", {"*", false}},
+                                       });
+        } else {
+            requestCtx->res.write_head(204, {{"access-control-allow-origin", {"*", false}}});
+        }
+
         requestCtx->res.end();
     } catch (const ErrorResponse& e) {
         rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath);
@@ -752,7 +775,8 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 }
 
                 case RestconfRequest::Type::CreateOrReplaceThisNode:
-                case RestconfRequest::Type::CreateChildren: {
+                case RestconfRequest::Type::CreateChildren:
+                case RestconfRequest::Type::MergeData: {
                     if (restconfRequest.datastore == sysrepo::Datastore::FactoryDefault || restconfRequest.datastore == sysrepo::Datastore::Operational) {
                         throw ErrorResponse(405, "application", "operation-not-supported", "Read-only datastore.");
                     }
@@ -770,10 +794,10 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                             return;
                         }
 
-                        if (restconfRequest.type == RestconfRequest::Type::CreateOrReplaceThisNode) {
-                            processPut(requestCtx);
-                        } else {
+                        if (restconfRequest.type == RestconfRequest::Type::CreateChildren) {
                             processPost(requestCtx);
+                        } else {
+                            processPutOrPatch(requestCtx);
                         }
                     });
                     break;
@@ -838,15 +862,17 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 }
 
                 case RestconfRequest::Type::OptionsQuery: {
+                    nghttp2::asio_http2::header_map headers{{"access-control-allow-origin", {"*", false}}};
+
                     /* Just try to call this function with all possible HTTP methods and return those which do not fail */
-                    if (auto allowHeader = allowedHttpMethodsForUri(sess.getContext(), req.uri().path)) {
-                        res.write_head(200,
-                                       {
-                                           {"allow", {*allowHeader, false}},
-                                           {"access-control-allow-origin", {"*", false}},
-                                       });
+                    if (auto optionsHeaders = allowedHttpMethodsForUri(sess.getContext(), req.uri().path)) {
+                        headers.emplace("allow", nghttp2::asio_http2::header_value{optionsHeaders->allow, false});
+                        if (optionsHeaders->acceptPatch) {
+                            headers.emplace("accept-patch", nghttp2::asio_http2::header_value{*optionsHeaders->acceptPatch, false});
+                        }
+                        res.write_head(200, headers);
                     } else {
-                        res.write_head(404, {{"access-control-allow-origin", {"*", false}}});
+                        res.write_head(404, headers);
                     }
                     res.end();
                     break;
