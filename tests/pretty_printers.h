@@ -176,4 +176,12 @@ struct StringMaker<rousette::restconf::queryParams::QueryParams> {
         return oss.str().c_str();
     }
 };
+
+template <>
+struct StringMaker<rousette::restconf::OptionsHeaders> {
+    static String convert(const rousette::restconf::OptionsHeaders& obj)
+    {
+        return ("{allow=\"" + obj.allow + "\", acceptPatch=" + StringMaker<decltype(obj.acceptPatch)>::convert(obj.acceptPatch).c_str() + "}").c_str();
+    }
+};
 }
