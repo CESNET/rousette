@@ -379,13 +379,13 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
                  */
                 if (isSameNode(child, lastPathSegment)) {
                     if (auto offendingNode = checkKeysMismatch(child, lastPathSegment)) {
-                        throw ErrorResponse(400, "protocol", "invalid-value", "Invalid data for PUT (list key mismatch between URI path and data).", offendingNode->path());
+                        throw ErrorResponse(400, "protocol", "invalid-value", "List key mismatch between URI path and data.", offendingNode->path());
                     }
                     replacementNode = child;
                 } else if (isKeyNode(*node, child)) {
                     // do nothing here; key values are checked elsewhere
                 } else {
-                    throw ErrorResponse(400, "protocol", "invalid-value", "Invalid data for PUT (data contains invalid node).", child.path());
+                    throw ErrorResponse(400, "protocol", "invalid-value", "Data contains invalid node.", child.path());
                 }
             }
 
@@ -395,16 +395,16 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
                 edit = parent;
                 replacementNode = parent;
                 if (!isSameNode(*replacementNode, lastPathSegment)) {
-                    throw ErrorResponse(400, "protocol", "invalid-value", "Invalid data for PUT (data contains invalid node).", replacementNode->path());
+                    throw ErrorResponse(400, "protocol", "invalid-value", "Data contains invalid node.", replacementNode->path());
                 }
                 if (auto offendingNode = checkKeysMismatch(*parent, lastPathSegment)) {
-                    throw ErrorResponse(400, "protocol", "invalid-value", "Invalid data for PUT (list key mismatch between URI path and data).", offendingNode->path());
+                    throw ErrorResponse(400, "protocol", "invalid-value", "List key mismatch between URI path and data.", offendingNode->path());
                 }
             }
         }
 
         if (!replacementNode) {
-            throw ErrorResponse(400, "protocol", "invalid-value", "Invalid data for PUT (node indicated by URI is missing).");
+            throw ErrorResponse(400, "protocol", "invalid-value", "Node indicated by URI is missing.");
         }
 
         validateInputMetaAttributes(ctx, *edit);
