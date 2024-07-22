@@ -128,6 +128,7 @@ struct RestconfRequest {
         CreateChildren, ///< POST on a data resource
         YangLibraryVersion, ///< Report ietf-yang-library version
         OptionsQuery, ///< Request for allowed HTTP methods for a path
+        MergeData, ///< PATCH on a data resource or a complete-datastore resource
     };
 
     Type type;
@@ -147,10 +148,17 @@ struct RestconfStreamRequest {
     queryParams::QueryParams queryParams;
 };
 
+struct OptionsHeaders {
+    std::string allow;
+    std::optional<std::string> acceptPatch;
+
+    bool operator==(const OptionsHeaders&) const = default;
+};
+
 RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString = "");
 std::optional<libyang::SchemaNode> asLibyangSchemaNode(const libyang::Context& ctx, const std::vector<PathSegment>& pathSegments);
 std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath);
 std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> asYangModule(const libyang::Context& ctx, const std::string& uriPath);
 RestconfStreamRequest asRestconfStreamRequest(const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString);
-std::optional<std::string> allowedHttpMethodsForUri(const libyang::Context& ctx, const std::string& uriPath);
+std::optional<OptionsHeaders> allowedHttpMethodsForUri(const libyang::Context& ctx, const std::string& uriPath);
 }
