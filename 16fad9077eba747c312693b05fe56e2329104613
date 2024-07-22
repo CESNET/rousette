@@ -22,6 +22,30 @@
       },
       "revId": "16fad9077eba747c312693b05fe56e2329104613",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4113e41a_7e14c59b",
+        "filename": ".zuul.yaml",
+        "patchSetId": 6
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-22T08:39:48Z",
+      "side": 1,
+      "message": "let\u0027s block this via br2-external instead",
+      "parentUuid": "f1449283_97a21786",
+      "range": {
+        "startLine": 33,
+        "startChar": 0,
+        "endLine": 33,
+        "endChar": 2
+      },
+      "revId": "16fad9077eba747c312693b05fe56e2329104613",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
