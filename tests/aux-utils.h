@@ -146,6 +146,7 @@ const ng::header_map eventStreamHeaders {
 };
 
 #define ACCESS_CONTROL_ALLOW_ORIGIN {"access-control-allow-origin", "*"}
+#define ACCEPT_PATCH {"accept-patch", "application/yang-data+json;charset=utf-8, application/yang-data+xml;charset=utf-8"}
 
 Response clientRequest(auto method,
         auto uri,
@@ -216,6 +217,11 @@ Response put(auto xpath, const std::string& data, const std::map<std::string, st
 Response post(auto xpath, const std::string& data, const std::map<std::string, std::string>& headers)
 {
     return clientRequest("POST", xpath, data, headers);
+}
+
+Response patch(auto uri, const std::string& data, const std::map<std::string, std::string>& headers)
+{
+    return clientRequest("PATCH", uri, data, headers);
 }
 
 Response httpDelete(auto uri, const std::map<std::string, std::string>& headers)

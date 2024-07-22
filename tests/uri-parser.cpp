@@ -264,13 +264,14 @@ TEST_CASE("URI path parser")
     {
         SECTION("Contextually valid paths")
         {
-            SECTION("GET, PUT, DELETE, POST (data)")
+            SECTION("GET, PUT, DELETE, POST (data), PATCH")
             {
                 for (const auto& [httpMethod, expectedRequestType] : {
                          std::pair<std::string, RestconfRequest::Type>{"GET", RestconfRequest::Type::GetData},
                          {"PUT", RestconfRequest::Type::CreateOrReplaceThisNode},
                          {"DELETE", RestconfRequest::Type::DeleteNode},
                          {"POST", RestconfRequest::Type::CreateChildren},
+                         {"PATCH", RestconfRequest::Type::MergeData},
                      }) {
                     for (const auto& [uriPath, expectedLyPath, expectedDatastore] : {
                              std::tuple<std::string, std::string, std::optional<sysrepo::Datastore>>{"/restconf/data/example:top-level-leaf", "/example:top-level-leaf", std::nullopt},
@@ -366,6 +367,13 @@ TEST_CASE("URI path parser")
                         REQUIRE(datastore == expectedDatastore);
                         REQUIRE(queryParams.empty());
                     }
+                    {
+                        auto [requestType, datastore, path, queryParams] = rousette::restconf::asRestconfRequest(ctx, "PATCH", uriPath);
+                        REQUIRE(requestType == RestconfRequest::Type::MergeData);
+                        REQUIRE(path == "/");
+                        REQUIRE(datastore == expectedDatastore);
+                        REQUIRE(queryParams.empty());
+                    }
                 }
             }
 
@@ -402,7 +410,7 @@ TEST_CASE("URI path parser")
             std::string expectedErrorMessage;
             std::string uriPath;
 
-            SECTION("GET, PUT, DELETE, POST (data)")
+            SECTION("GET, PUT, DELETE, POST (data), PATCH")
             {
                 expectedCode = 400;
                 expectedErrorType = "application";
@@ -507,7 +515,7 @@ TEST_CASE("URI path parser")
                     expectedErrorMessage = "Unsupported datastore hello:world";
                 }
 
-                for (const auto& httpMethod : {"GET"s, "PUT"s, "DELETE"s, "POST"s}) {
+                for (const auto& httpMethod : {"GET"s, "PUT"s, "DELETE"s, "POST"s, "PATCH"s}) {
                     CAPTURE(httpMethod);
                     REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, httpMethod, uriPath),
                                            serializeErrorResponse(expectedCode, expectedErrorType, expectedErrorTag, expectedErrorMessage).c_str(),
@@ -515,7 +523,7 @@ TEST_CASE("URI path parser")
                 }
             }
 
-            SECTION("GET, PUT, DELETE with RPC nodes")
+            SECTION("GET, PUT, DELETE, PATCH with RPC nodes")
             {
                 expectedCode = 405;
                 expectedErrorType = "protocol";
@@ -532,7 +540,7 @@ TEST_CASE("URI path parser")
                     expectedErrorMessage = "'/example:tlc/list/example-action' is an RPC/Action node";
                 }
 
-                for (const auto& httpMethod : {"GET"s, "PUT"s, "DELETE"s}) {
+                for (const auto& httpMethod : {"GET"s, "PUT"s, "DELETE"s, "PATCH"s}) {
                     CAPTURE(httpMethod);
                     REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, httpMethod, uriPath),
                                            serializeErrorResponse(expectedCode, expectedErrorType, expectedErrorTag, expectedErrorMessage).c_str(),
@@ -606,12 +614,6 @@ TEST_CASE("URI path parser")
                                            serializeErrorResponse(405, "application", "operation-not-supported", "Method not allowed.").c_str(),
                                            rousette::restconf::ErrorResponse);
                 }
-            }
-
-            SECTION("Unsupported HTTP methods")
-            {
-                auto exc = serializeErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
-                REQUIRE_THROWS_WITH_AS(rousette::restconf::asRestconfRequest(ctx, "PATCH", "/restconf/data"), exc.c_str(), rousette::restconf::ErrorResponse);
             }
         }
     }
@@ -987,11 +989,11 @@ TEST_CASE("URI path parser")
         SECTION("RESTCONF")
         {
             std::string uri;
-            std::optional<std::string> expected;
+            std::set<std::string> expected;
 
             SECTION("Data resource")
             {
-                expected = "DELETE, GET, HEAD, OPTIONS, POST, PUT";
+                expected = {"DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"};
                 SECTION("Leaf node") { uri = "/restconf/data/example:top-level-leaf"; }
                 SECTION("List node") { uri = "/restconf/data/example:tlc/list=key"; }
                 SECTION("Container") { uri = "/restconf/data/example:tlc"; }
@@ -999,19 +1001,19 @@ TEST_CASE("URI path parser")
             }
             SECTION("Operations resource")
             {
-                expected = "OPTIONS, POST";
+                expected = {"OPTIONS", "POST"};
                 SECTION("RPC") { uri = "/restconf/operations/example:test-rpc"; }
                 SECTION("Action") { uri = "/restconf/data/example:tlc/list=key/example-action"; }
             }
             SECTION("Datastore resource")
             {
-                expected = "GET, HEAD, OPTIONS, POST, PUT";
+                expected = {"GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"};
                 SECTION("Basic root") { uri = "/restconf/data"; }
                 SECTION("NMDA running") { uri = "/restconf/ds/ietf-datastores:running"; }
             }
             SECTION("Invalid path")
             {
-                expected = std::nullopt;
+                expected = {};
                 uri = "/restconf/data/blabla:bla";
             }
             REQUIRE(rousette::restconf::allowedHttpMethodsForUri(ctx, uri) == expected);

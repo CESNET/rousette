@@ -1023,7 +1023,7 @@ TEST_CASE("writing data")
             }
 
             REQUIRE(put(uri + "/example:top-level-leaf", R"({"example:top-level-leaf": "str"})", {CONTENT_TYPE_JSON, AUTH_ROOT}) ==
-                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", "DELETE, GET, HEAD, OPTIONS, POST, PUT"}}, R"({
+                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT"}, ACCEPT_PATCH}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -1715,7 +1715,7 @@ TEST_CASE("writing data")
             }
 
             REQUIRE(post(uri + "/", R"({"example:top-level-leaf": "str"})", {CONTENT_TYPE_JSON, AUTH_ROOT}) ==
-                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", "GET, HEAD, OPTIONS, POST, PUT"}}, R"({
+                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", "GET, HEAD, OPTIONS, PATCH, POST, PUT"}, ACCEPT_PATCH}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -1727,6 +1727,169 @@ TEST_CASE("writing data")
   }
 }
 )"});
+        }
+    }
+
+    SECTION("PATCH")
+    {
+        auto changesExample = datastoreChangesSubscription(srSess, dsChangesMock, "example");
+
+        EXPECT_CHANGE(
+            CREATED("/example:top-level-leaf", "str"),
+            CREATED("/example:tlc/list[name='libyang']", std::nullopt),
+            CREATED("/example:tlc/list[name='libyang']/name", "libyang"),
+            CREATED("/example:tlc/list[name='libyang']/choice1", "libyang"));
+        REQUIRE(patch(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "str", "example:tlc": {"list": [{"name": "libyang", "choice1": "libyang"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{204, noContentTypeHeaders, ""});
+
+        SECTION("Create and update a child resource")
+        {
+            EXPECT_CHANGE(
+                CREATED("/example:two-leafs/a", "a-val"),
+                CREATED("/example:two-leafs/b", "b-val"));
+            REQUIRE(patch(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:two-leafs": {"a": "a-val", "b": "b-val"}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{204, noContentTypeHeaders, ""});
+
+            EXPECT_CHANGE(MODIFIED("/example:two-leafs/a", "a-val-2"));
+            REQUIRE(patch(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:two-leafs": {"a": "a-val-2"}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{204, noContentTypeHeaders, ""});
+        }
+
+        SECTION("Overwrite a leaf")
+        {
+            EXPECT_CHANGE(MODIFIED("/example:top-level-leaf", "other-str"));
+            REQUIRE(patch(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "other-str"})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{204, noContentTypeHeaders, ""});
+        }
+
+        SECTION("List operations")
+        {
+            SECTION("Create entry")
+            {
+                EXPECT_CHANGE(
+                    CREATED("/example:tlc/list[name='sysrepo']", std::nullopt),
+                    CREATED("/example:tlc/list[name='sysrepo']/name", "sysrepo"),
+                    CREATED("/example:tlc/list[name='sysrepo']/choice1", "sysrepo"));
+                REQUIRE(patch(RESTCONF_DATA_ROOT, R"({"example:tlc": {"list": [{"name": "sysrepo", "choice1": "sysrepo"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{204, noContentTypeHeaders, ""});
+            }
+
+            SECTION("List entry content")
+            {
+                EXPECT_CHANGE(MODIFIED("/example:tlc/list[name='libyang']/choice1", "libyang-1"));
+                REQUIRE(patch(RESTCONF_DATA_ROOT, R"({"example:tlc": {"list": [{"name": "libyang", "choice1": "libyang-1"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{204, noContentTypeHeaders, ""});
+
+                EXPECT_CHANGE(MODIFIED("/example:tlc/list[name='libyang']/choice1", "libyang-2"));
+                REQUIRE(patch(RESTCONF_DATA_ROOT "/example:tlc/list=libyang", R"({"example:list": [{"name": "libyang", "choice1": "libyang-2"}]})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{204, noContentTypeHeaders, ""});
+            }
+
+            SECTION("Mismatched key")
+            {
+                REQUIRE(patch(RESTCONF_DATA_ROOT "/example:tlc/list=libyang", R"({"example:list": [{"name": "blabla"}]})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-path": "/example:tlc/list[name='blabla']/name",
+        "error-message": "List key mismatch between URI path and data."
+      }
+    ]
+  }
+}
+)"});
+            }
+
+            SECTION("Nonexistent resource")
+            {
+                REQUIRE(patch(RESTCONF_DATA_ROOT "/example:tlc/list=blabla", R"({"example:list": [{"name": "blabla", "choice1": "sysrepo"}]})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Target resource does not exist"
+      }
+    ]
+  }
+}
+)"});
+            }
+
+            SECTION("Content-type")
+            {
+                EXPECT_CHANGE(MODIFIED("/example:top-level-leaf", "other-str"));
+                REQUIRE(patch(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "other-str"})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{204, noContentTypeHeaders, ""});
+
+                EXPECT_CHANGE(MODIFIED("/example:top-level-leaf", "yet-another-str"));
+                REQUIRE(patch(RESTCONF_DATA_ROOT, R"(<top-level-leaf xmlns="http://example.tld/example">yet-another-str</top-level-leaf>)", {CONTENT_TYPE_XML, AUTH_ROOT}) == Response{204, noContentTypeHeaders, ""});
+
+                REQUIRE(patch(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "other-str"})", {{"content-type", "text/plain"}, AUTH_ROOT}) == Response{415, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-not-supported",
+        "error-message": "content-type format value not supported"
+      }
+    ]
+  }
+}
+)"});
+
+                REQUIRE(patch(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "other-str"})", {AUTH_ROOT}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Content-type header missing."
+      }
+    ]
+  }
+}
+)"});
+            }
+
+            SECTION("sysrepo modifying meta data not allowed")
+            {
+                REQUIRE(patch(RESTCONF_DATA_ROOT "/example:top-level-leaf", R"({"example:top-level-leaf": "a-value", "@example:top-level-leaf": {"ietf-netconf:operation": "replace"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-path": "/example:top-level-leaf",
+        "error-message": "Meta attribute 'ietf-netconf:operation' not allowed."
+      }
+    ]
+  }
+}
+)"});
+            }
+
+            SECTION("Empty JSON objects")
+            {
+                REQUIRE(patch(RESTCONF_DATA_ROOT, "{}", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "malformed-message",
+        "error-message": "Empty data tree received."
+      }
+    ]
+  }
+}
+)"});
+                REQUIRE(patch(RESTCONF_DATA_ROOT "/example:two-leafs", "{}", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Node indicated by URI is missing."
+      }
+    ]
+  }
+}
+)"});
+            }
         }
     }
 }
