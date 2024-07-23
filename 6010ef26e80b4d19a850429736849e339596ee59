@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c5464b92_58037d88",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 377,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-07-23T09:14:01Z",
+      "side": 1,
+      "message": "Why return error if not exist, the standard states:\n\"Plain patch can be used to create or update, but not delete, a child\nresource within the target resource.\"",
+      "revId": "6010ef26e80b4d19a850429736849e339596ee59",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
