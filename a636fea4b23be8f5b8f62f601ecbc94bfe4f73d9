@@ -16,6 +16,24 @@
       "message": "Huh, this one is interesting -- and I think it deserves a comment. This is about GETing an RPC/action, and the RFC explicitly says that:\n\n\u003e If the target resource of a retrieval request is for an operation\n\u003e resource, then a \"405 Method Not Allowed\" status-line MUST be\n\u003e returned by the server.  The error-tag value\n\u003e \"operation-not-supported\" is used in this case.\n\nBut because the URL path for actually triggering these RPCs/actins uses a different prefix, this should really result in an empty Accepts: header.\n\nCould you please explain this in the commit message, and also add a brief oneliner comment to all places where an empty Allow is tested?",
       "revId": "a636fea4b23be8f5b8f62f601ecbc94bfe4f73d9",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "cff1d91f_25b45d62",
+        "filename": "tests/restconf-delete.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 182,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-23T12:25:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e7aaf1ae_f24fe74b",
+      "revId": "a636fea4b23be8f5b8f62f601ecbc94bfe4f73d9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
