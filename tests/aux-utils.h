@@ -23,6 +23,18 @@ struct Response {
     ng::header_map headers;
     std::string data;
 
+    Response(int statusCode, const std::multimap<std::string, std::string>& headers, const std::string& data)
+        : Response(statusCode, transformHeaders(headers), data)
+    {
+    }
+
+    Response(int statusCode, const ng::header_map& headers, const std::string& data)
+        : statusCode(statusCode)
+        , headers(headers)
+        , data(data)
+    {
+    }
+
     bool equalStatusCodeAndHeaders(const Response& o) const
     {
         // Skipping 'date' header. Its value will not be reproducible in simple tests
@@ -39,6 +51,12 @@ struct Response {
     bool operator==(const Response& o) const
     {
         return equalStatusCodeAndHeaders(o) && data == o.data;
+    }
+
+    static ng::header_map transformHeaders(const std::multimap<std::string, std::string>& headers) {
+        ng::header_map res;
+        std::transform(headers.begin(), headers.end(), std::inserter(res, res.end()), [](const auto& h) -> std::pair<std::string, ng::header_value> { return {h.first, {h.second, false}}; });
+        return res;
     }
 };
 
