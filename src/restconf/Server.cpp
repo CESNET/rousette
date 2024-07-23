@@ -572,6 +572,9 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             case RestconfStreamRequest::Type::NetconfNotificationXML:
                 dataFormat = libyang::DataFormat::XML;
                 break;
+            default:
+                // To silence g++ unitialized dataFormat variable. This should not be reached, asRestconfStreamRequest throws in case this happens
+                throw ErrorResponse(500, "application", "operation-failed", "Unhandled URI");
             }
 
             if (auto it = streamRequest.queryParams.find("filter"); it != streamRequest.queryParams.end()) {
