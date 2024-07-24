@@ -332,7 +332,7 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
     try {
         auto ctx = requestCtx->sess.getContext();
 
-        // PUT / means replace everything
+        // PUT / means replace everything. Also, asLibyangPathSplit() won't do the right thing on "/".
         if (requestCtx->restconfRequest.path == "/") {
             auto edit = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
             if (edit) {
@@ -350,14 +350,13 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
             return;
         }
 
-        /*
-         * FIXME: This operation is done in two phases. First, we check if the node already existed (because the HTTP status depends on that) and only then
-         * we perform the edit. However, in between the initial query and the actual edit the node could have been created/removed. That is why we use lock here.
-         * But sysrepo candidate datastore resets itself back to mirroring running when lock unlocks (sr_unlock is called).
-         * Therefore, we do not lock candidate DS. The race is therefore still present in cadidate DS edits.
-         */
+        // The HTTP status code for PUT depends on whether the node already existed before the operation.
+        // To prevent a race when someone else creates the node while this request is being processed,
+        // this needs locking.
         std::unique_ptr<sysrepo::Lock> lock;
         if (requestCtx->sess.activeDatastore() != sysrepo::Datastore::Candidate) {
+            // ...except that the candidate DS in sysrepo rolls back on unlock, so we cannot take that lock.
+            // So, there's a race when modifying the candidate DS.
             lock = std::make_unique<sysrepo::Lock>(requestCtx->sess);
         }
 
@@ -368,29 +367,31 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
         auto [lyParentPath, lastPathSegment] = asLibyangPathSplit(requestCtx->sess.getContext(), requestCtx->req.uri().path);
 
         if (!lyParentPath.empty()) {
+            // the node that we're working on has a parent, i.e., the URI path is at least two levels deep
             auto [parent, node] = ctx.newPath2(lyParentPath, std::nullopt);
             node->parseSubtree(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
 
             for (const auto& child : node->immediateChildren()) {
-                /* everything that is under node is either
-                 *  - a list key that was created by newPath2 call
-                 *  - a single child that is created by parseSubtree with the name of lastPathSegment (which can be a list, then we need to check if the keys in provided data match the keys in URI)
-                 * anything else is an error (either too many children provided or invalid name)
-                 */
+                // Anything directly below `node` is either:
                 if (isSameNode(child, lastPathSegment)) {
+                    // 1) a single child that is created by parseSubtree(), its name is the same as `lastPathSegment`.
+                    // It could be a list; then we need to check if the keys in provided data match the keys in URI.
                     if (auto offendingNode = checkKeysMismatch(child, lastPathSegment)) {
                         throw ErrorResponse(400, "protocol", "invalid-value", "List key mismatch between URI path and data.", offendingNode->path());
                     }
                     replacementNode = child;
                 } else if (isKeyNode(*node, child)) {
-                    // do nothing here; key values are checked elsewhere
+                    // 2) or a list key (of the lyParentPath) that was created by newPath2 call.
+                    // Do nothing here; key values are checked elsewhere
                 } else {
+                    // 3) Anything else is an error (either too many children provided or invalid name)
                     throw ErrorResponse(400, "protocol", "invalid-value", "Data contains invalid node.", child.path());
                 }
             }
 
             edit = parent;
         } else {
+            // URI path points to a top-level node
             if (auto parent = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly); parent) {
                 edit = parent;
                 replacementNode = parent;
