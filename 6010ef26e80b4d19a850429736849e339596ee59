@@ -34,6 +34,24 @@
       "parentUuid": "c5464b92_58037d88",
       "revId": "6010ef26e80b4d19a850429736849e339596ee59",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "dea168d4_aade2add",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 377,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-07-24T11:25:51Z",
+      "side": 1,
+      "message": "Thanks for the clarification!",
+      "parentUuid": "b923531c_617140b2",
+      "revId": "6010ef26e80b4d19a850429736849e339596ee59",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
