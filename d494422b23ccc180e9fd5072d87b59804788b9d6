@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "503d5550_54f6afca",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 421,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-24T13:46:25Z",
+      "side": 0,
+      "message": "I realize that it has nothing to do with this patch, but why is Content-Type being returned for PUT?",
+      "range": {
+        "startLine": 421,
+        "startChar": 39,
+        "endLine": 421,
+        "endChar": 110
+      },
+      "revId": "d494422b23ccc180e9fd5072d87b59804788b9d6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
