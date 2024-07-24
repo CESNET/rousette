@@ -588,7 +588,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 dataFormat = libyang::DataFormat::XML;
                 break;
             default:
-                // To silence g++ unitialized dataFormat variable. This should not be reached, asRestconfStreamRequest throws in case this happens
+                // GCC 14 complains about unitialized variable, but asRestconfStreamRequest() would have thrown
                 __builtin_unreachable();
             }
 
