@@ -341,11 +341,7 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
 
             requestCtx->sess.replaceConfig(edit);
 
-            requestCtx->res.write_head(edit ? 201 : 204,
-                                       {
-                                           {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
-                                           {"access-control-allow-origin", {"*", false}},
-                                       });
+            requestCtx->res.write_head(edit ? 201 : 204, {{"access-control-allow-origin", {"*", false}}});
             requestCtx->res.end();
             return;
         }
@@ -417,11 +413,7 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
         requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
         requestCtx->sess.applyChanges();
 
-        requestCtx->res.write_head(nodeExisted ? 204 : 201,
-                                   {
-                                       {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
-                                       {"access-control-allow-origin", {"*", false}},
-                                   });
+        requestCtx->res.write_head(nodeExisted ? 204 : 201, {{"access-control-allow-origin", {"*", false}}});
         requestCtx->res.end();
     } catch (const ErrorResponse& e) {
         rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath);

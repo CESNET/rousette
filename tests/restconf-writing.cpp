@@ -88,26 +88,26 @@ TEST_CASE("writing data")
             SECTION("Top-level leaf")
             {
                 EXPECT_CHANGE(CREATED("/example:top-level-leaf", "str"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-leaf", R"({"example:top-level-leaf": "str"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-leaf", R"({"example:top-level-leaf": "str"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
 
                 EXPECT_CHANGE(MODIFIED("/example:top-level-leaf", "other-str"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-leaf", R"({"example:top-level-leaf": "other-str"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-leaf", R"({"example:top-level-leaf": "other-str"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, noContentTypeHeaders, ""});
             }
 
             SECTION("Leaf in a container")
             {
                 EXPECT_CHANGE(CREATED("/example:two-leafs/a", "a-value"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs/a", R"({"example:a": "a-value"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs/a", R"({"example:a": "a-value"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
 
                 EXPECT_CHANGE(MODIFIED("/example:two-leafs/a", "another-a-value"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs/a", R"({"example:a": "another-a-value"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs/a", R"({"example:a": "another-a-value"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, noContentTypeHeaders, ""});
             }
 
             SECTION("Repeated insertion")
             {
                 EXPECT_CHANGE(CREATED("/example:top-level-leaf", "str"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-leaf", R"({"example:top-level-leaf": "str"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-leaf", R"({"example:top-level-leaf": "str"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-leaf", R"({"example:top-level-leaf": "str"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-leaf", R"({"example:top-level-leaf": "str"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, noContentTypeHeaders, ""});
             }
         }
 
@@ -117,20 +117,20 @@ TEST_CASE("writing data")
             EXPECT_CHANGE(
                 CREATED("/example:two-leafs/a", "a-val"),
                 CREATED("/example:two-leafs/b", "b-val"));
-            REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:two-leafs": {"a": "a-val", "b": "b-val"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
+            REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:two-leafs": {"a": "a-val", "b": "b-val"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, noContentTypeHeaders, ""});
 
             SECTION("Overwrite container with only one child, the second gets deleted")
             {
                 EXPECT_CHANGE(
                     DELETED("/example:two-leafs/a", "a-val"),
                     MODIFIED("/example:two-leafs/b", "new-b-val"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:two-leafs": {"b": "new-b-val"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:two-leafs": {"b": "new-b-val"}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, noContentTypeHeaders, ""});
             }
 
             SECTION("Modify one leaf")
             {
                 EXPECT_CHANGE(MODIFIED("/example:two-leafs/b", "new-b-val"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs/b", R"({"example:b": "new-b-val"})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs/b", R"({"example:b": "new-b-val"})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, noContentTypeHeaders, ""});
             }
 
             SECTION("Set container to empty container (delete)")
@@ -138,14 +138,14 @@ TEST_CASE("writing data")
                 EXPECT_CHANGE(
                     DELETED("/example:two-leafs/a", "a-val"),
                     DELETED("/example:two-leafs/b", "b-val"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:two-leafs": {}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs", R"({"example:two-leafs": {}})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, noContentTypeHeaders, ""});
             }
         }
 
         SECTION("content-type")
         {
             EXPECT_CHANGE(CREATED("/example:a/b/c/blower", "libyang is love"));
-            REQUIRE(put(RESTCONF_DATA_ROOT "/example:a/b", R"(<b xmlns="http://example.tld/example"><c><blower>libyang is love</blower></c></b>)", {AUTH_ROOT, CONTENT_TYPE_XML}) == Response{204, xmlHeaders, ""});
+            REQUIRE(put(RESTCONF_DATA_ROOT "/example:a/b", R"(<b xmlns="http://example.tld/example"><c><blower>libyang is love</blower></c></b>)", {AUTH_ROOT, CONTENT_TYPE_XML}) == Response{204, noContentTypeHeaders, ""});
 
             // content-type header is mandatory for PUT
             REQUIRE(put(RESTCONF_DATA_ROOT "/example:a/example-augment:b", R"({"example-augment:b": { "c" : {"enabled" : false}}}")", {AUTH_ROOT}) == Response{400, jsonHeaders, R"({
@@ -281,13 +281,13 @@ TEST_CASE("writing data")
         SECTION("Default values handling")
         {
             // no change here: enabled leaf has default value true
-            REQUIRE(put(RESTCONF_DATA_ROOT "/example:a", R"({"example:a":{"b":{"c":{"enabled":true}}}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
+            REQUIRE(put(RESTCONF_DATA_ROOT "/example:a", R"({"example:a":{"b":{"c":{"enabled":true}}}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, noContentTypeHeaders, ""});
 
             EXPECT_CHANGE(MODIFIED("/example:a/b/c/enabled", "false"));
-            REQUIRE(put(RESTCONF_DATA_ROOT "/example:a/b/c", R"({"example:c":{"enabled":false}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
+            REQUIRE(put(RESTCONF_DATA_ROOT "/example:a/b/c", R"({"example:c":{"enabled":false}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, noContentTypeHeaders, ""});
 
             EXPECT_CHANGE(MODIFIED("/example:a/b/c/enabled", "true"));
-            REQUIRE(put(RESTCONF_DATA_ROOT "/example:a/b", R"({"example:b": {}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
+            REQUIRE(put(RESTCONF_DATA_ROOT "/example:a/b", R"({"example:b": {}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, noContentTypeHeaders, ""});
         }
 
         SECTION("Children with same name but different namespaces")
@@ -295,7 +295,7 @@ TEST_CASE("writing data")
             // there are two childs named 'b' under /example:a but both inside different namespaces (/example:a/b and /example:a/example-augment:b)
             // I am also providing a namespace with enabled leaf - this should work as well although not needed
             EXPECT_CHANGE(MODIFIED("/example:a/example-augment:b/c/enabled", "false"));
-            REQUIRE(put(RESTCONF_DATA_ROOT "/example:a/example-augment:b", R"({"example-augment:b": {"c":{"example-augment:enabled":false}}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
+            REQUIRE(put(RESTCONF_DATA_ROOT "/example:a/example-augment:b", R"({"example-augment:b": {"c":{"example-augment:enabled":false}}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, noContentTypeHeaders, ""});
 
             // the namespaces differ between URI and data
             REQUIRE(put(RESTCONF_DATA_ROOT "/example:a/example-augment:b", R"({"example:b": {}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
@@ -319,13 +319,13 @@ TEST_CASE("writing data")
             EXPECT_CHANGE(
                 CREATED("/example:top-level-list[name='sysrepo']", std::nullopt),
                 CREATED("/example:top-level-list[name='sysrepo']/name", "sysrepo"));
-            REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-list=sysrepo", R"({"example:top-level-list":[{"name": "sysrepo"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+            REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-list=sysrepo", R"({"example:top-level-list":[{"name": "sysrepo"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
 
             EXPECT_CHANGE(
                 CREATED("/example:tlc/list[name='libyang']", std::nullopt),
                 CREATED("/example:tlc/list[name='libyang']/name", "libyang"),
                 CREATED("/example:tlc/list[name='libyang']/choice1", "libyang"));
-            REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang", R"({"example:list":[{"name": "libyang", "choice1": "libyang"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+            REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang", R"({"example:list":[{"name": "libyang", "choice1": "libyang"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
 
             SECTION("New insert does not modify other list entries")
             {
@@ -333,7 +333,7 @@ TEST_CASE("writing data")
                     CREATED("/example:tlc/list[name='netconf']", std::nullopt),
                     CREATED("/example:tlc/list[name='netconf']/name", "netconf"),
                     CREATED("/example:tlc/list[name='netconf']/choice1", "netconf"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=netconf", R"({"example:list":[{"name": "netconf", "choice1": "netconf"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=netconf", R"({"example:list":[{"name": "netconf", "choice1": "netconf"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
             }
 
             SECTION("Insert a larger portion of data")
@@ -346,7 +346,7 @@ TEST_CASE("writing data")
                     CREATED("/example:tlc/list[name='large']/nested[first='1'][second='2'][third='3']/second", "2"),
                     CREATED("/example:tlc/list[name='large']/nested[first='1'][second='2'][third='3']/third", "3"),
                     CREATED("/example:tlc/list[name='large']/choice2", "large"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=large", R"({"example:list":[{"name": "large", "choice2": "large", "example:nested": [{"first": "1", "second": 2, "third": "3"}]}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=large", R"({"example:list":[{"name": "large", "choice2": "large", "example:nested": [{"first": "1", "second": 2, "third": "3"}]}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
             }
 
             SECTION("Insert into the list having multiple keys")
@@ -356,20 +356,20 @@ TEST_CASE("writing data")
                     CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']/first", "11"),
                     CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']/second", "12"),
                     CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']/third", "13"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang/nested=11,12,13", R"({"example:nested": [{"first": "11", "second": 12, "third": "13"}]}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang/nested=11,12,13", R"({"example:nested": [{"first": "11", "second": 12, "third": "13"}]}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
             }
 
             SECTION("Modify a leaf in a list entry")
             {
                 EXPECT_CHANGE(MODIFIED("/example:tlc/list[name='libyang']/choice1", "restconf"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang/choice1", R"({"example:choice1": "restconf"})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang/choice1", R"({"example:choice1": "restconf"})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, noContentTypeHeaders, ""});
             }
 
             SECTION("Overwrite a list entry")
             {
                 // insert something in the leaf-list first so we can test that the leaf-list collection was overwritten later
                 EXPECT_CHANGE(CREATED("/example:tlc/list[name='libyang']/collection[.='4']", "4"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang/collection=4", R"({"example:collection": [4]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang/collection=4", R"({"example:collection": [4]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
 
                 EXPECT_CHANGE(
                     CREATED("/example:tlc/list[name='libyang']/collection[.='1']", "1"),
@@ -377,19 +377,19 @@ TEST_CASE("writing data")
                     CREATED("/example:tlc/list[name='libyang']/collection[.='3']", "3"),
                     DELETED("/example:tlc/list[name='libyang']/collection[.='4']", "4"),
                     MODIFIED("/example:tlc/list[name='libyang']/choice1", "idk"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang", R"({"example:list":[{"name": "libyang", "choice1": "idk", "collection": [1,2,3]}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang", R"({"example:list":[{"name": "libyang", "choice1": "idk", "collection": [1,2,3]}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, noContentTypeHeaders, ""});
             }
 
             SECTION("Insert into leaf-lists")
             {
                 EXPECT_CHANGE(CREATED("/example:top-level-leaf-list[.='4']", "4"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-leaf-list=4", R"({"example:top-level-leaf-list":[4]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-leaf-list=4", R"({"example:top-level-leaf-list":[4]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
 
                 EXPECT_CHANGE(CREATED("/example:top-level-leaf-list[.='1']", "1"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-leaf-list=1", R"({"example:top-level-leaf-list":[1]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-leaf-list=1", R"({"example:top-level-leaf-list":[1]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
 
                 EXPECT_CHANGE(CREATED("/example:tlc/list[name='libyang']/collection[.='4']", "4"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang/collection=4", R"({"example:collection": [4]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang/collection=4", R"({"example:collection": [4]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
             }
 
             SECTION("Send wrong keys")
@@ -552,27 +552,27 @@ TEST_CASE("writing data")
                         EXPECT_CHANGE(
                                 CREATED("/example:ordered-lists/lst[name='4th']", std::nullopt),
                                 CREATED("/example:ordered-lists/lst[name='4th']/name", "4th"));
-                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=4th?insert=first", R"({"example:lst":[{"name": "4th"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=4th?insert=first", R"({"example:lst":[{"name": "4th"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
 
                         EXPECT_CHANGE(
                                 CREATED("/example:ordered-lists/lst[name='5th']", std::nullopt),
                                 CREATED("/example:ordered-lists/lst[name='5th']/name", "5th"));
-                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=5th?insert=last", R"({"example:lst":[{"name": "5th"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=5th?insert=last", R"({"example:lst":[{"name": "5th"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
 
                         EXPECT_CHANGE(
                                 CREATED("/example:ordered-lists/lst[name='1st']", std::nullopt),
                                 CREATED("/example:ordered-lists/lst[name='1st']/name", "1st"));
-                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=1st?insert=first", R"({"example:lst":[{"name": "1st"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=1st?insert=first", R"({"example:lst":[{"name": "1st"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
 
                         EXPECT_CHANGE(
                                 CREATED("/example:ordered-lists/lst[name='2nd']", std::nullopt),
                                 CREATED("/example:ordered-lists/lst[name='2nd']/name", "2nd"));
-                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=2nd?insert=after&point=/example:ordered-lists/lst=1st", R"({"example:lst":[{"name": "2nd"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=2nd?insert=after&point=/example:ordered-lists/lst=1st", R"({"example:lst":[{"name": "2nd"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
 
                         EXPECT_CHANGE(
                                 CREATED("/example:ordered-lists/lst[name='3rd']", std::nullopt),
                                 CREATED("/example:ordered-lists/lst[name='3rd']/name", "3rd"));
-                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=3rd?insert=before&point=/example:ordered-lists/lst=4th", R"({"example:lst":[{"name": "3rd"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/lst=3rd?insert=before&point=/example:ordered-lists/lst=4th", R"({"example:lst":[{"name": "3rd"}]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
 
                         REQUIRE(get(RESTCONF_DATA_ROOT "/example:ordered-lists", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
   "example:ordered-lists": {
@@ -668,19 +668,19 @@ TEST_CASE("writing data")
                     SECTION("Basic")
                     {
                         EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='4th']", "4th"));
-                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=4th?insert=first", R"({"example:ll":["4th"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=4th?insert=first", R"({"example:ll":["4th"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
 
                         EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='5th']", "5th"));
-                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=5th?insert=last", R"({"example:ll":["5th"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=5th?insert=last", R"({"example:ll":["5th"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
 
                         EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='1st']", "1st"));
-                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=1st?insert=first", R"({"example:ll":["1st"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=1st?insert=first", R"({"example:ll":["1st"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
 
                         EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='2nd']", "2nd"));
-                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=2nd?insert=after&point=/example:ordered-lists/ll=1st", R"({"example:ll":["2nd"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=2nd?insert=after&point=/example:ordered-lists/ll=1st", R"({"example:ll":["2nd"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
 
                         EXPECT_CHANGE(CREATED("/example:ordered-lists/ll[.='3rd']", "3rd"));
-                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=3rd?insert=before&point=/example:ordered-lists/ll=4th", R"({"example:ll":["3rd"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                        REQUIRE(put(RESTCONF_DATA_ROOT "/example:ordered-lists/ll=3rd?insert=before&point=/example:ordered-lists/ll=4th", R"({"example:ll":["3rd"]})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
 
                         REQUIRE(get(RESTCONF_DATA_ROOT "/example:ordered-lists", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
   "example:ordered-lists": {
@@ -773,7 +773,7 @@ TEST_CASE("writing data")
                     CREATED("/example:tlc/list[name='libyang']", std::nullopt),
                     CREATED("/example:tlc/list[name='libyang']/name", "libyang"),
                     CREATED("/example:tlc/list[name='libyang']/choice1", "libyang"));
-                REQUIRE(put(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "str", "example:tlc": {"list": [{"name": "libyang", "choice1": "libyang"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{201, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "str", "example:tlc": {"list": [{"name": "libyang", "choice1": "libyang"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{201, noContentTypeHeaders, ""});
 
                 EXPECT_CHANGE(
                     MODIFIED("/example:top-level-leaf", "other-str"),
@@ -783,13 +783,13 @@ TEST_CASE("writing data")
                     CREATED("/example:tlc/list[name='sysrepo']", std::nullopt),
                     CREATED("/example:tlc/list[name='sysrepo']/name", "sysrepo"),
                     CREATED("/example:tlc/list[name='sysrepo']/choice1", "sysrepo"));
-                REQUIRE(put(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "other-str", "example:tlc": {"list": [{"name": "sysrepo", "choice1": "sysrepo"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{201, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "other-str", "example:tlc": {"list": [{"name": "sysrepo", "choice1": "sysrepo"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{201, noContentTypeHeaders, ""});
             }
 
             SECTION("Remove all")
             {
                 REQUIRE_CALL(dsChangesMock, contentAfterChange("{\n\n}\n"));
-                REQUIRE(put(RESTCONF_DATA_ROOT, "{}", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{204, jsonHeaders, ""});
+                REQUIRE(put(RESTCONF_DATA_ROOT, "{}", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{204, noContentTypeHeaders, ""});
             }
         }
 
@@ -945,7 +945,7 @@ TEST_CASE("writing data")
                     CREATED("/example:tlc/list[name='libyang']", std::nullopt),
                     CREATED("/example:tlc/list[name='libyang']/name", "libyang"),
                     CREATED("/example:tlc/list[name='libyang']/choice1", "libyang"));
-                REQUIRE(put(uri, R"({"example:top-level-leaf": "str", "example:tlc": {"list": [{"name": "libyang", "choice1": "libyang"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{201, jsonHeaders, ""});
+                REQUIRE(put(uri, R"({"example:top-level-leaf": "str", "example:tlc": {"list": [{"name": "libyang", "choice1": "libyang"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{201, noContentTypeHeaders, ""});
 
                 EXPECT_CHANGE(
                     MODIFIED("/example:top-level-leaf", "other-str"),
@@ -955,7 +955,7 @@ TEST_CASE("writing data")
                     CREATED("/example:tlc/list[name='sysrepo']", std::nullopt),
                     CREATED("/example:tlc/list[name='sysrepo']/name", "sysrepo"),
                     CREATED("/example:tlc/list[name='sysrepo']/choice1", "sysrepo"));
-                REQUIRE(put(uri, R"({"example:top-level-leaf": "other-str", "example:tlc": {"list": [{"name": "sysrepo", "choice1": "sysrepo"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{201, jsonHeaders, ""});
+                REQUIRE(put(uri, R"({"example:top-level-leaf": "other-str", "example:tlc": {"list": [{"name": "sysrepo", "choice1": "sysrepo"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{201, noContentTypeHeaders, ""});
             }
 
             SECTION("Inner resources")
@@ -982,10 +982,10 @@ TEST_CASE("writing data")
                 auto sub = datastoreChangesSubscription(sess, dsChangesMock, "example");
 
                 EXPECT_CHANGE(CREATED("/example:two-leafs/a", "hello"));
-                REQUIRE(put(uri + "/example:two-leafs/a", R"({"example:a":"hello"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, jsonHeaders, ""});
+                REQUIRE(put(uri + "/example:two-leafs/a", R"({"example:a":"hello"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{201, noContentTypeHeaders, ""});
 
                 EXPECT_CHANGE(MODIFIED("/example:two-leafs/a", "hello world"));
-                REQUIRE(put(uri + "/example:two-leafs/a", R"({"example:a":"hello world"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, jsonHeaders, ""});
+                REQUIRE(put(uri + "/example:two-leafs/a", R"({"example:a":"hello world"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, noContentTypeHeaders, ""});
             }
         }
 
