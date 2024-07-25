@@ -824,7 +824,7 @@ TEST_CASE("writing data")
 }
 )"});
 
-            REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action/i", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
+            REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action/i", "", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -837,7 +837,7 @@ TEST_CASE("writing data")
 }
 )"});
 
-            REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action/o", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
+            REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action/o", "", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
