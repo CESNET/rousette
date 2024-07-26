@@ -276,6 +276,32 @@ TEST_CASE("writing data")
   }
 }
 )"});
+
+            // we do not accept empty JSON objects
+            REQUIRE(put(RESTCONF_DATA_ROOT, "{}", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "malformed-message",
+        "error-message": "Empty data tree received."
+      }
+    ]
+  }
+}
+)"});
+            REQUIRE(put(RESTCONF_DATA_ROOT "/example:two-leafs", "{}", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Node indicated by URI is missing."
+      }
+    ]
+  }
+}
+)"});
         }
 
         SECTION("Default values handling")
@@ -784,12 +810,6 @@ TEST_CASE("writing data")
                     CREATED("/example:tlc/list[name='sysrepo']/name", "sysrepo"),
                     CREATED("/example:tlc/list[name='sysrepo']/choice1", "sysrepo"));
                 REQUIRE(put(RESTCONF_DATA_ROOT, R"({"example:top-level-leaf": "other-str", "example:tlc": {"list": [{"name": "sysrepo", "choice1": "sysrepo"}]}})", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{201, noContentTypeHeaders, ""});
-            }
-
-            SECTION("Remove all")
-            {
-                REQUIRE_CALL(dsChangesMock, contentAfterChange("{\n\n}\n"));
-                REQUIRE(put(RESTCONF_DATA_ROOT, "{}", {CONTENT_TYPE_JSON, AUTH_ROOT}) == Response{204, noContentTypeHeaders, ""});
             }
         }
 
@@ -1558,6 +1578,35 @@ TEST_CASE("writing data")
   }
 }
 )"});
+        }
+
+        SECTION("Empty JSON object")
+        {
+            REQUIRE(post(RESTCONF_DATA_ROOT, "{}", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "The message body MUST contain exactly one instance of the expected data resource."
+      }
+    ]
+  }
+}
+)"});
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", "{}", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "The message body MUST contain exactly one instance of the expected data resource."
+      }
+    ]
+  }
+}
+)"});
+
         }
     }
 

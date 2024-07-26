@@ -335,9 +335,11 @@ void processPut(std::shared_ptr<RequestContext> requestCtx)
         // PUT / means replace everything. Also, asLibyangPathSplit() won't do the right thing on "/".
         if (requestCtx->restconfRequest.path == "/") {
             auto edit = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
-            if (edit) {
-                validateInputMetaAttributes(ctx, *edit);
+            if (!edit) {
+                throw ErrorResponse(400, "protocol", "malformed-message", "Empty data tree received.");
             }
+
+            validateInputMetaAttributes(ctx, *edit);
 
             requestCtx->sess.replaceConfig(edit);
 
