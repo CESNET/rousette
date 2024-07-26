@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "b208a5e1_ddd077ae",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-26T10:53:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "454c2570_10442ee1",
+      "revId": "24cefbc11d05f843cb96103ab76e02c658002551",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "314b9314_a84780a2",
@@ -31,6 +49,30 @@
       "writtenOn": "2024-07-24T13:46:25Z",
       "side": 1,
       "message": "if this is really needed at two places, please use a helper function for this",
+      "range": {
+        "startLine": 73,
+        "startChar": 0,
+        "endLine": 80,
+        "endChar": 9
+      },
+      "revId": "24cefbc11d05f843cb96103ab76e02c658002551",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "13a46d7c_4a9a9928",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-26T10:53:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "314b9314_a84780a2",
       "range": {
         "startLine": 73,
         "startChar": 0,
@@ -64,6 +106,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f7cc3c17_eae0eb44",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 337,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-26T10:53:42Z",
+      "side": 1,
+      "message": "So far, I think the yang patch process is a little bit different and I am writing it as a separate function. So i have renamed the function.",
+      "parentUuid": "0d7ff413_077410d9",
+      "range": {
+        "startLine": 337,
+        "startChar": 5,
+        "endLine": 337,
+        "endChar": 22
+      },
+      "revId": "24cefbc11d05f843cb96103ab76e02c658002551",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "98918b12_d8379dde",
@@ -77,6 +143,24 @@
       "writtenOn": "2024-07-24T13:46:25Z",
       "side": 1,
       "message": "this comment needs an update for \"PATCH /\"",
+      "revId": "24cefbc11d05f843cb96103ab76e02c658002551",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3f7cd724_b00b487e",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 342,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-26T10:53:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "98918b12_d8379dde",
       "revId": "24cefbc11d05f843cb96103ab76e02c658002551",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -104,6 +188,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f1483b58_24a35b45",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 358,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-26T10:53:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b7225fa3_55c77b43",
+      "range": {
+        "startLine": 358,
+        "startChar": 43,
+        "endLine": 358,
+        "endChar": 48
+      },
+      "revId": "24cefbc11d05f843cb96103ab76e02c658002551",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "29fe852d_65035427",
@@ -121,6 +229,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "ba79403d_2a26287c",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 654,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-26T10:53:42Z",
+      "side": 1,
+      "message": "Added spaces after commas. Not sure about semicolons (it looked weird when reading the code but I do not think I care so feel free to override me)",
+      "parentUuid": "29fe852d_65035427",
+      "revId": "24cefbc11d05f843cb96103ab76e02c658002551",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "50c7e186_0a6c40d3",
@@ -134,6 +260,30 @@
       "writtenOn": "2024-07-24T13:46:25Z",
       "side": 1,
       "message": "This structure now contains duplicate information; if the `allow` variable contains string \"PATH\", then `acceptPatch` is also set. I would prefer this:\n \nstruct OptionsHeaders {\n  std::vector\u003cstd::string\u003e methods;\n  std::string patchTypes;\n};",
+      "range": {
+        "startLine": 151,
+        "startChar": 0,
+        "endLine": 156,
+        "endChar": 2
+      },
+      "revId": "24cefbc11d05f843cb96103ab76e02c658002551",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "493eb5c7_f86404fa",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 6
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-26T10:53:42Z",
+      "side": 1,
+      "message": "Allright. I did not understand the difference so we chatted on matrix and we decided not to go with this but with a function returning a collection of usable http methpds. The serialization and accept-patch will be moved to a helper in server.cpp",
+      "parentUuid": "50c7e186_0a6c40d3",
       "range": {
         "startLine": 151,
         "startChar": 0,
