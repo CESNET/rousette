@@ -15,6 +15,7 @@ A [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server built on
     - Data resource responses do not contain the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.1) and [`ETag`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.2) headers.
     - The [`fields`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.8.3) query parameter.
 - [NMDA](https://datatracker.ietf.org/doc/html/rfc8527.html) support
+- [YANG Patch](https://datatracker.ietf.org/doc/html/rfc8072) support
 
 
 ## Usage

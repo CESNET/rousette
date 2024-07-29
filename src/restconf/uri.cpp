@@ -501,6 +501,16 @@ std::optional<libyang::SchemaNode> asLibyangSchemaNode(const libyang::Context& c
     return asLibyangPath(ctx, pathSegments.begin(), pathSegments.end()).schemaNode;
 }
 
+std::vector<PathSegment> asPathSegments(const std::string& uriPath)
+{
+    auto uri = impl::parseUriPath(uriPath);
+    if (!uri) {
+        throw ErrorResponse(400, "application", "operation-failed", "Syntax error");
+    }
+
+    return uri->segments;
+}
+
 /** @brief Parse requested URL as a RESTCONF requested
  *
  * The URI path (i.e., a resource identifier) will be parsed into an action that is supposed to be performed,
