@@ -343,6 +343,139 @@ void processPost(std::shared_ptr<RequestContext> requestCtx)
     }
 }
 
+libyang::CreatedNodes createData(libyang::Context& ctx, const std::string& fullPath, const std::optional<std::string>& parentPath, const std::optional<libyang::DataNode>& valueNode)
+{
+    std::optional<std::string> serialized;
+
+    if (valueNode) {
+        auto anydataValue = valueNode->asAny().releaseValue().value();
+
+        if (!std::holds_alternative<libyang::DataNode>(anydataValue)) {
+            throw ErrorResponse(400, "protocol", "invalid-value", "not anydata data node");
+        }
+
+        libyang::DataNode value = std::get<libyang::DataNode>(anydataValue);
+        serialized = *value.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink);
+
+        spdlog::error(".... serialized={}", *serialized);
+    } else {
+        spdlog::error(".... serialized=nullopt");
+    }
+
+    if (parentPath && valueNode) {
+        auto res = ctx.newPath2(*parentPath);
+        res.createdNode->parseSubtree(*serialized, libyang::DataFormat::JSON, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+        return res;
+    }
+
+    if (valueNode) {
+        auto edit = ctx.parseData(*serialized, libyang::DataFormat::JSON, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+        return {edit, edit};
+    }
+
+    return ctx.newPath2(fullPath);
+}
+
+void processYangPatch(std::shared_ptr<RequestContext> requestCtx)
+{
+    try {
+        auto ctx = requestCtx->sess.getContext();
+        auto yangPatchExt = ctx.getModule("ietf-yang-patch", "2017-02-22")->extensionInstance("yang-patch");
+
+        auto patch = ctx.parseExtData(yangPatchExt, requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+        auto edits = patch->findXPath("/ietf-yang-patch:yang-patch/edit");
+
+        if (edits.empty()) {
+            throw ErrorResponse(400, "protocol", "invalid-value", "No edits present");
+        }
+
+        std::optional<libyang::DataNode> ultimateEdit;
+        for (const auto& editContainer : edits) {
+            std::optional<libyang::DataNode> edit;
+            std::optional<libyang::DataNode> replacementNode;
+
+            auto target = editContainer.findPath("target")->asTerm().valueStr();
+            auto operationStr = editContainer.findPath("operation")->asTerm().valueStr();
+
+            auto lyFullPath = asRestconfRequest(requestCtx->sess.getContext(), "PATCH", requestCtx->req.uri().path + target).path;
+            auto [lyParentPath, lastPathSegment] = asLibyangPathSplit(requestCtx->sess.getContext(), requestCtx->req.uri().path + target);
+
+            if (!lyParentPath.empty()) {
+                auto [parent, node] = createData(ctx, lyFullPath, lyParentPath, editContainer.findPath("value"));
+                spdlog::error(".... hello={}", *parent->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink));
+                spdlog::error(".... node={} {}", *parent->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink), node->path());
+
+                for (const auto& child : node->immediateChildren()) {
+                    if (isSameNode(child, lastPathSegment)) {
+                        if (auto offendingNode = checkKeysMismatch(child, lastPathSegment)) {
+                            throw ErrorResponse(400, "protocol", "invalid-value", "List key mismatch between URI path and data.", offendingNode->path());
+                        }
+                        replacementNode = child;
+                    } else if (isKeyNode(*node, child)) {
+                    } else {
+                        throw ErrorResponse(400, "protocol", "invalid-value", "Data contains invalid node.", child.path());
+                    }
+                }
+
+                edit = parent;
+            } else {
+                auto [parent, node] = createData(ctx, lyFullPath, std::nullopt, editContainer.findPath("value"));
+                edit = parent;
+                replacementNode = parent;
+
+                if (!isSameNode(*replacementNode, lastPathSegment)) {
+                    throw ErrorResponse(400, "protocol", "invalid-value", "Data contains invalid node.", replacementNode->path());
+                }
+                if (auto offendingNode = checkKeysMismatch(*parent, lastPathSegment)) {
+                    throw ErrorResponse(400, "protocol", "invalid-value", "List key mismatch between URI path and data.", offendingNode->path());
+                }
+            }
+
+            if (!replacementNode) {
+                throw ErrorResponse(400, "protocol", "invalid-value", "Node indicated by URI is missing.");
+            }
+
+            validateInputMetaAttributes(ctx, *edit);
+
+            auto modNetconf = ctx.getModuleImplemented("ietf-netconf");
+            replacementNode->newMeta(*modNetconf, "operation", operationStr);
+            yangInsert(*requestCtx, *replacementNode);
+
+            spdlog::error(".... edit={}", *edit->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink));
+
+            if (!ultimateEdit) {
+                ultimateEdit = *edit;
+            } else {
+                ultimateEdit->insertSibling(*edit);
+            }
+
+            spdlog::error(".... ultimate edit={}", *ultimateEdit->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink | libyang::PrintFlags::WithSiblings));
+        }
+
+        requestCtx->sess.editBatch(*ultimateEdit, sysrepo::DefaultOperation::Merge);
+        requestCtx->sess.applyChanges();
+
+        requestCtx->res.write_head(204, {{"access-control-allow-origin", {"*", false}}});
+        requestCtx->res.end();
+    } catch (const ErrorResponse& e) {
+        rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath);
+    } catch (libyang::ErrorWithCode& e) {
+        if (e.code() == libyang::ErrorCode::ValidationFailure) {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", "Validation failure: "s + e.what());
+        } else {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to libyang exception: "s + e.what());
+        }
+    } catch (sysrepo::ErrorWithCode& e) {
+        if (e.code() == sysrepo::ErrorCode::Unauthorized) {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 403, "application", "access-denied", "Access denied.");
+        } else if (e.code() == sysrepo::ErrorCode::NotFound) {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", e.what());
+        } else {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception: "s + e.what());
+        }
+    }
+}
+
 void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx)
 {
     try {
@@ -534,7 +667,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
-    for (const auto& [module, version] : {std::pair<std::string, std::string>{"ietf-restconf", "2017-01-26"}, {"ietf-restconf-monitoring", "2017-01-26"}, {"ietf-netconf", ""}}) {
+    for (const auto& [module, version] : {std::pair<std::string, std::string>{"ietf-restconf", "2017-01-26"}, {"ietf-restconf-monitoring", "2017-01-26"}, {"ietf-netconf", ""}, {"ietf-yang-patch", "2017-02-22"}}) {
         if (!conn.sessionStart().getContext().getModuleImplemented(module)) {
             throw std::runtime_error("Module "s + module + "@" + version + " is not implemented in sysrepo");
         }
@@ -797,7 +930,12 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
                     auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, restconfRequest);
 
-                    req.on_data([requestCtx, restconfRequest /* intentional copy */](const uint8_t* data, std::size_t length) {
+                    bool yangPatch = false;
+                    if (auto it = req.header().find("content-type"); it != req.header().end() && (it->second.value == "application/yang-patch+xml" || it->second.value == "application/yang-patch+json")) {
+                        yangPatch = true;
+                    }
+
+                    req.on_data([requestCtx, restconfRequest /* intentional copy */, yangPatch](const uint8_t* data, std::size_t length) {
                         if (length > 0) { // there are still some data to be read
                             requestCtx->payload.append(reinterpret_cast<const char*>(data), length);
                             return;
@@ -805,6 +943,8 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
                         if (restconfRequest.type == RestconfRequest::Type::CreateChildren) {
                             processPost(requestCtx);
+                        } else if (yangPatch) {
+                            processYangPatch(requestCtx);
                         } else {
                             processPutOrPlainPatch(requestCtx);
                         }

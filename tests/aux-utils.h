@@ -110,6 +110,9 @@ static const auto SERVER_ADDRESS_AND_PORT = "http://["s + SERVER_ADDRESS + "]" +
 #define CONTENT_TYPE_JSON {"content-type", "application/yang-data+json"}
 #define CONTENT_TYPE_XML {"content-type", "application/yang-data+xml"}
 
+#define CONTENT_TYPE_YANG_PATCH_JSON {"content-type", "application/yang-patch+json"}
+#define CONTENT_TYPE_YANG_PATCH_XML {"content-type", "application/yang-patch+xml"}
+
 #define YANG_ROOT "/yang"
 #define RESTCONF_ROOT "/restconf"
 #define RESTCONF_DATA_ROOT RESTCONF_ROOT "/data"

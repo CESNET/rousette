@@ -6,7 +6,7 @@
 
 ## Usage
 
-A [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server with [NMDA](https://datatracker.ietf.org/doc/html/rfc8527.html) support built on top of [sysrepo](https://www.sysrepo.org/)
+A [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server with [NMDA](https://datatracker.ietf.org/doc/html/rfc8527.html) and [YANG Patch](https://datatracker.ietf.org/doc/html/rfc8072) support built on top of [sysrepo](https://www.sysrepo.org/)
 
 Since this service only talks cleartext HTTP/2, it's recommended to run it behind a reverse proxy.
 

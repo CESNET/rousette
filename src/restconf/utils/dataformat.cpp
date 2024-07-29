@@ -42,9 +42,9 @@ bool mimeMatch(const std::string& providedMime, const std::string& applicationMi
 
 std::optional<libyang::DataFormat> dataTypeFromMimeType(const std::string& mime, MimeTypeWildcards wildcards)
 {
-    if (mimeMatch(mime, asMimeType(libyang::DataFormat::JSON), wildcards)) {
+    if (mimeMatch(mime, asMimeType(libyang::DataFormat::JSON), wildcards) || mimeMatch(mime, "application/yang-patch+json", wildcards)) {
         return libyang::DataFormat::JSON;
-    } else if (mimeMatch(mime, asMimeType(libyang::DataFormat::XML), wildcards)) {
+    } else if (mimeMatch(mime, asMimeType(libyang::DataFormat::XML), wildcards) || mimeMatch(mime, "application/yang-patch+xml", wildcards)) {
         return libyang::DataFormat::XML;
     }
 
