@@ -1,0 +1,95 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c2c3a258_e4dee04f",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 8
+      },
+      "lineNbr": 195,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-29T21:41:48Z",
+      "side": 1,
+      "message": "nit: I would prefer plain-patch",
+      "revId": "de595cc6e27d3f7b5edb36e6eabd7f1866998632",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b746dd7b_ef266d4b",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-29T21:41:48Z",
+      "side": 1,
+      "message": "let this one accept a header_map\u0026 so that it can store the headers directly; that will save you a call to merge()",
+      "revId": "de595cc6e27d3f7b5edb36e6eabd7f1866998632",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4b2b4d2d_e1dc5cd9",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-29T21:41:48Z",
+      "side": 1,
+      "message": "sorry that I missed that during the first round, but the charset is actually redundant because nothing but UTF-8 is allowed, https://datatracker.ietf.org/doc/html/rfc8072#section-4.2",
+      "revId": "de595cc6e27d3f7b5edb36e6eabd7f1866998632",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fe26a067_281902e5",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 557,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-29T21:41:48Z",
+      "side": 1,
+      "message": "this is really asking for something like:\n \nauto path \u003d uri-\u003esegments.empty() ? \"/\" : lyPath;\nif (!uri-\u003esegments.empty()) {\n    validateRequestSchemaNode(schemaNode, httpMethod, uri-\u003eprefix);\n}\nif (httpMethod \u003d\u003d \"GET\" || httpMethod \u003d\u003d \"POST\") {\n    ....\n} else if ...",
+      "range": {
+        "startLine": 534,
+        "startChar": 0,
+        "endLine": 557,
+        "endChar": 5
+      },
+      "revId": "de595cc6e27d3f7b5edb36e6eabd7f1866998632",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5c133765_ffce5338",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 630,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-29T21:41:48Z",
+      "side": 1,
+      "message": "in a perfect world, this is IMHO better done in an extra commit",
+      "revId": "de595cc6e27d3f7b5edb36e6eabd7f1866998632",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
