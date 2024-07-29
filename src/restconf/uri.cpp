@@ -502,6 +502,13 @@ std::optional<libyang::SchemaNode> asLibyangSchemaNode(const libyang::Context& c
     return asLibyangPath(ctx, pathSegments.begin(), pathSegments.end()).schemaNode;
 }
 
+/** @brief Returns a schema node corresponding to the RESTCONF URI */
+std::optional<libyang::SchemaNode> asLibyangSchemaNode(const libyang::Context& ctx, const std::string& uriPath)
+{
+    auto uri = impl::parseUriPath(uriPath);
+    return asLibyangSchemaNode(ctx, uri->segments);
+}
+
 /** @brief Parse requested URL as a RESTCONF requested
  *
  * The URI path (i.e., a resource identifier) will be parsed into an action that is supposed to be performed,
