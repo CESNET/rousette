@@ -45,9 +45,9 @@ std::optional<libyang::DataFormat> dataTypeFromMimeType(std::string mime, MimeTy
     // RFC 2045, sec. 2: All media type values, subtype values, and parameter names as defined are case-insensitive
     boost::to_lower(mime);
 
-    if (mimeMatch(mime, asMimeType(libyang::DataFormat::JSON), wildcards)) {
+    if (mimeMatch(mime, asMimeType(libyang::DataFormat::JSON), wildcards) || mimeMatch(mime, "application/yang-patch+json", wildcards)) {
         return libyang::DataFormat::JSON;
-    } else if (mimeMatch(mime, asMimeType(libyang::DataFormat::XML), wildcards)) {
+    } else if (mimeMatch(mime, asMimeType(libyang::DataFormat::XML), wildcards) || mimeMatch(mime, "application/yang-patch+xml", wildcards)) {
         return libyang::DataFormat::XML;
     }
 
