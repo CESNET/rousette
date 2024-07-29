@@ -81,7 +81,7 @@ TEST_CASE("invoking actions and rpcs")
         SECTION("Basic calls")
         {
             REQUIRE_CALL(rpcCall, rpcCall("/example:test-rpc", std::map<std::string, std::string>({{"/example:test-rpc/i", "ahoj"}})));
-            REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", R"({"example:input": {"i":"ahoj"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{200, jsonHeaders, R"({
+            REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:input": {"i":"ahoj"}}")") == Response{200, jsonHeaders, R"({
   "example:output": {
     "out1": "some-output-string",
     "out2": "some-output-string-2"
@@ -90,10 +90,10 @@ TEST_CASE("invoking actions and rpcs")
 )"});
 
             REQUIRE_CALL(rpcCall, rpcCall("/example:test-rpc-no-output", std::map<std::string, std::string>({{"/example:test-rpc-no-output/number", "42"}, {"/example:test-rpc-no-output/string", "ahoj"}})));
-            REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc-no-output", R"({"example:input": {"number": 42, "string":"ahoj"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, noContentTypeHeaders, ""});
+            REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc-no-output", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:input": {"number": 42, "string":"ahoj"}}")") == Response{204, noContentTypeHeaders, ""});
 
             REQUIRE_CALL(rpcCall, rpcCall("/example:test-rpc-no-input-no-output", std::map<std::string, std::string>({})));
-            REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc-no-input-no-output", "", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, noContentTypeHeaders, ""});
+            REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc-no-input-no-output", {AUTH_ROOT, CONTENT_TYPE_JSON}, "") == Response{204, noContentTypeHeaders, ""});
         }
 
         SECTION("Data format")
@@ -101,7 +101,7 @@ TEST_CASE("invoking actions and rpcs")
             SECTION("JSON -> JSON")
             {
                 REQUIRE_CALL(rpcCall, rpcCall("/example:test-rpc", std::map<std::string, std::string>({{"/example:test-rpc/i", "ahoj"}})));
-                REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", R"({"example:input": {"i":"ahoj"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{200, jsonHeaders, R"({
+                REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:input": {"i":"ahoj"}}")") == Response{200, jsonHeaders, R"({
   "example:output": {
     "out1": "some-output-string",
     "out2": "some-output-string-2"
@@ -113,7 +113,7 @@ TEST_CASE("invoking actions and rpcs")
             SECTION("XML -> XML")
             {
                 REQUIRE_CALL(rpcCall, rpcCall("/example:test-rpc", std::map<std::string, std::string>({{"/example:test-rpc/i", "ahoj"}})));
-                REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", R"(<input xmlns="http://example.tld/example"><i>ahoj</i></input>)", {AUTH_ROOT, CONTENT_TYPE_XML}) == Response{200, xmlHeaders, R"(<output xmlns="http://example.tld/example">
+                REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", {AUTH_ROOT, CONTENT_TYPE_XML}, R"(<input xmlns="http://example.tld/example"><i>ahoj</i></input>)") == Response{200, xmlHeaders, R"(<output xmlns="http://example.tld/example">
   <out1>some-output-string</out1>
   <out2>some-output-string-2</out2>
 </output>
@@ -123,7 +123,7 @@ TEST_CASE("invoking actions and rpcs")
             SECTION("XML -> JSON")
             {
                 REQUIRE_CALL(rpcCall, rpcCall("/example:test-rpc", std::map<std::string, std::string>({{"/example:test-rpc/i", "ahoj"}})));
-                REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", R"(<input xmlns="http://example.tld/example"><i>ahoj</i></input>)", {AUTH_ROOT, CONTENT_TYPE_XML, {"accept", "application/yang-data+json"}}) == Response{200, jsonHeaders, R"({
+                REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", {AUTH_ROOT, CONTENT_TYPE_XML, {"accept", "application/yang-data+json"}}, R"(<input xmlns="http://example.tld/example"><i>ahoj</i></input>)") == Response{200, jsonHeaders, R"({
   "example:output": {
     "out1": "some-output-string",
     "out2": "some-output-string-2"
@@ -135,7 +135,7 @@ TEST_CASE("invoking actions and rpcs")
             SECTION("JSON -> XML")
             {
                 REQUIRE_CALL(rpcCall, rpcCall("/example:test-rpc", std::map<std::string, std::string>({{"/example:test-rpc/i", "ahoj"}})));
-                REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", R"({"example:input": {"i":"ahoj"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON, {"accept", "application/yang-data+xml"}}) == Response{200, xmlHeaders, R"(<output xmlns="http://example.tld/example">
+                REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", {AUTH_ROOT, CONTENT_TYPE_JSON, {"accept", "application/yang-data+xml"}}, R"({"example:input": {"i":"ahoj"}}")") == Response{200, xmlHeaders, R"(<output xmlns="http://example.tld/example">
   <out1>some-output-string</out1>
   <out2>some-output-string-2</out2>
 </output>
@@ -144,7 +144,7 @@ TEST_CASE("invoking actions and rpcs")
 
             SECTION("Missing content-type, some data sent")
             {
-                REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", R"(<input xmlns="http://example.tld/example"><i>ahoj</i></input>)", {AUTH_ROOT}) == Response{400, jsonHeaders, R"({
+                REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", {AUTH_ROOT}, R"(<input xmlns="http://example.tld/example"><i>ahoj</i></input>)") == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -161,7 +161,7 @@ TEST_CASE("invoking actions and rpcs")
             SECTION("Missing content-type, no input nodes for RPC")
             {
                 REQUIRE_CALL(rpcCall, rpcCall("/example:test-rpc-no-input", std::map<std::string, std::string>({})));
-                REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc-no-input", "", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+                REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc-no-input", {AUTH_ROOT}, "") == Response{200, jsonHeaders, R"({
   "example:output": {
     "out1": "some-output-string",
     "out2": "some-output-string-2"
@@ -173,13 +173,13 @@ TEST_CASE("invoking actions and rpcs")
             SECTION("No output does not send content-type")
             {
                 REQUIRE_CALL(rpcCall, rpcCall("/example:test-rpc-no-output", std::map<std::string, std::string>({{"/example:test-rpc-no-output/number", "42"}, {"/example:test-rpc-no-output/string", "ahoj"}})));
-                REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc-no-output", R"({"example:input": {"number":42, "string": "ahoj"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{204, noContentTypeHeaders, ""});
+                REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc-no-output", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:input": {"number":42, "string": "ahoj"}}")") == Response{204, noContentTypeHeaders, ""});
             }
         }
 
         SECTION("Calling RPC through /restconf/data")
         {
-            REQUIRE(post(RESTCONF_DATA_ROOT "/example:test-rpc", R"({"example:i": "ahoj"}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:test-rpc", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:i": "ahoj"}")") == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -194,7 +194,7 @@ TEST_CASE("invoking actions and rpcs")
 
             SECTION("Unknown input nodes")
             {
-                REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", R"({"example:input": {"i":"ahoj", "nope": "nope"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+                REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:input": {"i":"ahoj", "nope": "nope"}}")") == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -211,7 +211,7 @@ TEST_CASE("invoking actions and rpcs")
 
         SECTION("Missing mandatory input node")
         {
-            REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", R"({"example:input": {}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"eof({
+            REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:input": {}}")") == Response{400, jsonHeaders, R"eof({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -227,7 +227,7 @@ TEST_CASE("invoking actions and rpcs")
 
         SECTION("Missing input for RPC with input nodes")
         {
-            REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", "", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"eof({
+            REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", {AUTH_ROOT, CONTENT_TYPE_JSON}, "") == Response{400, jsonHeaders, R"eof({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -243,7 +243,7 @@ TEST_CASE("invoking actions and rpcs")
 
         SECTION("Input not wrapped in example:input")
         {
-            REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", R"({"example:test-rpc/i": "ahoj"})", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+            REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:test-rpc/i": "ahoj"})") == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -266,7 +266,7 @@ TEST_CASE("invoking actions and rpcs")
             }));
 
             REQUIRE_CALL(rpcCall, rpcCall("/example:test-rpc-no-input-no-output", std::map<std::string, std::string>({})));
-            REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc-no-input-no-output", "", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{500, jsonHeaders, R"eof({
+            REQUIRE(post(RESTCONF_OPER_ROOT "/example:test-rpc-no-input-no-output", {AUTH_ROOT, CONTENT_TYPE_JSON}, "") == Response{500, jsonHeaders, R"eof({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -286,7 +286,7 @@ TEST_CASE("invoking actions and rpcs")
         SECTION("Basic calls")
         {
             REQUIRE_CALL(rpcCall, rpcCall("/example:tlc/list/example-action", std::map<std::string, std::string>({{"/example:tlc/list[name='1']/example-action/i", "ahoj"}})));
-            REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc/list=1/example-action", R"({"example:input": {"example:i": "ahoj"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{200, jsonHeaders, R"({
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc/list=1/example-action", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:input": {"example:i": "ahoj"}}")") == Response{200, jsonHeaders, R"({
   "example:output": {
     "o": "some-output-string"
   }
@@ -296,7 +296,7 @@ TEST_CASE("invoking actions and rpcs")
 
         SECTION("List entry with action not present")
         {
-            REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc/list=666/example-action", R"({"example:input": {"example:i": "ahoj"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"eof({
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc/list=666/example-action", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:input": {"example:i": "ahoj"}}")") == Response{400, jsonHeaders, R"eof({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -312,7 +312,7 @@ TEST_CASE("invoking actions and rpcs")
 
         SECTION("Invoking action through /restconf/operations")
         {
-            REQUIRE(post(RESTCONF_OPER_ROOT "/example:tlc/list=1/example-action", R"({"example:input": {"example:i": "ahoj"}}")", {AUTH_ROOT, CONTENT_TYPE_JSON}) == Response{400, jsonHeaders, R"({
+            REQUIRE(post(RESTCONF_OPER_ROOT "/example:tlc/list=1/example-action", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:input": {"example:i": "ahoj"}}")") == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {

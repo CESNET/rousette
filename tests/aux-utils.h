@@ -208,12 +208,12 @@ Response head(auto uri, const std::map<std::string, std::string>& headers)
     return clientRequest("HEAD", uri, "", headers);
 }
 
-Response put(auto xpath, const std::string& data, const std::map<std::string, std::string>& headers)
+Response put(auto xpath, const std::map<std::string, std::string>& headers, const std::string& data)
 {
     return clientRequest("PUT", xpath, data, headers);
 }
 
-Response post(auto xpath, const std::string& data, const std::map<std::string, std::string>& headers)
+Response post(auto xpath, const std::map<std::string, std::string>& headers, const std::string& data)
 {
     return clientRequest("POST", xpath, data, headers);
 }
