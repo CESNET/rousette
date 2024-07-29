@@ -11,6 +11,7 @@ A [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server built on
 
 - [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server
 - [NMDA](https://datatracker.ietf.org/doc/html/rfc8527.html) support
+- [YANG Patch](https://datatracker.ietf.org/doc/html/rfc8072) support
 
 These [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) features are not yet implemented:
 

@@ -65,7 +65,7 @@ nghttp2::asio_http2::header_map httpOptionsHeaders(const std::set<std::string>& 
     headers.emplace("allow", nghttp2::asio_http2::header_value{oss.str(), false});
 
     if (allowedHttpMethods.contains("PATCH")) {
-        headers.emplace("accept-patch", nghttp2::asio_http2::header_value{"application/yang-data+json, application/yang-data+xml", false});
+        headers.emplace("accept-patch", nghttp2::asio_http2::header_value{"application/yang-data+json, application/yang-data+xml, application/yang-patch+xml, application/yang-patch+json", false});
     }
 
     return headers;
@@ -113,6 +113,14 @@ void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat
     rejectWithError(ctx, dataFormat, errors, errors, req, res, code, errorType, errorTag, errorMessage, errorPath);
 }
 
+void rejectWithErrorYangPatch(libyang::Context ctx, const libyang::DataFormat& dataFormat, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath = std::nullopt)
+{
+    auto ext = ctx.getModuleImplemented("ietf-yang-patch")->extensionInstance("yang-patch-status");
+    auto errorsTree = *ctx.newExtPath("/ietf-yang-patch:yang-patch-status/errors", std::nullopt, ext);
+    auto errorsContainer = *errorsTree.findXPath("/ietf-yang-patch:yang-patch-status/errors").begin();
+    rejectWithError(ctx, dataFormat, errorsTree, errorsContainer, req, res, code, errorType, errorTag, errorMessage, errorPath);
+}
+
 /** @brief In case node is a (leaf-)list check if the key values are the same as the keys specified in the lastPathSegment.
  * @return The node where the mismatch occurs */
 std::optional<libyang::DataNode> checkKeysMismatch(const libyang::DataNode& node, const PathSegment& lastPathSegment)
@@ -149,15 +157,15 @@ struct RequestContext {
     std::string payload;
 };
 
-void yangInsert(const libyang::Context& ctx, libyang::DataNode& listEntryNode, const std::string& where, const std::optional<queryParams::insert::PointParsed>& pointParsed)
+void yangInsert(const libyang::Context& ctx, libyang::DataNode& listEntryNode, const std::string& operation, const std::optional<std::string>& where, const std::optional<queryParams::insert::PointParsed>& pointParsed)
 {
-    auto modYang = *ctx.getModuleImplemented("yang");
-
-    if (!isUserOrderedList(listEntryNode)) {
+    if (operation == "insert" && !isUserOrderedList(listEntryNode)) {
         throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter 'insert' is valid only for inserting into lists or leaf-lists that are 'ordered-by user'");
     }
 
-    listEntryNode.newMeta(modYang, "insert", where);
+    auto modYang = *ctx.getModuleImplemented("yang");
+
+    listEntryNode.newMeta(modYang, operation, *where);
 
     if (pointParsed) {
         const auto listEntrySchema = listEntryNode.schema();
@@ -198,7 +206,17 @@ void yangInsertFromQueryParams(const RequestContext& requestCtx, libyang::DataNo
         point = std::get<queryParams::insert::PointParsed>(requestCtx.restconfRequest.queryParams.find("point")->second);
     }
 
-    yangInsert(requestCtx.sess.getContext(), listEntryNode, where, point);
+    yangInsert(requestCtx.sess.getContext(), listEntryNode, "insert", where, point);
+}
+
+void yangInsertFromYangPatch(const libyang::Context& ctx, libyang::DataNode& listEntryNode, const std::string& operation, const std::optional<std::string>& where, const std::optional<std::string>& point)
+{
+    std::optional<std::vector<PathSegment>> pointParsed;
+    if (point) {
+        pointParsed = asPathSegments(*point);
+    }
+
+    yangInsert(ctx, listEntryNode, operation, where, pointParsed);
 }
 
 /** @brief Rejects the edit if any edit node has meta attributes that could possibly alter sysrepo's behaviour. */
@@ -371,6 +389,176 @@ void processPost(std::shared_ptr<RequestContext> requestCtx)
                                    // FIXME: POST data operation MUST return Location header
                                });
     requestCtx->res.end();
+}
+
+/** @brief Create a data tree from opaque nodes that conform to a schema
+ *
+ * Parsed ext data (e.g., yang-data container) are opaque nodes. However, in yang-patch we know that these data
+ * should conform to a schema. Libyang can not "promote" such nodes to standard data nodes, so this function
+ * serializes the data and parses them back.
+ * The data can be an arbitrary subtree of the data tree so a hint is needed (a path to a parent) where the
+ * data should be parsed.
+ */
+libyang::CreatedNodes yangPatchValueTree(libyang::Context& ctx, const std::optional<std::string>& parentPath, const libyang::DataNode& value)
+{
+    const auto serialized = *value.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink);
+
+    if (!parentPath) {
+        auto node = *ctx.parseData(serialized, libyang::DataFormat::JSON, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+        return {node, node};
+    }
+
+    auto res = ctx.newPath2(*parentPath);
+    res.createdNode->parseSubtree(serialized, libyang::DataFormat::JSON, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+    return res;
+}
+
+void processYangPatch(std::shared_ptr<RequestContext> requestCtx)
+{
+    auto ctx = requestCtx->sess.getContext();
+    auto netconfMod = *ctx.getModuleImplemented("ietf-netconf");
+    auto yangPatchMod = *ctx.getModule("ietf-yang-patch", "2017-02-22");
+    auto yangPatchExt = yangPatchMod.extensionInstance("yang-patch");
+    auto yangPatchStatusExt = yangPatchMod.extensionInstance("yang-patch-status");
+
+    std::optional<libyang::DataNode> patch;
+    std::string patchId;
+
+    try {
+        patch = ctx.parseExtData(yangPatchExt, requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+
+        if (!patch || !patch->findPath("patch-id")) {
+            throw ErrorResponse(400, "protocol", "invalid-value", "patch-id not present");
+        }
+
+        patchId = patch->findPath("patch-id")->asTerm().valueStr();
+
+        // create one big edit from all the edits because we need to apply all at once.
+        std::optional<libyang::DataNode> mergedEdits;
+
+        for (const auto& editContainer : patch->findXPath("edit")) {
+            // check that mandatory leafs are present
+            for (const auto& mandatoryLeaf: {"edit-id", "target", "operation"}) {
+                if (!editContainer.findPath(mandatoryLeaf)) {
+                    throw ErrorResponse(400, "protocol", "invalid-value", "Missing mandatory leaf '"s + mandatoryLeaf + "'");
+                }
+            }
+
+            // if the value is present, we expect it to be a DataNode, not JSON/XML or any other stuff
+            std::optional<libyang::DataNode> value;
+            if (auto valueNode = editContainer.findPath("value")) {
+                auto anydataValue = valueNode->asAny().releaseValue().value();
+
+                if (!std::holds_alternative<libyang::DataNode>(anydataValue)) {
+                    throw ErrorResponse(400, "protocol", "invalid-value", "Not a data node");
+                }
+
+                value = std::get<libyang::DataNode>(anydataValue);
+            }
+
+            auto target = editContainer.findPath("target")->asTerm().valueStr();
+            auto operation = editContainer.findPath("operation")->asTerm().valueStr();
+
+            // possible list operations
+            std::optional<std::string> point;
+            std::optional<std::string> where;
+            if (auto node = editContainer.findPath("point")) {
+                point = requestCtx->req.uri().path + node->asTerm().valueStr();
+            }
+            if (auto node = editContainer.findPath("where")) {
+                where = node->asTerm().valueStr();
+            }
+
+            auto [lyParentPath, lastPathSegment] = asLibyangPathSplit(requestCtx->sess.getContext(), requestCtx->req.uri().path + target);
+
+            std::optional<libyang::DataNode> singleEdit; //< edit tree for the current edit container
+            std::optional<libyang::DataNode> replacementNode; //< the actual changed node, target for ietf-netconf operation metadata
+
+            if (!lyParentPath.empty() && value) {
+                auto [parent, node] = yangPatchValueTree(ctx, lyParentPath, *value);
+
+                for (const auto& child : node->immediateChildren()) {
+                    if (isSameNode(child, lastPathSegment)) {
+                        if (auto offendingNode = checkKeysMismatch(child, lastPathSegment)) {
+                            throw ErrorResponse(400, "protocol", "invalid-value", "List key mismatch between URI path and data.", offendingNode->path());
+                        }
+                        replacementNode = child;
+                    } else if (isKeyNode(*node, child)) {
+                    } else {
+                        throw ErrorResponse(400, "protocol", "invalid-value", "Data contains invalid node.", child.path());
+                    }
+                }
+
+                singleEdit = parent;
+            } else if (lyParentPath.empty() && value){
+                auto [parent, node] = yangPatchValueTree(ctx, std::nullopt, *value);
+                singleEdit = parent;
+                replacementNode = parent;
+
+                if (!isSameNode(*replacementNode, lastPathSegment)) {
+                    throw ErrorResponse(400, "protocol", "invalid-value", "Data contains invalid node.", replacementNode->path());
+                }
+                if (auto offendingNode = checkKeysMismatch(*parent, lastPathSegment)) {
+                    throw ErrorResponse(400, "protocol", "invalid-value", "List key mismatch between URI path and data.", offendingNode->path());
+                }
+            } else {
+                auto lyFullPath = asRestconfRequest(requestCtx->sess.getContext(), "PATCH", requestCtx->req.uri().path + target).path;
+                auto [parent, node] = ctx.newPath2(lyFullPath);
+                singleEdit = parent;
+                replacementNode = node;
+            }
+
+            if (!replacementNode) {
+                throw ErrorResponse(400, "protocol", "invalid-value", "Node indicated by URI is missing.");
+            }
+
+            validateInputMetaAttributes(ctx, *singleEdit);
+
+            if (operation == "insert") {
+                replacementNode->newMeta(netconfMod, "operation", "create");
+                yangInsertFromYangPatch(ctx, *replacementNode, operation, where, point);
+            } else if (operation == "move") {
+                replacementNode->newMeta(netconfMod, "operation", "merge");
+            } else {
+                replacementNode->newMeta(netconfMod, "operation", operation);
+            }
+
+            if (!mergedEdits) {
+                mergedEdits = *singleEdit;
+            } else {
+                mergedEdits->insertSibling(*singleEdit);
+            }
+        }
+
+        if (mergedEdits) {
+            spdlog::error("edit = {}", *mergedEdits->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings | libyang::PrintFlags::Shrink));
+            requestCtx->sess.editBatch(*mergedEdits, sysrepo::DefaultOperation::Merge);
+            requestCtx->sess.applyChanges();
+        }
+
+        auto yangPatchStatus = ctx.newExtPath("/ietf-yang-patch:yang-patch-status", std::nullopt, yangPatchStatusExt);
+        yangPatchStatus->newExtPath("/ietf-yang-patch:yang-patch-status/patch-id", patchId, yangPatchStatusExt);
+        yangPatchStatus->newExtPath("/ietf-yang-patch:yang-patch-status/ok", std::nullopt, yangPatchStatusExt);
+
+        requestCtx->res.write_head(200, {{"content-type", {asMimeType(requestCtx->dataFormat.response), false}}, {"access-control-allow-origin", {"*", false}}});
+        requestCtx->res.end(*yangPatchStatus->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::WithSiblings));
+    } catch (const ErrorResponse& e) {
+        rejectWithErrorYangPatch(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath);
+    } catch (libyang::ErrorWithCode& e) {
+        if (e.code() == libyang::ErrorCode::ValidationFailure) {
+            rejectWithErrorYangPatch(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", "Validation failure: "s + e.what());
+        } else {
+            rejectWithErrorYangPatch(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to libyang exception: "s + e.what());
+        }
+    } catch (sysrepo::ErrorWithCode& e) {
+        if (e.code() == sysrepo::ErrorCode::Unauthorized) {
+            rejectWithErrorYangPatch(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 403, "application", "access-denied", "Access denied.");
+        } else if (e.code() == sysrepo::ErrorCode::NotFound) {
+            rejectWithErrorYangPatch(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", e.what());
+        } else {
+            rejectWithErrorYangPatch(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception: "s + e.what());
+        }
+    }
 }
 
 void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx)
@@ -566,6 +754,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
              {"ietf-restconf-monitoring", "2017-01-26"},
              {"ietf-netconf", ""},
              {"ietf-yang-library", "2019-01-04"},
+             {"ietf-yang-patch", "2017-02-22"},
              }) {
         if (!conn.sessionStart().getContext().getModuleImplemented(module)) {
             throw std::runtime_error("Module "s + module + "@" + version + " is not implemented in sysrepo");
@@ -789,7 +978,12 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
                     auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, restconfRequest);
 
-                    req.on_data([requestCtx, restconfRequest /* intentional copy */](const uint8_t* data, std::size_t length) {
+                    bool yangPatch = false;
+                    if (auto it = req.header().find("content-type"); it != req.header().end() && (it->second.value == "application/yang-patch+xml" || it->second.value == "application/yang-patch+json")) {
+                        yangPatch = true;
+                    }
+
+                    req.on_data([requestCtx, restconfRequest /* intentional copy */, yangPatch](const uint8_t* data, std::size_t length) {
                         if (length > 0) { // there are still some data to be read
                             requestCtx->payload.append(reinterpret_cast<const char*>(data), length);
                             return;
@@ -797,6 +991,8 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
                         if (restconfRequest.type == RestconfRequest::Type::CreateChildren) {
                             WITH_RESTCONF_EXCEPTIONS(processPost)(requestCtx);
+                        } else if (restconfRequest.type == RestconfRequest::Type::MergeData && yangPatch) {
+                            WITH_RESTCONF_EXCEPTIONS(processYangPatch)(requestCtx);
                         } else {
                             WITH_RESTCONF_EXCEPTIONS(processPutOrPlainPatch)(requestCtx);
                         }
