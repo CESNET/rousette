@@ -16,6 +16,7 @@ A [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server built on
     - [API resource](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.3), i.e., the top-level `{+restconf}` endpoint
     - The [`fields`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.8.3) query parameter.
 - [NMDA](https://datatracker.ietf.org/doc/html/rfc8527.html) support
+- [YANG Patch](https://datatracker.ietf.org/doc/html/rfc8072) support
 
 
 ## Usage
