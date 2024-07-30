@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f9f9fd0f_6741f086",
+        "filename": "tests/restconf-plain-patch.cpp",
+        "patchSetId": 9
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-30T10:37:29Z",
+      "side": 1,
+      "message": "is the comment wrong? this targets \"/\", not the leaf",
+      "range": {
+        "startLine": 55,
+        "startChar": 0,
+        "endLine": 57,
+        "endChar": 193
+      },
+      "revId": "9001449ca9ffe0337c4fd0b0bac7172c9860a6d3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}

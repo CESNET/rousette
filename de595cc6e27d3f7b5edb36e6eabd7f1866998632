@@ -71,6 +71,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "7898cd70_8ee7dd67",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-30T10:37:29Z",
+      "side": 1,
+      "message": "looks good to me now thanks",
+      "parentUuid": "42813520_4d162293",
+      "revId": "de595cc6e27d3f7b5edb36e6eabd7f1866998632",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "4b2b4d2d_e1dc5cd9",
@@ -102,6 +120,24 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "4b2b4d2d_e1dc5cd9",
+      "revId": "de595cc6e27d3f7b5edb36e6eabd7f1866998632",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ac87e36d_60c14971",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-30T10:37:29Z",
+      "side": 1,
+      "message": "the charset MIME option is still there",
+      "parentUuid": "03747eac_b343b5e4",
       "revId": "de595cc6e27d3f7b5edb36e6eabd7f1866998632",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
