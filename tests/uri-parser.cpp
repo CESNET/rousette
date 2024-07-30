@@ -987,11 +987,11 @@ TEST_CASE("URI path parser")
         SECTION("RESTCONF")
         {
             std::string uri;
-            std::optional<std::string> expected;
+            std::set<std::string> expected;
 
             SECTION("Data resource")
             {
-                expected = "DELETE, GET, HEAD, OPTIONS, POST, PUT";
+                expected = {"DELETE", "GET", "HEAD", "OPTIONS", "POST", "PUT"};
                 SECTION("Leaf node") { uri = "/restconf/data/example:top-level-leaf"; }
                 SECTION("List node") { uri = "/restconf/data/example:tlc/list=key"; }
                 SECTION("Container") { uri = "/restconf/data/example:tlc"; }
@@ -999,19 +999,19 @@ TEST_CASE("URI path parser")
             }
             SECTION("Operations resource")
             {
-                expected = "OPTIONS, POST";
+                expected = {"OPTIONS", "POST"};
                 SECTION("RPC") { uri = "/restconf/operations/example:test-rpc"; }
                 SECTION("Action") { uri = "/restconf/data/example:tlc/list=key/example-action"; }
             }
             SECTION("Datastore resource")
             {
-                expected = "GET, HEAD, OPTIONS, POST, PUT";
+                expected = {"GET", "HEAD", "OPTIONS", "POST", "PUT"};
                 SECTION("Basic root") { uri = "/restconf/data"; }
                 SECTION("NMDA running") { uri = "/restconf/ds/ietf-datastores:running"; }
             }
             SECTION("Invalid path")
             {
-                expected = std::nullopt;
+                expected = {};
                 uri = "/restconf/data/blabla:bla";
             }
             REQUIRE(rousette::restconf::allowedHttpMethodsForUri(ctx, uri) == expected);

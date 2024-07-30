@@ -10,6 +10,7 @@
 #include <libyang-cpp/SchemaNode.hpp>
 #include <map>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <sysrepo-cpp/Enum.hpp>
@@ -152,5 +153,5 @@ std::optional<libyang::SchemaNode> asLibyangSchemaNode(const libyang::Context& c
 std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath);
 std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> asYangModule(const libyang::Context& ctx, const std::string& uriPath);
 RestconfStreamRequest asRestconfStreamRequest(const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString);
-std::optional<std::string> allowedHttpMethodsForUri(const libyang::Context& ctx, const std::string& uriPath);
+std::set<std::string> allowedHttpMethodsForUri(const libyang::Context& ctx, const std::string& uriPath);
 }

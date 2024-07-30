@@ -622,8 +622,8 @@ RestconfStreamRequest asRestconfStreamRequest(const std::string& httpMethod, con
     return {type, *queryParameters};
 }
 
-/** @brief Returns a comma-delimited list of allowed HTTP methods for given URI. Usable for the 'allow' header */
-std::optional<std::string> allowedHttpMethodsForUri(const libyang::Context& ctx, const std::string& uriPath)
+/** @brief Returns a set of allowed HTTP methods for given URI. Usable for the 'allow' header */
+std::set<std::string> allowedHttpMethodsForUri(const libyang::Context& ctx, const std::string& uriPath)
 {
     std::set<std::string> allowedHttpMethods;
 
@@ -636,14 +636,9 @@ std::optional<std::string> allowedHttpMethodsForUri(const libyang::Context& ctx,
         }
     }
 
-    if (allowedHttpMethods.empty()) {
-        return std::nullopt;
+    if (!allowedHttpMethods.empty()) {
+        allowedHttpMethods.insert("OPTIONS");
     }
-
-    allowedHttpMethods.insert("OPTIONS");
-
-    std::ostringstream oss;
-    std::copy(std::begin(allowedHttpMethods), std::end(allowedHttpMethods), std::experimental::make_ostream_joiner(oss, ", "));
-    return oss.str();
+    return allowedHttpMethods;
 }
 }

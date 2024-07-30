@@ -5,6 +5,7 @@
  *
 */
 
+#include <experimental/iterator>
 #include <libyang-cpp/Enum.hpp>
 #include <libyang-cpp/Time.hpp>
 #include <nghttp2/asio_http2_server.h>
@@ -52,6 +53,16 @@ bool isSameNode(const libyang::DataNode& child, const PathSegment& lastPathSegme
     return child.schema().module().name() == *lastPathSegment.apiIdent.prefix && child.schema().name() == lastPathSegment.apiIdent.identifier;
 }
 
+/** @brief Construct HTTP headers related to responses to OPTIONS requests */
+nghttp2::asio_http2::header_map httpOptionsHeaders(const std::set<std::string>& allowedHttpMethods)
+{
+    nghttp2::asio_http2::header_map headers;
+    std::ostringstream oss;
+    std::copy(std::begin(allowedHttpMethods), std::end(allowedHttpMethods), std::experimental::make_ostream_joiner(oss, ", "));
+    headers.emplace("allow", nghttp2::asio_http2::header_value{oss.str(), false});
+    return headers;
+}
+
 void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath = std::nullopt)
 {
     spdlog::debug("{}: Rejected with {}: {}", http::peer_from_request(req), errorTag, errorMessage);
@@ -70,7 +81,7 @@ void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat
     nghttp2::asio_http2::header_map headers = {{"content-type", {asMimeType(dataFormat), false}}, {"access-control-allow-origin", {"*", false}}};
 
     if (code == 405) {
-        headers.emplace("allow", nghttp2::asio_http2::header_value{allowedHttpMethodsForUri(ctx, req.uri().path).value_or(""), false});
+        headers.merge(httpOptionsHeaders(allowedHttpMethodsForUri(ctx, req.uri().path)));
     }
 
     res.write_head(code, headers);
@@ -836,15 +847,14 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 }
 
                 case RestconfRequest::Type::OptionsQuery: {
+                    nghttp2::asio_http2::header_map headers{{"access-control-allow-origin", {"*", false}}};
+
                     /* Just try to call this function with all possible HTTP methods and return those which do not fail */
-                    if (auto allowHeader = allowedHttpMethodsForUri(sess.getContext(), req.uri().path)) {
-                        res.write_head(200,
-                                       {
-                                           {"allow", {*allowHeader, false}},
-                                           {"access-control-allow-origin", {"*", false}},
-                                       });
+                    if (auto optionsHeaders = allowedHttpMethodsForUri(sess.getContext(), req.uri().path); !optionsHeaders.empty()) {
+                        headers.merge(httpOptionsHeaders(optionsHeaders));
+                        res.write_head(200, headers);
                     } else {
-                        res.write_head(404, {{"access-control-allow-origin", {"*", false}}});
+                        res.write_head(404, headers);
                     }
                     res.end();
                     break;
