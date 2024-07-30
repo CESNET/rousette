@@ -16,6 +16,24 @@
       "message": "on a quick glance, all of this can be made sequential with no SECTION flow control. Do you feel like doing that?",
       "revId": "af99f53c7ded8c8ae24edd1da7daa8da50ad5cc6",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b8df0736_db103dc7",
+        "filename": "tests/restconf-writing-patch.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-30T09:49:37Z",
+      "side": 0,
+      "message": "Done",
+      "parentUuid": "5ba62ffb_4e424bfe",
+      "revId": "af99f53c7ded8c8ae24edd1da7daa8da50ad5cc6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }

@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "a9d6b8a7_0e7ff5e9",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 8
+      },
+      "lineNbr": 195,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-30T09:49:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c2c3a258_e4dee04f",
+      "revId": "de595cc6e27d3f7b5edb36e6eabd7f1866998632",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "b746dd7b_ef266d4b",
@@ -35,6 +53,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "42813520_4d162293",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-30T09:49:37Z",
+      "side": 1,
+      "message": "Yes, it will save the call but I find it more readable. I look at the code and I see what happens right away because there are no mutations.\n\nI\u0027d prefer to preserve the current code but if you have a strong opinion about that, I can change it.\n\nI changed the name of the function though.\n\nFYI: This change moved to the parent commit. So feel free to open an issue there.",
+      "parentUuid": "b746dd7b_ef266d4b",
+      "revId": "de595cc6e27d3f7b5edb36e6eabd7f1866998632",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "4b2b4d2d_e1dc5cd9",
@@ -48,6 +84,24 @@
       "writtenOn": "2024-07-29T21:41:48Z",
       "side": 1,
       "message": "sorry that I missed that during the first round, but the charset is actually redundant because nothing but UTF-8 is allowed, https://datatracker.ietf.org/doc/html/rfc8072#section-4.2",
+      "revId": "de595cc6e27d3f7b5edb36e6eabd7f1866998632",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "03747eac_b343b5e4",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-30T09:49:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4b2b4d2d_e1dc5cd9",
       "revId": "de595cc6e27d3f7b5edb36e6eabd7f1866998632",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -77,6 +131,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "77fdae0e_335de64a",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 557,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-30T09:49:37Z",
+      "side": 1,
+      "message": "I will try to do something about it in another patch.",
+      "parentUuid": "fe26a067_281902e5",
+      "range": {
+        "startLine": 534,
+        "startChar": 0,
+        "endLine": 557,
+        "endChar": 5
+      },
+      "revId": "de595cc6e27d3f7b5edb36e6eabd7f1866998632",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "5c133765_ffce5338",
         "filename": "src/restconf/uri.cpp",
         "patchSetId": 8
@@ -88,6 +166,24 @@
       "writtenOn": "2024-07-29T21:41:48Z",
       "side": 1,
       "message": "in a perfect world, this is IMHO better done in an extra commit",
+      "revId": "de595cc6e27d3f7b5edb36e6eabd7f1866998632",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "64919287_468357bf",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 630,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-30T09:49:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5c133765_ffce5338",
       "revId": "de595cc6e27d3f7b5edb36e6eabd7f1866998632",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
