@@ -68,19 +68,16 @@ nghttp2::asio_http2::header_map httpOptionsHeaders(const std::set<std::string>& 
     return headers;
 }
 
-void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath = std::nullopt)
+void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat, const libyang::DataNode& tree, libyang::DataNode& errorList, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath = std::nullopt)
 {
     spdlog::debug("{}: Rejected with {}: {}", http::peer_from_request(req), errorTag, errorMessage);
 
-    auto ext = ctx.getModuleImplemented("ietf-restconf")->extensionInstance("yang-errors");
-
-    auto errors = ctx.newExtPath("/ietf-restconf:errors", std::nullopt, ext);
-    errors->newExtPath("/ietf-restconf:errors/error[1]/error-type", errorType, ext);
-    errors->newExtPath("/ietf-restconf:errors/error[1]/error-tag", errorTag, ext);
-    errors->newExtPath("/ietf-restconf:errors/error[1]/error-message", errorMessage, ext);
+    errorList.newPath("error[1]/error-type", errorType);
+    errorList.newPath("error[1]/error-tag", errorTag);
+    errorList.newPath("error[1]/error-message", errorMessage);
 
     if (errorPath) {
-        errors->newExtPath("/ietf-restconf:errors/error[1]/error-path", *errorPath, ext);
+        errorList.newPath("error[1]/error-path", *errorPath);
     }
 
     nghttp2::asio_http2::header_map headers = {{"content-type", {asMimeType(dataFormat), false}}, {"access-control-allow-origin", {"*", false}}};
@@ -90,7 +87,14 @@ void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat
     }
 
     res.write_head(code, headers);
-    res.end(*errors->printStr(dataFormat, libyang::PrintFlags::WithSiblings));
+    res.end(*tree.printStr(dataFormat, libyang::PrintFlags::WithSiblings));
+}
+
+void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath = std::nullopt)
+{
+    auto ext = ctx.getModuleImplemented("ietf-restconf")->extensionInstance("yang-errors");
+    auto errors = *ctx.newExtPath("/ietf-restconf:errors", std::nullopt, ext);
+    rejectWithError(ctx, dataFormat, errors, errors, req, res, code, errorType, errorTag, errorMessage, errorPath);
 }
 
 /** @brief In case node is a (leaf-)list check if the key values are the same as the keys specified in the lastPathSegment.
