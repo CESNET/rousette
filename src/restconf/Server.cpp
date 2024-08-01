@@ -31,7 +31,7 @@ using nghttp2::asio_http2::server::request;
 using nghttp2::asio_http2::server::response;
 
 #define CORS {"access-control-allow-origin", {"*", false}}
-#define TEXT_PLAIN {"content-type", {"text/plain", false}}
+#define TEXT_PLAIN contentType("text/plain")
 #define ALLOW_GET_HEAD_OPTIONS {"allow", {"GET, HEAD, OPTIONS", false}}
 
 namespace rousette::restconf {
@@ -71,6 +71,16 @@ nghttp2::asio_http2::header_map httpOptionsHeaders(const std::set<std::string>& 
     return headers;
 }
 
+constexpr nghttp2::asio_http2::header_map::value_type contentType(const std::string& mimeType)
+{
+    return {"content-type", {mimeType, false}};
+}
+
+auto contentType(const libyang::DataFormat dataFormat)
+{
+    return contentType(asMimeType(dataFormat));
+}
+
 void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath = std::nullopt)
 {
     spdlog::debug("{}: Rejected with {}: {}", http::peer_from_request(req), errorTag, errorMessage);
@@ -86,7 +96,7 @@ void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat
         errors->newExtPath("/ietf-restconf:errors/error[1]/error-path", *errorPath, ext);
     }
 
-    nghttp2::asio_http2::header_map headers = {{"content-type", {asMimeType(dataFormat), false}}, CORS};
+    nghttp2::asio_http2::header_map headers = {contentType(dataFormat), CORS};
 
     if (code == 405) {
         headers.merge(httpOptionsHeaders(allowedHttpMethodsForUri(ctx, req.uri().path)));
@@ -278,7 +288,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
     envelope->insertChild(*responseNode);
 
     requestCtx->res.write_head(200, {
-                                        {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
+                                        contentType(requestCtx->dataFormat.response),
                                         CORS,
                                     });
     requestCtx->res.end(*envelope->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::WithSiblings));
@@ -337,7 +347,7 @@ void processPost(std::shared_ptr<RequestContext> requestCtx)
 
     requestCtx->res.write_head(201,
                                {
-                                   {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
+                                   contentType(requestCtx->dataFormat.response),
                                    CORS,
                                    // FIXME: POST data operation MUST return Location header
                                });
@@ -461,7 +471,7 @@ void processYangLibraryVersion( const nghttp2::asio_http2::server::response& res
     res.write_head(
         200,
         {
-            {"content-type", {asMimeType(dataFormat), false}},
+            contentType(dataFormat),
             CORS,
         });
     res.end(*data->child()->printStr(dataFormat, libyang::PrintFlags::WithSiblings));
@@ -574,7 +584,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
         res.write_head(
                    200,
                    {
-                       {"content-type", {"application/xrd+xml", false}},
+                       contentType("application/xrd+xml"),
                        CORS,
                    });
         res.end("<XRD xmlns='http://docs.oasis-open.org/ns/xri/xrd-1.0'><Link rel='restconf' href='"s + restconfRoot + "'></XRD>"s);
@@ -668,7 +678,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 res.write_head(
                     200,
                     {
-                        {"content-type", {"application/yang", false}},
+                        contentType("application/yang"),
                         CORS,
                     });
                 res.end(std::visit([](auto&& arg) { return arg.printStr(libyang::SchemaOutputFormat::Yang); }, *mod));
@@ -732,7 +742,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         res.write_head(
                             200,
                             {
-                                {"content-type", {asMimeType(dataFormat.response), false}},
+                                contentType(dataFormat.response),
                                 CORS,
                             });
 
