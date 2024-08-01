@@ -349,7 +349,7 @@ void processPost(std::shared_ptr<RequestContext> requestCtx)
                                {
                                    contentType(requestCtx->dataFormat.response),
                                    CORS,
-                                   // FIXME: POST data operation MUST return Location header
+                                   {"location", {createdNodes.front().path(), false}}, // FIXME: server name
                                });
     requestCtx->res.end();
 }

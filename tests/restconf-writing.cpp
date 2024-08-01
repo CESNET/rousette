@@ -1041,19 +1041,22 @@ TEST_CASE("writing data")
     SECTION("POST")
     {
         auto changesExample = datastoreChangesSubscription(srSess, dsChangesMock, "example");
+        auto headers = jsonHeaders;
 
         SECTION("Create a leaf")
         {
             SECTION("Top-level leaf")
             {
                 EXPECT_CHANGE(CREATED("/example:top-level-leaf", "str"));
-                REQUIRE(post(RESTCONF_DATA_ROOT "/", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:top-level-leaf": "str"}")") == Response{201, jsonHeaders, ""});
+                headers.emplace("location", "/example:top-level-leaf");
+                REQUIRE(post(RESTCONF_DATA_ROOT "/", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:top-level-leaf": "str"}")") == Response{201, headers, ""});
             }
 
             SECTION("Leaf in a container")
             {
                 EXPECT_CHANGE(CREATED("/example:two-leafs/a", "a-value"));
-                REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:a": "a-value"}")") == Response{201, jsonHeaders, ""});
+                headers.emplace("location", "/example:two-leafs/a");
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:a": "a-value"}")") == Response{201, headers, ""});
 
                 REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:a": "another-a-value"}")") == Response{409, jsonHeaders, R"({
   "ietf-restconf:errors": {
@@ -1101,25 +1104,39 @@ TEST_CASE("writing data")
 
         SECTION("Container operations")
         {
+            auto headers = jsonHeaders;
+            headers.emplace("location", "/example:two-leafs");
             EXPECT_CHANGE(CREATED("/example:two-leafs/a", "a-val"));
-            REQUIRE(post(RESTCONF_DATA_ROOT "/", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:two-leafs": {"a": "a-val"}})") == Response{201, jsonHeaders, ""});
+            REQUIRE(post(RESTCONF_DATA_ROOT "/", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:two-leafs": {"a": "a-val"}})") == Response{201, headers, ""});
 
             SECTION("Add the second leaf via /example:two-leafs")
             {
+                headers = jsonHeaders;
+                headers.emplace("location", "/example:two-leafs/b");
                 EXPECT_CHANGE(CREATED("/example:two-leafs/b", "new-b-val"));
-                REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:b": "new-b-val"})") == Response{201, jsonHeaders, ""});
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:b": "new-b-val"})") == Response{201, headers, ""});
             }
 
             SECTION("Add the second via /")
             {
                 /* This looks like that it should fail because example:two-leafs container already exists
-                 * But the way it's implemented in sysrepo is that non-presence containers are "idempotent", and a create op on them always succeeds even if there are child nodes.
+                 * But the way it's implemented in sysrepo is that non-presence containers are "idempotent",
+                 * and a create op on them always succeeds even if there are child nodes.
+                 *
+                 * This is BTW also the reason why the Location header points to the top-level container.
                  */
+                headers = jsonHeaders;
+                headers.emplace("location", "/example:two-leafs");
                 EXPECT_CHANGE(CREATED("/example:two-leafs/b", "new-b-val"));
-                REQUIRE(post(RESTCONF_DATA_ROOT "/", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:two-leafs": {"example:b": "new-b-val"}})") == Response{201, jsonHeaders, ""});
+                REQUIRE(post(RESTCONF_DATA_ROOT "/", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:two-leafs": {"example:b": "new-b-val"}})") == Response{201, headers, ""});
             }
 
-            REQUIRE(post(RESTCONF_DATA_ROOT "/", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:two-leafs": {}})") == Response{201, jsonHeaders, ""});
+            // another sysrepo artifact -- it's a non-presence container, and creating that one "succeeds"
+            // even when its child nodes are present
+            headers = jsonHeaders;
+            headers.emplace("location", "/example:two-leafs");
+            REQUIRE(post(RESTCONF_DATA_ROOT "/", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:two-leafs": {}})") == Response{201, headers, ""});
+
             REQUIRE(post(RESTCONF_DATA_ROOT "/example:two-leafs", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:a": "blabla"})") == Response{409, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
@@ -1136,8 +1153,10 @@ TEST_CASE("writing data")
 
         SECTION("content-type")
         {
+            auto headers = xmlHeaders;
+            headers.emplace("location", "/example:a/b");
             EXPECT_CHANGE(CREATED("/example:a/b/c/blower", "libyang is love"));
-            REQUIRE(post(RESTCONF_DATA_ROOT "/example:a", {AUTH_ROOT, CONTENT_TYPE_XML}, R"(<b xmlns="http://example.tld/example"><c><blower>libyang is love</blower></c></b>)") == Response{201, xmlHeaders, ""});
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:a", {AUTH_ROOT, CONTENT_TYPE_XML}, R"(<b xmlns="http://example.tld/example"><c><blower>libyang is love</blower></c></b>)") == Response{201, headers, ""});
 
             // content-type header is mandatory for POST which sends a body
             REQUIRE(post(RESTCONF_DATA_ROOT "/example:a", {AUTH_ROOT}, R"({"example-augment:b": { "c" : {"enabled" : false}}}")") == Response{400, jsonHeaders, R"({
@@ -1166,13 +1185,16 @@ TEST_CASE("writing data")
 
         SECTION("Default values handling")
         {
+            auto headers = jsonHeaders;
             SECTION("no change; setting default value")
             {
-                REQUIRE(post(RESTCONF_DATA_ROOT "/example:a", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:b":{"c":{"enabled":true}}}")") == Response{201, jsonHeaders, ""});
+                headers.emplace("location", "/example:a/b");
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:a", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:b":{"c":{"enabled":true}}}")") == Response{201, headers, ""});
             }
 
             SECTION("change; setting different value")
             {
+                headers.emplace("location", "/example:a/b/c");
                 EXPECT_CHANGE(MODIFIED("/example:a/b/c/enabled", "false"));
                 REQUIRE(post(RESTCONF_DATA_ROOT "/example:a/b", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:c":{"enabled":false}}")") == Response{201, jsonHeaders, ""});
             }
@@ -1180,14 +1202,18 @@ TEST_CASE("writing data")
 
         SECTION("Children with same name but different namespaces")
         {
-            // there are two childs named 'b' under /example:a but both inside different namespaces (/example:a/b and /example:a/example-augment:b)
+            // there are two children named 'b' under /example:a but both inside different namespaces (/example:a/b and /example:a/example-augment:b)
+            auto headers = jsonHeaders;
+            headers.emplace("location", "/example:a/example-augment:b");
             EXPECT_CHANGE(MODIFIED("/example:a/example-augment:b/c/enabled", "false"));
-            REQUIRE(post(RESTCONF_DATA_ROOT "/example:a", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example-augment:b":{"c":{"enabled":false}}}")") == Response{201, jsonHeaders, ""});
+            REQUIRE(post(RESTCONF_DATA_ROOT "/example:a", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example-augment:b":{"c":{"enabled":false}}}")") == Response{201, headers, ""});
         }
 
         SECTION("List operations")
         {
             // two inserts so we have something to operate on
+            auto headers = jsonHeaders;
+            headers.emplace("location", "/example:top-level-list[name='sysrepo']");
             EXPECT_CHANGE(
                 CREATED("/example:top-level-list[name='sysrepo']", std::nullopt),
                 CREATED("/example:top-level-list[name='sysrepo']/name", "sysrepo"));

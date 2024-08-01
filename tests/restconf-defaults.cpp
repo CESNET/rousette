@@ -53,7 +53,9 @@ TEST_CASE("default handling")
 )"});
 
     // RFC 6243, sec. 2.3.3: A valid 'create' operation attribute for a data node that has been set by the server to its schema default value MUST succeed.
-    REQUIRE(post(RESTCONF_DATA_ROOT "/example:a/b/c", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:enabled":true}")") == Response{201, jsonHeaders, ""});
+    auto headers = jsonHeaders;
+    headers.emplace("location", "/example:a/b/c/enabled");
+    REQUIRE(post(RESTCONF_DATA_ROOT "/example:a/b/c", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:enabled":true}")") == Response{201, headers, ""});
 
     // RFC 6243, sec. 2.3.3: A valid 'create' operation attribute for a data node that has been set by a client to its schema default value MUST fail with a 'data-exists' error-tag.
     // RFC 8040, sec. 4.4.1: If the data resource already exists, then the POST request MUST fail and a "409 Conflict" status-line MUST be returned. The error-tag value "resource-denied" is used in this case.
