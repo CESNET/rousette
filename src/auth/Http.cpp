@@ -10,9 +10,11 @@
 #include "NacmIdentities.h"
 #include "http/utils.hpp"
 #include "restconf/Exceptions.h"
-#include "restconf/utils/auth.h"
+#include "auth/Http.h"
+#include "auth/Nacm.h"
+#include "auth/PAM.h"
 
-namespace rousette::restconf {
+namespace rousette::auth {
 
 void authorizeRequest(const Nacm& nacm, sysrepo::Session& sess, const nghttp2::asio_http2::server::request& req)
 {
@@ -24,7 +26,7 @@ void authorizeRequest(const Nacm& nacm, sysrepo::Session& sess, const nghttp2::a
     }
 
     if (!nacm.authorize(sess, nacmUser)) {
-        throw ErrorResponse(401, "protocol", "access-denied", "Access denied.");
+        throw restconf::ErrorResponse(401, "protocol", "access-denied", "Access denied.");
     }
 }
 
