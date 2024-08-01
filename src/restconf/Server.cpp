@@ -185,289 +185,267 @@ void validateInputMetaAttributes(const libyang::Context& ctx, const libyang::Dat
     }
 }
 
+template<typename T>
+constexpr auto withRestconfExceptions(T func)
+{
+    return [=](std::shared_ptr<RequestContext> requestCtx, auto ...args)
+    {
+        try {
+            func(requestCtx, args...);
+        } catch (const ErrorResponse& e) {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath);
+        } catch (const libyang::ErrorWithCode& e) {
+            if (e.code() == libyang::ErrorCode::ValidationFailure) {
+                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", "Validation failure: "s + e.what());
+            } else {
+                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to libyang exception: "s + e.what());
+            }
+        } catch (const sysrepo::ErrorWithCode& e) {
+            if (e.code() == sysrepo::ErrorCode::Unauthorized) {
+                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 403, "application", "access-denied", "Access denied.");
+            } else if (e.code() == sysrepo::ErrorCode::NotFound) {
+                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", e.what());
+            } else if (e.code() == sysrepo::ErrorCode::ItemAlreadyExists) {
+                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 409, "application", "resource-denied", "Resource already exists.");
+            } else if (e.code() == sysrepo::ErrorCode::ValidationFailed) {
+                bool isAction = requestCtx->sess.getContext().findPath(requestCtx->restconfRequest.path).nodeType() == libyang::NodeType::Action;
+                /*
+                 * FIXME: This happens on invalid input data (e.g., missing mandatory nodes) or missing action data node.
+                 * The former (invalid input data) should probably be validated by libyang's parseOp but it only parses. Is there better way? At least somehow extract logs?
+                 * We can check if the action node exists before sending the RPC but that is racy because two sysrepo operations must be done (query + rpc) and operational DS cannot be locked.
+                 */
+                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "application", "operation-failed",
+                        "Validation failed. Invalid input data"s + (isAction ? " or the action node is not present" : "") + ".");
+            } else {
+                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception: "s + e.what());
+            }
+        }
+    };
+}
+
+#define WITH_RESTCONF_EXCEPTIONS(FUNC) withRestconfExceptions<decltype(FUNC)>(FUNC)
+
 void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
 {
     requestCtx->sess.switchDatastore(sysrepo::Datastore::Operational);
     auto ctx = requestCtx->sess.getContext();
     bool isAction = false;
 
-    try {
-        auto rpcSchemaNode = ctx.findPath(requestCtx->restconfRequest.path);
-        if (!requestCtx->dataFormat.request && static_cast<bool>(rpcSchemaNode.asActionRpc().input().child())) {
-            throw ErrorResponse(400, "protocol", "invalid-value", "Content-type header missing.");
-        }
+    auto rpcSchemaNode = ctx.findPath(requestCtx->restconfRequest.path);
+    if (!requestCtx->dataFormat.request && static_cast<bool>(rpcSchemaNode.asActionRpc().input().child())) {
+        throw ErrorResponse(400, "protocol", "invalid-value", "Content-type header missing.");
+    }
 
-        isAction = rpcSchemaNode.nodeType() == libyang::NodeType::Action;
+    isAction = rpcSchemaNode.nodeType() == libyang::NodeType::Action;
 
-        // check if action node's parent is present
-        if (isAction) {
-            /*
-             * This is race-prone:
-             *  - The data node exists but might get deleted right after this check: Sysrepo throws an error when this happens.
-             *  - The data node does not exist but might get created right after this check: The node was not there when the request was issues so it should not be a problem
-             */
-            auto [pathToParent, pathSegment] = asLibyangPathSplit(ctx, requestCtx->req.uri().path);
-            if (!requestCtx->sess.getData(pathToParent)) {
-                throw ErrorResponse(400, "application", "operation-failed", "Action data node '" + requestCtx->restconfRequest.path + "' does not exist.");
-            }
-        }
-
-
-        auto [parent, rpcNode] = ctx.newPath2(requestCtx->restconfRequest.path);
-
-        if (!requestCtx->payload.empty()) {
-            rpcNode->parseOp(requestCtx->payload, *requestCtx->dataFormat.request, libyang::OperationType::RpcRestconf);
-        }
-
-        auto rpcReply = requestCtx->sess.sendRPC(*rpcNode);
-
-        if (rpcReply.immediateChildren().empty()) {
-            requestCtx->res.write_head(204, {{"access-control-allow-origin", {"*", false}}});
-            requestCtx->res.end();
-            return;
-        }
-
-        auto responseNode = rpcReply.child();
-        responseNode->unlinkWithSiblings();
-
-        auto envelope = ctx.newOpaqueJSON(std::string{rpcNode->schema().module().name()}, "output", std::nullopt);
-        envelope->insertChild(*responseNode);
-
-        requestCtx->res.write_head(200, {
-                                            {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
-                                            {"access-control-allow-origin", {"*", false}},
-                                        });
-        requestCtx->res.end(*envelope->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::WithSiblings));
-    } catch (const ErrorResponse& e) {
-        rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath);
-    } catch (const libyang::ErrorWithCode& e) {
-        if (e.code() == libyang::ErrorCode::ValidationFailure) {
-            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", "Validation failure: "s + e.what());
-        } else {
-            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to libyang exception: "s + e.what());
-        }
-    } catch (const sysrepo::ErrorWithCode& e) {
-        if (e.code() == sysrepo::ErrorCode::Unauthorized) {
-            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 403, "application", "access-denied", "Access denied.");
-        } else if (e.code() == sysrepo::ErrorCode::ValidationFailed) {
-            /*
-             * FIXME: This happens on invalid input data (e.g., missing mandatory nodes) or missing action data node.
-             * The former (invalid input data) should probably be validated by libyang's parseOp but it only parses. Is there better way? At least somehow extract logs?
-             * We can check if the action node exists before sending the RPC but that is racy because two sysrepo operations must be done (query + rpc) and operational DS cannot be locked.
-             */
-            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "application", "operation-failed",
-                    "Validation failed. Invalid input data"s + (isAction ? " or the action node is not present" : "") + ".");
-        } else {
-            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception: "s + e.what());
+    // check if action node's parent is present
+    if (isAction) {
+        /*
+         * This is race-prone:
+         *  - The data node exists but might get deleted right after this check: Sysrepo throws an error when this happens.
+         *  - The data node does not exist but might get created right after this check: The node was not there when the request was issues so it should not be a problem
+         */
+        auto [pathToParent, pathSegment] = asLibyangPathSplit(ctx, requestCtx->req.uri().path);
+        if (!requestCtx->sess.getData(pathToParent)) {
+            throw ErrorResponse(400, "application", "operation-failed", "Action data node '" + requestCtx->restconfRequest.path + "' does not exist.");
         }
     }
+
+
+    auto [parent, rpcNode] = ctx.newPath2(requestCtx->restconfRequest.path);
+
+    if (!requestCtx->payload.empty()) {
+        rpcNode->parseOp(requestCtx->payload, *requestCtx->dataFormat.request, libyang::OperationType::RpcRestconf);
+    }
+
+    auto rpcReply = requestCtx->sess.sendRPC(*rpcNode);
+
+    if (rpcReply.immediateChildren().empty()) {
+        requestCtx->res.write_head(204, {{"access-control-allow-origin", {"*", false}}});
+        requestCtx->res.end();
+        return;
+    }
+
+    auto responseNode = rpcReply.child();
+    responseNode->unlinkWithSiblings();
+
+    auto envelope = ctx.newOpaqueJSON(std::string{rpcNode->schema().module().name()}, "output", std::nullopt);
+    envelope->insertChild(*responseNode);
+
+    requestCtx->res.write_head(200, {
+                                        {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
+                                        {"access-control-allow-origin", {"*", false}},
+                                    });
+    requestCtx->res.end(*envelope->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::WithSiblings));
 }
 
 void processPost(std::shared_ptr<RequestContext> requestCtx)
 {
-    try {
-        auto ctx = requestCtx->sess.getContext();
+    auto ctx = requestCtx->sess.getContext();
 
-        std::optional<libyang::DataNode> edit;
-        std::optional<libyang::DataNode> node;
-        std::vector<libyang::DataNode> createdNodes;
+    std::optional<libyang::DataNode> edit;
+    std::optional<libyang::DataNode> node;
+    std::vector<libyang::DataNode> createdNodes;
 
-        if (requestCtx->restconfRequest.path == "/") {
-            node = edit = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
-            if (node) {
-                const auto siblings = node->siblings();
-                createdNodes = {siblings.begin(), siblings.end()};
-            }
-        } else {
-            auto nodes = ctx.newPath2(requestCtx->restconfRequest.path, std::nullopt);
-            edit = nodes.createdParent;
-            node = nodes.createdNode;
-
-            node->parseSubtree(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
-            if (node) {
-                const auto children = node->immediateChildren();
-                createdNodes = {children.begin(), children.end()};
-            }
+    if (requestCtx->restconfRequest.path == "/") {
+        node = edit = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+        if (node) {
+            const auto siblings = node->siblings();
+            createdNodes = {siblings.begin(), siblings.end()};
         }
+    } else {
+        auto nodes = ctx.newPath2(requestCtx->restconfRequest.path, std::nullopt);
+        edit = nodes.createdParent;
+        node = nodes.createdNode;
 
-        if (edit) {
-            validateInputMetaAttributes(ctx, *edit);
-        }
-
-        // filter out list key nodes, they can appear automatically when creating path that corresponds to a libyang list node
-        for (auto it = createdNodes.begin(); it != createdNodes.end();) {
-            if (node->schema().nodeType() == libyang::NodeType::List && it->schema().nodeType() == libyang::NodeType::Leaf && it->schema().asLeaf().isKey()) {
-                it = createdNodes.erase(it);
-            } else {
-                ++it;
-            }
-        }
-
-        if (createdNodes.size() != 1) {
-            throw ErrorResponse(400, "protocol", "invalid-value", "The message body MUST contain exactly one instance of the expected data resource.");
-        }
-
-        auto modNetconf = ctx.getModuleImplemented("ietf-netconf");
-
-        createdNodes.begin()->newMeta(*modNetconf, "operation", "create");
-        yangInsert(*requestCtx, *createdNodes.begin());
-
-        requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
-        requestCtx->sess.applyChanges();
-
-        requestCtx->res.write_head(201,
-                                   {
-                                       {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
-                                       {"access-control-allow-origin", {"*", false}},
-                                       // FIXME: POST data operation MUST return Location header
-                                   });
-        requestCtx->res.end();
-    } catch (const ErrorResponse& e) {
-        rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath);
-    } catch (libyang::ErrorWithCode& e) {
-        if (e.code() == libyang::ErrorCode::ValidationFailure) {
-            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", "Validation failure: "s + e.what());
-        } else {
-            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to libyang exception: "s + e.what());
-        }
-    } catch (sysrepo::ErrorWithCode& e) {
-        if (e.code() == sysrepo::ErrorCode::Unauthorized) {
-            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 403, "application", "access-denied", "Access denied.");
-        } else if (e.code() == sysrepo::ErrorCode::ItemAlreadyExists) {
-            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 409, "application", "resource-denied", "Resource already exists.");
-        } else if (e.code() == sysrepo::ErrorCode::NotFound) {
-            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", e.what());
-        } else {
-            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception: "s + e.what());
+        node->parseSubtree(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+        if (node) {
+            const auto children = node->immediateChildren();
+            createdNodes = {children.begin(), children.end()};
         }
     }
+
+    if (edit) {
+        validateInputMetaAttributes(ctx, *edit);
+    }
+
+    // filter out list key nodes, they can appear automatically when creating path that corresponds to a libyang list node
+    for (auto it = createdNodes.begin(); it != createdNodes.end();) {
+        if (node->schema().nodeType() == libyang::NodeType::List && it->schema().nodeType() == libyang::NodeType::Leaf && it->schema().asLeaf().isKey()) {
+            it = createdNodes.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    if (createdNodes.size() != 1) {
+        throw ErrorResponse(400, "protocol", "invalid-value", "The message body MUST contain exactly one instance of the expected data resource.");
+    }
+
+    auto modNetconf = ctx.getModuleImplemented("ietf-netconf");
+
+    createdNodes.begin()->newMeta(*modNetconf, "operation", "create");
+    yangInsert(*requestCtx, *createdNodes.begin());
+
+    requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
+    requestCtx->sess.applyChanges();
+
+    requestCtx->res.write_head(201,
+                               {
+                                   {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
+                                   {"access-control-allow-origin", {"*", false}},
+                                   // FIXME: POST data operation MUST return Location header
+                               });
+    requestCtx->res.end();
 }
 
 void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx)
 {
-    try {
-        auto ctx = requestCtx->sess.getContext();
+    auto ctx = requestCtx->sess.getContext();
 
-        // PUT / means replace everything. PATCH / means merge into datastore. Also, asLibyangPathSplit() won't do the right thing on "/".
-        if (requestCtx->restconfRequest.path == "/") {
-            auto edit = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
-            if (!edit) {
-                throw ErrorResponse(400, "protocol", "malformed-message", "Empty data tree received.");
-            }
-
-            validateInputMetaAttributes(ctx, *edit);
-
-            if (requestCtx->req.method() == "PUT") {
-                requestCtx->sess.replaceConfig(edit);
-
-                requestCtx->res.write_head(edit ? 201 : 204, {{"access-control-allow-origin", {"*", false}}});
-            } else {
-                requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
-                requestCtx->sess.applyChanges();
-                requestCtx->res.write_head(204, {{"access-control-allow-origin", {"*", false}}});
-            }
-            requestCtx->res.end();
-            return;
-        }
-
-        // The HTTP status code for PUT depends on whether the node already existed before the operation.
-        // To prevent a race when someone else creates the node while this request is being processed,
-        // this needs locking.
-        std::unique_ptr<sysrepo::Lock> lock;
-        if (requestCtx->sess.activeDatastore() != sysrepo::Datastore::Candidate) {
-            // ...except that the candidate DS in sysrepo rolls back on unlock, so we cannot take that lock.
-            // So, there's a race when modifying the candidate DS.
-            lock = std::make_unique<sysrepo::Lock>(requestCtx->sess);
-        }
-
-        bool nodeExisted = !!requestCtx->sess.getData(requestCtx->restconfRequest.path);
-
-        if (requestCtx->req.method() == "PATCH" && !nodeExisted) {
-            throw ErrorResponse(400, "protocol", "invalid-value", "Target resource does not exist");
-        }
-
-        std::optional<libyang::DataNode> edit;
-        std::optional<libyang::DataNode> replacementNode;
-
-        auto [lyParentPath, lastPathSegment] = asLibyangPathSplit(requestCtx->sess.getContext(), requestCtx->req.uri().path);
-
-        if (!lyParentPath.empty()) {
-            // the node that we're working on has a parent, i.e., the URI path is at least two levels deep
-            auto [parent, node] = ctx.newPath2(lyParentPath, std::nullopt);
-            node->parseSubtree(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
-
-            for (const auto& child : node->immediateChildren()) {
-                // Anything directly below `node` is either:
-                if (isSameNode(child, lastPathSegment)) {
-                    // 1) a single child that is created by parseSubtree(), its name is the same as `lastPathSegment`.
-                    // It could be a list; then we need to check if the keys in provided data match the keys in URI.
-                    if (auto offendingNode = checkKeysMismatch(child, lastPathSegment)) {
-                        throw ErrorResponse(400, "protocol", "invalid-value", "List key mismatch between URI path and data.", offendingNode->path());
-                    }
-                    replacementNode = child;
-                } else if (isKeyNode(*node, child)) {
-                    // 2) or a list key (of the lyParentPath) that was created by newPath2 call.
-                    // Do nothing here; key values are checked elsewhere
-                } else {
-                    // 3) Anything else is an error (either too many children provided or invalid name)
-                    throw ErrorResponse(400, "protocol", "invalid-value", "Data contains invalid node.", child.path());
-                }
-            }
-
-            edit = parent;
-        } else {
-            // URI path points to a top-level node
-            if (auto parent = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly); parent) {
-                edit = parent;
-                replacementNode = parent;
-                if (!isSameNode(*replacementNode, lastPathSegment)) {
-                    throw ErrorResponse(400, "protocol", "invalid-value", "Data contains invalid node.", replacementNode->path());
-                }
-                if (auto offendingNode = checkKeysMismatch(*parent, lastPathSegment)) {
-                    throw ErrorResponse(400, "protocol", "invalid-value", "List key mismatch between URI path and data.", offendingNode->path());
-                }
-            }
-        }
-
-        if (!replacementNode) {
-            throw ErrorResponse(400, "protocol", "invalid-value", "Node indicated by URI is missing.");
+    // PUT / means replace everything. PATCH / means merge into datastore. Also, asLibyangPathSplit() won't do the right thing on "/".
+    if (requestCtx->restconfRequest.path == "/") {
+        auto edit = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+        if (!edit) {
+            throw ErrorResponse(400, "protocol", "malformed-message", "Empty data tree received.");
         }
 
         validateInputMetaAttributes(ctx, *edit);
 
         if (requestCtx->req.method() == "PUT") {
-            auto modNetconf = ctx.getModuleImplemented("ietf-netconf");
-            replacementNode->newMeta(*modNetconf, "operation", "replace");
-            yangInsert(*requestCtx, *replacementNode);
-        }
+            requestCtx->sess.replaceConfig(edit);
 
-        requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
-        requestCtx->sess.applyChanges();
-
-        if (requestCtx->req.method() == "PUT") {
-            requestCtx->res.write_head(nodeExisted ? 204 : 201, {{"access-control-allow-origin", {"*", false}}});
+            requestCtx->res.write_head(edit ? 201 : 204, {{"access-control-allow-origin", {"*", false}}});
         } else {
+            requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
+            requestCtx->sess.applyChanges();
             requestCtx->res.write_head(204, {{"access-control-allow-origin", {"*", false}}});
         }
-
         requestCtx->res.end();
-    } catch (const ErrorResponse& e) {
-        rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath);
-    } catch (libyang::ErrorWithCode& e) {
-        if (e.code() == libyang::ErrorCode::ValidationFailure) {
-            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", "Validation failure: "s + e.what());
-        } else {
-            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to libyang exception: "s + e.what());
+        return;
+    }
+
+    // The HTTP status code for PUT depends on whether the node already existed before the operation.
+    // To prevent a race when someone else creates the node while this request is being processed,
+    // this needs locking.
+    std::unique_ptr<sysrepo::Lock> lock;
+    if (requestCtx->sess.activeDatastore() != sysrepo::Datastore::Candidate) {
+        // ...except that the candidate DS in sysrepo rolls back on unlock, so we cannot take that lock.
+        // So, there's a race when modifying the candidate DS.
+        lock = std::make_unique<sysrepo::Lock>(requestCtx->sess);
+    }
+
+    bool nodeExisted = !!requestCtx->sess.getData(requestCtx->restconfRequest.path);
+
+    if (requestCtx->req.method() == "PATCH" && !nodeExisted) {
+        throw ErrorResponse(400, "protocol", "invalid-value", "Target resource does not exist");
+    }
+
+    std::optional<libyang::DataNode> edit;
+    std::optional<libyang::DataNode> replacementNode;
+
+    auto [lyParentPath, lastPathSegment] = asLibyangPathSplit(requestCtx->sess.getContext(), requestCtx->req.uri().path);
+
+    if (!lyParentPath.empty()) {
+        // the node that we're working on has a parent, i.e., the URI path is at least two levels deep
+        auto [parent, node] = ctx.newPath2(lyParentPath, std::nullopt);
+        node->parseSubtree(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+
+        for (const auto& child : node->immediateChildren()) {
+            // Anything directly below `node` is either:
+            if (isSameNode(child, lastPathSegment)) {
+                // 1) a single child that is created by parseSubtree(), its name is the same as `lastPathSegment`.
+                // It could be a list; then we need to check if the keys in provided data match the keys in URI.
+                if (auto offendingNode = checkKeysMismatch(child, lastPathSegment)) {
+                    throw ErrorResponse(400, "protocol", "invalid-value", "List key mismatch between URI path and data.", offendingNode->path());
+                }
+                replacementNode = child;
+            } else if (isKeyNode(*node, child)) {
+                // 2) or a list key (of the lyParentPath) that was created by newPath2 call.
+                // Do nothing here; key values are checked elsewhere
+            } else {
+                // 3) Anything else is an error (either too many children provided or invalid name)
+                throw ErrorResponse(400, "protocol", "invalid-value", "Data contains invalid node.", child.path());
+            }
         }
-    } catch (sysrepo::ErrorWithCode& e) {
-        if (e.code() == sysrepo::ErrorCode::Unauthorized) {
-            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 403, "application", "access-denied", "Access denied.");
-        } else if (e.code() == sysrepo::ErrorCode::NotFound) {
-            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", e.what());
-        } else {
-            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception: "s + e.what());
+
+        edit = parent;
+    } else {
+        // URI path points to a top-level node
+        if (auto parent = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly); parent) {
+            edit = parent;
+            replacementNode = parent;
+            if (!isSameNode(*replacementNode, lastPathSegment)) {
+                throw ErrorResponse(400, "protocol", "invalid-value", "Data contains invalid node.", replacementNode->path());
+            }
+            if (auto offendingNode = checkKeysMismatch(*parent, lastPathSegment)) {
+                throw ErrorResponse(400, "protocol", "invalid-value", "List key mismatch between URI path and data.", offendingNode->path());
+            }
         }
     }
+
+    if (!replacementNode) {
+        throw ErrorResponse(400, "protocol", "invalid-value", "Node indicated by URI is missing.");
+    }
+
+    validateInputMetaAttributes(ctx, *edit);
+
+    if (requestCtx->req.method() == "PUT") {
+        auto modNetconf = ctx.getModuleImplemented("ietf-netconf");
+        replacementNode->newMeta(*modNetconf, "operation", "replace");
+        yangInsert(*requestCtx, *replacementNode);
+    }
+
+    requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
+    requestCtx->sess.applyChanges();
+
+    if (requestCtx->req.method() == "PUT") {
+        requestCtx->res.write_head(nodeExisted ? 204 : 201, {{"access-control-allow-origin", {"*", false}}});
+    } else {
+        requestCtx->res.write_head(204, {{"access-control-allow-origin", {"*", false}}});
+    }
+
+    requestCtx->res.end();
 }
 
 libyang::PrintFlags libyangPrintFlags(const libyang::DataNode& dataNode, const std::string& requestPath, const std::optional<queryParams::QueryParamValue>& withDefaults)
@@ -804,9 +782,9 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         }
 
                         if (restconfRequest.type == RestconfRequest::Type::CreateChildren) {
-                            processPost(requestCtx);
+                            WITH_RESTCONF_EXCEPTIONS(processPost)(requestCtx);
                         } else {
-                            processPutOrPlainPatch(requestCtx);
+                            WITH_RESTCONF_EXCEPTIONS(processPutOrPlainPatch)(requestCtx);
                         }
                     });
                     break;
@@ -864,7 +842,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         if (length > 0) {
                             requestCtx->payload.append(reinterpret_cast<const char*>(data), length);
                         } else {
-                            processActionOrRPC(requestCtx);
+                            WITH_RESTCONF_EXCEPTIONS(processActionOrRPC)(requestCtx);
                         }
                     });
                     break;
