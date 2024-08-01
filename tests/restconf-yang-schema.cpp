@@ -190,9 +190,9 @@ TEST_CASE("obtaining YANG schemas")
                 SECTION("auth failure")
                 {
                     // wrong password
-                    REQUIRE(clientRequest("GET", YANG_ROOT "/ietf-system@2014-08-06", "", {{"authorization", "Basic ZHdkbTpGQUlM"}}, boost::posix_time::seconds{5})
+                    REQUIRE(clientRequest("GET", YANG_ROOT "/ietf-system@2014-08-06", "", {AUTH_WRONG_PASSWORD}, boost::posix_time::seconds{5})
                             == Response{401, plaintextHeaders, "Access denied."});
-                    REQUIRE(clientRequest("HEAD", YANG_ROOT "/ietf-system@2014-08-06", "", {{"authorization", "Basic ZHdkbTpGQUlM"}}, boost::posix_time::seconds{5})
+                    REQUIRE(clientRequest("HEAD", YANG_ROOT "/ietf-system@2014-08-06", "", {AUTH_WRONG_PASSWORD}, boost::posix_time::seconds{5})
                             == Response{401, plaintextHeaders, ""});
                     // anonymous request
                     REQUIRE(clientRequest("HEAD", YANG_ROOT "/ietf-system@2014-08-06", "", {FORWARDED}, boost::posix_time::seconds{5})

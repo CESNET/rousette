@@ -104,6 +104,7 @@ static const auto SERVER_ADDRESS_AND_PORT = "http://["s + SERVER_ADDRESS + "]" +
 #define AUTH_DWDM {"authorization", "Basic ZHdkbTpEV0RN"}
 #define AUTH_NORULES {"authorization", "Basic bm9ydWxlczplbXB0eQ=="}
 #define AUTH_ROOT {"authorization", "Basic cm9vdDpzZWtyaXQ="}
+#define AUTH_WRONG_PASSWORD {"authorization", "Basic ZHdkbTpGQUlM"}
 
 #define FORWARDED {"forward", "proto=http;host=example.net"}
 

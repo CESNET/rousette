@@ -228,7 +228,7 @@ TEST_CASE("NACM")
             REQUIRE(clientRequest("GET",
                         RESTCONF_DATA_ROOT "/ietf-system:system",
                         "",
-                        {{"authorization", "Basic ZHdkbTpGQUlM"}},
+                        {AUTH_WRONG_PASSWORD},
                         boost::posix_time::seconds(5))
                     == Response{401, jsonHeaders, R"({
   "ietf-restconf:errors": {
@@ -254,7 +254,7 @@ TEST_CASE("NACM")
             REQUIRE_THROWS_WITH(clientRequest("GET",
                         RESTCONF_DATA_ROOT "/ietf-system:system",
                         "",
-                        {{"authorization", "Basic ZHdkbTpGQUlM"}},
+                        {AUTH_WRONG_PASSWORD},
                         boost::posix_time::milliseconds(100)),
                     "HTTP client error: Connection timed out");
             auto processingMS = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
