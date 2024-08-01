@@ -30,6 +30,8 @@ using namespace std::literals;
 using nghttp2::asio_http2::server::request;
 using nghttp2::asio_http2::server::response;
 
+#define CORS {"access-control-allow-origin", {"*", false}}
+
 namespace rousette::restconf {
 
 namespace {
@@ -82,7 +84,7 @@ void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat
         errors->newExtPath("/ietf-restconf:errors/error[1]/error-path", *errorPath, ext);
     }
 
-    nghttp2::asio_http2::header_map headers = {{"content-type", {asMimeType(dataFormat), false}}, {"access-control-allow-origin", {"*", false}}};
+    nghttp2::asio_http2::header_map headers = {{"content-type", {asMimeType(dataFormat), false}}, CORS};
 
     if (code == 405) {
         headers.merge(httpOptionsHeaders(allowedHttpMethodsForUri(ctx, req.uri().path)));
@@ -262,7 +264,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
     auto rpcReply = requestCtx->sess.sendRPC(*rpcNode);
 
     if (rpcReply.immediateChildren().empty()) {
-        requestCtx->res.write_head(204, {{"access-control-allow-origin", {"*", false}}});
+        requestCtx->res.write_head(204, {CORS});
         requestCtx->res.end();
         return;
     }
@@ -275,7 +277,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
 
     requestCtx->res.write_head(200, {
                                         {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
-                                        {"access-control-allow-origin", {"*", false}},
+                                        CORS,
                                     });
     requestCtx->res.end(*envelope->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::WithSiblings));
 }
@@ -334,7 +336,7 @@ void processPost(std::shared_ptr<RequestContext> requestCtx)
     requestCtx->res.write_head(201,
                                {
                                    {"content-type", {asMimeType(requestCtx->dataFormat.response), false}},
-                                   {"access-control-allow-origin", {"*", false}},
+                                   CORS,
                                    // FIXME: POST data operation MUST return Location header
                                });
     requestCtx->res.end();
@@ -356,11 +358,11 @@ void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx)
         if (requestCtx->req.method() == "PUT") {
             requestCtx->sess.replaceConfig(edit);
 
-            requestCtx->res.write_head(edit ? 201 : 204, {{"access-control-allow-origin", {"*", false}}});
+            requestCtx->res.write_head(edit ? 201 : 204, {CORS});
         } else {
             requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
             requestCtx->sess.applyChanges();
-            requestCtx->res.write_head(204, {{"access-control-allow-origin", {"*", false}}});
+            requestCtx->res.write_head(204, {CORS});
         }
         requestCtx->res.end();
         return;
@@ -441,9 +443,9 @@ void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx)
     requestCtx->sess.applyChanges();
 
     if (requestCtx->req.method() == "PUT") {
-        requestCtx->res.write_head(nodeExisted ? 204 : 201, {{"access-control-allow-origin", {"*", false}}});
+        requestCtx->res.write_head(nodeExisted ? 204 : 201, {CORS});
     } else {
-        requestCtx->res.write_head(204, {{"access-control-allow-origin", {"*", false}}});
+        requestCtx->res.write_head(204, {CORS});
     }
 
     requestCtx->res.end();
@@ -547,7 +549,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
         const auto& peer = http::peer_from_request(req);
         spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
         res.write_head(404, {{"content-type", {"text/plain", false}},
-                             {"access-control-allow-origin", {"*", false}}});
+                             CORS});
         res.end();
     });
 
@@ -558,7 +560,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                    200,
                    {
                        {"content-type", {"application/xrd+xml", false}},
-                       {"access-control-allow-origin", {"*", false}},
+                       CORS,
                    });
         res.end("<XRD xmlns='http://docs.oasis-open.org/ns/xri/xrd-1.0'><Link rel='restconf' href='"s + restconfRoot + "'></XRD>"s);
     });
@@ -577,7 +579,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
         if (req.method() == "OPTIONS") {
             res.write_head(200, {
-                                    {"access-control-allow-origin", {"*", false}},
+                                    CORS,
                                     {"allow", {"GET, HEAD, OPTIONS", false}},
                                 });
             res.end();
@@ -621,7 +623,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             processAuthError(req, res, e, [&res]() {
                 res.write_head(401, {
                                         {"content-type", {"text/plain", false}},
-                                        {"access-control-allow-origin", {"*", false}},
+                                        CORS,
                                     });
                 res.end("Access denied.");
             });
@@ -629,7 +631,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             // RFC does not specify how the errors should look like so let's just report the HTTP code and print the error message
             nghttp2::asio_http2::header_map headers = {
                 {"content-type", {"text/plain", false}},
-                {"access-control-allow-origin", {"*", false}},
+                CORS,
             };
 
             if (e.code == 405) {
@@ -647,7 +649,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
         if (req.method() == "OPTIONS" || (req.method() != "GET" && req.method() != "HEAD")) {
             res.write_head(req.method() == "OPTIONS" ? 200 : 405, {
-                                    {"access-control-allow-origin", {"*", false}},
+                                    CORS,
                                     {"allow", {"GET, HEAD, OPTIONS", false}},
                                 });
             res.end();
@@ -664,14 +666,14 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     200,
                     {
                         {"content-type", {"application/yang", false}},
-                        {"access-control-allow-origin", {"*", false}},
+                        CORS,
                     });
                 res.end(std::visit([](auto&& arg) { return arg.printStr(libyang::SchemaOutputFormat::Yang); }, *mod));
                 return;
             } else {
                 res.write_head(404, {
                                         {"content-type", {"text/plain", false}},
-                                        {"access-control-allow-origin", {"*", false}},
+                                        CORS,
                                     });
                 res.end("YANG schema not found");
             }
@@ -679,7 +681,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             processAuthError(req, res, e, [&res]() {
                 res.write_head(401, {
                                         {"content-type", {"text/plain", false}},
-                                        {"access-control-allow-origin", {"*", false}},
+                                        CORS,
                                     });
                 res.end("Access denied.");
             });
@@ -713,7 +715,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                             200,
                             {
                                 {"content-type", {asMimeType(dataFormat.response), false}},
-                                {"access-control-allow-origin", {"*", false}},
+                                CORS,
                             });
                         res.end(*data->child()->printStr(dataFormat.response, libyang::PrintFlags::WithSiblings));
                     } else {
@@ -750,7 +752,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                             200,
                             {
                                 {"content-type", {asMimeType(dataFormat.response), false}},
-                                {"access-control-allow-origin", {"*", false}},
+                                CORS,
                             });
 
                         auto urlPrefix = http::parseUrlPrefix(req.header());
@@ -834,7 +836,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     res.write_head(
                         204,
                         {
-                            {"access-control-allow-origin", {"*", false}},
+                            CORS,
                         });
                     res.end();
                     break;
@@ -853,7 +855,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 }
 
                 case RestconfRequest::Type::OptionsQuery: {
-                    nghttp2::asio_http2::header_map headers{{"access-control-allow-origin", {"*", false}}};
+                    nghttp2::asio_http2::header_map headers{CORS};
 
                     /* Just try to call this function with all possible HTTP methods and return those which do not fail */
                     if (auto optionsHeaders = allowedHttpMethodsForUri(sess.getContext(), req.uri().path); !optionsHeaders.empty()) {
