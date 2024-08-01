@@ -6,15 +6,12 @@
  */
 
 #include <optional>
+#include <sysrepo-cpp/Session.hpp>
 #include <sysrepo-cpp/Subscription.hpp>
 #include "http/EventStream.h"
 
 namespace libyang {
 enum class DataFormat;
-}
-
-namespace sysrepo {
-class Session;
 }
 
 namespace rousette::restconf {
