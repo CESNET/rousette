@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ae26ce12_ce27027c",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-01T06:25:54Z",
+      "side": 1,
+      "message": "nit: let\u0027s call this \"parent\" instead of \"tree\", please",
+      "range": {
+        "startLine": 71,
+        "startChar": 107,
+        "endLine": 71,
+        "endChar": 111
+      },
+      "revId": "d54245f207dde05ae52019dd9873fa675ca585ec",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "99bfe9ee_3155b5df",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-01T06:25:54Z",
+      "side": 1,
+      "message": "this code (silently) assumes that the parent element is from the ietf-restconf module, which is not the case for ietf-yang-patch",
+      "range": {
+        "startLine": 75,
+        "startChar": 23,
+        "endLine": 75,
+        "endChar": 28
+      },
+      "revId": "d54245f207dde05ae52019dd9873fa675ca585ec",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
