@@ -13,7 +13,8 @@
 #include <exception>
 #include <security/pam_appl.h>
 #include <spdlog/spdlog.h>
-#include "restconf/PAM.h"
+#include "auth/PAM.h"
+#include "auth/auth.h"
 
 using namespace std::literals;
 

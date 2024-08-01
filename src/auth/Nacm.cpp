@@ -77,7 +77,7 @@ bool validAnonymousNacmRules(sysrepo::Session session, const std::string& anonGr
 
 }
 
-namespace rousette::restconf {
+namespace rousette::auth {
 
 Nacm::Nacm(sysrepo::Connection conn)
     : m_srSession(conn.sessionStart(sysrepo::Datastore::Running))
