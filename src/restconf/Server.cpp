@@ -32,6 +32,7 @@ using nghttp2::asio_http2::server::response;
 
 #define CORS {"access-control-allow-origin", {"*", false}}
 #define TEXT_PLAIN {"content-type", {"text/plain", false}}
+#define ALLOW_GET_HEAD_OPTIONS {"allow", {"GET, HEAD, OPTIONS", false}}
 
 namespace rousette::restconf {
 
@@ -592,10 +593,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
         std::optional<sysrepo::NotificationTimeStamp> stopTime;
 
         if (req.method() == "OPTIONS") {
-            res.write_head(200, {
-                                    CORS,
-                                    {"allow", {"GET, HEAD, OPTIONS", false}},
-                                });
+            res.write_head(200, {CORS, ALLOW_GET_HEAD_OPTIONS});
             res.end();
             return;
         }
@@ -643,7 +641,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             nghttp2::asio_http2::header_map headers = {TEXT_PLAIN, CORS};
 
             if (e.code == 405) {
-                headers.emplace("allow", nghttp2::asio_http2::header_value{"GET, HEAD, OPTIONS", false});
+                headers.emplace(decltype(headers)::value_type ALLOW_GET_HEAD_OPTIONS);
             }
 
             res.write_head(e.code, headers);
@@ -656,10 +654,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
         spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
 
         if (req.method() == "OPTIONS" || (req.method() != "GET" && req.method() != "HEAD")) {
-            res.write_head(req.method() == "OPTIONS" ? 200 : 405, {
-                                    CORS,
-                                    {"allow", {"GET, HEAD, OPTIONS", false}},
-                                });
+            res.write_head(req.method() == "OPTIONS" ? 200 : 405, {CORS, ALLOW_GET_HEAD_OPTIONS});
             res.end();
             return;
         }
