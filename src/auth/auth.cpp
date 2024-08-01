@@ -9,7 +9,6 @@
 #include <string>
 #include "NacmIdentities.h"
 #include "http/utils.hpp"
-#include "restconf/Exceptions.h"
 #include "auth/Nacm.h"
 #include "auth/PAM.h"
 #include "auth/auth.h"
@@ -26,7 +25,7 @@ void authorizeRequest(const Nacm& nacm, sysrepo::Session& sess, const nghttp2::a
     }
 
     if (!nacm.authorize(sess, nacmUser)) {
-        throw restconf::ErrorResponse(401, "protocol", "access-denied", "Access denied.");
+        throw Error{"Access denied."};
     }
 }
 
