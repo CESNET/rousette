@@ -454,20 +454,16 @@ void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx)
 
 void processYangLibraryVersion( const nghttp2::asio_http2::server::response& res, const libyang::DataFormat dataFormat, const libyang::Context& ctx)
 {
-    if (auto mod = ctx.getModuleLatest("ietf-yang-library"); mod && mod->revision()) {
-        auto yangExt = ctx.getModuleImplemented("ietf-restconf")->extensionInstance("yang-api");
-        auto data = ctx.newExtPath("/ietf-restconf:restconf/yang-library-version", std::string{mod->revision().value()}, yangExt);
-        res.write_head(
-            200,
-            {
-                {"content-type", {asMimeType(dataFormat), false}},
-                CORS,
-            });
-        res.end(*data->child()->printStr(dataFormat, libyang::PrintFlags::WithSiblings));
-    } else {
-        // this should be unreachable as ietf-yang-library should always be there; just to be sure...
-        throw ErrorResponse(500, "application", "operation-failed", "Module ietf-yang-library not implemented or has no revision.");
-    }
+    auto yangLib = *ctx.getModuleLatest("ietf-yang-library");
+    auto yangExt = ctx.getModuleImplemented("ietf-restconf")->extensionInstance("yang-api");
+    auto data = ctx.newExtPath("/ietf-restconf:restconf/yang-library-version", yangLib.revision(), yangExt);
+    res.write_head(
+        200,
+        {
+            {"content-type", {asMimeType(dataFormat), false}},
+            CORS,
+        });
+    res.end(*data->child()->printStr(dataFormat, libyang::PrintFlags::WithSiblings));
 }
 
 libyang::PrintFlags libyangPrintFlags(const libyang::DataNode& dataNode, const std::string& requestPath, const std::optional<queryParams::QueryParamValue>& withDefaults)
