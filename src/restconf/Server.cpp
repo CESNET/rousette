@@ -210,8 +210,10 @@ constexpr auto withRestconfExceptions(T func)
                 bool isAction = requestCtx->sess.getContext().findPath(requestCtx->restconfRequest.path).nodeType() == libyang::NodeType::Action;
                 /*
                  * FIXME: This happens on invalid input data (e.g., missing mandatory nodes) or missing action data node.
-                 * The former (invalid input data) should probably be validated by libyang's parseOp but it only parses. Is there better way? At least somehow extract logs?
-                 * We can check if the action node exists before sending the RPC but that is racy because two sysrepo operations must be done (query + rpc) and operational DS cannot be locked.
+                 * The former (invalid input data) should probably be validated by libyang's parseOp but it only parses.
+                 * Is there better way? At least somehow extract logs? We can check if the action node exists before
+                 * sending the RPC but that is racy because two sysrepo operations must be done (query + rpc) and
+                 * operational DS cannot be locked.
                  */
                 rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "application", "operation-failed",
                         "Validation failed. Invalid input data"s + (isAction ? " or the action node is not present" : "") + ".");
@@ -463,7 +465,8 @@ libyang::PrintFlags libyangPrintFlags(const libyang::DataNode& dataNode, const s
      * My interpretation is that this only applies when no with-defaults query parameter is set. The with-defaults can override this.
     */
 
-    // Be careful, we can get something like /* which is not a valid path. In other cases, the node should be valid in the schema (we check that in the parser) but the actual data node might not be instantiated
+    // Be careful, we can get something like /* which is not a valid path. In other cases, the node should be valid
+    // in the schema (we check that in the parser) but the actual data node might not be instantiated.
     try {
         node = dataNode.findPath(requestPath);
     } catch(const libyang::Error& e) {
@@ -594,7 +597,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 dataFormat = libyang::DataFormat::XML;
                 break;
             default:
-                // GCC 14 complains about unitialized variable, but asRestconfStreamRequest() would have thrown
+                // GCC 14 complains about uninitialized variable, but asRestconfStreamRequest() would have thrown
                 __builtin_unreachable();
             }
 
@@ -801,7 +804,8 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
                         validateInputMetaAttributes(sess.getContext(), *edit);
 
-                        // If the node could be created, it will not be opaque. However, setting meta attributes to opaque and standard nodes is a different process.
+                        // If the node could be created, it will not be opaque. However, setting meta attributes
+                        // to opaque and standard nodes is a different process.
                         if (deletedNode->isOpaque()) {
                             deletedNode->newAttrOpaqueJSON("ietf-netconf", "operation", "delete");
                         } else {
@@ -817,8 +821,9 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         } else if (e.code() == sysrepo::ErrorCode::NotFound) {
                             /* The RFC is not clear at all on the error-tag.
                              * See https://mailarchive.ietf.org/arch/msg/netconf/XcF9r3ek3LvZ4DjF-7_B8kxuiwA/
-                             * Also, if we replace 403 with 404 in order not to reveal if the node does not exist or if the user is not authorized
-                             * then we should return the error tag invalid-value. This clashes with the data-missing tag below and we reveal it anyway :(
+                             * Also, if we replace 403 with 404 in order not to reveal if the node does not exist or
+                             * if the user is not authorized then we should return the error tag invalid-value.
+                             * This clashes with the data-missing tag below and we reveal it anyway :(
                              */
                             throw ErrorResponse(404, "application", "data-missing", "Data is missing.", restconfRequest.path);
                         }
