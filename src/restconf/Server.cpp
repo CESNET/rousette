@@ -681,6 +681,12 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                                     });
                 res.end("Access denied.");
             });
+        } catch (const ErrorResponse& e) {
+            res.write_head(401, {
+                                    {"content-type", {"text/plain", false}},
+                                    {"access-control-allow-origin", {"*", false}},
+                                });
+            res.end(e.errorMessage);
         }
     });
 
