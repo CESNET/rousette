@@ -91,24 +91,28 @@ add_library(rousette-sysrepo STATIC
 )
 target_link_libraries(rousette-sysrepo PUBLIC spdlog::spdlog PkgConfig::SYSREPO-CPP PkgConfig::LIBYANG-CPP)
 
-add_library(rousette-auth STATIC
-    src/restconf/Nacm.cpp
-    src/restconf/PAM.cpp
+add_library(rousette-auth-pam STATIC
+    src/auth/PAM.cpp
 )
-target_link_libraries(rousette-auth PUBLIC spdlog::spdlog PkgConfig::SYSREPO-CPP PkgConfig::PAM)
+target_link_libraries(rousette-auth-pam PRIVATE spdlog::spdlog PkgConfig::PAM)
+
+add_library(rousette-auth STATIC
+    src/auth/Http.cpp
+    src/auth/Nacm.cpp
+)
+target_link_libraries(rousette-auth PUBLIC spdlog::spdlog PkgConfig::SYSREPO-CPP PkgConfig::PAM rousette-auth-pam PkgConfig::nghttp2)
 
 add_library(rousette-restconf STATIC
     src/restconf/NotificationStream.cpp
     src/restconf/Server.cpp
     src/restconf/YangSchemaLocations.cpp
     src/restconf/uri.cpp
-    src/restconf/utils/auth.cpp
     src/restconf/utils/dataformat.cpp
     src/restconf/utils/yang.cpp
 )
 target_link_libraries(rousette-restconf PUBLIC rousette-http rousette-sysrepo rousette-auth Boost::system Threads::Threads PRIVATE date::date-tz)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/restconf/NacmIdentities.h.in ${CMAKE_CURRENT_BINARY_DIR}/NacmIdentities.h @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/auth/NacmIdentities.h.in ${CMAKE_CURRENT_BINARY_DIR}/NacmIdentities.h @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(clock-demo src/clock.cpp)
@@ -180,7 +184,7 @@ if(BUILD_TESTING)
 
     rousette_test(NAME http-utils LIBRARIES rousette-http)
     rousette_test(NAME uri-parser LIBRARIES rousette-restconf)
-    rousette_test(NAME pam LIBRARIES rousette-auth WRAP_PAM)
+    rousette_test(NAME pam LIBRARIES rousette-auth-pam WRAP_PAM)
 
     set(common-models
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/ietf-system@2014-08-06.yang --enable-feature radius

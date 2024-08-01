@@ -8,14 +8,15 @@
 #pragma once
 
 #include <nghttp2/asio_http2_server.h>
-#include "restconf/Nacm.h"
-#include "restconf/PAM.h"
+#include "auth/Error.h"
 
 namespace sysrepo {
 class Session;
 }
 
-namespace rousette::restconf {
+namespace rousette::auth {
+class Nacm;
+
 void authorizeRequest(const Nacm& nacm, sysrepo::Session& sess, const nghttp2::asio_http2::server::request& req);
 void processAuthError(const nghttp2::asio_http2::server::request& req, const nghttp2::asio_http2::server::response& res, const auth::Error& error, const std::function<void()>& errorResponseCb);
 }

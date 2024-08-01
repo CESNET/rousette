@@ -10,7 +10,7 @@
 #include <sysrepo-cpp/Subscription.hpp>
 #include <thread>
 
-namespace rousette::restconf {
+namespace rousette::auth {
 
 /** @brief Class managing NACM in sysrepo. Responsible for any NACM operations and anonymous access authorization.
  *

@@ -10,10 +10,10 @@
 #include <boost/archive/iterators/transform_width.hpp>
 #include <boost/fusion/adapted/struct/adapt_struct.hpp>
 #include <boost/spirit/home/x3.hpp>
-#include <exception>
 #include <security/pam_appl.h>
 #include <spdlog/spdlog.h>
-#include "restconf/PAM.h"
+#include "auth/Error.h"
+#include "auth/PAM.h"
 
 using namespace std::literals;
 
