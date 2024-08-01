@@ -452,6 +452,24 @@ void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx)
     requestCtx->res.end();
 }
 
+void processYangLibraryVersion( const nghttp2::asio_http2::server::response& res, const libyang::DataFormat dataFormat, const libyang::Context& ctx)
+{
+    if (auto mod = ctx.getModuleLatest("ietf-yang-library"); mod && mod->revision()) {
+        auto yangExt = ctx.getModuleImplemented("ietf-restconf")->extensionInstance("yang-api");
+        auto data = ctx.newExtPath("/ietf-restconf:restconf/yang-library-version", std::string{mod->revision().value()}, yangExt);
+        res.write_head(
+            200,
+            {
+                {"content-type", {asMimeType(dataFormat), false}},
+                CORS,
+            });
+        res.end(*data->child()->printStr(dataFormat, libyang::PrintFlags::WithSiblings));
+    } else {
+        // this should be unreachable as ietf-yang-library should always be there; just to be sure...
+        throw ErrorResponse(500, "application", "operation-failed", "Module ietf-yang-library not implemented or has no revision.");
+    }
+}
+
 libyang::PrintFlags libyangPrintFlags(const libyang::DataNode& dataNode, const std::string& requestPath, const std::optional<queryParams::QueryParamValue>& withDefaults)
 {
     std::optional<libyang::DataNode> node;
@@ -693,25 +711,9 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 auto restconfRequest = asRestconfRequest(sess.getContext(), req.method(), req.uri().path, req.uri().raw_query);
 
                 switch (restconfRequest.type) {
-                case RestconfRequest::Type::YangLibraryVersion: {
-                    auto ctx = sess.getContext();
-
-                    if (auto mod = ctx.getModuleLatest("ietf-yang-library"); mod && mod->revision()) {
-                        auto yangExt = ctx.getModuleImplemented("ietf-restconf")->extensionInstance("yang-api");
-                        auto data = ctx.newExtPath("/ietf-restconf:restconf/yang-library-version", std::string{mod->revision().value()}, yangExt);
-                        res.write_head(
-                            200,
-                            {
-                                {"content-type", {asMimeType(dataFormat.response), false}},
-                                CORS,
-                            });
-                        res.end(*data->child()->printStr(dataFormat.response, libyang::PrintFlags::WithSiblings));
-                    } else {
-                        // this should be unreachable as ietf-yang-library should always be there; just to be sure...
-                        throw ErrorResponse(500, "application", "operation-failed", "Module ietf-yang-library not implemented or has no revision.");
-                    }
+                case RestconfRequest::Type::YangLibraryVersion:
+                    processYangLibraryVersion(res, dataFormat.response, sess.getContext());
                     break;
-                }
 
                 case RestconfRequest::Type::GetData: {
                     sess.switchDatastore(restconfRequest.datastore.value_or(sysrepo::Datastore::Operational));
