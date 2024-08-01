@@ -814,11 +814,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         throw;
                     }
 
-                    res.write_head(
-                        204,
-                        {
-                            CORS,
-                        });
+                    res.write_head(204, {CORS});
                     res.end();
                     break;
 
