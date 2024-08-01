@@ -187,11 +187,15 @@ TEST_CASE("obtaining YANG schemas")
                     REQUIRE(get(YANG_ROOT "/ietf-system@abcd-ef-gh", {AUTH_ROOT}) == Response{404, plaintextHeaders, "YANG schema not found"});
                     REQUIRE(head(YANG_ROOT "/ietf-system@abcd-ef-gh", {AUTH_ROOT}) == Response{404, plaintextHeaders, ""});
                 }
-                SECTION("wrong password")
+                SECTION("auth failure")
                 {
+                    // wrong password
                     REQUIRE(clientRequest("GET", YANG_ROOT "/ietf-system@2014-08-06", "", {{"authorization", "Basic ZHdkbTpGQUlM"}}, boost::posix_time::seconds{5})
                             == Response{401, plaintextHeaders, "Access denied."});
                     REQUIRE(clientRequest("HEAD", YANG_ROOT "/ietf-system@2014-08-06", "", {{"authorization", "Basic ZHdkbTpGQUlM"}}, boost::posix_time::seconds{5})
+                            == Response{401, plaintextHeaders, ""});
+                    // anonymous request
+                    REQUIRE(clientRequest("HEAD", YANG_ROOT "/ietf-system@2014-08-06", "", {FORWARDED}, boost::posix_time::seconds{5})
                             == Response{401, plaintextHeaders, ""});
                 }
             }
