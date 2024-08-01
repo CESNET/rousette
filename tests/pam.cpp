@@ -6,7 +6,8 @@
  */
 
 #include "trompeloeil_doctest.h"
-#include "restconf/PAM.h"
+#include "auth/PAM.h"
+#include "auth/auth.h"
 
 TEST_CASE("HTTP PAM auth")
 {

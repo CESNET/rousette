@@ -92,8 +92,9 @@ add_library(rousette-sysrepo STATIC
 target_link_libraries(rousette-sysrepo PUBLIC spdlog::spdlog PkgConfig::SYSREPO-CPP PkgConfig::LIBYANG-CPP)
 
 add_library(rousette-auth STATIC
-    src/restconf/Nacm.cpp
-    src/restconf/PAM.cpp
+    src/auth/Nacm.cpp
+    src/auth/PAM.cpp
+    src/auth/auth.cpp
 )
 target_link_libraries(rousette-auth PUBLIC spdlog::spdlog PkgConfig::SYSREPO-CPP PkgConfig::PAM)
 
@@ -102,13 +103,12 @@ add_library(rousette-restconf STATIC
     src/restconf/Server.cpp
     src/restconf/YangSchemaLocations.cpp
     src/restconf/uri.cpp
-    src/restconf/utils/auth.cpp
     src/restconf/utils/dataformat.cpp
     src/restconf/utils/yang.cpp
 )
 target_link_libraries(rousette-restconf PUBLIC rousette-http rousette-sysrepo rousette-auth Boost::system Threads::Threads PRIVATE date::date-tz)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/restconf/NacmIdentities.h.in ${CMAKE_CURRENT_BINARY_DIR}/NacmIdentities.h @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/auth/NacmIdentities.h.in ${CMAKE_CURRENT_BINARY_DIR}/NacmIdentities.h @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(clock-demo src/clock.cpp)
