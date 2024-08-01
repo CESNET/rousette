@@ -37,7 +37,7 @@ void processAuthError(const nghttp2::asio_http2::server::request& req, const ngh
         res.on_close([timer](uint32_t code) {
             (void)code;
             // Signal that the timer should be cancelled, so that its completion callback knows that
-            // a conneciton is gone already.
+            // a connection is gone already.
             timer->cancel();
         });
         timer->async_wait([timer, errorResponseCb](const boost::system::error_code& ec) {
