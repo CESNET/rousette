@@ -1,0 +1,267 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "72069ccd_3c1fb764",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-01T07:09:03Z",
+      "side": 1,
+      "message": "I have not read the tests yet, so basically just some ideas based on looking at the code.",
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9964ba60_39c0c954",
+        "filename": "README.md",
+        "patchSetId": 2
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-01T07:09:03Z",
+      "side": 1,
+      "message": "Let\u0027s keep the short summary brief, and put the \"extensions\" that are supported into an extra list below this introduction, please.",
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1dba3237_95e51926",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-01T07:09:03Z",
+      "side": 1,
+      "message": "this should just call:\n yangInsertKey(ctx, listNode, pointParsed)\n\nOr, alternatively, get rid of this function in favor of the overload which takes a std::string *if* you can merge the existing implementation of yangInsert() with the new overload added in this patch.",
+      "range": {
+        "startLine": 149,
+        "startChar": 0,
+        "endLine": 159,
+        "endChar": 69
+      },
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7f06aa40_e44cd81b",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-01T07:09:03Z",
+      "side": 1,
+      "message": "can you set the error path here as well? that should help a lot in debugging",
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "29088e30_9c7c53ee",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 203,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-01T07:09:03Z",
+      "side": 1,
+      "message": "how come that both of these values end up in the same code path? Surely there should be some error handling when an the incoming request says \"insert\" but  it ends up doing an actual \"move\".",
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "06515c6f_ddff9146",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 421,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-01T07:09:03Z",
+      "side": 1,
+      "message": "nit: since neither of these is really optional, it makes sense to dereference them here so that the rest of this function works with a libyang::Module and not an std::optional\u003clibyang::Module\u003e",
+      "range": {
+        "startLine": 420,
+        "startChar": 0,
+        "endLine": 421,
+        "endChar": 71
+      },
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f2f5f378_4ffba38a",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 449,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-01T07:09:03Z",
+      "side": 1,
+      "message": "That part of the RFC doesn\u0027t supersede the general error handling from 8040. It only says that you cannot return a yang-patch-specific error response, but it does not forbid sending a RESTCONF-level error. It should be perfectly OK to just throw a regular ErrorResponse here (and lose the catch branch so that the generic one takes care of this).",
+      "range": {
+        "startLine": 428,
+        "startChar": 0,
+        "endLine": 449,
+        "endChar": 5
+      },
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c03da059_a749baa3",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 452,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-01T07:09:03Z",
+      "side": 1,
+      "message": "nit: \"we need to apply\"",
+      "range": {
+        "startLine": 452,
+        "startChar": 74,
+        "endLine": 452,
+        "endChar": 87
+      },
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b4593c45_decb6f06",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 461,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-01T07:09:03Z",
+      "side": 1,
+      "message": "This is \"fragile\" to some extent because the code below relies upon a programmer not having made a mistake. Instead of explicitly checking that a node was provided, I would prefer a code like this:\n \nauto leafValue(const libyang::DataNode\u0026 node, const std::string\u0026 name)\n{\n    try {\n        return node.findPath(name)-\u003easTerm().valueStr();\n    } catch (std::bad_optional_access\u0026) {\n        throw ErrorResponse(400, \"protocol\", \"invalid-value\", \"Not a data node\", node.path() + \"/\" + name);\n    }\n}",
+      "range": {
+        "startLine": 457,
+        "startChar": 0,
+        "endLine": 461,
+        "endChar": 13
+      },
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "30edc8e0_61a22d63",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 472,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-01T07:09:03Z",
+      "side": 1,
+      "message": "I think I like exceptions a bit more:\n \ntry {\n    value \u003d std::get\u003clibyang::DataNode\u003e(valueNode-\u003easAny().releaseValue().value());\n} catch (std::bad_variant_access\u0026) {\n    throw ErrorResponse(400, \"protocol\", \"invalid-value\", \"Not a data node\");\n}\n\n...and if possible, please also add an XPath to the error message.",
+      "range": {
+        "startLine": 466,
+        "startChar": 0,
+        "endLine": 472,
+        "endChar": 66
+      },
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e75317f6_a2bba042",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 519,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-01T07:09:03Z",
+      "side": 1,
+      "message": "This looks like something that was partially copied from the PUT handler. Is there some potential for DRY?",
+      "range": {
+        "startLine": 493,
+        "startChar": 0,
+        "endLine": 519,
+        "endChar": 17
+      },
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1869f3db_818ed7d9",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1038,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-01T07:09:03Z",
+      "side": 1,
+      "message": "MIME type names are case insensitive (https://datatracker.ietf.org/doc/html/rfc2045#section-2); please also check it in other places",
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fb243d2b_0a5a2445",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1051,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-01T07:09:03Z",
+      "side": 1,
+      "message": "This branch is also triggered by POST, isn\u0027t it? What happens when I POST a yang-patch?",
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
