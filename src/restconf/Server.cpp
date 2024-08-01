@@ -31,6 +31,7 @@ using nghttp2::asio_http2::server::request;
 using nghttp2::asio_http2::server::response;
 
 #define CORS {"access-control-allow-origin", {"*", false}}
+#define TEXT_PLAIN {"content-type", {"text/plain", false}}
 
 namespace rousette::restconf {
 
@@ -548,8 +549,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     server->handle("/", [](const auto& req, const auto& res) {
         const auto& peer = http::peer_from_request(req);
         spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
-        res.write_head(404, {{"content-type", {"text/plain", false}},
-                             CORS});
+        res.write_head(404, {TEXT_PLAIN, CORS});
         res.end();
     });
 
@@ -621,18 +621,12 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             client->activate();
         } catch (const auth::Error& e) {
             processAuthError(req, res, e, [&res]() {
-                res.write_head(401, {
-                                        {"content-type", {"text/plain", false}},
-                                        CORS,
-                                    });
+                res.write_head(401, {TEXT_PLAIN, CORS});
                 res.end("Access denied.");
             });
         } catch (const ErrorResponse& e) {
             // RFC does not specify how the errors should look like so let's just report the HTTP code and print the error message
-            nghttp2::asio_http2::header_map headers = {
-                {"content-type", {"text/plain", false}},
-                CORS,
-            };
+            nghttp2::asio_http2::header_map headers = {TEXT_PLAIN, CORS};
 
             if (e.code == 405) {
                 headers.emplace("allow", nghttp2::asio_http2::header_value{"GET, HEAD, OPTIONS", false});
@@ -671,18 +665,12 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 res.end(std::visit([](auto&& arg) { return arg.printStr(libyang::SchemaOutputFormat::Yang); }, *mod));
                 return;
             } else {
-                res.write_head(404, {
-                                        {"content-type", {"text/plain", false}},
-                                        CORS,
-                                    });
+                res.write_head(404, {TEXT_PLAIN, CORS});
                 res.end("YANG schema not found");
             }
         } catch (const auth::Error& e) {
             processAuthError(req, res, e, [&res]() {
-                res.write_head(401, {
-                                        {"content-type", {"text/plain", false}},
-                                        CORS,
-                                    });
+                res.write_head(401, {TEXT_PLAIN, CORS});
                 res.end("Access denied.");
             });
         }
