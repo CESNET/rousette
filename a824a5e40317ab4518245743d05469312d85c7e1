@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1facd9f0_e5732a29",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 785,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-06T10:10:30Z",
+      "side": 1,
+      "message": "Is it possible to turn this syntax into something like\n  withRestconfExceptions(processPost, requestCtx)\n\nI am not 100% sure about that but it is similar to how STL calls passing functions and args work (consider e.g. std::thread ctor). It will need a template helper though.",
+      "range": {
+        "startLine": 785,
+        "startChar": 28,
+        "endLine": 785,
+        "endChar": 78
+      },
+      "revId": "a824a5e40317ab4518245743d05469312d85c7e1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
