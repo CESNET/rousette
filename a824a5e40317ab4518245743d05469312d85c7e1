@@ -22,6 +22,30 @@
       },
       "revId": "a824a5e40317ab4518245743d05469312d85c7e1",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ab2f900c_57e4ed7a",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 785,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-06T19:24:53Z",
+      "side": 1,
+      "message": "What I was looking for was a Python-like decorator, which led me to https://stackoverflow.com/questions/30679445/python-like-c-decorators . Then I noticed the constexpr part and I fell in love with it, and then I realized that I probably need that macro to deuglify the syntax a tiny bit. But if I want that `constexpr` (and I do because I started to love that, even if it\u0027s arguably just some very premature optimization), then I have to return something, and then call that something with some args, AFAIK.\n\nFeel free to propose follow-up patches, but I think this is \"good enough\".",
+      "parentUuid": "1facd9f0_e5732a29",
+      "range": {
+        "startLine": 785,
+        "startChar": 28,
+        "endLine": 785,
+        "endChar": 78
+      },
+      "revId": "a824a5e40317ab4518245743d05469312d85c7e1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
