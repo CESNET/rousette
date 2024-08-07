@@ -149,44 +149,56 @@ struct RequestContext {
     std::string payload;
 };
 
-std::string yangInsertKey(const libyang::Context& ctx, const libyang::SchemaNode& listNode, const queryParams::QueryParams& queryParams)
+void yangInsert(const libyang::Context& ctx, libyang::DataNode& listEntryNode, const std::string& where, const std::optional<queryParams::insert::PointParsed>& pointParsed)
 {
-    auto it = queryParams.find("point");
-    const auto& pointParsed = std::get<queryParams::insert::PointParsed>(it->second);
+    auto modYang = *ctx.getModuleImplemented("yang");
 
-    if (listNode != asLibyangSchemaNode(ctx, pointParsed)) {
-        throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter 'point' contains path to a different list");
+    if (!isUserOrderedList(listEntryNode)) {
+        throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter 'insert' is valid only for inserting into lists or leaf-lists that are 'ordered-by user'");
     }
 
-    if (listNode.nodeType() == libyang::NodeType::List) {
-        return listKeyPredicate(listNode.asList().keys(), pointParsed.back().keys);
-    } else if (listNode.nodeType() == libyang::NodeType::Leaflist) {
-        return pointParsed.back().keys[0];
-    }
+    listEntryNode.newMeta(modYang, "insert", where);
 
-    throw std::logic_error("Node is neither a list nor a leaf-list");
+    if (pointParsed) {
+        const auto listEntrySchema = listEntryNode.schema();
+        std::string key;
+
+        if (listEntrySchema != asLibyangSchemaNode(ctx, *pointParsed)) {
+            throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter 'point' contains path to a different list");
+        }
+
+        if (listEntrySchema.nodeType() == libyang::NodeType::List) {
+            key = listKeyPredicate(listEntrySchema.asList().keys(), pointParsed->back().keys);
+        } else if (listEntrySchema.nodeType() == libyang::NodeType::Leaflist) {
+            key = pointParsed->back().keys[0];
+        } else {
+            throw std::logic_error("Node is neither a list nor a leaf-list");
+        }
+
+        listEntryNode.newMeta(modYang, listEntryNode.schema().nodeType() == libyang::NodeType::List ? "key" : "value", key);
+    }
 }
 
-void yangInsert(const RequestContext& requestCtx, libyang::DataNode& listEntryNode)
+void yangInsertFromQueryParams(const RequestContext& requestCtx, libyang::DataNode& listEntryNode)
 {
-    auto modYang = requestCtx.sess.getContext().getModuleImplemented("yang");
-
-    if (auto it = requestCtx.restconfRequest.queryParams.find("insert"); it != requestCtx.restconfRequest.queryParams.end()) {
-        if (!isUserOrderedList(listEntryNode)) {
-            throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter 'insert' is valid only for inserting into lists or leaf-lists that are 'ordered-by user'");
-        }
-
-        if (std::holds_alternative<queryParams::insert::First>(it->second)) {
-            listEntryNode.newMeta(*modYang, "insert", "first");
-        } else if (std::holds_alternative<queryParams::insert::Last>(it->second)) {
-            listEntryNode.newMeta(*modYang, "insert", "last");
-        } else if (auto hasBefore = std::holds_alternative<queryParams::insert::Before>(it->second); hasBefore || std::holds_alternative<queryParams::insert::After>(it->second)) {
-            listEntryNode.newMeta(*modYang, "insert", hasBefore ? "before" : "after");
-            listEntryNode.newMeta(*modYang,
-                                  listEntryNode.schema().nodeType() == libyang::NodeType::List ? "key" : "value",
-                                  yangInsertKey(requestCtx.sess.getContext(), listEntryNode.schema(), requestCtx.restconfRequest.queryParams));
-        }
+    auto it = requestCtx.restconfRequest.queryParams.find("insert");
+    if (it == requestCtx.restconfRequest.queryParams.end()) {
+        return;
     }
+
+    std::string where;
+    std::optional<queryParams::insert::PointParsed> point;
+
+    if (std::holds_alternative<queryParams::insert::First>(it->second)) {
+        where = "first";
+    } else if (std::holds_alternative<queryParams::insert::Last>(it->second)) {
+        where = "last";
+    } else if (auto hasBefore = std::holds_alternative<queryParams::insert::Before>(it->second); hasBefore || std::holds_alternative<queryParams::insert::After>(it->second)) {
+        where = hasBefore ? "before" : "after";
+        point = std::get<queryParams::insert::PointParsed>(requestCtx.restconfRequest.queryParams.find("point")->second);
+    }
+
+    yangInsert(requestCtx.sess.getContext(), listEntryNode, where, point);
 }
 
 /** @brief Rejects the edit if any edit node has meta attributes that could possibly alter sysrepo's behaviour. */
@@ -347,7 +359,7 @@ void processPost(std::shared_ptr<RequestContext> requestCtx)
     auto modNetconf = ctx.getModuleImplemented("ietf-netconf");
 
     createdNodes.begin()->newMeta(*modNetconf, "operation", "create");
-    yangInsert(*requestCtx, *createdNodes.begin());
+    yangInsertFromQueryParams(*requestCtx, *createdNodes.begin());
 
     requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
     requestCtx->sess.applyChanges();
@@ -455,7 +467,7 @@ void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx)
     if (requestCtx->req.method() == "PUT") {
         auto modNetconf = ctx.getModuleImplemented("ietf-netconf");
         replacementNode->newMeta(*modNetconf, "operation", "replace");
-        yangInsert(*requestCtx, *replacementNode);
+        yangInsertFromQueryParams(*requestCtx, *replacementNode);
     }
 
     requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
