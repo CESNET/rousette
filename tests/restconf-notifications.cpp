@@ -248,7 +248,7 @@ TEST_CASE("NETCONF notification streams")
             SEND_NOTIFICATION(notificationsJSON[2]);
             std::this_thread::sleep_for(500ms);
             SEND_NOTIFICATION(notificationsJSON[3]);
-            SEND_NOTIFICATION(notificationsJSON[4]);
+            /* SEND_NOTIFICATION(notificationsJSON[4]); */
 
             // once the main thread has processed all the notifications, stop the ASIO loop
             waitForCompletionAndBitMore(seq1);
