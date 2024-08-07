@@ -35,6 +35,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "adc7ef7f_981f5c3f",
+        "filename": "README.md",
+        "patchSetId": 2
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-07T19:45:22Z",
+      "side": 1,
+      "message": "Done in another commit.",
+      "parentUuid": "9964ba60_39c0c954",
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "1dba3237_95e51926",
@@ -48,6 +66,30 @@
       "writtenOn": "2024-08-01T07:09:03Z",
       "side": 1,
       "message": "this should just call:\n yangInsertKey(ctx, listNode, pointParsed)\n\nOr, alternatively, get rid of this function in favor of the overload which takes a std::string *if* you can merge the existing implementation of yangInsert() with the new overload added in this patch.",
+      "range": {
+        "startLine": 149,
+        "startChar": 0,
+        "endLine": 159,
+        "endChar": 69
+      },
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "60bb1dd7_4ea0b006",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-07T19:45:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1dba3237_95e51926",
       "range": {
         "startLine": 149,
         "startChar": 0,
@@ -115,6 +157,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4abe9601_deb2d183",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 421,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-07T19:45:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "06515c6f_ddff9146",
+      "range": {
+        "startLine": 420,
+        "startChar": 0,
+        "endLine": 421,
+        "endChar": 71
+      },
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f2f5f378_4ffba38a",
@@ -138,6 +204,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "13d2ed1d_86d7946d",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 449,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-07T19:45:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f2f5f378_4ffba38a",
+      "range": {
+        "startLine": 428,
+        "startChar": 0,
+        "endLine": 449,
+        "endChar": 5
+      },
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c03da059_a749baa3",
@@ -151,6 +241,30 @@
       "writtenOn": "2024-08-01T07:09:03Z",
       "side": 1,
       "message": "nit: \"we need to apply\"",
+      "range": {
+        "startLine": 452,
+        "startChar": 74,
+        "endLine": 452,
+        "endChar": 87
+      },
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "63294584_5d924cf4",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 452,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-07T19:45:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c03da059_a749baa3",
       "range": {
         "startLine": 452,
         "startChar": 74,
@@ -260,6 +374,24 @@
       "writtenOn": "2024-08-01T07:09:03Z",
       "side": 1,
       "message": "This branch is also triggered by POST, isn\u0027t it? What happens when I POST a yang-patch?",
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "32656bc1_2bcbcc4a",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1051,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-07T19:45:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fb243d2b_0a5a2445",
       "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
