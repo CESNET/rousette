@@ -43,6 +43,7 @@ private:
     using JsonDiffSignal = boost::signals2::signal<void(const std::string& json)>;
     JsonDiffSignal opticsChange;
     bool joined = false; // true if the server has been joined, join twice is an error
+    boost::signals2::signal<void()> shutdownRequested;
 };
 }
 }
