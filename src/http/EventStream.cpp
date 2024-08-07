@@ -18,7 +18,7 @@ using namespace nghttp2::asio_http2;
 namespace rousette::http {
 
 /** @short After constructing, make sure to call activate() immediately. */
-EventStream::EventStream(const server::request& req, const server::response& res, Signal& signal, const std::optional<std::string>& initialEvent)
+EventStream::EventStream(const server::request& req, const server::response& res, Termination& termination, EventSignal& signal, const std::optional<std::string>& initialEvent)
     : res{res}
     , peer{peer_from_request(req)}
 {
@@ -28,8 +28,15 @@ EventStream::EventStream(const server::request& req, const server::response& res
         enqueue(*initialEvent);
     }
 
-    subscription = signal.connect([this](const auto& msg) {
+    eventSub = signal.connect([this](const auto& msg) {
         enqueue(msg);
+    });
+
+    terminateSub = termination.connect([this]() {
+        spdlog::trace("{}: will terminate", peer);
+        std::lock_guard lock{mtx};
+        state = WantToClose;
+        this->res.io_service().post([&res = this->res]() { res.resume(); });
     });
 }
 
@@ -49,7 +56,8 @@ void EventStream::activate()
     res.on_close([client](const auto ec) {
         spdlog::debug("{}: closed ({})", client->peer, nghttp2_http2_strerror(ec));
         std::lock_guard lock{client->mtx};
-        client->subscription.disconnect();
+        client->eventSub.disconnect();
+        client->terminateSub.disconnect();
         client->state = Closed;
     });
 
@@ -87,6 +95,9 @@ ssize_t EventStream::process(uint8_t* destination, std::size_t len, uint32_t* da
     case WaitingForEvents:
         spdlog::trace("{}: sleeping", peer);
         return NGHTTP2_ERR_DEFERRED;
+    case WantToClose:
+        *data_flags |= NGHTTP2_DATA_FLAG_EOF;
+        return 0;
     case Closed:
         throw std::logic_error{"response already closed"};
     }
@@ -107,7 +118,7 @@ void EventStream::enqueue(const std::string& what)
     buf += '\n';
 
     std::lock_guard lock{mtx};
-    if (state == Closed) {
+    if (state == Closed || state == WantToClose) {
         spdlog::trace("{}: enqueue: already disconnected", peer);
         return;
     }

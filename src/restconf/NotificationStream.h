@@ -29,7 +29,7 @@ namespace rousette::restconf {
  * @see rousette::http::EventStream
  * */
 class NotificationStream : public rousette::http::EventStream {
-    std::shared_ptr<rousette::http::EventStream::Signal> m_notificationSignal;
+    std::shared_ptr<rousette::http::EventStream::EventSignal> m_notificationSignal;
     sysrepo::Session m_session;
     libyang::DataFormat m_dataFormat;
     std::optional<std::string> m_filter;
@@ -41,7 +41,8 @@ public:
     NotificationStream(
         const nghttp2::asio_http2::server::request& req,
         const nghttp2::asio_http2::server::response& res,
-        std::shared_ptr<rousette::http::EventStream::Signal> signal,
+        rousette::http::EventStream::Termination& termination,
+        std::shared_ptr<rousette::http::EventStream::EventSignal> signal,
         sysrepo::Session sess,
         libyang::DataFormat dataFormat,
         const std::optional<std::string>& filter,

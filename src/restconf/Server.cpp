@@ -532,7 +532,7 @@ Server::~Server()
                 });
         t.cancel();
     }
-
+    shutdownRequested();
     server->join();
 }
 
@@ -591,7 +591,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     });
 
     server->handle("/telemetry/optics", [this](const auto& req, const auto& res) {
-        auto client = std::make_shared<http::EventStream>(req, res, opticsChange, as_restconf_push_update(dwdmEvents->currentData(), std::chrono::system_clock::now()));
+        auto client = std::make_shared<http::EventStream>(req, res, shutdownRequested, opticsChange, as_restconf_push_update(dwdmEvents->currentData(), std::chrono::system_clock::now()));
         client->activate();
     });
 
@@ -639,7 +639,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             // The signal is constructed outside NotificationStream class because it is required to be passed to
             // NotificationStream's parent (EventStream) constructor where it already must be constructed
             // Yes, this is a hack.
-            auto client = std::make_shared<NotificationStream>(req, res, std::make_shared<rousette::http::EventStream::Signal>(), sess, dataFormat, xpathFilter, startTime, stopTime);
+            auto client = std::make_shared<NotificationStream>(req, res, shutdownRequested, std::make_shared<rousette::http::EventStream::EventSignal>(), sess, dataFormat, xpathFilter, startTime, stopTime);
             client->activate();
         } catch (const auth::Error& e) {
             processAuthError(req, res, e, [&res]() {

@@ -59,7 +59,7 @@ void subscribe(
     std::optional<sysrepo::Subscription>& sub,
     sysrepo::Session& session,
     const std::string& moduleName,
-    rousette::http::EventStream::Signal& signal,
+    rousette::http::EventStream::EventSignal& signal,
     libyang::DataFormat dataFormat,
     const std::optional<std::string>& filter,
     const std::optional<sysrepo::NotificationTimeStamp>& startTime,
@@ -92,13 +92,14 @@ namespace rousette::restconf {
 NotificationStream::NotificationStream(
     const nghttp2::asio_http2::server::request& req,
     const nghttp2::asio_http2::server::response& res,
-    std::shared_ptr<rousette::http::EventStream::Signal> signal,
+    rousette::http::EventStream::Termination& termination,
+    std::shared_ptr<rousette::http::EventStream::EventSignal> signal,
     sysrepo::Session session,
     libyang::DataFormat dataFormat,
     const std::optional<std::string>& filter,
     const std::optional<sysrepo::NotificationTimeStamp>& startTime,
     const std::optional<sysrepo::NotificationTimeStamp>& stopTime)
-    : EventStream(req, res, *signal)
+    : EventStream(req, res, termination, *signal)
     , m_notificationSignal(signal)
     , m_session(std::move(session))
     , m_dataFormat(dataFormat)

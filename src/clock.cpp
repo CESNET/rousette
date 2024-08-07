@@ -19,7 +19,8 @@ int main(int argc [[maybe_unused]], char** argv [[maybe_unused]])
 {
     spdlog::set_level(spdlog::level::trace);
 
-    rousette::http::EventStream::Signal sig;
+    rousette::http::EventStream::Termination shutdown;
+    rousette::http::EventStream::EventSignal sig;
     std::jthread timer{[&sig]() {
         for (int i = 0; /* forever */; ++i) {
             std::this_thread::sleep_for(666ms);
@@ -31,8 +32,8 @@ int main(int argc [[maybe_unused]], char** argv [[maybe_unused]])
     nghttp2::asio_http2::server::http2 server;
     server.num_threads(4);
 
-    server.handle("/events", [&sig](const auto& req, const auto& res) {
-        auto client = std::make_shared<rousette::http::EventStream>(req, res, sig);
+    server.handle("/events", [&shutdown, &sig](const auto& req, const auto& res) {
+        auto client = std::make_shared<rousette::http::EventStream>(req, res, shutdown, sig);
         client->activate();
     });
 

@@ -39,6 +39,7 @@ private:
     std::unique_ptr<sr::OpticalEvents> dwdmEvents;
     using JsonDiffSignal = boost::signals2::signal<void(const std::string& json)>;
     JsonDiffSignal opticsChange;
+    boost::signals2::signal<void()> shutdownRequested;
 };
 }
 }
