@@ -195,11 +195,23 @@ TEST_CASE("NETCONF notification streams")
 
         std::latch requestSent(1);
 
+        // Here's how these two threads work together.
+        //
+        // The main test thread (this one):
+        // - sets up all the expectations
+        // - has an HTTP client which calls/spends the expectations based on the incoming SSE data
+        // - blocks while it runs the ASIO event loop
+        //
+        // The auxiliary thread (the notificationThread):
+        // - waits for the HTTP client having issued its long-lived HTTP GET
+        // - sends a bunch of notifications to sysrepo
+        // - waits for all the expectations getting spent, and then terminates the ASIO event loop cleanly
+
         std::jthread notificationThread = std::jthread([&]() {
             auto notifSession = sysrepo::Connection{}.sessionStart();
             auto ctx = notifSession.getContext();
 
-            // wait until the client requests
+            // wait until the client sends its HTTP request
             requestSent.wait();
 
             SEND_NOTIFICATION(notificationsJSON[0]);
@@ -210,7 +222,7 @@ TEST_CASE("NETCONF notification streams")
             SEND_NOTIFICATION(notificationsJSON[3]);
             SEND_NOTIFICATION(notificationsJSON[4]);
 
-            // stop io_service after everything is processed
+            // once the main thread has processed all the notifications, stop the ASIO loop
             waitForCompletionAndBitMore(seq1);
             io.stop();
         });
