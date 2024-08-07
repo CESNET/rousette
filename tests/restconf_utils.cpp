@@ -205,6 +205,12 @@ SSEClient::SSEClient(
                 t.expires_from_now(silenceTimeout);
             });
         });
+
+        req->on_close([maybeClient = std::weak_ptr<ng_client::session>{client}](auto) {
+            if (auto client = maybeClient.lock()) {
+                client->shutdown();
+            }
+        });
     });
 
     client->on_error([&](const boost::system::error_code& ec) {
