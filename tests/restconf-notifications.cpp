@@ -11,6 +11,7 @@ static const auto SERVER_PORT = "10088";
 #include <libyang-cpp/Time.hpp>
 #include <nghttp2/asio_http2.h>
 #include <spdlog/spdlog.h>
+#include <sysrepo-cpp/utils/utils.hpp>
 #include "restconf/Server.h"
 #include "tests/aux-utils.h"
 #include "tests/pretty_printers.h"
@@ -122,8 +123,37 @@ struct SSEClient {
     }
 };
 
+#define PREPARE_LOOP_WITH_EXCEPTIONS \
+    boost::asio::io_service io; \
+    std::promise<void> bg; \
+    std::latch requestSent(1);
+
+#define RUN_LOOP_WITH_EXCEPTIONS \
+    do { \
+        io.run(); \
+        auto fut = bg.get_future(); \
+        REQUIRE(fut.wait_for(666ms /* "plenty of time" for the notificationThread to exit after it has called io.stop() */) == std::future_status::ready); \
+        fut.get(); \
+    } while (false)
+
+auto wrap_exceptions_and_asio(std::promise<void>& bg, boost::asio::io_service& io, std::function<void()> func)
+{
+    return [&bg, &io, func]()
+    {
+        try {
+            func();
+        } catch (...) {
+            bg.set_exception(std::current_exception());
+            return;
+        }
+        bg.set_value();
+        io.stop();
+    };
+}
+
 TEST_CASE("NETCONF notification streams")
 {
+    sysrepo::setLogLevelStderr(sysrepo::LogLevel::Information);
     trompeloeil::sequence seq1;
     spdlog::set_level(spdlog::level::trace);
 
@@ -191,9 +221,7 @@ TEST_CASE("NETCONF notification streams")
             }
         }
 
-        boost::asio::io_service io;
-
-        std::latch requestSent(1);
+        PREPARE_LOOP_WITH_EXCEPTIONS
 
         // Here's how these two threads work together.
         //
@@ -207,7 +235,7 @@ TEST_CASE("NETCONF notification streams")
         // - sends a bunch of notifications to sysrepo
         // - waits for all the expectations getting spent, and then terminates the ASIO event loop cleanly
 
-        std::jthread notificationThread = std::jthread([&]() {
+        std::jthread notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
             auto notifSession = sysrepo::Connection{}.sessionStart();
             auto ctx = notifSession.getContext();
 
@@ -225,7 +253,7 @@ TEST_CASE("NETCONF notification streams")
             // once the main thread has processed all the notifications, stop the ASIO loop
             waitForCompletionAndBitMore(seq1);
             io.stop();
-        });
+        }));
 
         NotificationWatcher netconfWatcher(srConn.sessionStart().getContext(), dataFormat);
         SSEClient cli(io, requestSent, netconfWatcher, uri, headers);
@@ -234,7 +262,7 @@ TEST_CASE("NETCONF notification streams")
             EXPECT_NOTIFICATION(notif);
         }
 
-        io.run();
+        RUN_LOOP_WITH_EXCEPTIONS;
     }
 
     SECTION("Other methods")
@@ -310,9 +338,7 @@ TEST_CASE("NETCONF notification streams")
 
         std::string uri = "/streams/NETCONF/XML";
 
-        boost::asio::io_service io;
-
-        std::latch requestSent(1);
+        PREPARE_LOOP_WITH_EXCEPTIONS
         std::jthread notificationThread;
 
         SECTION("Start time")
@@ -322,7 +348,7 @@ TEST_CASE("NETCONF notification streams")
 
             SECTION("All notifications before client connects")
             {
-                notificationThread = std::jthread([&]() {
+                notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
                     auto notifSession = sysrepo::Connection{}.sessionStart();
                     auto ctx = notifSession.getContext();
 
@@ -334,13 +360,12 @@ TEST_CASE("NETCONF notification streams")
                     requestSent.count_down();
 
                     waitForCompletionAndBitMore(seq1);
-                    io.stop();
-                });
+                }));
             }
 
             SECTION("Some notifications before client connects")
             {
-                notificationThread = std::jthread([&]() {
+                notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
                     auto notifSession = sysrepo::Connection{}.sessionStart();
                     auto ctx = notifSession.getContext();
 
@@ -356,8 +381,7 @@ TEST_CASE("NETCONF notification streams")
                     SEND_NOTIFICATION(notificationsJSON[4]);
 
                     waitForCompletionAndBitMore(seq1);
-                    io.stop();
-                });
+                }));
             }
         }
 
@@ -376,7 +400,7 @@ TEST_CASE("NETCONF notification streams")
             auto end = std::chrono::system_clock::now();
             uri += "?start-time=" + libyang::yangTimeFormat(start, libyang::TimezoneInterpretation::Local) + "&stop-time=" + libyang::yangTimeFormat(end, libyang::TimezoneInterpretation::Local);
 
-            notificationThread = std::jthread([&]() {
+            notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
                 auto notifSession = sysrepo::Connection{}.sessionStart();
                 auto ctx = notifSession.getContext();
                 SEND_NOTIFICATION(notificationsJSON[3]);
@@ -384,8 +408,7 @@ TEST_CASE("NETCONF notification streams")
 
                 requestSent.count_down();
                 waitForCompletionAndBitMore(seq1);
-                io.stop();
-            });
+            }));
         }
 
         NotificationWatcher netconfWatcher(srConn.sessionStart().getContext(), libyang::DataFormat::XML);
@@ -395,6 +418,6 @@ TEST_CASE("NETCONF notification streams")
             EXPECT_NOTIFICATION(notif);
         }
 
-        io.run();
+        RUN_LOOP_WITH_EXCEPTIONS;
     }
 }
