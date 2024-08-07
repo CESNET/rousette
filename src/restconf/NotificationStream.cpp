@@ -24,7 +24,7 @@ void subscribe(
     std::optional<sysrepo::Subscription>& sub,
     sysrepo::Session& session,
     const std::string& moduleName,
-    rousette::http::EventStream::Signal& signal,
+    rousette::http::EventStream::EventSignal& signal,
     libyang::DataFormat dataFormat,
     const std::optional<std::string>& filter,
     const std::optional<sysrepo::NotificationTimeStamp>& startTime,
@@ -87,7 +87,7 @@ namespace rousette::restconf {
 NotificationStream::NotificationStream(
     const nghttp2::asio_http2::server::request& req,
     const nghttp2::asio_http2::server::response& res,
-    std::shared_ptr<rousette::http::EventStream::Signal> signal,
+    std::shared_ptr<rousette::http::EventStream::EventSignal> signal,
     sysrepo::Session session,
     libyang::DataFormat dataFormat,
     const std::optional<std::string>& filter,
@@ -112,7 +112,7 @@ NotificationStream::NotificationStream(
     }
 }
 
-void NotificationStream::activate()
+void NotificationStream::activate(Termination& termination)
 {
     for (const auto& mod : m_session.getContext().modules()) {
         if (!canBeSubscribed(mod)) {
@@ -138,7 +138,7 @@ void NotificationStream::activate()
         }
     }
 
-    EventStream::activate();
+    EventStream::activate(termination);
 }
 
 /** @brief Creates and fills ietf-restconf-monitoring:restconf-state/stream. To be called in oper callback. */

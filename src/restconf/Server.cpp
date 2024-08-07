@@ -845,6 +845,7 @@ void Server::stop()
                 });
         t.cancel();
     }
+    shutdownRequested();
 }
 
 void Server::join()
@@ -936,7 +937,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
         logRequest(req);
 
         auto client = std::make_shared<http::EventStream>(req, res, opticsChange, as_restconf_push_update(dwdmEvents->currentData(), std::chrono::system_clock::now()));
-        client->activate();
+        client->activate(shutdownRequested);
     });
 
     server->handle(netconfStreamRoot, [this, conn](const auto& req, const auto& res) mutable {
@@ -972,8 +973,8 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             // The signal is constructed outside NotificationStream class because it is required to be passed to
             // NotificationStream's parent (EventStream) constructor where it already must be constructed
             // Yes, this is a hack.
-            auto client = std::make_shared<NotificationStream>(req, res, std::make_shared<rousette::http::EventStream::Signal>(), sess, streamRequest.type.encoding, xpathFilter, startTime, stopTime);
-            client->activate();
+            auto client = std::make_shared<NotificationStream>(req, res, std::make_shared<rousette::http::EventStream::EventSignal>(), sess, streamRequest.type.encoding, xpathFilter, startTime, stopTime);
+            client->activate(shutdownRequested);
         } catch (const auth::Error& e) {
             processAuthError(req, res, e, [&res]() {
                 res.write_head(401, {TEXT_PLAIN, CORS});

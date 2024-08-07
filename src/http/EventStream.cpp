@@ -18,7 +18,7 @@ using namespace nghttp2::asio_http2;
 namespace rousette::http {
 
 /** @short After constructing, make sure to call activate() immediately. */
-EventStream::EventStream(const server::request& req, const server::response& res, Signal& signal, const std::optional<std::string>& initialEvent)
+EventStream::EventStream(const server::request& req, const server::response& res, EventSignal& signal, const std::optional<std::string>& initialEvent)
     : res{res}
     , peer{peer_from_request(req)}
 {
@@ -26,7 +26,7 @@ EventStream::EventStream(const server::request& req, const server::response& res
         enqueue(*initialEvent);
     }
 
-    subscription = signal.connect([this](const auto& msg) {
+    eventSub = signal.connect([this](const auto& msg) {
         enqueue(msg);
     });
 }
@@ -36,9 +36,24 @@ EventStream::EventStream(const server::request& req, const server::response& res
 This cannot be a part of the constructor because of enable_shared_from_this<> semantics. When in constructor,
 shared_from_this() throws bad_weak_ptr, so we need a two-phase construction.
 */
-void EventStream::activate()
+void EventStream::activate(Termination& termination)
 {
     auto client = shared_from_this();
+
+    /* Ensure that client has not been destroyed before this actually runs. */
+    terminateSub = termination.connect([maybeClient = std::weak_ptr<EventStream>(client)]() {
+        if (auto client = maybeClient.lock()) {
+            spdlog::trace("{}: will terminate", client->peer);
+            std::lock_guard lock{client->mtx};
+            client->state = WantToClose;
+
+            // prolog EventStream life, client must not be destroyed
+            boost::asio::post(client->res.io_service(), [client]() {
+                client->res.resume();
+            });
+        }
+    });
+
     res.write_head(200, {
         {"content-type", {"text/event-stream", false}},
         {"access-control-allow-origin", {"*", false}},
@@ -47,7 +62,8 @@ void EventStream::activate()
     res.on_close([client](const auto ec) {
         spdlog::debug("{}: closed ({})", client->peer, nghttp2_http2_strerror(ec));
         std::lock_guard lock{client->mtx};
-        client->subscription.disconnect();
+        client->eventSub.disconnect();
+        client->terminateSub.disconnect();
         client->state = Closed;
     });
 
@@ -85,6 +101,9 @@ ssize_t EventStream::process(uint8_t* destination, std::size_t len, uint32_t* da
     case WaitingForEvents:
         spdlog::trace("{}: sleeping", peer);
         return NGHTTP2_ERR_DEFERRED;
+    case WantToClose:
+        *data_flags |= NGHTTP2_DATA_FLAG_EOF;
+        return 0;
     case Closed:
         throw std::logic_error{"response already closed"};
     }
@@ -105,7 +124,7 @@ void EventStream::enqueue(const std::string& what)
     buf += '\n';
 
     std::lock_guard lock{mtx};
-    if (state == Closed) {
+    if (state == Closed || state == WantToClose) {
         spdlog::trace("{}: enqueue: already disconnected", peer);
         return;
     }
