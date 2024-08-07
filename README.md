@@ -4,19 +4,25 @@
 [![Gerrit](https://img.shields.io/badge/patches-via%20Gerrit-blue)](https://gerrit.cesnet.cz/q/project:CzechLight/rousette)
 [![Zuul CI](https://img.shields.io/badge/zuul-checked-blue)](https://zuul.gerrit.cesnet.cz/t/public/buildsets?project=CzechLight/rousette)
 
-## Usage
 
-A [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server with [NMDA](https://datatracker.ietf.org/doc/html/rfc8527.html) support built on top of [sysrepo](https://www.sysrepo.org/)
+A [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server built on top of [sysrepo](https://www.sysrepo.org/)
 
-Since this service only talks cleartext HTTP/2, it's recommended to run it behind a reverse proxy.
+## Features
 
-These features from the [RESTCONF RFC](https://datatracker.ietf.org/doc/html/rfc8040.html) are not yet implemented:
+- [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server
+- [NMDA](https://datatracker.ietf.org/doc/html/rfc8527.html) support
+
+These [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) features are not yet implemented:
 
 - TLS certificate authentication. See [Access control model](#access-control-model) below.
 - Datastore resource responses do not contain the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1.1) and [`ETag`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1.2) headers for [edit collision prevention](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1)
 - Data resource responses do not contain the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.1) and [`ETag`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.2) headers.
 - [API resource](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.3), i.e., the top-level `{+restconf}` endpoint
 - The [`fields`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.8.3).
+
+## Usage
+
+Since this service only talks cleartext HTTP/2, it's recommended to run it behind a reverse proxy.
 
 ### Access control model
 
