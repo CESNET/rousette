@@ -117,6 +117,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "10b400ed_be6d4416",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-08T14:23:02Z",
+      "side": 1,
+      "message": "Added in a separate patch.",
+      "parentUuid": "7f06aa40_e44cd81b",
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "29088e30_9c7c53ee",
@@ -130,6 +148,24 @@
       "writtenOn": "2024-08-01T07:09:03Z",
       "side": 1,
       "message": "how come that both of these values end up in the same code path? Surely there should be some error handling when an the incoming request says \"insert\" but  it ends up doing an actual \"move\".",
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5d1a408a_c0779ac7",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 203,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-08T14:23:02Z",
+      "side": 1,
+      "message": "I have rewritten this completely. Please check new versions.",
+      "parentUuid": "29088e30_9c7c53ee",
       "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -298,6 +334,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "846802e9_71097445",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 461,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-08T14:23:02Z",
+      "side": 1,
+      "message": "Done. Except for the node path, I don\u0027t think it is possible because the paths from extensions are not instance identifiers.",
+      "parentUuid": "b4593c45_decb6f06",
+      "range": {
+        "startLine": 457,
+        "startChar": 0,
+        "endLine": 461,
+        "endChar": 13
+      },
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "30edc8e0_61a22d63",
@@ -311,6 +371,30 @@
       "writtenOn": "2024-08-01T07:09:03Z",
       "side": 1,
       "message": "I think I like exceptions a bit more:\n \ntry {\n    value \u003d std::get\u003clibyang::DataNode\u003e(valueNode-\u003easAny().releaseValue().value());\n} catch (std::bad_variant_access\u0026) {\n    throw ErrorResponse(400, \"protocol\", \"invalid-value\", \"Not a data node\");\n}\n\n...and if possible, please also add an XPath to the error message.",
+      "range": {
+        "startLine": 466,
+        "startChar": 0,
+        "endLine": 472,
+        "endChar": 66
+      },
+      "revId": "722d8d2db54aeb9979b85a34ae0a29830834a2ed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ea278988_d7fdd6a4",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 472,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-08T14:23:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "30edc8e0_61a22d63",
       "range": {
         "startLine": 466,
         "startChar": 0,
