@@ -684,6 +684,7 @@ TEST_CASE("writing data")
       {
         "error-type": "protocol",
         "error-tag": "invalid-value",
+        "error-path": "/example:ordered-lists/lst[name='foo']",
         "error-message": "Query parameter 'point' contains path to a different list"
       }
     ]
@@ -782,6 +783,7 @@ TEST_CASE("writing data")
       {
         "error-type": "protocol",
         "error-tag": "invalid-value",
+        "error-path": "/example:ordered-lists/ll[.='foo']",
         "error-message": "Query parameter 'point' contains path to a different list"
       }
     ]

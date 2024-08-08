@@ -157,7 +157,7 @@ void yangInsert(const libyang::Context& ctx, libyang::DataNode& listEntryNode, c
         std::string keyOrValueAttribute;
 
         if (listEntrySchema != asLibyangSchemaNode(ctx, *pointParsed)) {
-            throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter 'point' contains path to a different list");
+            throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter 'point' contains path to a different list", listEntryNode.path());
         }
 
         if (listEntrySchema.nodeType() == libyang::NodeType::List) {
