@@ -40,8 +40,11 @@ bool mimeMatch(const std::string& providedMime, const std::string& applicationMi
     return tokensMime[0] == tokensApplicationMime[0] && tokensMime[1] == tokensApplicationMime[1];
 }
 
-std::optional<libyang::DataFormat> dataTypeFromMimeType(const std::string& mime, MimeTypeWildcards wildcards)
+std::optional<libyang::DataFormat> dataTypeFromMimeType(std::string mime, MimeTypeWildcards wildcards)
 {
+    // RFC 2045, sec. 2: All media type values, subtype values, and parameter names as defined are case-insensitive
+    boost::to_lower(mime);
+
     if (mimeMatch(mime, asMimeType(libyang::DataFormat::JSON), wildcards)) {
         return libyang::DataFormat::JSON;
     } else if (mimeMatch(mime, asMimeType(libyang::DataFormat::XML), wildcards)) {

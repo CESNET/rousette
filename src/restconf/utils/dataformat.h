@@ -18,5 +18,5 @@ struct DataFormat {
 DataFormat chooseDataEncoding(const nghttp2::asio_http2::header_map& headers);
 std::string asMimeType(libyang::DataFormat dataFormat);
 bool mimeMatch(const std::string& providedMime, const std::string& applicationMime, MimeTypeWildcards wildcards);
-std::optional<libyang::DataFormat> dataTypeFromMimeType(const std::string& mime, MimeTypeWildcards wildcards);
+std::optional<libyang::DataFormat> dataTypeFromMimeType(std::string mime, MimeTypeWildcards wildcards);
 }

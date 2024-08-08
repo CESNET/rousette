@@ -170,6 +170,10 @@ TEST_CASE("writing data")
   </error>
 </errors>
 )"});
+
+            // case insensitivity of MIME types
+            EXPECT_CHANGE(MODIFIED("/example:a/b/c/blower", "libyang is not love"));
+            REQUIRE(put(RESTCONF_DATA_ROOT "/example:a/b", {AUTH_ROOT, {"content-type", "applicatiOn/yang-DaTa+XML"}}, R"(<b xmlns="http://example.tld/example"><c><blower>libyang is not love</blower></c></b>)") == Response{204, noContentTypeHeaders, ""});
         }
 
         SECTION("Invalid requests")
