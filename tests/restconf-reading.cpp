@@ -493,6 +493,14 @@ TEST_CASE("reading data")
   <location>location</location>
 </system>
 )"});
+
+        // case insensitivity of MIME types
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system", {{"accept", "APPlication/YANG-DATA+json;q=0.4,application/yang-data+XML"}}) == Response{200, xmlHeaders, R"(<system xmlns="urn:ietf:params:xml:ns:yang:ietf-system">
+  <contact>contact</contact>
+  <hostname>hostname</hostname>
+  <location>location</location>
+</system>
+)"});
     }
 
     SECTION("NMDA (RFC 8527)")
