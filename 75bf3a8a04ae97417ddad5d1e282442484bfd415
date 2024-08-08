@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "71e71b1a_49df79bf",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-08T09:10:51Z",
+      "side": 1,
+      "message": "interesting, this makes sense",
+      "range": {
+        "startLine": 87,
+        "startChar": 82,
+        "endLine": 87,
+        "endChar": 148
+      },
+      "revId": "75bf3a8a04ae97417ddad5d1e282442484bfd415",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
