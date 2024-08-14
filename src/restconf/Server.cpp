@@ -217,8 +217,8 @@ void validateInputMetaAttributes(const libyang::Context& ctx, const libyang::Dat
     }
 }
 
-template<typename T>
-constexpr auto withRestconfExceptions(T func)
+template<typename T, typename U>
+constexpr auto withRestconfExceptions(T func, U rejectWithError)
 {
     return [=](std::shared_ptr<RequestContext> requestCtx, auto ...args)
     {
@@ -258,7 +258,7 @@ constexpr auto withRestconfExceptions(T func)
     };
 }
 
-#define WITH_RESTCONF_EXCEPTIONS(FUNC) withRestconfExceptions<decltype(FUNC)>(FUNC)
+#define WITH_RESTCONF_EXCEPTIONS(FUNC, REJECT_FUNC) withRestconfExceptions<decltype(FUNC)>(FUNC, REJECT_FUNC)
 
 /** @brief Prepare sysrepo edit for PUT and PATCH (both PLAIN and YANG) requests from uri and string data.
  *
@@ -812,9 +812,9 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         }
 
                         if (restconfRequest.type == RestconfRequest::Type::CreateChildren) {
-                            WITH_RESTCONF_EXCEPTIONS(processPost)(requestCtx);
+                            WITH_RESTCONF_EXCEPTIONS(processPost, rejectWithError)(requestCtx);
                         } else {
-                            WITH_RESTCONF_EXCEPTIONS(processPutOrPlainPatch)(requestCtx);
+                            WITH_RESTCONF_EXCEPTIONS(processPutOrPlainPatch, rejectWithError)(requestCtx);
                         }
                     });
                     break;
@@ -870,7 +870,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         if (length > 0) {
                             requestCtx->payload.append(reinterpret_cast<const char*>(data), length);
                         } else {
-                            WITH_RESTCONF_EXCEPTIONS(processActionOrRPC)(requestCtx);
+                            WITH_RESTCONF_EXCEPTIONS(processActionOrRPC, rejectWithError)(requestCtx);
                         }
                     });
                     break;
