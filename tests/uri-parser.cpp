@@ -203,6 +203,8 @@ TEST_CASE("URI path parser")
                                                                                     {{"list"}, {"hello-world"}},
                                                                                     {{"example-action"}},
                                                                                 }}},
+                 {"/restconf/operations", {{URIPrefix::Type::BasicRestconfOperations, boost::none}, {}}},
+                 {"/restconf/operations/", {{URIPrefix::Type::BasicRestconfOperations, boost::none}, {}}},
 
                  {"/restconf/yang-library-version", {{URIPrefix::Type::YangLibraryVersion, boost::none}, {}}},
                  {"/restconf/yang-library-version/", {{URIPrefix::Type::YangLibraryVersion, boost::none}, {}}},
@@ -374,6 +376,15 @@ TEST_CASE("URI path parser")
                         REQUIRE(datastore == expectedDatastore);
                         REQUIRE(queryParams.empty());
                     }
+                }
+
+                SECTION("Operations root resource")
+                {
+                    auto [requestType, datastore, path, queryParams] = rousette::restconf::asRestconfRequest(ctx, "GET", "/restconf/operations");
+                    REQUIRE(requestType == RestconfRequest::Type::ListRPC);
+                    REQUIRE(!datastore);
+                    REQUIRE(path == "/*");
+                    REQUIRE(queryParams.empty());
                 }
             }
 
@@ -554,11 +565,6 @@ TEST_CASE("URI path parser")
                 expectedErrorType = "protocol";
                 expectedErrorTag = "operation-failed";
 
-                SECTION("RPC node missing")
-                {
-                    uriPath = "/restconf/operations";
-                    expectedErrorMessage = "'/' is not an operation resource";
-                }
                 SECTION("RPC must be invoked via /restconf/operations")
                 {
                     uriPath = "/restconf/data/example:test-rpc";
@@ -998,6 +1004,11 @@ TEST_CASE("URI path parser")
                 SECTION("List node") { uri = "/restconf/data/example:tlc/list=key"; }
                 SECTION("Container") { uri = "/restconf/data/example:tlc"; }
                 SECTION("With NMDA") { uri = "/restconf/ds/ietf-datastores:running/example:tlc"; }
+            }
+            SECTION("Operations root resource")
+            {
+                expected = {"GET", "HEAD", "OPTIONS"};
+                uri = "/restconf/operations";
             }
             SECTION("Operations resource")
             {
