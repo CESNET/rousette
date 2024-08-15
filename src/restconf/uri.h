@@ -131,6 +131,7 @@ struct RestconfRequest {
         OptionsQuery, ///< Request for allowed HTTP methods for a path
         MergeData, ///< PATCH on a data resource or a complete-datastore resource
         RestconfRoot, ///< GET on restconf API root
+        ListRPC, ///< GET on operation resource
     };
 
     Type type;
