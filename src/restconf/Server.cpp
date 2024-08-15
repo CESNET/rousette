@@ -645,7 +645,9 @@ libyang::DataNode apiResource(const libyang::Context& ctx, const RestconfRequest
     const auto yangApiExt = ctx.getModuleImplemented("ietf-restconf")->extensionInstance("yang-api");
     auto parent = ctx.newExtPath("/ietf-restconf:restconf", std::nullopt, yangApiExt);
 
-    parent->newPath("yang-library-version", yangLib.revision());
+    if (type == RestconfRequest::Type::RestconfRoot || type == RestconfRequest::Type::YangLibraryVersion) {
+        parent->newPath("yang-library-version", yangLib.revision());
+    }
 
     if (type == RestconfRequest::Type::YangLibraryVersion) {
         // direct request at /restconf/yang-library-version return ONLY the yang-library-version node and nothing else (RFC 8040, sec. 3.3.3)
@@ -653,6 +655,17 @@ libyang::DataNode apiResource(const libyang::Context& ctx, const RestconfRequest
     } else if (type == RestconfRequest::Type::RestconfRoot) {
         parent->newPath("data");
         parent->newPath("operations");
+    } else if (type == RestconfRequest::Type::ListRPC) {
+        auto operations = parent->newPath("operations");
+        for (const auto& mod : ctx.modules()) {
+            if (!mod.implemented()) {
+                continue;
+            }
+
+            for (const auto& rpc : mod.RPCs()) {
+                operations->insertChild(*ctx.newOpaqueJSON(rpc.module().name(), rpc.name(), libyang::JSON{"[null]"}));
+            }
+        }
     } else {
         throw std::logic_error("Invalid restconf request type for handling within apiResource()");
     }
@@ -905,6 +918,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 switch (restconfRequest.type) {
                 case RestconfRequest::Type::RestconfRoot:
                 case RestconfRequest::Type::YangLibraryVersion:
+                case RestconfRequest::Type::ListRPC:
                     res.write_head(200, {contentType(dataFormat.response), CORS});
                     res.end(*apiResource(sess.getContext(), restconfRequest.type).printStr(dataFormat.response, libyang::PrintFlags::WithSiblings | libyang::PrintFlags::KeepEmptyCont));
                     break;

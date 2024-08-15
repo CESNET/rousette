@@ -340,10 +340,6 @@ void validateMethodForNode(const std::string& httpMethod, const impl::URIPrefix&
     } else if (!node) {
         // no data path provided
         switch (prefix.resourceType) {
-        case impl::URIPrefix::Type::BasicRestconfOperations:
-            // FIXME: implement this, https://datatracker.ietf.org/doc/html/rfc8040#section-3.3.2
-            throw ErrorResponse(400, "protocol", "operation-failed", "'/' is not an operation resource");
-            break;
         case impl::URIPrefix::Type::BasicRestconfData:
         case impl::URIPrefix::Type::NMDADatastore:
             if (httpMethod == "DELETE") {
@@ -351,6 +347,7 @@ void validateMethodForNode(const std::string& httpMethod, const impl::URIPrefix&
             }
             break;
         case impl::URIPrefix::Type::RestconfRoot:
+        case impl::URIPrefix::Type::BasicRestconfOperations:
         case impl::URIPrefix::Type::YangLibraryVersion:
             if (httpMethod != "GET" && httpMethod != "HEAD") {
                 throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
@@ -550,6 +547,8 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
         return {RestconfRequest::Type::RestconfRoot, boost::none, ""s, *queryParameters};
     } else if (uri->prefix.resourceType == impl::URIPrefix::Type::YangLibraryVersion) {
         return {RestconfRequest::Type::YangLibraryVersion, boost::none, ""s, *queryParameters};
+    } else if (uri->prefix.resourceType == impl::URIPrefix::Type::BasicRestconfOperations && !schemaNode) {
+        return {RestconfRequest::Type::ListRPC, boost::none, ""s, *queryParameters};
     } else if ((httpMethod == "GET" || httpMethod == "HEAD")) {
         type = RestconfRequest::Type::GetData;
         path = uri->segments.empty() ? "/*" : path;
