@@ -39,6 +39,8 @@ TEST_CASE("invoking actions and rpcs")
     auto nacmGuard = manageNacm(srSess);
     auto server = rousette::restconf::Server{srConn, SERVER_ADDRESS, SERVER_PORT};
 
+    srSess.sendRPC(srSess.getContext().newPath("/ietf-factory-default:factory-reset"));
+
     setupRealNacm(srSess);
 
     trompeloeil::sequence seq1;
@@ -71,13 +73,12 @@ TEST_CASE("invoking actions and rpcs")
         return sysrepo::ErrorCode::Ok;
     });
 
+    // create a list entry so we can test actions in a list
+    srSess.setItem("/example:tlc/list[name='1']/choice1", "bla");
+    srSess.applyChanges();
 
     SECTION("RPC")
     {
-        // create a list entry so we can test actions in a list
-        srSess.setItem("/example:tlc/list[name='1']/choice1", "bla");
-        srSess.applyChanges();
-
         SECTION("Basic calls")
         {
             REQUIRE_CALL(rpcCall, rpcCall("/example:test-rpc", std::map<std::string, std::string>({{"/example:test-rpc/i", "ahoj"}})));
