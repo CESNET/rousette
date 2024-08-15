@@ -701,6 +701,30 @@ bool isYangPatch(const nghttp2::asio_http2::server::request& req)
     auto it = req.header().find("content-type");
     return it != req.header().end() && (it->second.value == "application/yang-patch+xml" || it->second.value == "application/yang-patch+json");
 }
+
+/** @brief Construct a data tree containing all the RPC nodes, /restconf/operations */
+libyang::DataNode listRPCs(const libyang::Context& ctx)
+{
+    constexpr auto operationsXPath = "/ietf-restconf:restconf/operations";
+    auto yangApiExt = ctx.getModuleImplemented("ietf-restconf")->extensionInstance("yang-api");
+
+    auto parent = ctx.newExtPath(operationsXPath, std::nullopt, yangApiExt);
+    auto operations = *parent->findXPath(operationsXPath).begin();
+
+    for (const auto& mod : ctx.modules()) {
+        if (!mod.implemented()) {
+            continue;
+        }
+
+        for (const auto& rpc : mod.rpcList()) {
+            // DOES NOT WORK
+            // operations.newPath(rpc.module().name() + ":" + rpc.name(), std::nullopt, libyang::CreationOptions::Opaque);
+            operations.insertChild(*ctx.newOpaqueJSON(rpc.module().name(), rpc.name(), libyang::JSON{"[null]"}));
+        }
+    }
+
+    return *parent;
+}
 }
 
 Server::~Server()
@@ -1037,6 +1061,12 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         res.write_head(404, headers);
                     }
                     res.end();
+                    break;
+                }
+
+                case RestconfRequest::Type::ListRPC: {
+                    res.write_head(200, {contentType(dataFormat.response), CORS});
+                    res.end(*listRPCs(sess.getContext()).printStr(dataFormat.response, libyang::PrintFlags::WithSiblings));
                     break;
                 }
                 }
