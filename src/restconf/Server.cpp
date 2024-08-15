@@ -220,10 +220,10 @@ void validateInputMetaAttributes(const libyang::Context& ctx, const libyang::Dat
 template<typename T, typename U>
 constexpr auto withRestconfExceptions(T func, U rejectWithError)
 {
-    return [=](std::shared_ptr<RequestContext> requestCtx, auto ...args)
+    return [=](std::shared_ptr<RequestContext> requestCtx, auto&& ...args)
     {
         try {
-            func(requestCtx, args...);
+            func(requestCtx, std::forward<decltype(args)>(args)...);
         } catch (const ErrorResponse& e) {
             rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath);
         } catch (const libyang::ErrorWithCode& e) {
