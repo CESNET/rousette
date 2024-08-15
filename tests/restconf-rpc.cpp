@@ -77,6 +77,30 @@ TEST_CASE("invoking actions and rpcs")
     srSess.setItem("/example:tlc/list[name='1']/choice1", "bla");
     srSess.applyChanges();
 
+    SECTION("List RPCs")
+    {
+        REQUIRE(get(RESTCONF_OPER_ROOT, {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "example:test-rpc": {},
+  "example:test-rpc-no-output": {},
+  "example:test-rpc-no-input": {},
+  "example:test-rpc-no-input-no-output": {},
+  "ietf-factory-default:factory-reset": {},
+  "ietf-netconf:get-config": {},
+  "ietf-netconf:edit-config": {},
+  "ietf-netconf:copy-config": {},
+  "ietf-netconf:delete-config": {},
+  "ietf-netconf:lock": {},
+  "ietf-netconf:unlock": {},
+  "ietf-netconf:get": {},
+  "ietf-netconf:close-session": {},
+  "ietf-netconf:kill-session": {},
+  "ietf-system:set-current-datetime": {},
+  "ietf-system:system-restart": {},
+  "ietf-system:system-shutdown": {}
+}
+)"});
+    }
+
     SECTION("RPC")
     {
         SECTION("Basic calls")

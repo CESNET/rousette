@@ -704,6 +704,34 @@ bool isYangPatch(const nghttp2::asio_http2::server::request& req)
     auto it = req.header().find("content-type");
     return it != req.header().end() && (it->second.value == "application/yang-patch+xml" || it->second.value == "application/yang-patch+json");
 }
+
+/** @brief Construct a data tree containing all the RPC nodes */
+std::optional<libyang::DataNode> listRPCs(const libyang::Context& ctx)
+{
+    std::optional<libyang::DataNode> res;
+
+    for (const auto& mod : ctx.modules()) {
+        if (!mod.implemented()) {
+            continue;
+        }
+
+        for (const auto& rpc : mod.rpcList()) {
+            auto rpcEntry = ctx.newPath("/" + rpc.module().name() + ":" + rpc.name(), std::nullopt, libyang::CreationOptions::Opaque);
+
+            if (res) {
+                res->insertSibling(rpcEntry);
+            } else {
+                res = rpcEntry;
+            }
+        }
+    }
+
+    if (res) {
+        res = res->firstSibling();
+    }
+
+    return res;
+}
 }
 
 Server::~Server()
@@ -1040,6 +1068,18 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         res.write_head(404, headers);
                     }
                     res.end();
+                    break;
+                }
+
+                case RestconfRequest::Type::ListRPC: {
+                    if (auto data = listRPCs(sess.getContext())) {
+                        res.write_head(200, {contentType(dataFormat.response), CORS});
+                        res.end(*data->printStr(dataFormat.response, libyang::PrintFlags::WithSiblings));
+                    } else {
+                        res.write_head(204, {CORS});
+                        res.end();
+                    }
+
                     break;
                 }
                 }
