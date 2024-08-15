@@ -260,6 +260,67 @@ constexpr auto withRestconfExceptions(T func)
 
 #define WITH_RESTCONF_EXCEPTIONS(FUNC) withRestconfExceptions<decltype(FUNC)>(FUNC)
 
+/** @brief Prepare sysrepo edit for PUT and PATCH (both PLAIN and YANG) requests from uri and string data.
+ *
+ * @return A pair of the edit tree and a node that should be replaced (i.e., the NETCONF operation is set on it).
+ */
+libyang::CreatedNodes createEditForPutAndPatch(libyang::Context& ctx, const std::string& uriPath, const std::string& valueStr, const std::optional<libyang::DataFormat>& dataFormat)
+{
+    std::optional<libyang::DataNode> editNode;
+    std::optional<libyang::DataNode> replacementNode;
+
+    /* PUT and PATCH requests replace the node indicated by the URI path with the tree provided in the request body.
+     * The tree starts with the node indicated by the URI.
+     * This means that in libyang, we must create the parent node of the URI path and parse the data into it.
+     */
+    auto [lyParentPath, lastPathSegment] = asLibyangPathSplit(ctx, uriPath);
+
+    if (!lyParentPath.empty()) {
+        // the node that we're working on has a parent, i.e., the URI path is at least two levels deep
+        auto [parent, node] = ctx.newPath2(lyParentPath);
+        node->parseSubtree(valueStr, dataFormat.value(), libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+
+        for (const auto& child : node->immediateChildren()) {
+            // Anything directly below `node` is either:
+            if (isSameNode(child, lastPathSegment)) {
+                // 1) a single child that is created by parseSubtree(), its name is the same as `lastPathSegment`.
+                // It could be a list; then we need to check if the keys in provided data match the keys in URI.
+                if (auto offendingNode = checkKeysMismatch(child, lastPathSegment)) {
+                    throw ErrorResponse(400, "protocol", "invalid-value", "List key mismatch between URI path and data.", offendingNode->path());
+                }
+                replacementNode = child;
+            } else if (isKeyNode(*node, child)) {
+                // 2) or a list key (of the lyParentPath) that was created by newPath2 call.
+                // Do nothing here; key values are checked elsewhere
+            } else {
+                // 3) Anything else is an error (either too many children provided or invalid name)
+                throw ErrorResponse(400, "protocol", "invalid-value", "Data contains invalid node.", child.path());
+            }
+        }
+
+        editNode = parent;
+    } else {
+        // URI path points to a top-level node
+        if (auto parent = ctx.parseData(valueStr, dataFormat.value(), libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly); parent) {
+            editNode = parent;
+            replacementNode = parent;
+
+            if (!isSameNode(*replacementNode, lastPathSegment)) {
+                throw ErrorResponse(400, "protocol", "invalid-value", "Data contains invalid node.", replacementNode->path());
+            }
+            if (auto offendingNode = checkKeysMismatch(*parent, lastPathSegment)) {
+                throw ErrorResponse(400, "protocol", "invalid-value", "List key mismatch between URI path and data.", offendingNode->path());
+            }
+        }
+    }
+
+    if (!replacementNode) {
+        throw ErrorResponse(400, "protocol", "invalid-value", "Node indicated by URI is missing.");
+    }
+
+    return {editNode, replacementNode};
+}
+
 void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
 {
     requestCtx->sess.switchDatastore(sysrepo::Datastore::Operational);
@@ -416,53 +477,7 @@ void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx)
         throw ErrorResponse(400, "protocol", "invalid-value", "Target resource does not exist");
     }
 
-    std::optional<libyang::DataNode> edit;
-    std::optional<libyang::DataNode> replacementNode;
-
-    auto [lyParentPath, lastPathSegment] = asLibyangPathSplit(requestCtx->sess.getContext(), requestCtx->req.uri().path);
-
-    if (!lyParentPath.empty()) {
-        // the node that we're working on has a parent, i.e., the URI path is at least two levels deep
-        auto [parent, node] = ctx.newPath2(lyParentPath, std::nullopt);
-        node->parseSubtree(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
-
-        for (const auto& child : node->immediateChildren()) {
-            // Anything directly below `node` is either:
-            if (isSameNode(child, lastPathSegment)) {
-                // 1) a single child that is created by parseSubtree(), its name is the same as `lastPathSegment`.
-                // It could be a list; then we need to check if the keys in provided data match the keys in URI.
-                if (auto offendingNode = checkKeysMismatch(child, lastPathSegment)) {
-                    throw ErrorResponse(400, "protocol", "invalid-value", "List key mismatch between URI path and data.", offendingNode->path());
-                }
-                replacementNode = child;
-            } else if (isKeyNode(*node, child)) {
-                // 2) or a list key (of the lyParentPath) that was created by newPath2 call.
-                // Do nothing here; key values are checked elsewhere
-            } else {
-                // 3) Anything else is an error (either too many children provided or invalid name)
-                throw ErrorResponse(400, "protocol", "invalid-value", "Data contains invalid node.", child.path());
-            }
-        }
-
-        edit = parent;
-    } else {
-        // URI path points to a top-level node
-        if (auto parent = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly); parent) {
-            edit = parent;
-            replacementNode = parent;
-            if (!isSameNode(*replacementNode, lastPathSegment)) {
-                throw ErrorResponse(400, "protocol", "invalid-value", "Data contains invalid node.", replacementNode->path());
-            }
-            if (auto offendingNode = checkKeysMismatch(*parent, lastPathSegment)) {
-                throw ErrorResponse(400, "protocol", "invalid-value", "List key mismatch between URI path and data.", offendingNode->path());
-            }
-        }
-    }
-
-    if (!replacementNode) {
-        throw ErrorResponse(400, "protocol", "invalid-value", "Node indicated by URI is missing.");
-    }
-
+    auto [edit, replacementNode] = createEditForPutAndPatch(ctx, requestCtx->req.uri().path, requestCtx->payload, requestCtx->dataFormat.request);
     validateInputMetaAttributes(ctx, *edit);
 
     if (requestCtx->req.method() == "PUT") {
