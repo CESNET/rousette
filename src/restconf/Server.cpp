@@ -390,17 +390,14 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
 {
     requestCtx->sess.switchDatastore(sysrepo::Datastore::Operational);
     auto ctx = requestCtx->sess.getContext();
-    bool isAction = false;
 
     auto rpcSchemaNode = ctx.findPath(requestCtx->restconfRequest.path);
     if (!requestCtx->dataFormat.request && static_cast<bool>(rpcSchemaNode.asActionRpc().input().child())) {
         throw ErrorResponse(400, "protocol", "invalid-value", "Content-type header missing.");
     }
 
-    isAction = rpcSchemaNode.nodeType() == libyang::NodeType::Action;
-
     // check if action node's parent is present
-    if (isAction) {
+    if (rpcSchemaNode.nodeType() == libyang::NodeType::Action) {
         /*
          * This is race-prone:
          *  - The data node exists but might get deleted right after this check: Sysrepo throws an error when this happens.
