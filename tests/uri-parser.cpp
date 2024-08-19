@@ -208,6 +208,9 @@ TEST_CASE("URI path parser")
 
                  {"/restconf/yang-library-version", {{URIPrefix::Type::YangLibraryVersion, boost::none}, {}}},
                  {"/restconf/yang-library-version/", {{URIPrefix::Type::YangLibraryVersion, boost::none}, {}}},
+
+                 {"/restconf", {{URIPrefix::Type::RestconfRoot, boost::none}, {}}},
+                 {"/restconf/", {{URIPrefix::Type::RestconfRoot, boost::none}, {}}},
              }) {
             CAPTURE(uriPath);
             auto path = rousette::restconf::impl::parseUriPath(uriPath);
@@ -997,6 +1000,11 @@ TEST_CASE("URI path parser")
             std::string uri;
             std::set<std::string> expected;
 
+            SECTION("Root resource")
+            {
+                expected = {"GET", "HEAD", "OPTIONS"};
+                uri = "/restconf";
+            }
             SECTION("Data resource")
             {
                 expected = {"DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"};

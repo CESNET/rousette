@@ -702,6 +702,19 @@ bool isYangPatch(const nghttp2::asio_http2::server::request& req)
     return it != req.header().end() && (it->second.value == "application/yang-patch+xml" || it->second.value == "application/yang-patch+json");
 }
 
+libyang::DataNode rootResource(const libyang::Context& ctx)
+{
+    const auto yangLib = *ctx.getModuleLatest("ietf-yang-library");
+    const auto yangApiExt = ctx.getModuleImplemented("ietf-restconf")->extensionInstance("yang-api");
+
+    auto parent = ctx.newExtPath("/ietf-restconf:restconf", std::nullopt, yangApiExt);
+    parent->newPath("operations");
+    parent->newPath("data");
+    parent->newPath("yang-library-version", yangLib.revision());
+
+    return *parent;
+}
+
 /** @brief Construct a data tree containing all the RPC nodes, /restconf/operations */
 libyang::DataNode listRPCs(const libyang::Context& ctx)
 {
@@ -1059,6 +1072,12 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         res.write_head(404, headers);
                     }
                     res.end();
+                    break;
+                }
+
+                case RestconfRequest::Type::RestconfRoot: {
+                    res.write_head(200, {contentType(dataFormat.response), CORS});
+                    res.end(*rootResource(sess.getContext()).printStr(dataFormat.response, libyang::PrintFlags::WithSiblings | libyang::PrintFlags::KeepEmptyCont));
                     break;
                 }
 
