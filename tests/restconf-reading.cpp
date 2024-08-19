@@ -45,6 +45,18 @@ TEST_CASE("reading data")
     // setup real-like NACM
     setupRealNacm(srSess);
 
+    DOCTEST_SUBCASE("API resource")
+    {
+        REQUIRE(get("/restconf/", {}) == Response{200, jsonHeaders, R"({
+  "ietf-restconf:restconf": {
+    "data": {},
+    "operations": {},
+    "yang-library-version": "2019-01-04"
+  }
+}
+)"});
+    }
+
     DOCTEST_SUBCASE("entire datastore")
     {
         // this relies on a NACM rule for anonymous access that filters out "a lot of stuff"
