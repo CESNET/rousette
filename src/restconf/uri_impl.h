@@ -29,7 +29,7 @@ struct URIPrefix {
     boost::optional<ApiIdentifier> datastore; // /restconf/ds/ must also specify a datastore.
 
     URIPrefix();
-    URIPrefix(Type resourceType, const boost::optional<ApiIdentifier>& datastore);
+    URIPrefix(Type resourceType, const boost::optional<ApiIdentifier>& datastore = boost::none);
     bool operator==(const URIPrefix&) const = default;
 };
 
