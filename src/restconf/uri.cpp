@@ -49,7 +49,9 @@ const auto resources = x3::rule<class resources, URIPath>{"resources"} =
     (x3::lit("/data") >> x3::attr(URIPrefix{URIPrefix::Type::BasicRestconfData}) >> uriPath) |
     (x3::lit("/ds") >> nmdaDatastore >> uriPath) |
     (x3::lit("/operations") >> x3::attr(URIPrefix{URIPrefix::Type::BasicRestconfOperations}) >> uriPath) |
-    (x3::lit("/yang-library-version") >> x3::attr(URIPrefix{URIPrefix::Type::YangLibraryVersion}) >> x3::attr(std::vector<PathSegment>{} /* no path segment in this resource, just a dummy to return correct type */) >> -x3::lit("/"));
+    // restconf and /restconf/yang-library-version do not expect any uriPath but we need to construct correct URIPath instance. Use the x3::attr call to create empty vector<PathSegment>
+    (x3::lit("/yang-library-version") >> x3::attr(URIPrefix{URIPrefix::Type::YangLibraryVersion}) >> x3::attr(std::vector<PathSegment>{}) >> -x3::lit("/")) |
+    ((x3::lit("/") | x3::eps) /* /restconf/ and /restconf */ >> x3::attr(URIPrefix{URIPrefix::Type::RestconfRoot}) >> x3::attr(std::vector<PathSegment>{}));
 const auto uriGrammar = x3::rule<class grammar, URIPath>{"grammar"} = x3::lit("/restconf") >> resources;
 
 // clang-format on
@@ -348,6 +350,7 @@ void validateMethodForNode(const std::string& httpMethod, const impl::URIPrefix&
                 throw ErrorResponse(400, "application", "operation-failed", "'/' is not a data resource");
             }
             break;
+        case impl::URIPrefix::Type::RestconfRoot:
         case impl::URIPrefix::Type::YangLibraryVersion:
             if (httpMethod != "GET" && httpMethod != "HEAD") {
                 throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
@@ -533,6 +536,8 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
 
     if (httpMethod == "OPTIONS") {
         return {RestconfRequest::Type::OptionsQuery, boost::none, ""s, {}};
+    } else if (uri->prefix.resourceType == impl::URIPrefix::Type::RestconfRoot) {
+        return {RestconfRequest::Type::RestconfRoot, boost::none, ""s, *queryParameters};
     } else if (uri->prefix.resourceType == impl::URIPrefix::Type::YangLibraryVersion) {
         return {RestconfRequest::Type::YangLibraryVersion, boost::none, ""s, *queryParameters};
     } else if ((httpMethod == "GET" || httpMethod == "HEAD")) {
