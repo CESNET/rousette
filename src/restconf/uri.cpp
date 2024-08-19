@@ -42,16 +42,15 @@ const auto apiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentif
 const auto listInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = apiIdentifier >> -('=' >> keyList);
 const auto fullyQualifiedApiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentifier"} = identifier >> ':' >> identifier;
 const auto fullyQualifiedListInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = fullyQualifiedApiIdentifier >> -('=' >> keyList);
-const auto uriPrefix = x3::rule<class uriPrefix, URIPrefix>{"uriPrefix"} =
-    (x3::lit("data") >> x3::attr(URIPrefix::Type::BasicRestconfData) >> x3::attr(boost::none)) |
-    (x3::lit("ds") >> x3::attr(URIPrefix::Type::NMDADatastore) >> "/" >> fullyQualifiedApiIdentifier) |
-    (x3::lit("operations") >> x3::attr(URIPrefix::Type::BasicRestconfOperations) >> x3::attr(boost::none));
-const auto uriPrefixYangLibraryVersion = x3::rule<class uriPrefixYangLibraryVersion, URIPrefix>{"uriPrefixYangLibraryVersion"} =
-    (x3::lit("yang-library-version") >> x3::attr(URIPrefix::Type::YangLibraryVersion) >> x3::attr(boost::none));
+
 const auto uriPath = x3::rule<class uriPath, std::vector<PathSegment>>{"uriPath"} = -x3::lit("/") >> -(fullyQualifiedListInstance >> -("/" >> listInstance % "/")); // RFC 8040, sec 3.5.3
-const auto uriGrammar = x3::rule<class grammar, URIPath>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> "/" >>
-    ((uriPrefix >> uriPath) |
-     (uriPrefixYangLibraryVersion >> -x3::lit("/") >> x3::attr(std::vector<PathSegment>{} /* there is no path segment in this URI, this is just a dummy to return correct type */)));
+const auto nmdaDatastore = x3::rule<class nmdaDatastore, URIPrefix>{"nmdaDatastore"} = x3::attr(URIPrefix::Type::NMDADatastore) >> "/" >> fullyQualifiedApiIdentifier;
+const auto resources = x3::rule<class resources, URIPath>{"resources"} =
+    (x3::lit("/data") >> x3::attr(URIPrefix{URIPrefix::Type::BasicRestconfData}) >> uriPath) |
+    (x3::lit("/ds") >> nmdaDatastore >> uriPath) |
+    (x3::lit("/operations") >> x3::attr(URIPrefix{URIPrefix::Type::BasicRestconfOperations}) >> uriPath) |
+    (x3::lit("/yang-library-version") >> x3::attr(URIPrefix{URIPrefix::Type::YangLibraryVersion}) >> x3::attr(std::vector<PathSegment>{} /* no path segment in this resource, just a dummy to return correct type */) >> -x3::lit("/"));
+const auto uriGrammar = x3::rule<class grammar, URIPath>{"grammar"} = x3::lit("/restconf") >> resources;
 
 // clang-format on
 }
