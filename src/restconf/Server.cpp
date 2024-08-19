@@ -638,18 +638,26 @@ void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx)
     requestCtx->res.end();
 }
 
-void processYangLibraryVersion( const nghttp2::asio_http2::server::response& res, const libyang::DataFormat dataFormat, const libyang::Context& ctx)
+/** @brief Build data trees for endpoints returning ietf-restconf:restconf data */
+libyang::DataNode apiResource(const libyang::Context& ctx, const RestconfRequest::Type& type)
 {
-    auto yangLib = *ctx.getModuleLatest("ietf-yang-library");
-    auto yangExt = ctx.getModuleImplemented("ietf-restconf")->extensionInstance("yang-api");
-    auto data = ctx.newExtPath("/ietf-restconf:restconf/yang-library-version", yangLib.revision(), yangExt);
-    res.write_head(
-        200,
-        {
-            contentType(dataFormat),
-            CORS,
-        });
-    res.end(*data->child()->printStr(dataFormat, libyang::PrintFlags::WithSiblings));
+    const auto yangLib = *ctx.getModuleLatest("ietf-yang-library");
+    const auto yangApiExt = ctx.getModuleImplemented("ietf-restconf")->extensionInstance("yang-api");
+    auto parent = ctx.newExtPath("/ietf-restconf:restconf", std::nullopt, yangApiExt);
+
+    parent->newPath("yang-library-version", yangLib.revision());
+
+    if (type == RestconfRequest::Type::YangLibraryVersion) {
+        // direct request at /restconf/yang-library-version return ONLY the yang-library-version node and nothing else (RFC 8040, sec. 3.3.3)
+        return *parent->findPath("yang-library-version");
+    } else if (type == RestconfRequest::Type::RestconfRoot) {
+        parent->newPath("data");
+        parent->newPath("operations");
+    } else {
+        throw std::logic_error("Invalid restconf request type for handling within apiResource()");
+    }
+
+    return *parent;
 }
 
 libyang::PrintFlags libyangPrintFlags(const libyang::DataNode& dataNode, const std::string& requestPath, const std::optional<queryParams::QueryParamValue>& withDefaults)
@@ -895,8 +903,10 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 auto restconfRequest = asRestconfRequest(sess.getContext(), req.method(), req.uri().path, req.uri().raw_query);
 
                 switch (restconfRequest.type) {
+                case RestconfRequest::Type::RestconfRoot:
                 case RestconfRequest::Type::YangLibraryVersion:
-                    processYangLibraryVersion(res, dataFormat.response, sess.getContext());
+                    res.write_head(200, {contentType(dataFormat.response), CORS});
+                    res.end(*apiResource(sess.getContext(), restconfRequest.type).printStr(dataFormat.response, libyang::PrintFlags::WithSiblings | libyang::PrintFlags::KeepEmptyCont));
                     break;
 
                 case RestconfRequest::Type::GetData: {
