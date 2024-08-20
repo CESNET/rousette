@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6a0d036a_e10b01cb",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-20T12:24:34Z",
+      "side": 1,
+      "message": "nit: I think that it sometimes makes sense to be \"inaccurate\" in variable names for sake of compactness. In this case, I think that simply calling this variable \"key\" will make the code a bit easier to read.\n\n(A similar case IMHO applies to \"pointParsed\" which could be called \"point\", but I don\u0027t feel that strongly about that one.)",
+      "range": {
+        "startLine": 157,
+        "startChar": 20,
+        "endLine": 157,
+        "endChar": 39
+      },
+      "revId": "54b158975231783bf48e90311499b6b9166c807c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ab2b8288_bcc0920f",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 175,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-20T12:24:34Z",
+      "side": 1,
+      "message": "After reading https://gerrit.cesnet.cz/c/CzechLight/rousette/+/7365/8, I prefer calling all three methods just `yangInsert`.",
+      "range": {
+        "startLine": 175,
+        "startChar": 5,
+        "endLine": 175,
+        "endChar": 30
+      },
+      "revId": "54b158975231783bf48e90311499b6b9166c807c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
