@@ -147,6 +147,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "de1a0320_5ac5afac",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 339,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-20T21:44:52Z",
+      "side": 1,
+      "message": "yay, damn keyboard",
+      "parentUuid": "f64f9428_9c295dff",
+      "range": {
+        "startLine": 333,
+        "startChar": 0,
+        "endLine": 339,
+        "endChar": 5
+      },
+      "revId": "9fbc0bdb4fe4c267cb3fff3304ce536e06abadbc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "976d5132_56ca8668",
