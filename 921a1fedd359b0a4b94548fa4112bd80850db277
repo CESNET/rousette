@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fb5098eb_6aabb3a7",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-20T08:09:03Z",
+      "side": 1,
+      "message": "Explain why the actions are not here. It is in the RFC or yang module, i have read it somewhere.",
+      "revId": "921a1fedd359b0a4b94548fa4112bd80850db277",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
