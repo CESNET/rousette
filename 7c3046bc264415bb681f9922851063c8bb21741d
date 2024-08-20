@@ -16,6 +16,24 @@
       "message": "lambdas within a macro are a bit too unreadable to my taste, so I tried to rewrote them as standalone functions which return a lambda; I\u0027ll push that as a new PS once I rebase on top of your PS9",
       "revId": "7c3046bc264415bb681f9922851063c8bb21741d",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5ed29563_af77cea9",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 9
+      },
+      "lineNbr": 565,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-20T13:22:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "31f0ddec_16793930",
+      "revId": "7c3046bc264415bb681f9922851063c8bb21741d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
