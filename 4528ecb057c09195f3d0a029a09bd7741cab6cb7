@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1b8498db_c8d7ff19",
+        "filename": "tests/restconf-yang-patch.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-20T21:38:58Z",
+      "side": 1,
+      "message": "one less SECTION, good :)",
+      "revId": "4528ecb057c09195f3d0a029a09bd7741cab6cb7",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
