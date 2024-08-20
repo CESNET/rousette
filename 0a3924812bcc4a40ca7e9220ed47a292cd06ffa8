@@ -16,6 +16,41 @@
       "message": "Is there a test which GETs a single RPC? That one should fail, and I haven\u0027t found that in tests/uri-parser.cpp.",
       "revId": "0a3924812bcc4a40ca7e9220ed47a292cd06ffa8",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8560a54e_05de27fc",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-20T18:33:01Z",
+      "side": 1,
+      "message": "There is definitely a full test in restconf-reading. In uri-parser we test it in the section starting on line 540.",
+      "parentUuid": "2d9e58d7_9511efa4",
+      "revId": "0a3924812bcc4a40ca7e9220ed47a292cd06ffa8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "08c72fd4_ea407934",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-20T18:33:01Z",
+      "side": 1,
+      "message": "recheck",
+      "revId": "0a3924812bcc4a40ca7e9220ed47a292cd06ffa8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
