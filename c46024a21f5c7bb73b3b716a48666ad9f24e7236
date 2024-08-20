@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e6c9ac31_77120a93",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 261,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-20T13:26:39Z",
+      "side": 1,
+      "message": "I was tempted tempted to ask to not make the \"common restconf case\" more complex, but in the end I think it\u0027s not worth yet another rebase.",
+      "revId": "c46024a21f5c7bb73b3b716a48666ad9f24e7236",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
