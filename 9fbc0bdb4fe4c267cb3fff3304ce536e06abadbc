@@ -35,6 +35,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "936bc786_0c844e0c",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 166,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-20T19:49:37Z",
+      "side": 1,
+      "message": "I reverted this hunk.",
+      "parentUuid": "f4ce6387_c3803a95",
+      "revId": "9fbc0bdb4fe4c267cb3fff3304ce536e06abadbc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3dca2df7_dfe2c8fa",
@@ -48,6 +66,30 @@
       "writtenOn": "2024-08-20T13:09:37Z",
       "side": 1,
       "message": "nit: just `yangInsert`, please",
+      "range": {
+        "startLine": 212,
+        "startChar": 5,
+        "endLine": 212,
+        "endChar": 28
+      },
+      "revId": "9fbc0bdb4fe4c267cb3fff3304ce536e06abadbc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "64377c72_7d0b798d",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 212,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-20T19:49:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3dca2df7_dfe2c8fa",
       "range": {
         "startLine": 212,
         "startChar": 5,
@@ -81,6 +123,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f64f9428_9c295dff",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 339,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-20T19:49:37Z",
+      "side": 1,
+      "message": "Done.\n\nBitwise not? :)",
+      "parentUuid": "ea72cf50_9ab489cf",
+      "range": {
+        "startLine": 333,
+        "startChar": 0,
+        "endLine": 339,
+        "endChar": 5
+      },
+      "revId": "9fbc0bdb4fe4c267cb3fff3304ce536e06abadbc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "976d5132_56ca8668",
@@ -94,6 +160,30 @@
       "writtenOn": "2024-08-20T13:09:37Z",
       "side": 1,
       "message": "let\u0027s simplify these conditions a bit please:\n \nif (where \u003d\u003d \"before\" || where \u003d\u003d \"after\") {\n  if (!pointNode) {\n    throw \"... required \u0027point\u0027 missing...\";\n  }\n  point \u003d ...\n} else if (pointNode) {\n  throw \"... \u0027point\u0027 parameter is not allowed with...\";\n}",
+      "range": {
+        "startLine": 500,
+        "startChar": 0,
+        "endLine": 504,
+        "endChar": 9
+      },
+      "revId": "9fbc0bdb4fe4c267cb3fff3304ce536e06abadbc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "22875b9b_692566c0",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 504,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-20T19:49:37Z",
+      "side": 1,
+      "message": "Done. Also edited the exception messages because these are not query parameters :)",
+      "parentUuid": "976d5132_56ca8668",
       "range": {
         "startLine": 500,
         "startChar": 0,
