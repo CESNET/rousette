@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "14161920_d10450e7",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-20T13:00:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6a0d036a_e10b01cb",
+      "range": {
+        "startLine": 157,
+        "startChar": 20,
+        "endLine": 157,
+        "endChar": 39
+      },
+      "revId": "54b158975231783bf48e90311499b6b9166c807c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "ab2b8288_bcc0920f",
@@ -37,6 +61,30 @@
       "writtenOn": "2024-08-20T12:24:34Z",
       "side": 1,
       "message": "After reading https://gerrit.cesnet.cz/c/CzechLight/rousette/+/7365/8, I prefer calling all three methods just `yangInsert`.",
+      "range": {
+        "startLine": 175,
+        "startChar": 5,
+        "endLine": 175,
+        "endChar": 30
+      },
+      "revId": "54b158975231783bf48e90311499b6b9166c807c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "267f1efe_42bc84cc",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 175,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-20T13:00:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ab2b8288_bcc0920f",
       "range": {
         "startLine": 175,
         "startChar": 5,
