@@ -26,6 +26,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "651d3f3e_f618e02b",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 267,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-20T13:00:14Z",
+      "side": 1,
+      "message": "Good catch, the dataFormat is always present so it makes no sense to wrap it inside optional",
+      "parentUuid": "4c8c64dd_a81dfdfc",
+      "range": {
+        "startLine": 267,
+        "startChar": 133,
+        "endLine": 267,
+        "endChar": 146
+      },
+      "revId": "979643275a1ac08c8b7fbd573271b875de70c911",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "04fe6c04_8fac1861",
         "filename": "src/restconf/Server.cpp",
         "patchSetId": 1
@@ -37,6 +61,30 @@
       "writtenOn": "2024-08-19T10:44:53Z",
       "side": 1,
       "message": "nit: I usually look at these refactoring patches using CLI git tools, and they show moved/reindented text with a different highlight color than added/removed lines. If this one was left as \"edit\" instead of using a new name, it would have reduced the visual clutter for me. No need to change anything now, just an FYI.",
+      "range": {
+        "startLine": 269,
+        "startChar": 37,
+        "endLine": 269,
+        "endChar": 45
+      },
+      "revId": "979643275a1ac08c8b7fbd573271b875de70c911",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c200dd37_50e60884",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 269,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-20T13:00:14Z",
+      "side": 1,
+      "message": "Ack.",
+      "parentUuid": "04fe6c04_8fac1861",
       "range": {
         "startLine": 269,
         "startChar": 37,
