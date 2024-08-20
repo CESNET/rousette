@@ -22,6 +22,30 @@
       },
       "revId": "7e3a309d28691e41e02c39e23479c4c3d5ea911b",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "54d726f7_ed857be1",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 5
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-20T13:00:14Z",
+      "side": 1,
+      "message": "I tried to clarify the message.",
+      "parentUuid": "2cba7a26_875e49e1",
+      "range": {
+        "startLine": 17,
+        "startChar": 0,
+        "endLine": 19,
+        "endChar": 29
+      },
+      "revId": "7e3a309d28691e41e02c39e23479c4c3d5ea911b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
