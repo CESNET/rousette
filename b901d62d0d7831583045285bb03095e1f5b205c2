@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0ec30c69_b823d0af",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 646,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-20T13:41:33Z",
+      "side": 1,
+      "message": "nit: Let\u0027s immediately dereference the result, so that it\u0027s a libyang::DataNode and not an optional\u003cDataNode\u003e. I\u0027m suggesting that because the optional\u003cDataNode\u003e is just an artifact of the libyang-cpp\u0027s API, and this code will *always* work with a valid node, so let\u0027s save the constant dereferencing in the rest of this function.",
+      "revId": "b901d62d0d7831583045285bb03095e1f5b205c2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3d51f0fa_ccdef8f7",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 661,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-20T13:41:33Z",
+      "side": 1,
+      "message": "At the beginning I wasn\u0027t sure about this approach, but in the end I realized that the repeated code is not just here, but also in the HTTP request handler, so I guess that\u0027s worth the extra complexity in this function.",
+      "range": {
+        "startLine": 641,
+        "startChar": 0,
+        "endLine": 661,
+        "endChar": 1
+      },
+      "revId": "b901d62d0d7831583045285bb03095e1f5b205c2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
