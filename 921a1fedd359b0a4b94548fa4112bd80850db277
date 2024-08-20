@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "19c18e76_954f78fc",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-20T13:00:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fb5098eb_6aabb3a7",
+      "revId": "921a1fedd359b0a4b94548fa4112bd80850db277",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "2c6cc08c_7ed0b2b5",
@@ -31,6 +49,30 @@
       "writtenOn": "2024-08-20T12:29:07Z",
       "side": 1,
       "message": "This processing doesn\u0027t hit any datastore, so I think it makes more sense to add one more `else if` block to the outer if cascade, similarly to how YangLibraryVersion is treated.",
+      "range": {
+        "startLine": 544,
+        "startChar": 0,
+        "endLine": 552,
+        "endChar": 51
+      },
+      "revId": "921a1fedd359b0a4b94548fa4112bd80850db277",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "fc5d4903_9ae0a897",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 552,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-20T13:00:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2c6cc08c_7ed0b2b5",
       "range": {
         "startLine": 544,
         "startChar": 0,
