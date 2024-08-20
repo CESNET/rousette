@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b257aef7_8e0349da",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-20T11:04:10Z",
+      "side": 1,
+      "message": "Nice -- this is a cleanup for I867ce6ceef6493770e7d5c1f3e57b535958b6fc8 in which I moved the error handler somewhere else, and as a result of that refactoring, that variable is now only used once. Add that to the commit message, please.",
+      "revId": "ef7e59024c79285d7ad3e62793032723b9905eec",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
