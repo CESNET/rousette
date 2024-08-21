@@ -8,6 +8,7 @@
 #pragma once
 
 #include "trompeloeil_doctest.h"
+#include <boost/variant.hpp>
 #include <experimental/iterator>
 #include <optional>
 #include <sstream>
@@ -158,6 +159,28 @@ struct StringMaker<rousette::restconf::queryParams::QueryParamValue> {
             [](const rousette::restconf::queryParams::insert::After&) -> std::string { return "After{}"; },
             [](const rousette::restconf::queryParams::insert::PointParsed& p) -> std::string {
                 return ("PointParsed{" + StringMaker<decltype(p)>::convert(p) + "}").c_str();
+            },
+            [](const rousette::restconf::queryParams::fields::Expr& expr) -> std::string {
+                return boost::apply_visitor([&](auto&& next) {
+                    using T = std::decay_t<decltype(next)>;
+                    std::string res;
+
+                    if constexpr (std::is_same_v<T, rousette::restconf::queryParams::fields::ParenExpr> || std::is_same_v<T, rousette::restconf::queryParams::fields::SemiExpr>) {
+                        if constexpr (std::is_same_v<T, rousette::restconf::queryParams::fields::ParenExpr>) {
+                            res = "ParenExpr{";
+                        } else {
+                            res = "SemiExpr{";
+                        }
+                        res += StringMaker<rousette::restconf::queryParams::QueryParamValue>::convert(next.lhs).c_str();
+                    } else if constexpr (std::is_same_v<T, rousette::restconf::queryParams::fields::SlashExpr>) {
+                        res = "SlashExpr{" + next.lhs.name();
+                    }
+
+                    if (next.rhs) {
+                        res += std::string(", ") + StringMaker<rousette::restconf::queryParams::QueryParamValue>::convert(*next.rhs).c_str();
+                    }
+                    return res += "}";
+                }, expr);
             },
         }, obj).c_str();
     }
