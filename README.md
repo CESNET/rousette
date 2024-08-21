@@ -22,6 +22,16 @@ A [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server built on
 
 Since this service only talks cleartext HTTP/2, it's recommended to run it behind a reverse proxy.
 
+### Required YANG models
+
+Rousette requires the following YANG models to be present in sysrepo:
+
+- `ietf-yang-library@2019-01-04` (installed by sysrepo)
+- `ietf-netconf` (installed by sysrepo)
+- [`ietf-restconf@2017-01-26`](yang/ietf-restconf@2017-01-26.yang)
+- [`ietf-restconf-monitoring@2017-01-26`](yang/ietf-restconf-monitoring@2017-01-26.yang)
+- [`ietf-yang-patch@2017-02-22`](yang/ietf-yang-patch@2017-02-22.yang)
+
 ### Access control model
 
 Rousette implements [RFC 8341 (NACM)](https://datatracker.ietf.org/doc/html/rfc8341.html)
