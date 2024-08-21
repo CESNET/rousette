@@ -22,7 +22,6 @@ This is a [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server 
         - TLS certificate authentication (see [Access control model](#access-control-model) below)
         - the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1.1) and [`ETag`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1.2) headers for [edit collision prevention](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1) in the datastore resource
         - the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.1) and [`ETag`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.2) headers in the data resource
-        - The [`fields`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.8.3) query parameter
 - [NMDA](https://datatracker.ietf.org/doc/html/rfc8527.html) datastore access
     - no [`with-operational-default`](https://datatracker.ietf.org/doc/html/rfc8527#section-3.2.1) capability
     - no [`with-origin`](https://datatracker.ietf.org/doc/html/rfc8527#section-3.2.2) capability

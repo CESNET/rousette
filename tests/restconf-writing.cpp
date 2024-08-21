@@ -375,6 +375,8 @@ TEST_CASE("writing data")
                     CREATED("/example:tlc/list[name='large']/nested[first='1'][second='2'][third='3']/first", "1"),
                     CREATED("/example:tlc/list[name='large']/nested[first='1'][second='2'][third='3']/second", "2"),
                     CREATED("/example:tlc/list[name='large']/nested[first='1'][second='2'][third='3']/third", "3"),
+                    CREATED("/example:tlc/list[name='large']/nested[first='1'][second='2'][third='3']/data", std::nullopt),
+                    CREATED("/example:tlc/list[name='large']/nested[first='1'][second='2'][third='3']/data/other-data", std::nullopt),
                     CREATED("/example:tlc/list[name='large']/choice2", "large"));
                 REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=large", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:list":[{"name": "large", "choice2": "large", "example:nested": [{"first": "1", "second": 2, "third": "3"}]}]})") == Response{201, noContentTypeHeaders, ""});
             }
@@ -385,7 +387,9 @@ TEST_CASE("writing data")
                     CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']", std::nullopt),
                     CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']/first", "11"),
                     CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']/second", "12"),
-                    CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']/third", "13"));
+                    CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']/third", "13"),
+                    CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']/data", std::nullopt),
+                    CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']/data/other-data", std::nullopt));
                 REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang/nested=11,12,13", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:nested": [{"first": "11", "second": 12, "third": "13"}]}]})") == Response{201, noContentTypeHeaders, ""});
             }
 
@@ -1339,6 +1343,8 @@ TEST_CASE("writing data")
                     CREATED("/example:tlc/list[name='large']/nested[first='1'][second='2'][third='3']/first", "1"),
                     CREATED("/example:tlc/list[name='large']/nested[first='1'][second='2'][third='3']/second", "2"),
                     CREATED("/example:tlc/list[name='large']/nested[first='1'][second='2'][third='3']/third", "3"),
+                    CREATED("/example:tlc/list[name='large']/nested[first='1'][second='2'][third='3']/data", std::nullopt),
+                    CREATED("/example:tlc/list[name='large']/nested[first='1'][second='2'][third='3']/data/other-data", std::nullopt),
                     CREATED("/example:tlc/list[name='large']/choice2", "large"));
                 REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:list":[{"name": "large", "choice2": "large", "example:nested": [{"first": "1", "second": 2, "third": "3"}]}]})") == Response{201, jsonHeaders, ""});
             }
@@ -1349,7 +1355,9 @@ TEST_CASE("writing data")
                     CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']", std::nullopt),
                     CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']/first", "11"),
                     CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']/second", "12"),
-                    CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']/third", "13"));
+                    CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']/third", "13"),
+                    CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']/data", std::nullopt),
+                    CREATED("/example:tlc/list[name='libyang']/nested[first='11'][second='12'][third='13']/data/other-data", std::nullopt));
                 REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc/list=libyang", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:nested": [{"first": "11", "second": 12, "third": "13"}]}]})") == Response{201, jsonHeaders, ""});
             }
 
