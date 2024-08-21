@@ -16,6 +16,24 @@
       "message": "\"Depends-on\", and a malformed URL (but please read my comment on https://gerrit.cesnet.cz/c/CzechLight/libyang-cpp/+/7452 as well)",
       "revId": "9b117ac95cfaa34f4ef126ce0df9a6af68b327cd",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f43babe5_e63c9988",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 10
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-08-21T08:45:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a02c1473_132a5879",
+      "revId": "9b117ac95cfaa34f4ef126ce0df9a6af68b327cd",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
