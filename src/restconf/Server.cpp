@@ -790,6 +790,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[2]", "urn:ietf:params:restconf:capability:depth:1.0");
     m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[3]", "urn:ietf:params:restconf:capability:with-defaults:1.0");
     m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[4]", "urn:ietf:params:restconf:capability:filter:1.0");
+    m_monitoringSession.setItem("/ietf-restconf-monitoring:restconf-state/capabilities/capability[5]", "urn:ietf:params:restconf:capability:fields:1.0");
     m_monitoringSession.applyChanges();
 
     m_monitoringOperSub = m_monitoringSession.onOperGet(
@@ -973,7 +974,13 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         }
                     }
 
-                    if (auto data = sess.getData(restconfRequest.path, maxDepth, getOptions, timeout); data) {
+                    auto xpath = restconfRequest.path;
+                    if (auto it = restconfRequest.queryParams.find("fields"); it != restconfRequest.queryParams.end()) {
+                        auto fields = std::get<queryParams::fields::Expr>(it->second);
+                        xpath = fieldsToXPath(sess.getContext(), xpath == "/*" ? "" : xpath, fields);
+                    }
+
+                    if (auto data = sess.getData(xpath, maxDepth, getOptions, timeout); data) {
                         res.write_head(
                             200,
                             {

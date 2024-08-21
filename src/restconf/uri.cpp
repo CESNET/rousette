@@ -4,7 +4,10 @@
  * Written by Tomáš Pecka <tomas.pecka@cesnet.cz>
  */
 
+#include <boost/algorithm/string/join.hpp>
+#include <boost/fusion/adapted/struct/adapt_struct.hpp>
 #include <boost/fusion/include/std_pair.hpp>
+#include <boost/spirit/home/x3/support/ast/variant.hpp>
 #include <experimental/iterator>
 #include <libyang-cpp/Enum.hpp>
 #include <map>
@@ -112,6 +115,28 @@ struct insertTable: x3::symbols<queryParams::QueryParamValue> {
     }
 } const insertParam;
 
+/* This grammar is implemented a little bit differently than the RFC states. The ABNF from RFC is:
+ *
+ *     fields-expr = path "(" fields-expr ")" / path ";" fields-expr / path
+ *     path = api-identifier [ "/" path ]
+ *
+ * Firstly, the grammar from the RFC doesn't allow for expression like `a(b);c` but allows for `c;a(b)`.
+ * I think both should be valid (as user I would expect that the order of such expression does not matter).
+ * Hence our grammar allows for more strings than the grammar from RFC.
+ * This issue was already raised on IETF mailing list: https://mailarchive.ietf.org/arch/msg/netconf/TYBpTE_ELzzMOe6amrw6fQF07nE/
+ * but neither a formal errata was issued nor there was a resolution on the mailing list.
+ */
+const auto fieldsExpr = x3::rule<class fieldsExpr, queryParams::fields::Expr>{"fieldsExpr"};
+const auto fieldsSemi = x3::rule<class fieldsSemiExpr, queryParams::fields::SemiExpr>{"fieldsSemi"};
+const auto fieldsSlash = x3::rule<class fieldsSlashExpr, queryParams::fields::SlashExpr>{"fieldsSlash"};
+const auto fieldsParen = x3::rule<class fieldsParen, queryParams::fields::ParenExpr>{"fieldsParen"};
+
+const auto fieldsSemi_def = fieldsParen >> -(x3::lit(";") >> fieldsSemi);
+const auto fieldsParen_def = fieldsSlash >> -(x3::lit("(") >> fieldsExpr >> x3::lit(")"));
+const auto fieldsSlash_def = apiIdentifier >> -(x3::lit("/") >> fieldsSlash);
+const auto fieldsExpr_def = fieldsSemi;
+BOOST_SPIRIT_DEFINE(fieldsParen, fieldsExpr, fieldsSlash, fieldsSemi);
+
 // early sanity check, this timestamp will be parsed by libyang::fromYangTimeFormat anyways
 const auto dateAndTime = x3::rule<class dateAndTime, std::string>{"dateAndTime"} =
     x3::repeat(4)[x3::digit] >> x3::char_('-') >> x3::repeat(2)[x3::digit] >> x3::char_('-') >> x3::repeat(2)[x3::digit] >> x3::char_('T') >>
@@ -127,7 +152,8 @@ const auto queryParamPair = x3::rule<class queryParamPair, std::pair<std::string
         (x3::string("point") >> "=" >> uriPath) |
         (x3::string("filter") >> "=" >> filter) |
         (x3::string("start-time") >> "=" >> dateAndTime) |
-        (x3::string("stop-time") >> "=" >> dateAndTime);
+        (x3::string("stop-time") >> "=" >> dateAndTime) |
+        (x3::string("fields") >> "=" >> fieldsExpr);
 
 const auto queryParamGrammar = x3::rule<class grammar, queryParams::QueryParams>{"queryParamGrammar"} = queryParamPair % "&" | x3::eps;
 
@@ -384,7 +410,7 @@ void validateQueryParameters(const std::multimap<std::string, queryParams::Query
         }
     }
 
-    for (const auto& param : {"depth", "with-defaults", "content"}) {
+    for (const auto& param : {"depth", "with-defaults", "content", "fields"}) {
         if (auto it = params.find(param); it != params.end() && httpMethod != "GET" && httpMethod != "HEAD") {
             throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter '"s + param + "' can be used only with GET and HEAD methods");
         }
@@ -657,5 +683,62 @@ std::set<std::string> allowedHttpMethodsForUri(const libyang::Context& ctx, cons
     }
 
     return allowedHttpMethods;
+}
+
+void fieldsToXPath(const queryParams::fields::Expr& expr, std::vector<std::string>& currentPath, std::vector<std::string>& paths, bool end = false)
+{
+    boost::apply_visitor([&](auto&& node) {
+        using T = std::decay_t<decltype(node)>;
+
+        if constexpr (std::is_same_v<T, queryParams::fields::ParenExpr>) {
+            // the paths from left and right subtree are concatenated, i.e., the the nodes we collect in the left tree are joined together with the nodes from the right tree
+            fieldsToXPath(node.lhs, currentPath, paths, !node.rhs.has_value());
+            if (node.rhs) {
+                fieldsToXPath(*node.rhs, currentPath, paths, end);
+            }
+        } else if constexpr (std::is_same_v<T, queryParams::fields::SemiExpr>) {
+            // the two paths are now independent and nodes from left subtree do not affect the right subtree
+            // hence we need to copy the current path
+            auto pathCopy = currentPath;
+            fieldsToXPath(node.lhs, currentPath, paths, !node.rhs.has_value());
+            if (node.rhs) {
+                fieldsToXPath(*node.rhs, pathCopy, paths, false);
+            }
+        } else if constexpr (std::is_same_v<T, queryParams::fields::SlashExpr>) {
+            // the paths from left and right subtree are concatenated, i.e., the the nodes we collect in the left tree are joined together with the nodes from the right tree
+            // but if this is the terminal node, we need to add it to the collection of all paths
+            currentPath.push_back(node.lhs.name());
+
+            if (node.rhs) {
+                fieldsToXPath(*node.rhs, currentPath, paths, end);
+            } else if (end) {
+                paths.emplace_back(boost::algorithm::join(currentPath, "/"));
+            }
+        }
+    }, expr);
+}
+
+/** @brief Translates the fields expression into a XPath expression and checks for schema validity of the resulting nodes
+ *
+ * The expressions are "unwrapped" into a linear structure and then a union of such paths is made.
+ * E.g., the expression "a(b;c)" is translated into "a/b | a/c".
+ * */
+std::string fieldsToXPath(const libyang::Context& ctx, const std::string& prefix, const queryParams::fields::Expr& expr)
+{
+    std::vector<std::string> currentPath;
+    std::vector<std::string> paths;
+
+    fieldsToXPath(expr, currentPath, paths);
+    std::transform(paths.begin(), paths.end(), paths.begin(), [&](const auto& elem) { return prefix + "/" + elem; });
+
+    for (auto& xpath : paths) {
+        try {
+            validateMethodForNode("GET", impl::URIPrefix{impl::URIPrefix::Type::BasicRestconfData}, ctx.findPath(xpath));
+        } catch (const libyang::Error& e) {
+            throw ErrorResponse(400, "application", "operation-failed", "Can't find schema node for '" + xpath + "'");
+        }
+    }
+
+    return boost::algorithm::join(paths, " | ");
 }
 }
