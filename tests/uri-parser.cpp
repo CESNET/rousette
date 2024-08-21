@@ -810,6 +810,35 @@ TEST_CASE("URI path parser")
             REQUIRE(parseQueryParams("stop-time=2023-05-20T18:30:00") == std::nullopt);
             REQUIRE(parseQueryParams("stop-time=20230520T18:30:00Z") == std::nullopt);
             REQUIRE(parseQueryParams("stop-time=2023-05-a0T18:30:00+05:30") == std::nullopt);
+            REQUIRE(parseQueryParams("fields=mod:leaf") == QueryParams{{"fields", fields::SemiExpr{fields::ParenExpr{fields::SlashExpr{{"mod", "leaf"}}}}}});
+            REQUIRE(parseQueryParams("fields=b(c;d);e(f)") == QueryParams{{"fields", fields::SemiExpr{fields::ParenExpr{fields::SlashExpr{{"b"}}, fields::SemiExpr{fields::ParenExpr{fields::SlashExpr{{"c"}}}, fields::SemiExpr{fields::ParenExpr{fields::SlashExpr{{"d"}}}}}}, fields::SemiExpr{fields::ParenExpr{fields::SlashExpr{{"e"}}, fields::SemiExpr{fields::ParenExpr{fields::SlashExpr{{"f"}}}}}}}}});
+            REQUIRE(parseQueryParams("fields=(xyz)") == std::nullopt);
+            REQUIRE(parseQueryParams("fields=a;(xyz)") == std::nullopt);
+            REQUIRE(parseQueryParams("fields=") == std::nullopt);
+
+            auto xpathPrefix = "/example:mod"s;
+            for (const auto& [fields, xpath] : {
+                     std::pair<std::string, std::string>{"a", xpathPrefix + "/a"},
+                     {"a/b/c", xpathPrefix + "/a/b/c"},
+                     {"a(b;c)", xpathPrefix + "/a/b | " + xpathPrefix + "/a/c"},
+                     {"d(e)", xpathPrefix + "/d/e"},
+                     {"m1:a;b;m2:c", xpathPrefix + "/m1:a | " + xpathPrefix + "/b | " + xpathPrefix + "/m2:c"},
+                     {"album(genre)", xpathPrefix + "/album/genre"},
+                     {"album(admin(label))", xpathPrefix + "/album/admin/label"},
+                     {"album(admin(label;catalogue-number))", xpathPrefix + "/album/admin/label | " + xpathPrefix + "/album/admin/catalogue-number"},
+                     {"album(genre;admin(label;catalogue-number))", xpathPrefix + "/album/genre | " + xpathPrefix + "/album/admin/label | " + xpathPrefix + "/album/admin/catalogue-number"},
+                     {"a;x;y(v;z(w1;w2))", xpathPrefix + "/a | " + xpathPrefix + "/x | " + xpathPrefix + "/y/v | " + xpathPrefix + "/y/z/w1 | " + xpathPrefix + "/y/z/w2"},
+                     {"a/b/c;d(e)", xpathPrefix + "/a/b/c | " + xpathPrefix + "/d/e"},
+                 }) {
+                CAPTURE(fields);
+                CAPTURE(xpath);
+                auto qp = parseQueryParams("fields=" + fields);
+                REQUIRE(qp);
+                REQUIRE(qp->count("fields") == 1);
+                auto fieldExpr = qp->find("fields")->second;
+                REQUIRE(std::holds_alternative<fields::Expr>(fieldExpr));
+                REQUIRE(rousette::restconf::fieldsToXPath(xpathPrefix, std::get<fields::Expr>(fieldExpr)) == xpath);
+            }
         }
 
         SECTION("Full requests with validation")
@@ -864,6 +893,20 @@ TEST_CASE("URI path parser")
 
                 REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF/XML", "content=config"),
                                        serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'content' can't be used with streams").c_str(),
+                                       rousette::restconf::ErrorResponse);
+            }
+
+            SECTION("fields")
+            {
+                auto resp = asRestconfRequest(ctx, "GET", "/restconf/data/example:a", "fields=b/c(enabled;blower)");
+                REQUIRE(resp.queryParams == QueryParams({{"fields", fields::SemiExpr{fields::ParenExpr{fields::SlashExpr{{"b"}, fields::SlashExpr{{"c"}}}, fields::SemiExpr{fields::ParenExpr{fields::SlashExpr{{"enabled"}}}, fields::SemiExpr{fields::ParenExpr{fields::SlashExpr{{"blower"}}}}}}}}}));
+
+                REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "POST", "/restconf/data/example:a", "fields=b/c(enabled;blower)"),
+                                       serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'fields' can be used only with GET and HEAD methods").c_str(),
+                                       rousette::restconf::ErrorResponse);
+
+                REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF/XML", "fields=a"),
+                                       serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'fields' can't be used with streams").c_str(),
                                        rousette::restconf::ErrorResponse);
             }
 

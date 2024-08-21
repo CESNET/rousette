@@ -4,7 +4,10 @@
  * Written by Tomáš Pecka <tomas.pecka@cesnet.cz>
  */
 
+#include <boost/algorithm/string/join.hpp>
+#include <boost/fusion/adapted/struct/adapt_struct.hpp>
 #include <boost/fusion/include/std_pair.hpp>
+#include <boost/spirit/home/x3/support/ast/variant.hpp>
 #include <experimental/iterator>
 #include <libyang-cpp/Enum.hpp>
 #include <map>
@@ -112,6 +115,23 @@ struct insertTable: x3::symbols<queryParams::QueryParamValue> {
     }
 } const insertParam;
 
+/* Firstly, the grammar from RFC does not allow for expression like `a(b);c` but allows for `c;a(b)`.
+ * Out grammar allows for both but still does not allow expressions like `a(b;c)/d`.
+ *
+ * This issue was already raised on IETF mailing list: https://mailarchive.ietf.org/arch/msg/netconf/TYBpTE_ELzzMOe6amrw6fQF07nE/
+ * but neither a formal errata was issued nor there was a resolution on the mailing list.
+ */
+const auto fieldsExpr = x3::rule<class fieldsExpr, queryParams::fields::Expr>{"fieldsExpr"};
+const auto fieldsSemi = x3::rule<class fieldsSemiExpr, queryParams::fields::SemiExpr>{"fieldsSemi"};
+const auto fieldsSlash = x3::rule<class fieldsSlashExpr, queryParams::fields::SlashExpr>{"fieldsSlash"};
+const auto fieldsParen = x3::rule<class fieldsParen, queryParams::fields::ParenExpr>{"fieldsParen"};
+
+const auto fieldsSemi_def = fieldsParen >> -(x3::lit(";") >> fieldsSemi);
+const auto fieldsParen_def = fieldsSlash >> -(x3::lit("(") >> fieldsExpr >> x3::lit(")"));
+const auto fieldsSlash_def = apiIdentifier >> -(x3::lit("/") >> fieldsSlash);
+const auto fieldsExpr_def = fieldsSemi;
+BOOST_SPIRIT_DEFINE(fieldsParen, fieldsExpr, fieldsSlash, fieldsSemi);
+
 // early sanity check, this timestamp will be parsed by libyang::fromYangTimeFormat anyways
 const auto dateAndTime = x3::rule<class dateAndTime, std::string>{"dateAndTime"} =
     x3::repeat(4)[x3::digit] >> x3::char_('-') >> x3::repeat(2)[x3::digit] >> x3::char_('-') >> x3::repeat(2)[x3::digit] >> x3::char_('T') >>
@@ -127,7 +147,8 @@ const auto queryParamPair = x3::rule<class queryParamPair, std::pair<std::string
         (x3::string("point") >> "=" >> uriPath) |
         (x3::string("filter") >> "=" >> filter) |
         (x3::string("start-time") >> "=" >> dateAndTime) |
-        (x3::string("stop-time") >> "=" >> dateAndTime);
+        (x3::string("stop-time") >> "=" >> dateAndTime) |
+        (x3::string("fields") >> "=" >> fieldsExpr);
 
 const auto queryParamGrammar = x3::rule<class grammar, queryParams::QueryParams>{"queryParamGrammar"} = queryParamPair % "&" | x3::eps;
 
@@ -384,7 +405,7 @@ void validateQueryParameters(const std::multimap<std::string, queryParams::Query
         }
     }
 
-    for (const auto& param : {"depth", "with-defaults", "content"}) {
+    for (const auto& param : {"depth", "with-defaults", "content", "fields"}) {
         if (auto it = params.find(param); it != params.end() && httpMethod != "GET" && httpMethod != "HEAD") {
             throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter '"s + param + "' can be used only with GET and HEAD methods");
         }
@@ -657,5 +678,50 @@ std::set<std::string> allowedHttpMethodsForUri(const libyang::Context& ctx, cons
     }
 
     return allowedHttpMethods;
+}
+
+void fieldsToXPath(const queryParams::fields::Expr& expr, std::vector<std::string>& stack, std::vector<std::string>& collected, bool fin = false)
+{
+    boost::apply_visitor([&](auto&& next) {
+        using T = std::decay_t<decltype(next)>;
+
+        if constexpr (std::is_same_v<T, queryParams::fields::ParenExpr>) {
+            fieldsToXPath(next.lhs, stack, collected, !next.rhs.has_value());
+            if (next.rhs) {
+                fieldsToXPath(*next.rhs, stack, collected, fin);
+            }
+        } else if constexpr (std::is_same_v<T, queryParams::fields::SemiExpr>) {
+            auto stackCopy = stack;
+            fieldsToXPath(next.lhs, stack, collected, !next.rhs.has_value());
+            stack = stackCopy;
+            if (next.rhs) {
+                fieldsToXPath(*next.rhs, stack, collected, false);
+            }
+        } else if constexpr (std::is_same_v<T, queryParams::fields::SlashExpr>) {
+            if (next.lhs.prefix) {
+                stack.push_back(*next.lhs.prefix + ":" + next.lhs.identifier);
+            } else {
+                stack.push_back(next.lhs.identifier);
+            }
+
+            if (next.rhs) {
+                fieldsToXPath(*next.rhs, stack, collected, fin);
+            } else if (fin) {
+                collected.emplace_back(boost::algorithm::join(stack, "/"));
+            }
+        }
+    },
+                         expr);
+}
+
+/** @brief Translates the fields expression into a XPath expression */
+std::string fieldsToXPath(const std::string& prefix, const queryParams::fields::Expr& expr)
+{
+    std::vector<std::string> stack;
+    std::vector<std::string> xpathElements;
+
+    fieldsToXPath(expr, stack, xpathElements);
+    std::transform(xpathElements.begin(), xpathElements.end(), xpathElements.begin(), [&](const auto& elem) { return prefix + "/" + elem; });
+    return boost::algorithm::join(xpathElements, " | ");
 }
 }

@@ -6,6 +6,7 @@
 
 #pragma once
 #include <boost/optional.hpp>
+#include <boost/variant.hpp>
 #include <libyang-cpp/Module.hpp>
 #include <libyang-cpp/SchemaNode.hpp>
 #include <map>
@@ -100,6 +101,57 @@ struct After {
 using PointParsed = std::vector<PathSegment>;
 }
 
+namespace fields {
+struct ParenExpr;
+struct SemiExpr;
+struct SlashExpr;
+
+using Expr = boost::variant<boost::recursive_wrapper<SlashExpr>, boost::recursive_wrapper<ParenExpr>, boost::recursive_wrapper<SemiExpr>>;
+
+struct ParenExpr {
+    Expr lhs;
+    boost::optional<Expr> rhs;
+
+    ParenExpr() = default;
+    ParenExpr(const Expr& lhs, const Expr& rhs) : ParenExpr(lhs, boost::optional<Expr>(rhs)) {}
+    ParenExpr(const Expr& lhs, const boost::optional<Expr>& rhs = boost::none)
+        : lhs(lhs)
+        , rhs(rhs)
+    {
+    }
+
+    bool operator==(const ParenExpr&) const = default;
+};
+struct SemiExpr {
+    Expr lhs;
+    boost::optional<Expr> rhs;
+
+    SemiExpr() = default;
+    SemiExpr(const Expr& lhs, const Expr& rhs) : SemiExpr(lhs, boost::optional<Expr>(rhs)) {}
+    SemiExpr(const Expr& lhs, const boost::optional<Expr>& rhs = boost::none)
+        : lhs(lhs)
+        , rhs(rhs)
+    {
+    }
+
+    bool operator==(const SemiExpr&) const = default;
+};
+struct SlashExpr {
+    ApiIdentifier lhs;
+    boost::optional<Expr> rhs;
+
+    SlashExpr() = default;
+    SlashExpr(const ApiIdentifier& lhs, const Expr& rhs) : SlashExpr(lhs, boost::optional<Expr>(rhs)) {}
+    SlashExpr(const ApiIdentifier& lhs, const boost::optional<Expr>& rhs = boost::none)
+        : lhs(lhs)
+        , rhs(rhs)
+    {
+    }
+
+    bool operator==(const SlashExpr&) const = default;
+};
+}
+
 using QueryParamValue = std::variant<
     UnboundedDepth,
     unsigned int,
@@ -115,7 +167,8 @@ using QueryParamValue = std::variant<
     insert::Last,
     insert::Before,
     insert::After,
-    insert::PointParsed>;
+    insert::PointParsed,
+    fields::Expr>;
 using QueryParams = std::multimap<std::string, QueryParamValue>;
 }
 
@@ -158,4 +211,6 @@ std::vector<PathSegment> asPathSegments(const std::string& uriPath);
 std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> asYangModule(const libyang::Context& ctx, const std::string& uriPath);
 RestconfStreamRequest asRestconfStreamRequest(const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString);
 std::set<std::string> allowedHttpMethodsForUri(const libyang::Context& ctx, const std::string& uriPath);
+
+std::string fieldsToXPath(const std::string& prefix, const queryParams::fields::Expr& expr);
 }
