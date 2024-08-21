@@ -72,7 +72,8 @@ TEST_CASE("reading data")
         "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=explicit",
         "urn:ietf:params:restconf:capability:depth:1.0",
         "urn:ietf:params:restconf:capability:with-defaults:1.0",
-        "urn:ietf:params:restconf:capability:filter:1.0"
+        "urn:ietf:params:restconf:capability:filter:1.0",
+        "urn:ietf:params:restconf:capability:fields:1.0"
       ]
     },
     "streams": {
@@ -116,7 +117,8 @@ TEST_CASE("reading data")
         "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=explicit",
         "urn:ietf:params:restconf:capability:depth:1.0",
         "urn:ietf:params:restconf:capability:with-defaults:1.0",
-        "urn:ietf:params:restconf:capability:filter:1.0"
+        "urn:ietf:params:restconf:capability:filter:1.0",
+        "urn:ietf:params:restconf:capability:fields:1.0"
       ]
     },
     "streams": {
@@ -563,7 +565,8 @@ TEST_CASE("reading data")
         "urn:ietf:params:restconf:capability:defaults:1.0?basic-mode=explicit",
         "urn:ietf:params:restconf:capability:depth:1.0",
         "urn:ietf:params:restconf:capability:with-defaults:1.0",
-        "urn:ietf:params:restconf:capability:filter:1.0"
+        "urn:ietf:params:restconf:capability:filter:1.0",
+        "urn:ietf:params:restconf:capability:fields:1.0"
       ]
     },
     "streams": {
@@ -780,6 +783,127 @@ TEST_CASE("reading data")
   "example:config-nonconfig": {
     "config-node": "foo-config-true",
     "nonconfig-node": "foo-config-false"
+  }
+}
+)"});
+    }
+
+    SECTION("fields filtering")
+    {
+        srSess.switchDatastore(sysrepo::Datastore::Running);
+        srSess.setItem("/example:tlc/list[name='blabla']/choice1", "c1");
+        srSess.setItem("/example:tlc/list[name='blabla']/collection[.='42']", std::nullopt);
+        srSess.setItem("/example:tlc/list[name='blabla']/nested[first='1'][second='2'][third='3']/fourth", "4");
+        srSess.setItem("/example:tlc/list[name='blabla']/nested[first='1'][second='2'][third='3']/data/a", "a");
+        srSess.setItem("/example:tlc/list[name='blabla']/nested[first='1'][second='2'][third='3']/data/other-data/b", "b");
+        srSess.setItem("/example:tlc/list[name='blabla']/nested[first='1'][second='2'][third='3']/data/other-data/c", "c");
+        srSess.applyChanges();
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=blabla?fields=choice1;collection", {}) == Response{200, jsonHeaders, R"({
+  "example:tlc": {
+    "list": [
+      {
+        "name": "blabla",
+        "collection": [
+          42
+        ],
+        "choice1": "c1"
+      }
+    ]
+  }
+}
+)"});
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=blabla?fields=choice1;choice2;nested/data(a;other-data/b)", {}) == Response{200, jsonHeaders, R"({
+  "example:tlc": {
+    "list": [
+      {
+        "name": "blabla",
+        "nested": [
+          {
+            "first": "1",
+            "second": 2,
+            "third": "3",
+            "data": {
+              "a": "a",
+              "other-data": {
+                "b": "b"
+              }
+            }
+          }
+        ],
+        "choice1": "c1"
+      }
+    ]
+  }
+}
+)"});
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=blabla?fields=hehe", {}) == Response{404, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "No data from sysrepo."
+      }
+    ]
+  }
+}
+)"});
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=blabla?fields=nested/data&depth=1", {}) == Response{200, jsonHeaders, R"({
+  "example:tlc": {
+    "list": [
+      {
+        "name": "blabla",
+        "nested": [
+          {
+            "first": "1",
+            "second": 2,
+            "third": "3",
+            "data": {
+              "a": "a",
+              "other-data": {}
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+)"});
+
+        // whole datastore with fields filtering
+        REQUIRE(get(RESTCONF_DATA_ROOT "?fields=example:tlc/list/nested/data&depth=1", {}) == Response{200, jsonHeaders, R"({
+  "example:tlc": {
+    "list": [
+      {
+        "name": "blabla",
+        "nested": [
+          {
+            "first": "1",
+            "second": 2,
+            "third": "3",
+            "data": {
+              "a": "a",
+              "other-data": {}
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+)"});
+
+        // gibberish
+        REQUIRE(get(RESTCONF_DATA_ROOT "?fields=example:tlc/ob-la-di-ob-la-da", {}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Session::getData: Couldn't get '/example:tlc/ob-la-di-ob-la-da': SR_ERR_NOT_FOUND"
+      }
+    ]
   }
 }
 )"});

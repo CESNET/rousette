@@ -26,6 +26,14 @@ module example {
         leaf first { type string; }
         leaf second { type int32; }
         leaf third { type string; }
+        leaf fourth { type string; }
+        container data {
+          leaf a { type string; }
+          container other-data {
+            leaf b { type string; }
+            leaf c { type string; }
+          }
+        }
       }
       choice choose {
         mandatory true;
