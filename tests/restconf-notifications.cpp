@@ -351,6 +351,7 @@ TEST_CASE("NETCONF notification streams")
 
         PREPARE_LOOP_WITH_EXCEPTIONS
         std::jthread notificationThread;
+        std::latch oldNotificationsDone{1};
 
         SECTION("Start time")
         {
@@ -373,7 +374,8 @@ TEST_CASE("NETCONF notification streams")
                     SEND_NOTIFICATION(notificationsJSON[2]);
                     SEND_NOTIFICATION(notificationsJSON[3]);
                     SEND_NOTIFICATION(notificationsJSON[4]);
-                    requestSent.count_down();
+                    oldNotificationsDone.count_down();
+                    requestSent.wait();
 
                     waitForCompletionAndBitMore(seqMod1);
                     waitForCompletionAndBitMore(seqMod2);
@@ -389,9 +391,8 @@ TEST_CASE("NETCONF notification streams")
                     SEND_NOTIFICATION(notificationsJSON[0]);
                     SEND_NOTIFICATION(notificationsJSON[1]);
 
-                    std::this_thread::sleep_for(250ms);
-                    requestSent.count_down();
-                    std::this_thread::sleep_for(250ms);
+                    oldNotificationsDone.count_down();
+                    requestSent.wait();
 
                     SEND_NOTIFICATION(notificationsJSON[2]);
                     SEND_NOTIFICATION(notificationsJSON[3]);
@@ -424,12 +425,14 @@ TEST_CASE("NETCONF notification streams")
                 SEND_NOTIFICATION(notificationsJSON[3]);
                 SEND_NOTIFICATION(notificationsJSON[4]);
 
-                requestSent.count_down();
+                oldNotificationsDone.count_down();
+                requestSent.wait();
                 waitForCompletionAndBitMore(seqMod1);
                 waitForCompletionAndBitMore(seqMod2);
             }));
         }
 
+        oldNotificationsDone.wait();
         SSEClient cli(io, requestSent, netconfWatcher, uri, {AUTH_ROOT});
         RUN_LOOP_WITH_EXCEPTIONS;
     }
