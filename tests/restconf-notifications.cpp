@@ -24,10 +24,15 @@ struct NotificationWatcher {
     libyang::Context ctx;
     libyang::DataFormat dataFormat;
 
-    NotificationWatcher(const libyang::Context& ctx, libyang::DataFormat dataFormat)
+    NotificationWatcher(const libyang::Context& ctx)
         : ctx(ctx)
-        , dataFormat(dataFormat)
+        , dataFormat(libyang::DataFormat::JSON)
     {
+    }
+
+    void setDataFormat(const libyang::DataFormat dataFormat)
+    {
+        this->dataFormat = dataFormat;
     }
 
     void operator()(const std::string& msg) const
@@ -151,15 +156,16 @@ TEST_CASE("NETCONF notification streams")
     };
     std::vector<std::string> expectedNotificationsJSON;
 
+    NotificationWatcher netconfWatcher(srConn.sessionStart().getContext());
+
     SECTION("NETCONF streams")
     {
         std::string uri;
-        libyang::DataFormat dataFormat;
         std::map<std::string, std::string> headers;
 
         SECTION("XML stream")
         {
-            dataFormat = libyang::DataFormat::XML;
+            netconfWatcher.setDataFormat(libyang::DataFormat::XML);
             headers = {AUTH_ROOT};
 
             SECTION("No filter")
@@ -177,7 +183,6 @@ TEST_CASE("NETCONF notification streams")
         SECTION("JSON stream")
         {
             uri = "/streams/NETCONF/JSON";
-            dataFormat = libyang::DataFormat::JSON;
 
             SECTION("anonymous user cannot read example-notif module")
             {
@@ -215,7 +220,6 @@ TEST_CASE("NETCONF notification streams")
             io.stop();
         });
 
-        NotificationWatcher netconfWatcher(srConn.sessionStart().getContext(), dataFormat);
         SSEClient cli(io, requestSent, netconfWatcher, uri, headers);
 
         for (const auto& notif : expectedNotificationsJSON) {
@@ -297,6 +301,7 @@ TEST_CASE("NETCONF notification streams")
         srConn.setModuleReplaySupport("example-notif", true);
 
         std::string uri = "/streams/NETCONF/XML";
+        netconfWatcher.setDataFormat(libyang::DataFormat::XML);
 
         boost::asio::io_service io;
 
@@ -376,7 +381,6 @@ TEST_CASE("NETCONF notification streams")
             });
         }
 
-        NotificationWatcher netconfWatcher(srConn.sessionStart().getContext(), libyang::DataFormat::XML);
         SSEClient cli(io, requestSent, netconfWatcher, uri, {AUTH_ROOT});
 
         for (const auto& notif : expectedNotificationsJSON) {
