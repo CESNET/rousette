@@ -15,7 +15,7 @@ static const auto SERVER_PORT = "10088";
 #include "tests/aux-utils.h"
 #include "tests/pretty_printers.h"
 
-#define EXPECT_NOTIFICATION(DATA) expectations.emplace_back(NAMED_REQUIRE_CALL(netconfWatcher, data(DATA)).IN_SEQUENCE(seq1));
+#define EXPECT_NOTIFICATION(DATA, SEQ) expectations.emplace_back(NAMED_REQUIRE_CALL(netconfWatcher, data(DATA)).IN_SEQUENCE(SEQ));
 #define SEND_NOTIFICATION(DATA) notifSession.sendNotification(*ctx.parseOp(DATA, libyang::DataFormat::JSON, libyang::OperationType::NotificationYang).op, sysrepo::Wait::No);
 
 using namespace std::chrono_literals;
@@ -129,7 +129,7 @@ struct SSEClient {
 
 TEST_CASE("NETCONF notification streams")
 {
-    trompeloeil::sequence seq1;
+    trompeloeil::sequence seqMod1, seqMod2;
     spdlog::set_level(spdlog::level::trace);
 
     std::vector<std::unique_ptr<trompeloeil::expectation>> expectations;
@@ -154,7 +154,6 @@ TEST_CASE("NETCONF notification streams")
         R"({"example:eventA":{"message":"almost finished","progress":99}})",
         R"({"example:tlc":{"list":[{"name":"k1","notif":{"message":"nested"}}]}})",
     };
-    std::vector<std::string> expectedNotificationsJSON;
 
     NotificationWatcher netconfWatcher(srConn.sessionStart().getContext());
 
@@ -171,12 +170,17 @@ TEST_CASE("NETCONF notification streams")
             SECTION("No filter")
             {
                 uri = "/streams/NETCONF/XML";
-                expectedNotificationsJSON = notificationsJSON;
+                EXPECT_NOTIFICATION(notificationsJSON[0], seqMod1);
+                EXPECT_NOTIFICATION(notificationsJSON[1], seqMod1);
+                EXPECT_NOTIFICATION(notificationsJSON[2], seqMod2);
+                EXPECT_NOTIFICATION(notificationsJSON[3], seqMod1);
+                EXPECT_NOTIFICATION(notificationsJSON[4], seqMod1);
             }
             SECTION("Filter")
             {
                 uri = "/streams/NETCONF/XML?filter=/example:eventA";
-                expectedNotificationsJSON = {notificationsJSON[0], notificationsJSON[3]};
+                EXPECT_NOTIFICATION(notificationsJSON[0], seqMod1);
+                EXPECT_NOTIFICATION(notificationsJSON[3], seqMod1);
             }
         }
 
@@ -186,13 +190,20 @@ TEST_CASE("NETCONF notification streams")
 
             SECTION("anonymous user cannot read example-notif module")
             {
-                expectedNotificationsJSON = {notificationsJSON[0], notificationsJSON[1], notificationsJSON[3], notificationsJSON[4]};
+                EXPECT_NOTIFICATION(notificationsJSON[0], seqMod1);
+                EXPECT_NOTIFICATION(notificationsJSON[1], seqMod1);
+                EXPECT_NOTIFICATION(notificationsJSON[3], seqMod1);
+                EXPECT_NOTIFICATION(notificationsJSON[4], seqMod1);
             }
 
             SECTION("root user")
             {
                 headers = {AUTH_ROOT};
-                expectedNotificationsJSON = notificationsJSON;
+                EXPECT_NOTIFICATION(notificationsJSON[0], seqMod1);
+                EXPECT_NOTIFICATION(notificationsJSON[1], seqMod1);
+                EXPECT_NOTIFICATION(notificationsJSON[2], seqMod2);
+                EXPECT_NOTIFICATION(notificationsJSON[3], seqMod1);
+                EXPECT_NOTIFICATION(notificationsJSON[4], seqMod1);
             }
         }
 
@@ -216,16 +227,12 @@ TEST_CASE("NETCONF notification streams")
             SEND_NOTIFICATION(notificationsJSON[4]);
 
             // stop io_service after everything is processed
-            waitForCompletionAndBitMore(seq1);
+            waitForCompletionAndBitMore(seqMod1);
+            waitForCompletionAndBitMore(seqMod2);
             io.stop();
         });
 
         SSEClient cli(io, requestSent, netconfWatcher, uri, headers);
-
-        for (const auto& notif : expectedNotificationsJSON) {
-            EXPECT_NOTIFICATION(notif);
-        }
-
         io.run();
     }
 
@@ -310,7 +317,12 @@ TEST_CASE("NETCONF notification streams")
 
         SECTION("Start time")
         {
-            expectedNotificationsJSON = notificationsJSON;
+            EXPECT_NOTIFICATION(notificationsJSON[0], seqMod1);
+            EXPECT_NOTIFICATION(notificationsJSON[1], seqMod1);
+            EXPECT_NOTIFICATION(notificationsJSON[2], seqMod2);
+            EXPECT_NOTIFICATION(notificationsJSON[3], seqMod1);
+            EXPECT_NOTIFICATION(notificationsJSON[4], seqMod1);
+
             uri += "?start-time=" + libyang::yangTimeFormat(std::chrono::system_clock::now(), libyang::TimezoneInterpretation::Local);
 
             SECTION("All notifications before client connects")
@@ -326,7 +338,8 @@ TEST_CASE("NETCONF notification streams")
                     SEND_NOTIFICATION(notificationsJSON[4]);
                     requestSent.count_down();
 
-                    waitForCompletionAndBitMore(seq1);
+                    waitForCompletionAndBitMore(seqMod1);
+                    waitForCompletionAndBitMore(seqMod2);
                     io.stop();
                 });
             }
@@ -348,7 +361,8 @@ TEST_CASE("NETCONF notification streams")
                     SEND_NOTIFICATION(notificationsJSON[3]);
                     SEND_NOTIFICATION(notificationsJSON[4]);
 
-                    waitForCompletionAndBitMore(seq1);
+                    waitForCompletionAndBitMore(seqMod1);
+                    waitForCompletionAndBitMore(seqMod2);
                     io.stop();
                 });
             }
@@ -359,7 +373,7 @@ TEST_CASE("NETCONF notification streams")
             auto notifSession = sysrepo::Connection{}.sessionStart();
             auto ctx = notifSession.getContext();
 
-            expectedNotificationsJSON = {notificationsJSON[2]};
+            EXPECT_NOTIFICATION(notificationsJSON[2], seqMod2);
 
             SEND_NOTIFICATION(notificationsJSON[0]);
             SEND_NOTIFICATION(notificationsJSON[1]);
@@ -376,17 +390,13 @@ TEST_CASE("NETCONF notification streams")
                 SEND_NOTIFICATION(notificationsJSON[4]);
 
                 requestSent.count_down();
-                waitForCompletionAndBitMore(seq1);
+                waitForCompletionAndBitMore(seqMod1);
+                waitForCompletionAndBitMore(seqMod2);
                 io.stop();
             });
         }
 
         SSEClient cli(io, requestSent, netconfWatcher, uri, {AUTH_ROOT});
-
-        for (const auto& notif : expectedNotificationsJSON) {
-            EXPECT_NOTIFICATION(notif);
-        }
-
         io.run();
     }
 }
