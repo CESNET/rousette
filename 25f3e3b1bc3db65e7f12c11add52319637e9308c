@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d53d1411_e8ababbc",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 15
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-08-22T10:07:23Z",
+      "side": 1,
+      "message": "recheck due to a non-determinism in sysrepo (I\u0027ll fix that in a follow-up patch)",
+      "revId": "25f3e3b1bc3db65e7f12c11add52319637e9308c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
