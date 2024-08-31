@@ -134,6 +134,7 @@ install(TARGETS
 install(FILES
     ${CMAKE_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang
     ${CMAKE_SOURCE_DIR}/yang/ietf-restconf-monitoring@2017-01-26.yang
+    ${CMAKE_SOURCE_DIR}/yang/ietf-yang-patch@2017-02-22.yang
     DESTINATION ${CMAKE_INSTALL_PREFIX}/share/yang/modules/rousette)
 
 include(CTest)
