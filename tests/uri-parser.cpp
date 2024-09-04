@@ -672,7 +672,7 @@ TEST_CASE("URI path parser")
             ctx.loadModule("ietf-netconf-acm", "2018-02-14");
             ctx.loadModule("root-mod", std::nullopt);
 
-            auto modName = [](auto&& mod) { return std::visit([](auto&& arg) { return std::string{arg.name()}; }, mod); };
+            auto modName = [](auto&& mod) { return std::visit([](auto&& arg) { return arg.name(); }, mod); };
 
             SECTION("Module without revision")
             {

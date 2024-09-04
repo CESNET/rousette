@@ -162,7 +162,7 @@ std::optional<libyang::DataNode> checkKeysMismatch(const libyang::DataNode& node
         const auto& listKeys = node.schema().asList().keys();
         for (size_t i = 0; i < listKeys.size(); ++i) {
             const auto& keyValueURI = lastPathSegment.keys[i];
-            auto keyNodeData = node.findPath(std::string{listKeys[i].module().name()} + ":" + std::string{listKeys[i].name()});
+            auto keyNodeData = node.findPath(listKeys[i].module().name() + ':' + listKeys[i].name());
             if (!keyNodeData) {
                 return node;
             }
@@ -427,7 +427,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx)
     auto responseNode = rpcReply.child();
     responseNode->unlinkWithSiblings();
 
-    auto envelope = ctx.newOpaqueJSON(std::string{rpcNode->schema().module().name()}, "output", std::nullopt);
+    auto envelope = ctx.newOpaqueJSON(rpcNode->schema().module().name(), "output", std::nullopt);
     envelope->insertChild(*responseNode);
 
     requestCtx->res.write_head(200, {

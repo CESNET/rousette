@@ -269,7 +269,7 @@ std::optional<libyang::SchemaNode> findChildSchemaNode(const libyang::SchemaNode
         if (child.name() == childIdentifier.identifier) {
             // If the prefix is not specified then we must ensure that child's module is the same as the node's module so that we don't accidentally return a child that was inserted here via an augment
             if (
-                (!childIdentifier.prefix && std::string{node.module().name()} == std::string{child.module().name()}) || (childIdentifier.prefix && std::string{child.module().name()} == *childIdentifier.prefix)) {
+                (!childIdentifier.prefix && node.module().name() == child.module().name()) || (childIdentifier.prefix && child.module().name() == *childIdentifier.prefix)) {
                 return child;
             }
         }
@@ -289,7 +289,7 @@ std::string maybeQualified(const libyang::SchemaNode& currentNode)
     std::string res;
 
     if (!currentNode.parent() || currentNode.parent()->module().name() != currentNode.module().name()) {
-        res += std::string{currentNode.module().name()} + ":";
+        res += currentNode.module().name() + ':';
     }
 
     return res + std::string{currentNode.name()};
