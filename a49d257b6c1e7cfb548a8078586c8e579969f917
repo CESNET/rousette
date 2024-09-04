@@ -1,0 +1,273 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "58c44ac2_b3bc0dff",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-04T15:23:45Z",
+      "side": 1,
+      "message": "Please explain *why* this required building a full AST instead of that simple string-based translation you mentioned earlier. Please go into details, e.g., not just \"this cannot be done in XPath 1.0\" -- please explain why.",
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4b6006e8_f145ae97",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 983,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-04T15:23:45Z",
+      "side": 1,
+      "message": "nit: remove",
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9ed67f8a_4026d463",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 119,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-04T15:23:45Z",
+      "side": 1,
+      "message": "I\u0027m a bit lost here -- why does that comment say so? Did you (e.g.) implement a grammar which allowed *that* thing by accident?",
+      "range": {
+        "startLine": 119,
+        "startChar": 31,
+        "endLine": 119,
+        "endChar": 83
+      },
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d90992aa_7f9afbec",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-04T15:23:45Z",
+      "side": 1,
+      "message": "Would it be feasible to add a simple \"after parsing\" check which rejects non-8040 filters?\n\nPlease add a test for this \"extended 8040\" functionality, and mark it as such in the test suite.",
+      "range": {
+        "startLine": 117,
+        "startChar": 0,
+        "endLine": 122,
+        "endChar": 89
+      },
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d5bd7277_e70cd10d",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 683,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-04T15:23:45Z",
+      "side": 1,
+      "message": "\"final\", I guess?",
+      "range": {
+        "startLine": 683,
+        "startChar": 133,
+        "endLine": 683,
+        "endChar": 136
+      },
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1bb56973_a16f2429",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 705,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-04T15:23:45Z",
+      "side": 1,
+      "message": "just:\n stack.push_back(apiIdentName(next.lhs));",
+      "range": {
+        "startLine": 701,
+        "startChar": 0,
+        "endLine": 705,
+        "endChar": 13
+      },
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "01d23540_dc9508e9",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 715,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-04T15:23:45Z",
+      "side": 1,
+      "message": "I need some explanation to start reasoning about this function. Why is `stack` never cleared, for example?",
+      "range": {
+        "startLine": 683,
+        "startChar": 0,
+        "endLine": 715,
+        "endChar": 1
+      },
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b70a553b_4cd09166",
+        "filename": "tests/pretty_printers.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 185,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-04T15:23:45Z",
+      "side": 1,
+      "message": "feel free to make apiIdentName() public",
+      "range": {
+        "startLine": 182,
+        "startChar": 0,
+        "endLine": 185,
+        "endChar": 51
+      },
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "48e181ba_a4916373",
+        "filename": "tests/restconf-reading.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 852,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-04T15:23:45Z",
+      "side": 1,
+      "message": "Please request \"nested/data\" with depth\u003d1; that should return \"list/nested/data/a\" and not \"list/nested/other-data/*\".",
+      "range": {
+        "startLine": 852,
+        "startChar": 72,
+        "endLine": 852,
+        "endChar": 78
+      },
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f8c5d696_1e1c2530",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 814,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-04T15:23:45Z",
+      "side": 1,
+      "message": "please use newlines and indenting to make this at least a tiny bit more readable",
+      "range": {
+        "startLine": 814,
+        "startChar": 62,
+        "endLine": 814,
+        "endChar": 400
+      },
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9cefbe60_e7752c0b",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 819,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-04T15:23:45Z",
+      "side": 1,
+      "message": "Can you please also test for what happens when the request fetches the entire DS (i.e., there\u0027s no root container in the request path)?",
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e76a7c84_ae4ce887",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 902,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-04T15:23:45Z",
+      "side": 1,
+      "message": "please use newlines and indenting to make this at least a tiny bit more readable",
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b0f4c9be_97e0375a",
+        "filename": "tests/yang/example.yang",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-04T15:23:45Z",
+      "side": 1,
+      "message": "restconf-writing needs update (because of that container I guess)",
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
