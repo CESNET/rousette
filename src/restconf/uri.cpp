@@ -284,15 +284,11 @@ std::optional<libyang::SchemaNode> findChildSchemaNode(const libyang::SchemaNode
  */
 std::string maybeQualified(const libyang::SchemaNode& currentNode)
 {
-    using namespace std::string_literals;
-
-    std::string res;
-
     if (!currentNode.parent() || currentNode.parent()->module().name() != currentNode.module().name()) {
-        res += currentNode.module().name() + ':';
+        return currentNode.module().name() + ':' + currentNode.name();
+    } else {
+        return currentNode.name();
     }
-
-    return res + std::string{currentNode.name()};
 }
 
 std::string apiIdentName(const ApiIdentifier& apiIdent)
