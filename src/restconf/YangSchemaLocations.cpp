@@ -50,7 +50,7 @@ libyang::DataNode replaceYangLibraryLocations(const std::optional<std::string>& 
             continue;
         }
 
-        const std::string moduleName = std::string{n.findPath("name")->asTerm().valueStr()};
+        const auto moduleName = n.findPath("name")->asTerm().valueStr();
 
         std::optional<std::string> revision; // in some lists the revision leaf is optional, in some lists it is mandatory but can be empty string
         if (auto revisionNode = n.findPath("revision")) {
@@ -77,7 +77,7 @@ libyang::DataNode replaceYangLibraryLocations(const std::optional<std::string>& 
 bool hasAccessToYangSchema(const sysrepo::Session& session, const std::variant<libyang::Module, libyang::SubmoduleParsed>& module)
 {
     const bool isRootModule = std::holds_alternative<libyang::Module>(module);
-    const auto moduleName = std::visit([](auto&& arg) { return std::string{arg.name()}; }, module);
+    const auto moduleName = std::visit([](auto&& arg) { return arg.name(); }, module);
     const std::string prefix = "/ietf-yang-library:yang-library/module-set[name='complete']/";
 
     std::string xpath = isRootModule ?

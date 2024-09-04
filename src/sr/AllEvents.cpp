@@ -43,7 +43,7 @@ AllEvents::AllEvents(sysrepo::Session session, const WithAttributes attrBehavior
             sysrepo::ModuleChangeCb cb = [this](const auto sess, auto, auto name, auto, auto, auto) {
                 return onChange(sess, std::string{name});
             };
-            sub = session.onModuleChange(std::string{mod.name()}, cb, std::nullopt, 0, sysrepo::SubscribeOptions::DoneOnly | sysrepo::SubscribeOptions::Passive);
+            sub = session.onModuleChange(mod.name(), cb, std::nullopt, 0, sysrepo::SubscribeOptions::DoneOnly | sysrepo::SubscribeOptions::Passive);
             spdlog::debug("Listening for module {}", mod.name());
         } catch (sysrepo::ErrorWithCode& e) {
             if (e.code() == sysrepo::ErrorCode::NotFound) {
@@ -91,8 +91,7 @@ sysrepo::ErrorCode AllEvents::onChange(sysrepo::Session session, const std::stri
                 {
                     for (auto attr = meta.begin(); attr != meta.end(); /* nothing */) {
                         spdlog::trace(" XPath {} attr {}:{}: {}",
-                                std::string{elem.path()},
-                                attr->module().name(), attr->name(), attr->valueStr());
+                                elem.path(), attr->module().name(), attr->name(), attr->valueStr());
                         if (isEmptyOperationAndOrigin(*attr)) {
                             attr = meta.erase(attr);
                         } else {

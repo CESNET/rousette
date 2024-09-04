@@ -44,7 +44,7 @@ std::string listKeyPredicate(const std::vector<libyang::Leaf>& listKeyLeafs, con
     // FIXME: use std::views::zip in C++23
     auto itKeyValue = keyValues.begin();
     for (auto itKeyName = listKeyLeafs.begin(); itKeyName != listKeyLeafs.end(); ++itKeyName, ++itKeyValue) {
-        res += '[' + std::string{itKeyName->name()} + "=" + escapeListKey(*itKeyValue) + ']';
+        res += '[' + itKeyName->name() + "=" + escapeListKey(*itKeyValue) + ']';
     }
 
     return res;
