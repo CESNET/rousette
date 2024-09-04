@@ -451,7 +451,7 @@ SchemaNodeAndPath asLibyangPath(const libyang::Context& ctx, const std::vector<P
             }
         } else { // we are starting at root (no parent)
             try {
-                currentNode = ctx.findPath("/" + *it->apiIdent.prefix + ":" + it->apiIdent.identifier);
+                currentNode = ctx.findPath("/" + apiIdentName(it->apiIdent));
             } catch (const libyang::Error& e) {
                 throw ErrorResponse(400, "application", "operation-failed", e.what());
             }
