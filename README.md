@@ -5,22 +5,37 @@
 [![Zuul CI](https://img.shields.io/badge/zuul-checked-blue)](https://zuul.gerrit.cesnet.cz/t/public/buildsets?project=CzechLight/rousette)
 
 
-A [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server built on top of [sysrepo](https://www.sysrepo.org/)
+This is a [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server built on top of [sysrepo](https://www.sysrepo.org/).
 
 ## Features
 
-- [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server except:
-    - TLS certificate authentication. See [Access control model](#access-control-model) below.
-    - Datastore resource responses do not contain the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1.1) and [`ETag`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1.2) headers for [edit collision prevention](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1)
-    - Data resource responses do not contain the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.1) and [`ETag`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.2) headers.
-    - The [`fields`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.8.3) query parameter.
-- [NMDA](https://datatracker.ietf.org/doc/html/rfc8527.html) support
-- [YANG Patch](https://datatracker.ietf.org/doc/html/rfc8072) support
+- Full [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server
+    - XML and JSON encoding
+    - YANG module library
+    - Data retrieval and edits
+    - RPC/action execution
+    - YANG schema retrieval
+    - `explicit` default handling
+    - NETCONF notification streams
+    - Those features are currently *not* implemented:
+        - TLS termination (use a reverse proxy for that)
+        - TLS certificate authentication (see [Access control model](#access-control-model) below)
+        - the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1.1) and [`ETag`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1.2) headers for [edit collision prevention](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1) in the datastore resource
+        - the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.1) and [`ETag`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.2) headers in the data resource
+        - The [`fields`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.8.3) query parameter
+- [NMDA](https://datatracker.ietf.org/doc/html/rfc8527.html) datastore access
+- [YANG Patch](https://datatracker.ietf.org/doc/html/rfc8072) support for fine-grained edits, using both JSON and XML encodings
+- [NACM](https://datatracker.ietf.org/doc/html/rfc8341.html) access control, with [extensions](#access-control-model) for anonymous reads
 
 
 ## Usage
 
 Since this service only talks cleartext HTTP/2, it's recommended to run it behind a reverse proxy.
+Here's an example with [nghttp2-apps](https://nghttp2.org/documentation/nghttpx-howto.html):
+```
+nghttpx --accesslog-syslog -f '*,80;no-tls' -b '::1,81;;proto=h2' -b '::1,10080;/restconf/:/yang/:/streams/;proto=h2' --add-forwarded=for
+```
+For debugging without a reverse proxy, use e.g. `curl --http2-prior-knowledge`.
 
 ### Required YANG models
 
@@ -34,10 +49,10 @@ Rousette requires the following YANG models to be present in sysrepo:
 
 ### Access control model
 
-Rousette implements [RFC 8341 (NACM)](https://datatracker.ietf.org/doc/html/rfc8341.html)
+Rousette implements [RFC 8341 (NACM)](https://datatracker.ietf.org/doc/html/rfc8341.html).
 The access rights for users (and groups) are configurable via `ietf-netconf-acm` YANG model.
 
-The reverse proxy must pass the `authorization` header as-is and delegate authentication/authorization to the RESTCONF server.
+The reverse proxy must pass the [`authorization` header](https://datatracker.ietf.org/doc/html/rfc9110#section-11.6.2) as-is and delegate authentication/authorization to the RESTCONF server.
 The server currently supports two authentication/authorization methods:
 
 - a systemwide PAM setup through the *Basic* HTTP authentication, i.e., via the `authorization` header, which is checked against the system's PAM configuration
