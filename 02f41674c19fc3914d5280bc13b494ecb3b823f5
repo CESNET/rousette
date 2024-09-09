@@ -22,6 +22,30 @@
       },
       "revId": "02f41674c19fc3914d5280bc13b494ecb3b823f5",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "dc49333c_97e104e0",
+        "filename": "README.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-09T07:49:10Z",
+      "side": 1,
+      "message": "Thanks, done. In case of RESTCONF it\u0027s RFC 8040, not the NETCONF one.",
+      "parentUuid": "5918906e_c157c6d9",
+      "range": {
+        "startLine": 18,
+        "startChar": 6,
+        "endLine": 18,
+        "endChar": 33
+      },
+      "revId": "02f41674c19fc3914d5280bc13b494ecb3b823f5",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
