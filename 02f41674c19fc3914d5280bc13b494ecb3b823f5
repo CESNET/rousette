@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5918906e_c157c6d9",
+        "filename": "README.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-09-09T07:07:42Z",
+      "side": 1,
+      "message": "Maybe we can link to https://www.rfc-editor.org/rfc/rfc6243#section-2.3 here? When I read that I had to think a bit what does this mean (and I am the one who wrote the code :-) )",
+      "range": {
+        "startLine": 18,
+        "startChar": 6,
+        "endLine": 18,
+        "endChar": 33
+      },
+      "revId": "02f41674c19fc3914d5280bc13b494ecb3b823f5",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
