@@ -46,6 +46,30 @@
       },
       "revId": "02f41674c19fc3914d5280bc13b494ecb3b823f5",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8eed6f98_6fb5b1cf",
+        "filename": "README.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-09-09T08:32:52Z",
+      "side": 1,
+      "message": "Sure I looked into sec 9.1.2 of 8040 which directly linked to the NETCONF one for details.",
+      "parentUuid": "dc49333c_97e104e0",
+      "range": {
+        "startLine": 18,
+        "startChar": 6,
+        "endLine": 18,
+        "endChar": 33
+      },
+      "revId": "02f41674c19fc3914d5280bc13b494ecb3b823f5",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
