@@ -414,6 +414,16 @@ TEST_CASE("URI path parser")
                 REQUIRE(action == RestconfRequest::Type::Execute);
                 REQUIRE(queryParams.empty());
             }
+
+            SECTION("POST (action NMDA)")
+            {
+                auto [action, datastore, path, queryParams] = rousette::restconf::asRestconfRequest(ctx, "POST",
+                        "/restconf/ds/ietf-datastores:operational/example:tlc/list=hello-world/example-action");
+                REQUIRE(path == "/example:tlc/list[name='hello-world']/example-action");
+                REQUIRE(datastore == sysrepo::Datastore::Operational);
+                REQUIRE(action == RestconfRequest::Type::Execute);
+                REQUIRE(queryParams.empty());
+            }
         }
 
         SECTION("Contextually invalid paths")
@@ -573,10 +583,15 @@ TEST_CASE("URI path parser")
                     uriPath = "/restconf/data/example:test-rpc";
                     expectedErrorMessage = "RPC '/example:test-rpc' must be requested using operation prefix";
                 }
-                SECTION("actions must be invoked via /restconf/data")
+                SECTION("action via operations prefix")
                 {
                     uriPath = "/restconf/operations/example:tlc/list=eth0/example-action";
-                    expectedErrorMessage = "Action '/example:tlc/list/example-action' must be requested using data prefix";
+                    expectedErrorMessage = "Action '/example:tlc/list/example-action' must be requested using data prefix or via operational NMDA";
+                }
+                SECTION("action via NMDA running DS")
+                {
+                    uriPath = "/restconf/ds/ietf-datastores:running/example:tlc/list=eth0/example-action";
+                    expectedErrorMessage = "Action '/example:tlc/list/example-action' must be requested using data prefix or via operational NMDA";
                 }
 
                 SECTION("RPC and action input/output nodes")
@@ -1023,6 +1038,7 @@ TEST_CASE("URI path parser")
                 expected = {"OPTIONS", "POST"};
                 SECTION("RPC") { uri = "/restconf/operations/example:test-rpc"; }
                 SECTION("Action") { uri = "/restconf/data/example:tlc/list=key/example-action"; }
+                SECTION("NMDA Action") { uri = "/restconf/ds/ietf-datastores:operational/example:tlc/list=key/example-action"; }
             }
             SECTION("Datastore resource")
             {
