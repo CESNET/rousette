@@ -323,6 +323,16 @@ TEST_CASE("invoking actions and rpcs")
 )"});
         }
 
+        SECTION("action via NMDA operational resource") {
+            REQUIRE_CALL(rpcCall, rpcCall("/example:tlc/list/example-action", std::map<std::string, std::string>({{"/example:tlc/list[name='1']/example-action/i", "ahoj"}})));
+            REQUIRE(post(RESTCONF_ROOT_DS("operational") "/example:tlc/list=1/example-action", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:input": {"example:i": "ahoj"}}")") == Response{200, jsonHeaders, R"({
+  "example:output": {
+    "o": "some-output-string"
+  }
+}
+)"});
+        }
+
         SECTION("List entry with action not present")
         {
             REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc/list=666/example-action", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:input": {"example:i": "ahoj"}}")") == Response{400, jsonHeaders, R"eof({
@@ -347,7 +357,23 @@ TEST_CASE("invoking actions and rpcs")
       {
         "error-type": "protocol",
         "error-tag": "operation-failed",
-        "error-message": "Action '/example:tlc/list/example-action' must be requested using data prefix"
+        "error-message": "Action '/example:tlc/list/example-action' must be requested using data prefix or via operational NMDA"
+      }
+    ]
+  }
+}
+)"});
+        }
+
+        SECTION("Invoking action through NMDA running DS")
+        {
+            REQUIRE(post(RESTCONF_ROOT_DS("running") "/example:tlc/list=1/example-action", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:input": {"example:i": "ahoj"}}")") == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "operation-failed",
+        "error-message": "Action '/example:tlc/list/example-action' must be requested using data prefix or via operational NMDA"
       }
     ]
   }

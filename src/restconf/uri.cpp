@@ -358,8 +358,11 @@ void validateMethodForNode(const std::string& httpMethod, const impl::URIPrefix&
             }
             break;
         case libyang::NodeType::Action:
-            if (prefix.resourceType != impl::URIPrefix::Type::BasicRestconfData) {
-                throw ErrorResponse(400, "protocol", "operation-failed", "Action '"s + node->path() + "' must be requested using data prefix");
+            if (!(prefix.resourceType == impl::URIPrefix::Type::BasicRestconfData) &&
+                !(prefix.resourceType == impl::URIPrefix::Type::NMDADatastore &&
+                    prefix.datastore == ApiIdentifier{"ietf-datastores", "operational"})) {
+                throw ErrorResponse(400, "protocol", "operation-failed", "Action '"s + node->path()
+                        + "' must be requested using data prefix or via operational NMDA");
             }
             break;
         default:
