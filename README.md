@@ -24,6 +24,8 @@ This is a [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server 
         - the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.1) and [`ETag`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.2) headers in the data resource
         - The [`fields`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-4.8.3) query parameter
 - [NMDA](https://datatracker.ietf.org/doc/html/rfc8527.html) datastore access
+    - no [`with-operational-default`](https://datatracker.ietf.org/doc/html/rfc8527#section-3.2.1) capability
+    - no [`with-origin`](https://datatracker.ietf.org/doc/html/rfc8527#section-3.2.2) capability
 - [YANG Patch](https://datatracker.ietf.org/doc/html/rfc8072) support for fine-grained edits, using both JSON and XML encodings
 - [NACM](https://datatracker.ietf.org/doc/html/rfc8341.html) access control, with [extensions](#access-control-model) for anonymous reads
 
