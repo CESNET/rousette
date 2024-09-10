@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "0cd534fa_0b08c65f",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 361,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-10T09:03:55Z",
+      "side": 1,
+      "message": "Yeah, I thought that this is the easiest way of writing that condition. My other candidate would be something like:\n \nif (success1_expression) {\n  // an 8040-style URL is allowed\n} else if (success2_expression)is_more_complex) {\n  // NMDA-style against operational is OK\n} else {\n  throw ...\n}",
+      "parentUuid": "e1a744db_a00fafcc",
+      "range": {
+        "startLine": 361,
+        "startChar": 16,
+        "endLine": 361,
+        "endChar": 82
+      },
+      "revId": "11f201da27f4eb7b748baaf3f47495863a8e8d6b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "a3a138cc_7911d206",
@@ -37,6 +61,30 @@
       "writtenOn": "2024-09-10T08:09:19Z",
       "side": 1,
       "message": "I think this section can be removed.",
+      "range": {
+        "startLine": 1051,
+        "startChar": 16,
+        "endLine": 1051,
+        "endChar": 33
+      },
+      "revId": "11f201da27f4eb7b748baaf3f47495863a8e8d6b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1897c371_a069d99f",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1051,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-10T09:03:55Z",
+      "side": 1,
+      "message": "moved to the other section which tests URLs and RPCs -- thanks",
+      "parentUuid": "a3a138cc_7911d206",
       "range": {
         "startLine": 1051,
         "startChar": 16,
