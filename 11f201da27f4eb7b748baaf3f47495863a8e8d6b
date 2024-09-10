@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e1a744db_a00fafcc",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 361,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-09-10T08:09:19Z",
+      "side": 1,
+      "message": "nit: Not a fan of !(x \u003d\u003d y) but here it aligns nicely with the second expressions.",
+      "range": {
+        "startLine": 361,
+        "startChar": 16,
+        "endLine": 361,
+        "endChar": 82
+      },
+      "revId": "11f201da27f4eb7b748baaf3f47495863a8e8d6b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a3a138cc_7911d206",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 1051,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-09-10T08:09:19Z",
+      "side": 1,
+      "message": "I think this section can be removed.",
+      "range": {
+        "startLine": 1051,
+        "startChar": 16,
+        "endLine": 1051,
+        "endChar": 33
+      },
+      "revId": "11f201da27f4eb7b748baaf3f47495863a8e8d6b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
