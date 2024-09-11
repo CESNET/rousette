@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "d444d9da_17459a4b",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-09-11T15:33:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "58c44ac2_b3bc0dff",
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "4b6006e8_f145ae97",
@@ -35,6 +53,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8f78c465_620e330d",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 983,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-09-11T15:33:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4b6006e8_f145ae97",
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "9ed67f8a_4026d463",
@@ -48,6 +84,30 @@
       "writtenOn": "2024-09-04T15:23:45Z",
       "side": 1,
       "message": "I\u0027m a bit lost here -- why does that comment say so? Did you (e.g.) implement a grammar which allowed *that* thing by accident?",
+      "range": {
+        "startLine": 119,
+        "startChar": 31,
+        "endLine": 119,
+        "endChar": 83
+      },
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "647721bc_bce865b7",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 119,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-09-11T15:33:52Z",
+      "side": 1,
+      "message": "Yes I indeed did. This comment is probably useless. Removed.",
+      "parentUuid": "9ed67f8a_4026d463",
       "range": {
         "startLine": 119,
         "startChar": 31,
@@ -83,6 +143,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "5d09db71_33f91e17",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-09-11T15:33:52Z",
+      "side": 1,
+      "message": "I can modify the grammar to generate only RFC grammar-compliant strings. I just thought it was a \"good\" feature.",
+      "parentUuid": "d90992aa_7f9afbec",
+      "range": {
+        "startLine": 117,
+        "startChar": 0,
+        "endLine": 122,
+        "endChar": 89
+      },
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "d5bd7277_e70cd10d",
         "filename": "src/restconf/uri.cpp",
         "patchSetId": 1
@@ -94,6 +178,30 @@
       "writtenOn": "2024-09-04T15:23:45Z",
       "side": 1,
       "message": "\"final\", I guess?",
+      "range": {
+        "startLine": 683,
+        "startChar": 133,
+        "endLine": 683,
+        "endChar": 136
+      },
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4b3c407f_01f748f0",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 683,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-09-11T15:33:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d5bd7277_e70cd10d",
       "range": {
         "startLine": 683,
         "startChar": 133,
@@ -117,6 +225,30 @@
       "writtenOn": "2024-09-04T15:23:45Z",
       "side": 1,
       "message": "just:\n stack.push_back(apiIdentName(next.lhs));",
+      "range": {
+        "startLine": 701,
+        "startChar": 0,
+        "endLine": 705,
+        "endChar": 13
+      },
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "daee5489_5122c6c8",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 705,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-09-11T15:33:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1bb56973_a16f2429",
       "range": {
         "startLine": 701,
         "startChar": 0,
@@ -173,6 +305,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8b4ee6d9_79ae3d15",
+        "filename": "tests/pretty_printers.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 185,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-09-11T15:33:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b70a553b_4cd09166",
+      "range": {
+        "startLine": 182,
+        "startChar": 0,
+        "endLine": 185,
+        "endChar": 51
+      },
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "48e181ba_a4916373",
@@ -186,6 +342,30 @@
       "writtenOn": "2024-09-04T15:23:45Z",
       "side": 1,
       "message": "Please request \"nested/data\" with depth\u003d1; that should return \"list/nested/data/a\" and not \"list/nested/other-data/*\".",
+      "range": {
+        "startLine": 852,
+        "startChar": 72,
+        "endLine": 852,
+        "endChar": 78
+      },
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7cf43315_5b75555f",
+        "filename": "tests/restconf-reading.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 852,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-09-11T15:33:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "48e181ba_a4916373",
       "range": {
         "startLine": 852,
         "startChar": 72,
@@ -219,6 +399,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "24e6dcd5_d9b4ad07",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 814,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-09-11T15:33:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f8c5d696_1e1c2530",
+      "range": {
+        "startLine": 814,
+        "startChar": 62,
+        "endLine": 814,
+        "endChar": 400
+      },
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "9cefbe60_e7752c0b",
@@ -232,6 +436,24 @@
       "writtenOn": "2024-09-04T15:23:45Z",
       "side": 1,
       "message": "Can you please also test for what happens when the request fetches the entire DS (i.e., there\u0027s no root container in the request path)?",
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "02037c0e_31fb563c",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 819,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-09-11T15:33:52Z",
+      "side": 1,
+      "message": "Good catch, this did not work at all because I tried to concat /* and \u003csomething\u003e.",
+      "parentUuid": "9cefbe60_e7752c0b",
       "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -253,6 +475,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "ecbddd93_9327ae9c",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 902,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-09-11T15:33:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e76a7c84_ae4ce887",
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "b0f4c9be_97e0375a",
@@ -266,6 +506,24 @@
       "writtenOn": "2024-09-04T15:23:45Z",
       "side": 1,
       "message": "restconf-writing needs update (because of that container I guess)",
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8fa4b80b_85de4343",
+        "filename": "tests/yang/example.yang",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-09-11T15:33:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b0f4c9be_97e0375a",
       "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
