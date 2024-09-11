@@ -34,6 +34,7 @@ struct ApiIdentifier {
     ApiIdentifier(const std::string& identifier);
 
     bool operator==(const ApiIdentifier&) const = default;
+    std::string name() const;
 };
 
 /** @brief Represents "one-level" of the RESTCONF URI path, i.e., an ApiIdentifier that can be followed by list keys or leaf-list value.

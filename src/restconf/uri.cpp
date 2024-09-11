@@ -210,6 +210,15 @@ ApiIdentifier::ApiIdentifier(const std::string& identifier)
 {
 }
 
+/** @brief Returns ApiIdentifier as a string, optionally prefixed with the module name and colon */
+std::string ApiIdentifier::name() const
+{
+    if (!prefix) {
+        return identifier;
+    }
+    return *prefix + ":" + identifier;
+}
+
 PathSegment::PathSegment() = default;
 
 PathSegment::PathSegment(const ApiIdentifier& apiIdent, const std::vector<std::string>& keys)
@@ -289,14 +298,6 @@ std::string maybeQualified(const libyang::SchemaNode& currentNode)
     } else {
         return currentNode.name();
     }
-}
-
-std::string apiIdentName(const ApiIdentifier& apiIdent)
-{
-    if (!apiIdent.prefix) {
-        return apiIdent.identifier;
-    }
-    return *apiIdent.prefix + ":" + apiIdent.identifier;
 }
 
 /** @brief checks if provided schema node is valid for this HTTP method */
@@ -446,11 +447,11 @@ SchemaNodeAndPath asLibyangPath(const libyang::Context& ctx, const std::vector<P
     for (auto it = begin; it != end; ++it) {
         if (auto prevNode = currentNode) {
             if (!(currentNode = findChildSchemaNode(*currentNode, it->apiIdent))) {
-                throw ErrorResponse(400, "application", "operation-failed", "Node '" + apiIdentName(it->apiIdent) + "' is not a child of '" + prevNode->path() + "'");
+                throw ErrorResponse(400, "application", "operation-failed", "Node '" + it->apiIdent.name() + "' is not a child of '" + prevNode->path() + "'");
             }
         } else { // we are starting at root (no parent)
             try {
-                currentNode = ctx.findPath("/" + apiIdentName(it->apiIdent));
+                currentNode = ctx.findPath("/" + it->apiIdent.name());
             } catch (const libyang::Error& e) {
                 throw ErrorResponse(400, "application", "operation-failed", e.what());
             }
