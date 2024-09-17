@@ -167,6 +167,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "1ea98333_f567d334",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-17T08:37:13Z",
+      "side": 1,
+      "message": "If we accept some \"extended\" version of a standard, it\u0027s a good practice to at least have that clearly documented -- at least with a link to the 8040-bis issue tracker where you describe what exactly you think is wrong in the current version of the standard, and how we fixed that in our implementation.",
+      "parentUuid": "5d09db71_33f91e17",
+      "range": {
+        "startLine": 117,
+        "startChar": 0,
+        "endLine": 122,
+        "endChar": 89
+      },
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "d5bd7277_e70cd10d",
         "filename": "src/restconf/uri.cpp",
         "patchSetId": 1
@@ -272,6 +296,30 @@
       "writtenOn": "2024-09-04T15:23:45Z",
       "side": 1,
       "message": "I need some explanation to start reasoning about this function. Why is `stack` never cleared, for example?",
+      "range": {
+        "startLine": 683,
+        "startChar": 0,
+        "endLine": 715,
+        "endChar": 1
+      },
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "61b897e6_c426162b",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 715,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-17T08:37:13Z",
+      "side": 1,
+      "message": "(just a reminder that this still needs some docs, not just in the second function, also in the first one)",
+      "parentUuid": "01d23540_dc9508e9",
       "range": {
         "startLine": 683,
         "startChar": 0,
@@ -454,6 +502,24 @@
       "side": 1,
       "message": "Good catch, this did not work at all because I tried to concat /* and \u003csomething\u003e.",
       "parentUuid": "9cefbe60_e7752c0b",
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7d5e9654_05a5e429",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 819,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-17T08:37:13Z",
+      "side": 1,
+      "message": "There\u0027s an end-to-end test in `restconf-reading`, but no test in `ur-iaprser`. Is it worth adding one?",
+      "parentUuid": "02037c0e_31fb563c",
       "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },

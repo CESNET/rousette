@@ -1,0 +1,90 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2b4db245_6bf16710",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1111,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-17T08:37:13Z",
+      "side": 1,
+      "message": "does this affect some existing branch? IOW, what other URIs would trigger this branch? can we get that covered by the test suite?",
+      "revId": "20a792fb471eacf9b760b0db9c7ca0c4f44fab7e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3094b958_55975ae3",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 129,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-17T08:37:13Z",
+      "side": 1,
+      "message": "But the grammar in RFC 8040 doesn\u0027t really suggest that, does it?\n\nIf this is \"just\" a comment from the author of the code to document a previous bug, it still useful, but the current wording suggests to me that this is some improvement/fixup on top of RFC 8040. E.g., \u0027We have to be careful to not allow \"a/(b;c)/d\" by accident\u0027 or something like that.",
+      "range": {
+        "startLine": 129,
+        "startChar": 3,
+        "endLine": 129,
+        "endChar": 152
+      },
+      "revId": "20a792fb471eacf9b760b0db9c7ca0c4f44fab7e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "aa90a586_03233252",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 716,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-17T08:37:13Z",
+      "side": 1,
+      "message": "nit: this indentation looks funny; maybe remove the selected whitespace?",
+      "range": {
+        "startLine": 716,
+        "startChar": 4,
+        "endLine": 716,
+        "endChar": 25
+      },
+      "revId": "20a792fb471eacf9b760b0db9c7ca0c4f44fab7e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "84aadb57_d8bc7401",
+        "filename": "tests/pretty_printers.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 186,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-17T08:37:13Z",
+      "side": 1,
+      "message": "This part is common in both branches; I guess it will also look a bit cleaner when this gets moved outside of the if/else. I think that the only reason why it\u0027s in the if/else branch is the lifetime of `res` which can be solved easily by moving the variable declaration before the if/else.",
+      "range": {
+        "startLine": 183,
+        "startChar": 0,
+        "endLine": 186,
+        "endChar": 42
+      },
+      "revId": "20a792fb471eacf9b760b0db9c7ca0c4f44fab7e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
