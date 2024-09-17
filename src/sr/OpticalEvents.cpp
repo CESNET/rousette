@@ -31,7 +31,7 @@ OpticalEvents::OpticalEvents(sysrepo::Session session)
     for (const auto& mod : {"czechlight-roadm-device", "czechlight-coherent-add-drop", "czechlight-inline-amp", "czechlight-bidi-amp"}) {
         try {
             sysrepo::ModuleChangeCb cb = [this](const auto sess, auto, auto name, auto, auto, auto) {
-                return onChange(sess, std::string{name});
+                return onChange(sess, name);
             };
             sub = session.onModuleChange(mod, cb, std::nullopt, 0, sysrepo::SubscribeOptions::DoneOnly | sysrepo::SubscribeOptions::Passive);
             spdlog::debug("Listening for module {}", mod);

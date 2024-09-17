@@ -14,7 +14,7 @@ static const auto SERVER_PORT = "10084";
 #include "tests/pretty_printers.h"
 
 struct RpcCall {
-    MAKE_MOCK2(rpcCall, void(std::string_view, const std::map<std::string, std::string>&));
+    MAKE_MOCK2(rpcCall, void(const std::string&, const std::map<std::string, std::string>&));
 };
 
 std::map<std::string, std::string> nodesToMap(libyang::DataNode node)
