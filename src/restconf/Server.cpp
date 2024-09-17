@@ -109,7 +109,7 @@ void rejectWithErrorImpl(libyang::Context ctx, const libyang::DataFormat& dataFo
 void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath)
 {
     auto ext = ctx.getModuleImplemented("ietf-restconf")->extensionInstance("yang-errors");
-    auto errors = *ctx.newExtPath("/ietf-restconf:errors", std::nullopt, ext);
+    auto errors = *ctx.newExtPath(ext, "/ietf-restconf:errors", std::nullopt);
     rejectWithErrorImpl(ctx, dataFormat, errors, errors, req, res, code, errorType, errorTag, errorMessage, errorPath);
 }
 
@@ -126,7 +126,7 @@ auto rejectYangPatch(const std::string& patchId)
                      const std::string& errorMessage,
                      const std::optional<std::string>& errorPath) {
         auto ext = ctx.getModuleImplemented("ietf-yang-patch")->extensionInstance("yang-patch-status");
-        auto errorsTree = *ctx.newExtPath("/ietf-yang-patch:yang-patch-status/errors", std::nullopt, ext);
+        auto errorsTree = *ctx.newExtPath(ext, "/ietf-yang-patch:yang-patch-status/errors", std::nullopt);
         auto errorsContainer = *errorsTree.findXPath("/ietf-yang-patch:yang-patch-status/errors").begin();
         errorsTree.newPath("patch-id", patchId);
         rejectWithErrorImpl(ctx, dataFormat, errorsTree, errorsContainer, req, res, code, errorType, errorTag, errorMessage, errorPath);
@@ -147,7 +147,7 @@ auto rejectYangPatch(const std::string& patchId, const std::string& editId)
                              const std::optional<std::string>& errorPath) {
         const auto errorContainerXPath = "/ietf-yang-patch:yang-patch-status/edit-status/edit[edit-id='" + editId + "']/errors";
         auto ext = ctx.getModuleImplemented("ietf-yang-patch")->extensionInstance("yang-patch-status");
-        auto errorsTree = *ctx.newExtPath(errorContainerXPath, std::nullopt, ext);
+        auto errorsTree = *ctx.newExtPath(ext, errorContainerXPath, std::nullopt);
         auto errorsContainer = *errorsTree.findXPath(errorContainerXPath).begin();
         errorsTree.newPath("patch-id", patchId);
         rejectWithErrorImpl(ctx, dataFormat, errorsTree, errorsContainer, req, res, code, errorType, errorTag, errorMessage, errorPath);
@@ -595,9 +595,9 @@ void processYangPatch(std::shared_ptr<RequestContext> requestCtx, const std::chr
     WITH_RESTCONF_EXCEPTIONS(processYangPatchImpl, rejectYangPatch(patchId))(requestCtx, *patch, patchId, timeout);
 
     // everything went well
-    auto yangPatchStatus = ctx.newExtPath("/ietf-yang-patch:yang-patch-status", std::nullopt, yangPatchStatusExt);
-    yangPatchStatus->newExtPath("/ietf-yang-patch:yang-patch-status/patch-id", patchId, yangPatchStatusExt);
-    yangPatchStatus->newExtPath("/ietf-yang-patch:yang-patch-status/ok", std::nullopt, yangPatchStatusExt);
+    auto yangPatchStatus = ctx.newExtPath(yangPatchStatusExt, "/ietf-yang-patch:yang-patch-status", std::nullopt);
+    yangPatchStatus->newExtPath(yangPatchStatusExt, "/ietf-yang-patch:yang-patch-status/patch-id", patchId);
+    yangPatchStatus->newExtPath(yangPatchStatusExt, "/ietf-yang-patch:yang-patch-status/ok", std::nullopt);
 
     requestCtx->res.write_head(200, {contentType(requestCtx->dataFormat.response), CORS});
     requestCtx->res.end(*yangPatchStatus->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::WithSiblings));
@@ -671,7 +671,7 @@ libyang::DataNode apiResource(const libyang::Context& ctx, const RestconfRequest
 {
     const auto yangLib = *ctx.getModuleLatest("ietf-yang-library");
     const auto yangApiExt = ctx.getModuleImplemented("ietf-restconf")->extensionInstance("yang-api");
-    auto parent = *ctx.newExtPath("/ietf-restconf:restconf", std::nullopt, yangApiExt);
+    auto parent = *ctx.newExtPath(yangApiExt, "/ietf-restconf:restconf", std::nullopt);
 
     if (type == RestconfRequest::Type::RestconfRoot || type == RestconfRequest::Type::YangLibraryVersion) {
         parent.newPath("yang-library-version", yangLib.revision());
