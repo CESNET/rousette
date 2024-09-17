@@ -41,7 +41,7 @@ AllEvents::AllEvents(sysrepo::Session session, const WithAttributes attrBehavior
         }
         try {
             sysrepo::ModuleChangeCb cb = [this](const auto sess, auto, auto name, auto, auto, auto) {
-                return onChange(sess, std::string{name});
+                return onChange(sess, name);
             };
             sub = session.onModuleChange(mod.name(), cb, std::nullopt, 0, sysrepo::SubscribeOptions::DoneOnly | sysrepo::SubscribeOptions::Passive);
             spdlog::debug("Listening for module {}", mod.name());
