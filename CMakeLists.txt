@@ -47,7 +47,7 @@ add_custom_target(rousette-version-cmake-ide
     cmake/ProjectGitVersionRunner.cmake
     )
 include(cmake/ProjectGitVersion.cmake)
-prepare_git_version(ROUSETTE_VERSION "0.0")
+prepare_git_version(ROUSETTE_VERSION "1")
 
 find_package(Doxygen)
 option(WITH_DOCS "Create and install internal documentation (needs Doxygen)" ${DOXYGEN_FOUND})
