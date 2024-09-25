@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "897fcede_b6791f57",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-25T19:30:59Z",
+      "side": 1,
+      "message": "The CI failure is an artifact of the br2-external setup; now that the change in CzechLight/dependencies has been merged, it won\u0027t be prepared for the ARM build. Overriding manually.",
+      "revId": "0a4f6b6813ad2a3b5f0df04b7e1f535218d4db63",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
