@@ -189,6 +189,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "7c296d57_79c3f1f7",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-10-01T11:37:28Z",
+      "side": 1,
+      "message": "I am sorry but I do not understand what is not clearly documented. The comment states what extra strings we allow and there is also a link to the issue tracker (aka mailing list).",
+      "parentUuid": "1ea98333_f567d334",
+      "range": {
+        "startLine": 117,
+        "startChar": 0,
+        "endLine": 122,
+        "endChar": 89
+      },
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "d5bd7277_e70cd10d",
@@ -520,6 +544,42 @@
       "side": 1,
       "message": "There\u0027s an end-to-end test in `restconf-reading`, but no test in `ur-iaprser`. Is it worth adding one?",
       "parentUuid": "02037c0e_31fb563c",
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "36d69510_b0cd9cdf",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 819,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-10-01T11:37:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7d5e9654_05a5e429",
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "98cec742_8ab77a80",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 819,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-10-01T11:37:28Z",
+      "side": 1,
+      "message": "Done-",
+      "parentUuid": "7d5e9654_05a5e429",
       "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },

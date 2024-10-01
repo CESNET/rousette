@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "0ad22b28_d88e1698",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1111,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-10-01T11:37:28Z",
+      "side": 1,
+      "message": "This was triggered by trying to get an xpath that does not correspond to any schema node. It could not happen for a query without ?fields because this was catched in the uri parser.\n\nI have rewritten the code to catch such errors in the uri parser.\n\nIt was already covered by the tests.",
+      "parentUuid": "2b4db245_6bf16710",
+      "revId": "20a792fb471eacf9b760b0db9c7ca0c4f44fab7e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3094b958_55975ae3",
@@ -31,6 +49,30 @@
       "writtenOn": "2024-09-17T08:37:13Z",
       "side": 1,
       "message": "But the grammar in RFC 8040 doesn\u0027t really suggest that, does it?\n\nIf this is \"just\" a comment from the author of the code to document a previous bug, it still useful, but the current wording suggests to me that this is some improvement/fixup on top of RFC 8040. E.g., \u0027We have to be careful to not allow \"a/(b;c)/d\" by accident\u0027 or something like that.",
+      "range": {
+        "startLine": 129,
+        "startChar": 3,
+        "endLine": 129,
+        "endChar": 152
+      },
+      "revId": "20a792fb471eacf9b760b0db9c7ca0c4f44fab7e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2d724623_03212515",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 129,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-10-01T11:37:28Z",
+      "side": 1,
+      "message": "I took a second look into that comment and it is not relevant so I deleted it. I don\u0027t think this could happen. This was my oversight.",
+      "parentUuid": "3094b958_55975ae3",
       "range": {
         "startLine": 129,
         "startChar": 3,
@@ -64,6 +106,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2ff2400b_6cb748f6",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 716,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-10-01T11:37:28Z",
+      "side": 1,
+      "message": "Done. clang-format 😭",
+      "parentUuid": "aa90a586_03233252",
+      "range": {
+        "startLine": 716,
+        "startChar": 4,
+        "endLine": 716,
+        "endChar": 25
+      },
+      "revId": "20a792fb471eacf9b760b0db9c7ca0c4f44fab7e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "84aadb57_d8bc7401",
@@ -77,6 +143,30 @@
       "writtenOn": "2024-09-17T08:37:13Z",
       "side": 1,
       "message": "This part is common in both branches; I guess it will also look a bit cleaner when this gets moved outside of the if/else. I think that the only reason why it\u0027s in the if/else branch is the lifetime of `res` which can be solved easily by moving the variable declaration before the if/else.",
+      "range": {
+        "startLine": 183,
+        "startChar": 0,
+        "endLine": 186,
+        "endChar": 42
+      },
+      "revId": "20a792fb471eacf9b760b0db9c7ca0c4f44fab7e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e6d6c5b2_c0891e8c",
+        "filename": "tests/pretty_printers.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 186,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-10-01T11:37:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "84aadb57_d8bc7401",
       "range": {
         "startLine": 183,
         "startChar": 0,
