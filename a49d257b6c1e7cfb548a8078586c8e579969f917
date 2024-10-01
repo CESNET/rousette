@@ -354,6 +354,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "93798d7f_5da0cfbc",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 715,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-10-01T11:37:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "61b897e6_c426162b",
+      "range": {
+        "startLine": 683,
+        "startChar": 0,
+        "endLine": 715,
+        "endChar": 1
+      },
+      "revId": "a49d257b6c1e7cfb548a8078586c8e579969f917",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "b70a553b_4cd09166",
