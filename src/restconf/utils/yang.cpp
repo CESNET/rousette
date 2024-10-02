@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <libyang-cpp/DataNode.hpp>
 #include <libyang-cpp/SchemaNode.hpp>
+#include "yang.h"
 
 namespace rousette::restconf {
 
@@ -37,14 +38,14 @@ std::string escapeListKey(const std::string& str)
  * @param keyValues key values
  * @returns a string in the format "[key_1='value_1']...[key_n='value_n']"
  */
-std::string listKeyPredicate(const std::vector<libyang::Leaf>& listKeyLeafs, const std::vector<std::string>& keyValues)
+std::string listKeyPredicate(const std::vector<libyang::Leaf>& listKeyLeafs, const std::vector<PathSegment::KeyValue>& keyValues)
 {
     std::string res;
 
     // FIXME: use std::views::zip in C++23
     auto itKeyValue = keyValues.begin();
     for (auto itKeyName = listKeyLeafs.begin(); itKeyName != listKeyLeafs.end(); ++itKeyName, ++itKeyValue) {
-        res += '[' + itKeyName->name() + "=" + escapeListKey(*itKeyValue) + ']';
+        res += '[' + itKeyName->name() + "=" + escapeListKey(itKeyValue->name()) + ']';
     }
 
     return res;
