@@ -6,6 +6,13 @@ module example {
   feature f1 { }
   feature f2 { }
 
+  identity base-identity {
+  }
+
+  identity derived-identity {
+    base base-identity;
+  }
+
   leaf top-level-leaf { type string; }
   leaf top-level-leaf2 { type string; default "x"; }
 
@@ -107,6 +114,15 @@ module example {
       ordered-by user;
       type string;
     }
+  }
+
+  list list-with-identity-key {
+    key "type name";
+    leaf type {
+      type identityref { base base-identity; }
+    }
+    leaf name { type string; }
+    leaf text { type string; }
   }
 
   rpc test-rpc {

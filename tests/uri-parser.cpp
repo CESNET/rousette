@@ -88,119 +88,119 @@ TEST_CASE("URI path parser")
                                                         }}},
                  {"/restconf/data/foo:bar/Y=val", {{
                                                       {{"foo", "bar"}},
-                                                      {{"Y"}, {"val"}},
+                                                      {{"Y"}, {{"val"}}},
                                                   }}},
                  {"/restconf/data/foo:bar/Y=val-ue", {{
                                                          {{"foo", "bar"}},
-                                                         {{"Y"}, {"val-ue"}},
+                                                         {{"Y"}, {{"val-ue"}}},
                                                      }}},
                  {"/restconf/data/foo:bar/p:lst=key1", {{
                                                            {{"foo", "bar"}},
-                                                           {{"p", "lst"}, {"key1"}},
+                                                           {{"p", "lst"}, {{"key1"}}},
                                                        }}},
 
                  {"/restconf/data/foo:bar/p:lst=key1/leaf", {{
                                                                 {{"foo", "bar"}},
-                                                                {{"p", "lst"}, {"key1"}},
+                                                                {{"p", "lst"}, {{"key1"}}},
                                                                 {{"leaf"}},
                                                             }}},
                  {"/restconf/data/foo:bar/lst=key1,", {{
                                                           {{"foo", "bar"}},
-                                                          {{"lst"}, {"key1", ""}},
+                                                          {{"lst"}, {{"key1"}, {""}}},
                                                       }}},
                  {"/restconf/data/foo:bar/lst=key1,,,", {{
                                                             {{"foo", "bar"}},
-                                                            {{"lst"}, {"key1", "", "", ""}},
+                                                            {{"lst"}, {{"key1"}, {""}, {""}, {""}}},
                                                         }}},
                  {"/restconf/data/foo:bar/lst=key1,/leaf", {{
                                                                {{"foo", "bar"}},
-                                                               {{"lst"}, {"key1", ""}},
+                                                               {{"lst"}, {{"key1"}, {""}}},
                                                                {{"leaf"}},
                                                            }}},
                  {"/restconf/data/foo:bar/lst=key1,key2", {{
                                                               {{"foo", "bar"}},
-                                                              {{"lst"}, {"key1", "key2"}},
+                                                              {{"lst"}, {{"key1"}, {"key2"}}},
                                                           }}},
-                 {"/restconf/data/foo:bar/lst=key1,key2/leaf", {{
+                 {"/restconf/data/foo:bar/lst=foo2:key1,blabla:key2/leaf", {{
                                                                    {{"foo", "bar"}},
-                                                                   {{"lst"}, {"key1", "key2"}},
+                                                                   {{"lst"}, {{"foo2", "key1"}, {"blabla", "key2"}}},
                                                                    {{"leaf"}},
                                                                }}},
                  {"/restconf/data/foo:bar/lst=key1,key2/lst2=key1/leaf", {{
                                                                              {{"foo", "bar"}},
-                                                                             {{"lst"}, {"key1", "key2"}},
-                                                                             {{"lst2"}, {"key1"}},
+                                                                             {{"lst"}, {{"key1"}, {"key2"}}},
+                                                                             {{"lst2"}, {{"key1"}}},
                                                                              {{"leaf"}},
                                                                          }}},
                  {"/restconf/data/foo:bar/lst=,key2/lst2=key1/leaf", {{
                                                                          {{"foo", "bar"}},
-                                                                         {{"lst"}, {"", "key2"}},
-                                                                         {{"lst2"}, {"key1"}},
+                                                                         {{"lst"}, {{""}, {"key2"}}},
+                                                                         {{"lst2"}, {{"key1"}}},
                                                                          {{"leaf"}},
                                                                      }}},
                  {"/restconf/data/foo:bar/lst=,/lst2=key1/leaf", {{
                                                                      {{"foo", "bar"}},
-                                                                     {{"lst"}, {"", ""}},
-                                                                     {{"lst2"}, {"key1"}},
+                                                                     {{"lst"}, {{""}, {""}}},
+                                                                     {{"lst2"}, {{"key1"}}},
                                                                      {{"leaf"}},
                                                                  }}},
                  {"/restconf/data/foo:bar/lst=", {{
                                                      {{"foo", "bar"}},
-                                                     {{"lst"}, {""}},
+                                                     {{"lst"}, {{""}}},
                                                  }}},
                  {"/restconf/data/foo:bar/lst=/leaf", {{
                                                           {{"foo", "bar"}},
-                                                          {{"lst"}, {""}},
+                                                          {{"lst"}, {{""}}},
                                                           {{"leaf"}},
                                                       }}},
                  {"/restconf/data/foo:bar/prefix:lst=key1/prefix:leaf", {{
                                                                             {{"foo", "bar"}},
-                                                                            {{"prefix", "lst"}, {"key1"}},
+                                                                            {{"prefix", "lst"}, {{"key1"}}},
                                                                             {{"prefix", "leaf"}},
                                                                         }}},
                  {"/restconf/data/foo:bar/lst=key1,,key3", {{
                                                                {{"foo", "bar"}},
-                                                               {{"lst"}, {"key1", "", "key3"}},
+                                                               {{"lst"}, {{"key1"}, {""}, {"key3"}}},
                                                            }}},
                  {"/restconf/data/foo:bar/lst=key%2CWithCommas,,key2C", {{
                                                                             {{"foo", "bar"}},
-                                                                            {{"lst"}, {"key,WithCommas", "", "key2C"}},
+                                                                            {{"lst"}, {{"key,WithCommas"}, {""}, {"key2C"}}},
                                                                         }}},
                  {R"(/restconf/data/foo:bar/list1=%2C%27"%3A"%20%2F,,foo)", {{
                                                                                 {{"foo", "bar"}},
-                                                                                {{"list1"}, {R"(,'":" /)", "", "foo"}},
+                                                                                {{"list1"}, {{R"(,'":" /)"}, {""}, {"foo"}}},
                                                                             }}},
                  {"/restconf/data/foo:bar/list1= %20,%20,foo", {{
                                                                    {{"foo", "bar"}},
-                                                                   {{"list1"}, {"  ", " ", "foo"}},
+                                                                   {{"list1"}, {{"  "}, {" "}, {"foo"}}},
                                                                }}},
                  {"/restconf/data/foo:bar/list1= %20,%20, ", {{
                                                                  {{"foo", "bar"}},
-                                                                 {{"list1"}, {"  ", " ", " "}},
+                                                                 {{"list1"}, {{"  "}, {" "}, {" "}}},
                                                              }}},
                  {"/restconf/data/foo:bar/list1=žluťoučkýkůň", {{
                                                                    {{"foo", "bar"}},
-                                                                   {{"list1"}, {"žluťoučkýkůň"}},
+                                                                   {{"list1"}, {{"žluťoučkýkůň"}}},
                                                                }}},
                  {"/restconf/data/foo:list=A%20Z", {{
-                                                       {{"foo", "list"}, {"A Z"}},
+                                                       {{"foo", "list"}, {{"A Z"}}},
                                                    }}},
                  {"/restconf/data/foo:list=A%25Z", {{
-                                                       {{"foo", "list"}, {"A%Z"}},
+                                                       {{"foo", "list"}, {{"A%Z"}}},
                                                    }}},
                  {"/restconf/data", {{}, {}}},
                  {"/restconf/data/", {{}, {}}},
 
                  // RFC 8527 uris
                  {"/restconf/ds/hello:world", {{URIPrefix::Type::NMDADatastore, {{"hello", "world"}}}, {}}},
-                 {"/restconf/ds/ietf-datastores:running/foo:bar/list1=a", {{URIPrefix::Type::NMDADatastore, {{"ietf-datastores", "running"}}}, {{{"foo", "bar"}}, {{"list1"}, {"a"}}}}},
+                 {"/restconf/ds/ietf-datastores:running/foo:bar/list1=a", {{URIPrefix::Type::NMDADatastore, {{"ietf-datastores", "running"}}}, {{{"foo", "bar"}}, {{"list1"}, {{"a"}}}}}},
                  {"/restconf/ds/ietf-datastores:operational", {{URIPrefix::Type::NMDADatastore, {{"ietf-datastores", "operational"}}}, {}}},
                  {"/restconf/ds/ietf-datastores:operational/", {{URIPrefix::Type::NMDADatastore, {{"ietf-datastores", "operational"}}}, {}}},
                  // RPCs and actions
                  {"/restconf/operations/example:rpc-test", {{URIPrefix::Type::BasicRestconfOperations, boost::none}, {{{"example", "rpc-test"}}}}},
                  {"/restconf/data/example:tlc/list=hello-world/example-action", {{
                                                                                     {{"example", "tlc"}},
-                                                                                    {{"list"}, {"hello-world"}},
+                                                                                    {{"list"}, {{"hello-world"}}},
                                                                                     {{"example-action"}},
                                                                                 }}},
                  {"/restconf/operations", {{URIPrefix::Type::BasicRestconfOperations, boost::none}, {}}},
@@ -321,8 +321,8 @@ TEST_CASE("URI path parser")
 
                     for (const auto& [uriPath, expectedLyPathParent, expectedLastSegment] : {
                              std::tuple<std::string, std::string, PathSegment>{"/restconf/data/example:top-level-leaf", "", {{"example", "top-level-leaf"}}},
-                             {"/restconf/data/example:top-level-list=hello", "", {{"example", "top-level-list"}, {"hello"}}},
-                             {"/restconf/data/example:tlc/list=eth0/collection=1", "/example:tlc/list[name='eth0']", {{"example", "collection"}, {"1"}}},
+                             {"/restconf/data/example:top-level-list=hello", "", {{"example", "top-level-list"}, {{"hello"}}}},
+                             {"/restconf/data/example:tlc/list=eth0/collection=1", "/example:tlc/list[name='eth0']", {{"example", "collection"}, {{"1"}}}},
                              {"/restconf/data/example:tlc/status", "/example:tlc", {{"example", "status"}}},
                              {"/restconf/data/example:a/example-augment:b/c", "/example:a/example-augment:b", {{"example-augment", "c"}}},
                              {"/restconf/ds/ietf-datastores:startup/example:a/example-augment:b/c", "/example:a/example-augment:b", {{"example-augment", "c"}}},
@@ -906,7 +906,7 @@ TEST_CASE("URI path parser")
                             {"insert", insert::Before{}},
                             {"point", insert::PointParsed({
                                           {{"example", "ordered-lists"}, {}},
-                                          {{"lst"}, {"key"}},
+                                          {{"lst"}, {{"key"}}},
                                       })},
                         }));
 
@@ -914,7 +914,7 @@ TEST_CASE("URI path parser")
                 REQUIRE(resp.queryParams == QueryParams({
                             {"point", insert::PointParsed({
                                           {{"example", "ordered-lists"}, {}},
-                                          {{"ll"}, {"key"}},
+                                          {{"ll"}, {{"key"}}},
                                       })},
                             {"insert", insert::After{}},
                         }));

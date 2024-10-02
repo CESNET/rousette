@@ -42,11 +42,24 @@ struct ApiIdentifier {
  * Corresponds to list-instance rule in the grammar for data resource idenfitifer (https://datatracker.ietf.org/doc/html/rfc8040#section-3.5.3.1).
  */
 struct PathSegment {
+    /**@brief Represents list key value. It can be namespace qualified if it is YANG identity. */
+    struct KeyValue {
+        boost::optional<std::string> prefix;
+        std::string keyValue;
+
+        KeyValue();
+        KeyValue(const std::string& keyValue);
+        KeyValue(const std::string& prefix, const std::string& keyValue);
+
+        bool operator==(const KeyValue&) const = default;
+        std::string name() const;
+    };
+
     ApiIdentifier apiIdent;
-    std::vector<std::string> keys;
+    std::vector<KeyValue> keys;
 
     PathSegment();
-    PathSegment(const ApiIdentifier& apiIdent, const std::vector<std::string>& keys = {});
+    PathSegment(const ApiIdentifier& apiIdent, const std::vector<KeyValue>& keys = {});
 
     bool operator==(const PathSegment&) const = default;
 };

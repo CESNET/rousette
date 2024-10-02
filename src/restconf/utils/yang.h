@@ -6,6 +6,7 @@
 */
 
 #include <chrono>
+#include "restconf/uri.h"
 
 namespace libyang {
 class Leaf;
@@ -15,7 +16,7 @@ class DataNode;
 namespace rousette::restconf {
 
 std::string escapeListKey(const std::string& str);
-std::string listKeyPredicate(const std::vector<libyang::Leaf>& listKeyLeafs, const std::vector<std::string>& keyValues);
+std::string listKeyPredicate(const std::vector<libyang::Leaf>& listKeyLeafs, const std::vector<PathSegment::KeyValue>& keyValues);
 bool isUserOrderedList(const libyang::DataNode& node);
 bool isKeyNode(const libyang::DataNode& maybeList, const libyang::DataNode& node);
 }

@@ -5,9 +5,11 @@
  *
 */
 
+#include <boost/algorithm/string.hpp>
 #include <experimental/iterator>
 #include <libyang-cpp/Enum.hpp>
 #include <libyang-cpp/Time.hpp>
+#include <libyang-cpp/Type.hpp>
 #include <nghttp2/asio_http2_server.h>
 #include <spdlog/spdlog.h>
 #include <sysrepo-cpp/Enum.hpp>
@@ -169,8 +171,26 @@ std::optional<libyang::DataNode> checkKeysMismatch(const libyang::DataNode& node
 
             const auto& keyValueData = keyNodeData->asTerm().valueStr();
 
-            if (keyValueURI != keyValueData) {
-                return keyNodeData;
+            /*
+             * if the key's type is identityref, then namespace qualified value is returned in keyValueData
+             * but there is no guarantee that the client provided the identity string as fully qualified
+             *
+             * I don't know how to handle this properly. The only two things that come to my mind is to parse the
+             * key value from the URI into corresponding DataNode and compare the two nodes.
+             * The other is to split the identity value from the parsed data to fetch the namespace. Then try to
+             * compare the value from the data tree with the value from the URI OR with the value from the URI with namespace.
+             * I selected the later.
+             */
+            if (keyNodeData->schema().asLeaf().valueType().base() == libyang::LeafBaseType::IdentityRef) {
+                std::vector<std::string> identityRefComponents;
+                boost::algorithm::split(identityRefComponents, keyValueData, boost::is_any_of(":"));
+                if (keyValueURI.name() != keyValueData && identityRefComponents[0] + ":" + keyValueURI.name() != keyValueData) {
+                    return keyNodeData;
+                }
+            } else {
+                if (keyValueURI.name() != keyValueData) {
+                    return keyNodeData;
+                }
             }
         }
     } else if (node.schema().nodeType() == libyang::NodeType::Leaflist) {
@@ -210,7 +230,7 @@ void yangInsert(const libyang::Context& ctx, libyang::DataNode& listEntryNode, c
 
     if (point) {
         const auto listEntrySchema = listEntryNode.schema();
-        std::string key;
+        PathSegment::KeyValue key;
 
         if (listEntrySchema != asLibyangSchemaNode(ctx, *point)) {
             throw ErrorResponse(400, "protocol", "invalid-value", "Query parameter 'point' contains path to a different list", listEntryNode.path());
@@ -224,7 +244,7 @@ void yangInsert(const libyang::Context& ctx, libyang::DataNode& listEntryNode, c
             throw std::logic_error("Node is neither a list nor a leaf-list");
         }
 
-        listEntryNode.newMeta(modYang, listEntryNode.schema().nodeType() == libyang::NodeType::List ? "key" : "value", key);
+        listEntryNode.newMeta(modYang, listEntryNode.schema().nodeType() == libyang::NodeType::List ? "key" : "value", key.name());
     }
 }
 
