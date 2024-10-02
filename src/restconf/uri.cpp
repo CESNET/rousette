@@ -34,10 +34,11 @@ const auto urlEncodedChar = x3::rule<class urlEncodedChar, unsigned>{"urlEncoded
 /* reserved characters according to RFC 3986, sec. 2.2 with '%' added. The '%' character is not specified as reserved but it effectively is because
  * "Percent sign serves as the indicator for percent-encoded octets, it must be percent-encoded (...)" [RFC 3986, sec. 2.4]. */
 const auto reservedChars = x3::lit(':') | '/' | '?' | '#' | '[' | ']' | '@' | '!' | '$' | '&' | '\'' | '(' | ')' | '*' | '+' | ',' | ',' | ';' | '=' | '%';
-const auto keyValue = x3::rule<class keyValue, std::string>{"keyValue"} = *(urlEncodedChar | (x3::char_ - reservedChars));
-
-const auto keyList = x3::rule<class keyList, std::vector<std::string>>{"keyList"} = keyValue % ',';
+const auto urlEncodedString = x3::rule<class abc, std::string>{"abc"} = *(urlEncodedChar | (x3::char_ - reservedChars));
 const auto identifier = x3::rule<class apiIdentifier, std::string>{"identifier"} = (x3::alpha | x3::char_('_')) >> *(x3::alnum | x3::char_('_') | x3::char_('-') | x3::char_('.'));
+
+const auto keyValue = x3::rule<class keyValue, PathSegment::KeyValue>{"keyValue"} = -(identifier >> ":") >> urlEncodedString;
+const auto keyList = x3::rule<class keyList, std::vector<PathSegment::KeyValue>>{"keyList"} = keyValue % ',';
 const auto apiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentifier"} = -(identifier >> ':') >> identifier;
 const auto listInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = apiIdentifier >> -('=' >> keyList);
 const auto fullyQualifiedApiIdentifier = x3::rule<class identifier, ApiIdentifier>{"apiIdentifier"} = identifier >> ':' >> identifier;
@@ -221,10 +222,26 @@ std::string ApiIdentifier::name() const
 
 PathSegment::PathSegment() = default;
 
-PathSegment::PathSegment(const ApiIdentifier& apiIdent, const std::vector<std::string>& keys)
+PathSegment::PathSegment(const ApiIdentifier& apiIdent, const std::vector<KeyValue>& keys)
     : apiIdent(apiIdent)
     , keys(keys)
 {
+}
+
+PathSegment::PathSegment::KeyValue::KeyValue() = default;
+PathSegment::PathSegment::KeyValue::KeyValue(const std::string& keyValue)
+    : keyValue(keyValue)
+{
+}
+PathSegment::PathSegment::KeyValue::KeyValue(const std::string& prefix, const std::string& keyValue)
+    : prefix(prefix)
+    , keyValue(keyValue)
+{
+}
+
+std::string PathSegment::PathSegment::KeyValue::name() const
+{
+    return prefix ? *prefix + ":" + keyValue : keyValue;
 }
 
 namespace {
@@ -479,7 +496,7 @@ SchemaNodeAndPath asLibyangPath(const libyang::Context& ctx, const std::vector<P
             }
 
             try {
-                res += "[.=" + escapeListKey(it->keys.front()) + ']';
+                res += "[.=" + escapeListKey(it->keys.front().name()) + ']';
             } catch (const std::invalid_argument& e) {
                 throw ErrorResponse(400, "application", "operation-failed", e.what());
             }
