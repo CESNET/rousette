@@ -16,6 +16,7 @@ namespace rousette::restconf {
 
 std::string escapeListKey(const std::string& str);
 std::string listKeyPredicate(const std::vector<libyang::Leaf>& listKeyLeafs, const std::vector<std::string>& keyValues);
+std::string leaflistKeyPredicate(const std::string& keyValue);
 bool isUserOrderedList(const libyang::DataNode& node);
 bool isKeyNode(const libyang::DataNode& maybeList, const libyang::DataNode& node);
 }

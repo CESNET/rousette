@@ -1,0 +1,13 @@
+module example-types {
+  yang-version 1.1;
+  namespace "http://example.tld/example-types";
+  prefix ex-types;
+
+  import example {
+    prefix ex;
+  }
+
+  identity another-derived-identity {
+    base ex:base-identity;
+  }
+}
