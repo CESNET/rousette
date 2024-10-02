@@ -50,6 +50,11 @@ std::string listKeyPredicate(const std::vector<libyang::Leaf>& listKeyLeafs, con
     return res;
 }
 
+std::string leaflistKeyPredicate(const std::string& keyValue)
+{
+    return "[.=" + escapeListKey(keyValue) + ']';
+}
+
 bool isUserOrderedList(const libyang::DataNode& node)
 {
     if (node.schema().nodeType() == libyang::NodeType::List) {

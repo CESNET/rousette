@@ -154,6 +154,15 @@ auto rejectYangPatch(const std::string& patchId, const std::string& editId)
     };
 }
 
+/** @brief Check if these two paths compare the same after path canonicalization */
+bool compareKeyValue(const libyang::Context& ctx, const std::string& pathA, const std::string& pathB)
+{
+    auto [parentA, nodeA] = ctx.newPath2(pathA, std::nullopt);
+    auto [parentB, nodeB] = ctx.newPath2(pathB, std::nullopt);
+
+    return nodeA->asTerm().valueStr() == nodeB->asTerm().valueStr();
+}
+
 struct KeyMismatch {
     libyang::DataNode offendingNode;
     std::optional<std::string> uriKeyValue;
@@ -169,25 +178,46 @@ struct KeyMismatch {
 
 /** @brief In case node is a (leaf-)list check if the key values are the same as the keys specified in the lastPathSegment.
  * @return The node where the mismatch occurs */
-std::optional<KeyMismatch> checkKeysMismatch(const libyang::DataNode& node, const PathSegment& lastPathSegment)
+std::optional<KeyMismatch> checkKeysMismatch(libyang::Context& ctx, const libyang::DataNode& node, const std::string& lyParentPath, const PathSegment& lastPathSegment)
 {
+    const auto pathPrefix = (lyParentPath.empty() ? "" : lyParentPath) + "/" + lastPathSegment.apiIdent.name();
+
     if (node.schema().nodeType() == libyang::NodeType::List) {
         const auto& listKeys = node.schema().asList().keys();
         for (size_t i = 0; i < listKeys.size(); ++i) {
-            const auto& keyValueURI = lastPathSegment.keys[i];
             auto keyNodeData = node.findPath(listKeys[i].module().name() + ':' + listKeys[i].name());
             if (!keyNodeData) {
                 return KeyMismatch{node, std::nullopt};
             }
 
-            const auto& keyValueData = keyNodeData->asTerm().valueStr();
+            /*
+             * If the key's value has a canonical form then libyang makes the value canonical
+             * but there is no guarantee that the client provided the value in the canonical form.
+             *
+             * Let libyang do the work. Create two data nodes, one with the key value from the data and the other
+             * with the key value from the URI. Then compare the values from the two nodes. If they are different,
+             * they certainly mismatch.
+             *
+             * This can happen in cases like
+             *  * The key's type is identityref and the client provided the key value as a string without the module name. Libyang will canonicalize the value by adding the module name.
+             *  * The key's type is decimal64 with fractional-digits 2; then the client can provide the value as 1.0 or 1.00 and they should be the same. Libyang will canonicalize the value.
+             */
 
-            if (keyValueURI != keyValueData) {
-                return KeyMismatch{*keyNodeData, keyValueURI};
+            auto keysWithValueFromData = lastPathSegment.keys;
+            keysWithValueFromData[i] = keyNodeData->asTerm().valueStr();
+
+            const auto suffix = "/" + listKeys[i].name();
+            const auto pathFromData = pathPrefix + listKeyPredicate(listKeys, keysWithValueFromData) + suffix;
+            const auto pathFromURI = pathPrefix + listKeyPredicate(listKeys, lastPathSegment.keys) + suffix;
+
+            if (!compareKeyValue(ctx, pathFromData, pathFromURI)) {
+                return KeyMismatch{*keyNodeData, lastPathSegment.keys[i]};
             }
         }
     } else if (node.schema().nodeType() == libyang::NodeType::Leaflist) {
-        if (lastPathSegment.keys[0] != node.asTerm().valueStr()) {
+        const auto pathFromData = pathPrefix + leaflistKeyPredicate(node.asTerm().valueStr());
+        const auto pathFromURI = pathPrefix + leaflistKeyPredicate(lastPathSegment.keys[0]);
+        if (!compareKeyValue(ctx, pathFromData, pathFromURI)) {
             return KeyMismatch{node, lastPathSegment.keys[0]};
         }
     }
@@ -363,7 +393,7 @@ libyang::CreatedNodes createEditForPutAndPatch(libyang::Context& ctx, const std:
             if (isSameNode(child, lastPathSegment)) {
                 // 1) a single child that is created by parseSubtree(), its name is the same as `lastPathSegment`.
                 // It could be a list; then we need to check if the keys in provided data match the keys in URI.
-                if (auto keyMismatch = checkKeysMismatch(child, lastPathSegment)) {
+                if (auto keyMismatch = checkKeysMismatch(ctx, child, lyParentPath, lastPathSegment)) {
                     throw ErrorResponse(400, "protocol", "invalid-value", keyMismatch->message(), keyMismatch->offendingNode.path());
                 }
                 replacementNode = child;
@@ -386,7 +416,8 @@ libyang::CreatedNodes createEditForPutAndPatch(libyang::Context& ctx, const std:
             if (!isSameNode(*replacementNode, lastPathSegment)) {
                 throw ErrorResponse(400, "protocol", "invalid-value", "Data contains invalid node.", replacementNode->path());
             }
-            if (auto keyMismatch = checkKeysMismatch(*parent, lastPathSegment)) {
+
+            if (auto keyMismatch = checkKeysMismatch(ctx, *parent, lyParentPath, lastPathSegment)) {
                 throw ErrorResponse(400, "protocol", "invalid-value", keyMismatch->message(), keyMismatch->offendingNode.path());
             }
         }

@@ -6,6 +6,13 @@ module example {
   feature f1 { }
   feature f2 { }
 
+  identity base-identity {
+  }
+
+  identity derived-identity {
+    base base-identity;
+  }
+
   leaf top-level-leaf { type string; }
   leaf top-level-leaf2 { type string; default "x"; }
 
@@ -49,6 +56,11 @@ module example {
     list key-less-list {
       config false;
       leaf name { type string; }
+    }
+    leaf-list decimal-list {
+        type decimal64 {
+            fraction-digits 2;
+        }
     }
     leaf status {
       type enumeration {
@@ -107,6 +119,19 @@ module example {
       ordered-by user;
       type string;
     }
+  }
+
+  list list-with-identity-key {
+    key "type name";
+    leaf type {
+      type identityref { base base-identity; }
+    }
+    leaf name { type string; }
+    leaf text { type string; }
+  }
+
+  leaf-list leaf-list-with-identity-key {
+    type identityref { base base-identity; }
   }
 
   rpc test-rpc {

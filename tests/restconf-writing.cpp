@@ -389,6 +389,88 @@ TEST_CASE("writing data")
                 REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=libyang/nested=11,12,13", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:nested": [{"first": "11", "second": 12, "third": "13"}]}]})") == Response{201, noContentTypeHeaders, ""});
             }
 
+            SECTION("Test canonicalization of keys")
+            {
+                EXPECT_CHANGE(
+                    CREATED("/example:list-with-identity-key[type='example:derived-identity'][name='name']", std::nullopt),
+                    CREATED("/example:list-with-identity-key[type='example:derived-identity'][name='name']/type", "example:derived-identity"),
+                    CREATED("/example:list-with-identity-key[type='example:derived-identity'][name='name']/name", "name"),
+                    CREATED("/example:list-with-identity-key[type='example:derived-identity'][name='name']/text", "blabla"));
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:list-with-identity-key=derived-identity,name", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:list-with-identity-key": [{"name": "name", "type": "derived-identity", "text": "blabla"}]}]})") == Response{201, noContentTypeHeaders, ""});
+
+                // prefixed in the URI, not prefixed in the data
+                EXPECT_CHANGE(
+                    MODIFIED("/example:list-with-identity-key[type='example:derived-identity'][name='name']/text", "hehe"));
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:list-with-identity-key=example%3Aderived-identity,name", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:list-with-identity-key": [{"name": "name", "type": "derived-identity", "text": "hehe"}]}]})") == Response{204, noContentTypeHeaders, ""});
+
+
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:list-with-identity-key=another-derived-identity,name", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:list-with-identity-key": [{"name": "name", "type": "another-derived-identity", "text": "blabla"}]}]})") == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Validation failure: Can't parse data: LY_EVALID"
+      }
+    ]
+  }
+}
+)"});
+
+                EXPECT_CHANGE(
+                    CREATED("/example:list-with-identity-key[type='example-types:another-derived-identity'][name='name']", std::nullopt),
+                    CREATED("/example:list-with-identity-key[type='example-types:another-derived-identity'][name='name']/type", "example-types:another-derived-identity"),
+                    CREATED("/example:list-with-identity-key[type='example-types:another-derived-identity'][name='name']/name", "name"),
+                    CREATED("/example:list-with-identity-key[type='example-types:another-derived-identity'][name='name']/text", "blabla"));
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:list-with-identity-key=example-types%3Aanother-derived-identity,name", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:list-with-identity-key": [{"name": "name", "type": "example-types:another-derived-identity", "text": "blabla"}]}]})") == Response{201, noContentTypeHeaders, ""});
+
+                // missing namespace in the data
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:list-with-identity-key=example-types%3Aanother-derived-identity,name", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:list-with-identity-key": [{"name": "name", "type": "another-derived-identity", "text": "blabla"}]}]})") == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Validation failure: Can't parse data: LY_EVALID"
+      }
+    ]
+  }
+}
+)"});
+
+                EXPECT_CHANGE(CREATED("/example:leaf-list-with-identity-key[.='example-types:another-derived-identity']", "example-types:another-derived-identity"));
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:leaf-list-with-identity-key=example-types%3Aanother-derived-identity", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:leaf-list-with-identity-key": ["example-types:another-derived-identity"]})") == Response{201, noContentTypeHeaders, ""});
+
+                // missing namespace in the URI
+                EXPECT_CHANGE(CREATED("/example:leaf-list-with-identity-key[.='example:derived-identity']", "example:derived-identity"));
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:leaf-list-with-identity-key=derived-identity", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:leaf-list-with-identity-key": ["example:derived-identity"]})") == Response{201, noContentTypeHeaders, ""});
+
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:leaf-list-with-identity-key=example-types%3Aanother-derived-identity", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:leaf-list-with-identity-key": ["example:derived-identity"]})") == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-path": "/example:leaf-list-with-identity-key[.='example:derived-identity']",
+        "error-message": "List key mismatch between URI path ('example-types:another-derived-identity') and data ('example:derived-identity')."
+      }
+    ]
+  }
+}
+)"});
+
+                // value in the URI and in the data have the same canonical form
+                EXPECT_CHANGE(CREATED("/example:tlc/decimal-list[.='1.0']", "1.0"));
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/decimal-list=1.00", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:decimal-list": ["1.0"]})") == Response{201, noContentTypeHeaders, ""});
+
+                // nothing is changed, still the same value
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/decimal-list=1.000", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:decimal-list": ["1"]})") == Response{204, noContentTypeHeaders, ""});
+
+                // different value
+                EXPECT_CHANGE(CREATED("/example:tlc/decimal-list[.='1.01']", "1.01"));
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/decimal-list=1.010", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:decimal-list": ["1.01"]})") == Response{201, noContentTypeHeaders, ""});
+            }
+
             SECTION("Modify a leaf in a list entry")
             {
                 EXPECT_CHANGE(MODIFIED("/example:tlc/list[name='libyang']/choice1", "restconf"));
