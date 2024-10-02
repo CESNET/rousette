@@ -204,7 +204,8 @@ if(BUILD_TESTING)
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang --enable-feature f1
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-delete.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-augment.yang
-        --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-notif.yang)
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-notif.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-types.yang)
     rousette_test(NAME restconf-reading LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
     rousette_test(NAME restconf-writing LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
     rousette_test(NAME restconf-delete LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)

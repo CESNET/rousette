@@ -273,6 +273,66 @@ TEST_CASE("reading data")
   }
 }
 )"});
+
+        // key is YANG identity
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/radius/server=a,b", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-failed",
+        "error-message": "List '/ietf-system:system/radius/server' requires 1 keys"
+      }
+    ]
+  }
+}
+)"});
+
+    srSess.setItem("/example:list-with-identity-key[type='example:derived-identity'][name='name']", std::nullopt);
+    srSess.setItem("/example:list-with-identity-key[type='example-types:another-derived-identity'][name='name']", std::nullopt);
+    srSess.applyChanges();
+
+    // dealing with keys which can have prefixes (YANG identities)
+    REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-identity-key=derived-identity,name", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "example:list-with-identity-key": [
+    {
+      "type": "derived-identity",
+      "name": "name"
+    }
+  ]
+}
+)"});
+    REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-identity-key=example:derived-identity,name", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "example:list-with-identity-key": [
+    {
+      "type": "derived-identity",
+      "name": "name"
+    }
+  ]
+}
+)"});
+    REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-identity-key=another-derived-identity,name", {AUTH_ROOT}) == Response{404, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "No data from sysrepo."
+      }
+    ]
+  }
+}
+)"});
+
+    REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-identity-key=example-types:another-derived-identity,name", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "example:list-with-identity-key": [
+    {
+      "type": "example-types:another-derived-identity",
+      "name": "name"
+    }
+  ]
+}
+)"});
     }
 
     DOCTEST_SUBCASE("RPCs")
