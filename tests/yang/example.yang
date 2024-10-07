@@ -121,10 +121,19 @@ module example {
     }
   }
 
-  list list-with-identity-key {
+  list list-with-union-keys {
     key "type name";
     leaf type {
-      type identityref { base base-identity; }
+      type union {
+        type identityref {
+          base base-identity;
+        }
+        type enumeration {
+          enum zero;
+          enum one;
+        }
+        type string;
+      }
     }
     leaf name { type string; }
     leaf text { type string; }
