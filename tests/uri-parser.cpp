@@ -293,7 +293,7 @@ TEST_CASE("URI path parser")
                              {"/restconf/data/example:tlc/list=eth0/choice1", "/example:tlc/list[name='eth0']/choice1", std::nullopt},
                              {"/restconf/data/example:tlc/list=eth0/choice2", "/example:tlc/list[name='eth0']/choice2", std::nullopt},
                              {"/restconf/data/example:tlc/list=eth0/collection=val", "/example:tlc/list[name='eth0']/collection[.='val']", std::nullopt},
-                             {"/restconf/data/example:list-with-identity-key=example-types%3Aanother-derived-identity,aaa", "/example:list-with-identity-key[type='example-types:another-derived-identity'][name='aaa']", std::nullopt},
+                             {"/restconf/data/example:list-with-union-keys=example-types%3Aanother-derived-identity,aaa", "/example:list-with-union-keys[type='example-types:another-derived-identity'][name='aaa']", std::nullopt},
                              {"/restconf/data/example:tlc/status", "/example:tlc/status", std::nullopt},
                              // container example:a has a container b inserted locally and also via an augment. Check that we return the correct one
                              {"/restconf/data/example:a/b", "/example:a/b", std::nullopt},
