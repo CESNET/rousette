@@ -416,7 +416,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx, const std::c
          *  - The data node exists but might get deleted right after this check: Sysrepo throws an error when this happens.
          *  - The data node does not exist but might get created right after this check: The node was not there when the request was issues so it should not be a problem
          */
-        auto [pathToParent, pathSegment] = asLibyangPathSplit(ctx, requestCtx->req.uri().path);
+        auto [pathToParent, pathSegment] = asLibyangPathSplit(ctx, requestCtx->req.uri().raw_path);
         if (!requestCtx->sess.getData(pathToParent, 0, sysrepo::GetOptions::Default, timeout)) {
             throw ErrorResponse(400, "application", "operation-failed", "Action data node '" + requestCtx->restconfRequest.path + "' does not exist.");
         }
@@ -539,7 +539,7 @@ void processYangPatchEdit(const std::shared_ptr<RequestContext>& requestCtx, con
     auto target = childLeafValue(editContainer, "target");
     auto operation = childLeafValue(editContainer, "operation");
 
-    auto [singleEdit, replacementNode] = createEditForPutAndPatch(ctx, requestCtx->req.uri().path + target, yangPatchValueAsJSON(editContainer), libyang::DataFormat::JSON);
+    auto [singleEdit, replacementNode] = createEditForPutAndPatch(ctx, requestCtx->req.uri().raw_path + target, yangPatchValueAsJSON(editContainer), libyang::DataFormat::JSON);
     validateInputMetaAttributes(ctx, *singleEdit);
 
     // insert and move are not defined in RFC6241. sec 7.3 and sysrepo does not support them directly
@@ -658,7 +658,7 @@ void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx, const st
         throw ErrorResponse(400, "protocol", "invalid-value", "Target resource does not exist");
     }
 
-    auto [edit, replacementNode] = createEditForPutAndPatch(ctx, requestCtx->req.uri().path, requestCtx->payload, *requestCtx->dataFormat.request /* caller checks if the dataFormat.request is present */);
+    auto [edit, replacementNode] = createEditForPutAndPatch(ctx, requestCtx->req.uri().raw_path, requestCtx->payload, *requestCtx->dataFormat.request /* caller checks if the dataFormat.request is present */);
     validateInputMetaAttributes(ctx, *edit);
 
     if (requestCtx->req.method() == "PUT") {
@@ -954,7 +954,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 dataFormat = chooseDataEncoding(req.header());
                 authorizeRequest(nacm, sess, req);
 
-                auto restconfRequest = asRestconfRequest(sess.getContext(), req.method(), req.uri().path, req.uri().raw_query);
+                auto restconfRequest = asRestconfRequest(sess.getContext(), req.method(), req.uri().raw_path, req.uri().raw_query);
 
                 switch (restconfRequest.type) {
                 case RestconfRequest::Type::RestconfRoot:
