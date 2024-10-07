@@ -392,51 +392,49 @@ TEST_CASE("writing data")
             SECTION("Insert YANG identities")
             {
                 EXPECT_CHANGE(
-                    CREATED("/example:list-with-identity-key[type='example:derived-identity'][name='name']", std::nullopt),
-                    CREATED("/example:list-with-identity-key[type='example:derived-identity'][name='name']/type", "example:derived-identity"),
-                    CREATED("/example:list-with-identity-key[type='example:derived-identity'][name='name']/name", "name"),
-                    CREATED("/example:list-with-identity-key[type='example:derived-identity'][name='name']/text", "blabla"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:list-with-identity-key=derived-identity,name", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:list-with-identity-key": [{"name": "name", "type": "derived-identity", "text": "blabla"}]}]})") == Response{201, noContentTypeHeaders, ""});
+                    CREATED("/example:list-with-namespaced-keys[type='example:derived-identity'][name='name']", std::nullopt),
+                    CREATED("/example:list-with-namespaced-keys[type='example:derived-identity'][name='name']/type", "example:derived-identity"),
+                    CREATED("/example:list-with-namespaced-keys[type='example:derived-identity'][name='name']/name", "name"),
+                    CREATED("/example:list-with-namespaced-keys[type='example:derived-identity'][name='name']/text", "blabla"));
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:list-with-namespaced-keys=derived-identity,name", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:list-with-namespaced-keys": [{"name": "name", "type": "derived-identity", "text": "blabla"}]}]})") == Response{201, noContentTypeHeaders, ""});
 
                 // prefixed in the URI, not prefixed in the data
                 EXPECT_CHANGE(
-                    MODIFIED("/example:list-with-identity-key[type='example:derived-identity'][name='name']/text", "hehe"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:list-with-identity-key=example%3Aderived-identity,name", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:list-with-identity-key": [{"name": "name", "type": "derived-identity", "text": "hehe"}]}]})") == Response{204, noContentTypeHeaders, ""});
+                    MODIFIED("/example:list-with-namespaced-keys[type='example:derived-identity'][name='name']/text", "hehe"));
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:list-with-namespaced-keys=example%3Aderived-identity,name", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:list-with-namespaced-keys": [{"name": "name", "type": "derived-identity", "text": "hehe"}]}]})") == Response{204, noContentTypeHeaders, ""});
 
-
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:list-with-identity-key=another-derived-identity,name", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:list-with-identity-key": [{"name": "name", "type": "another-derived-identity", "text": "blabla"}]}]})") == Response{400, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "protocol",
-        "error-tag": "invalid-value",
-        "error-message": "Validation failure: Can't parse data: LY_EVALID"
-      }
-    ]
-  }
-}
-)"});
+                // another-derived-identity is in example-types, this parses as string
+                EXPECT_CHANGE(
+                    CREATED("/example:list-with-namespaced-keys[type='another-derived-identity'][name='name']", std::nullopt),
+                    CREATED("/example:list-with-namespaced-keys[type='another-derived-identity'][name='name']/type", "another-derived-identity"),
+                    CREATED("/example:list-with-namespaced-keys[type='another-derived-identity'][name='name']/name", "name"),
+                    CREATED("/example:list-with-namespaced-keys[type='another-derived-identity'][name='name']/text", "blabla"));
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:list-with-namespaced-keys=another-derived-identity,name", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:list-with-namespaced-keys": [{"name": "name", "type": "another-derived-identity", "text": "blabla"}]}]})") == Response{201, noContentTypeHeaders, ""});
 
                 EXPECT_CHANGE(
-                    CREATED("/example:list-with-identity-key[type='example-types:another-derived-identity'][name='name']", std::nullopt),
-                    CREATED("/example:list-with-identity-key[type='example-types:another-derived-identity'][name='name']/type", "example-types:another-derived-identity"),
-                    CREATED("/example:list-with-identity-key[type='example-types:another-derived-identity'][name='name']/name", "name"),
-                    CREATED("/example:list-with-identity-key[type='example-types:another-derived-identity'][name='name']/text", "blabla"));
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:list-with-identity-key=example-types%3Aanother-derived-identity,name", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:list-with-identity-key": [{"name": "name", "type": "example-types:another-derived-identity", "text": "blabla"}]}]})") == Response{201, noContentTypeHeaders, ""});
+                    CREATED("/example:list-with-namespaced-keys[type='example-types:another-derived-identity'][name='name']", std::nullopt),
+                    CREATED("/example:list-with-namespaced-keys[type='example-types:another-derived-identity'][name='name']/type", "example-types:another-derived-identity"),
+                    CREATED("/example:list-with-namespaced-keys[type='example-types:another-derived-identity'][name='name']/name", "name"),
+                    CREATED("/example:list-with-namespaced-keys[type='example-types:another-derived-identity'][name='name']/text", "blabla"));
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:list-with-namespaced-keys=example-types%3Aanother-derived-identity,name", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:list-with-namespaced-keys": [{"name": "name", "type": "example-types:another-derived-identity", "text": "blabla"}]}]})") == Response{201, noContentTypeHeaders, ""});
 
                 // missing namespace in the data
-                REQUIRE(put(RESTCONF_DATA_ROOT "/example:list-with-identity-key=example-types%3Aanother-derived-identity,name", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:list-with-identity-key": [{"name": "name", "type": "another-derived-identity", "text": "blabla"}]}]})") == Response{400, jsonHeaders, R"({
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:list-with-namespaced-keys=example-types%3Aanother-derived-identity,name", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:list-with-namespaced-keys": [{"name": "name", "type": "another-derived-identity", "text": "blabla"}]}]})") == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
         "error-type": "protocol",
         "error-tag": "invalid-value",
-        "error-message": "Validation failure: Can't parse data: LY_EVALID"
+        "error-path": "/example:list-with-namespaced-keys[type='another-derived-identity'][name='name']/type",
+        "error-message": "List key mismatch between URI path and data."
       }
     ]
   }
 }
 )"});
+
+                EXPECT_CHANGE(CREATED("/example:list-with-namespaced-keys[type='example:zero'][name='name']", "example:zero"));
+                REQUIRE(put(RESTCONF_DATA_ROOT "/example:list-with-namespaced-keys=zero,name", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:list-with-namespaced-keys": [{"name": "name", "type": "example:zero"}]}]})") == Response{201, noContentTypeHeaders, ""});
 
                 EXPECT_CHANGE(CREATED("/example:leaf-list-with-identity-key[.='example-types:another-derived-identity']", "example-types:another-derived-identity"));
                 REQUIRE(put(RESTCONF_DATA_ROOT "/example:leaf-list-with-identity-key=example-types%3Aanother-derived-identity", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:leaf-list-with-identity-key": ["example-types:another-derived-identity"]})") == Response{201, noContentTypeHeaders, ""});

@@ -288,13 +288,15 @@ TEST_CASE("reading data")
 }
 )"});
 
-        srSess.setItem("/example:list-with-identity-key[type='example:derived-identity'][name='name']", std::nullopt);
-        srSess.setItem("/example:list-with-identity-key[type='example-types:another-derived-identity'][name='name']", std::nullopt);
+        srSess.setItem("/example:list-with-namespaced-keys[type='example:derived-identity'][name='name']", std::nullopt);
+        srSess.setItem("/example:list-with-namespaced-keys[type='example-types:another-derived-identity'][name='name']", std::nullopt);
+        srSess.setItem("/example:list-with-namespaced-keys[type='fiii'][name='name']", std::nullopt);
+        srSess.setItem("/example:list-with-namespaced-keys[type='example:zero'][name='name']", std::nullopt);
         srSess.applyChanges();
 
         // dealing with keys which can have prefixes (YANG identities)
-        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-identity-key=derived-identity,name", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
-  "example:list-with-identity-key": [
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-namespaced-keys=derived-identity,name", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "example:list-with-namespaced-keys": [
     {
       "type": "derived-identity",
       "name": "name"
@@ -302,8 +304,8 @@ TEST_CASE("reading data")
   ]
 }
 )"});
-        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-identity-key=example%3Aderived-identity,name", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
-  "example:list-with-identity-key": [
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-namespaced-keys=example%3Aderived-identity,name", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "example:list-with-namespaced-keys": [
     {
       "type": "derived-identity",
       "name": "name"
@@ -311,7 +313,7 @@ TEST_CASE("reading data")
   ]
 }
 )"});
-        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-identity-key=another-derived-identity,name", {AUTH_ROOT}) == Response{404, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-namespaced-keys=another-derived-identity,name", {AUTH_ROOT}) == Response{404, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -324,10 +326,30 @@ TEST_CASE("reading data")
 }
 )"});
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-identity-key=example-types%3Aanother-derived-identity,name", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
-  "example:list-with-identity-key": [
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-namespaced-keys=example-types%3Aanother-derived-identity,name", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "example:list-with-namespaced-keys": [
     {
       "type": "example-types:another-derived-identity",
+      "name": "name"
+    }
+  ]
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-namespaced-keys=zero,name", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "example:list-with-namespaced-keys": [
+    {
+      "type": "example:zero",
+      "name": "name"
+    }
+  ]
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-namespaced-keys=fiii,name", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "example:list-with-namespaced-keys": [
+    {
+      "type": "fiii",
       "name": "name"
     }
   ]
