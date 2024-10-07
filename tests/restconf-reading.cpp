@@ -289,14 +289,16 @@ TEST_CASE("reading data")
 }
 )"});
 
-        srSess.setItem("/example:list-with-identity-key[type='example:derived-identity'][name='name']", std::nullopt);
-        srSess.setItem("/example:list-with-identity-key[type='example-types:another-derived-identity'][name='name']", std::nullopt);
+        srSess.setItem("/example:list-with-union-keys[type='example:derived-identity'][name='name']", std::nullopt);
+        srSess.setItem("/example:list-with-union-keys[type='example-types:another-derived-identity'][name='name']", std::nullopt);
+        srSess.setItem("/example:list-with-union-keys[type='fiii'][name='name']", std::nullopt);
+        srSess.setItem("/example:list-with-union-keys[type='zero'][name='name']", std::nullopt); // enum value
         srSess.setItem("/example:tlc/decimal-list[.='1.00']", std::nullopt);
         srSess.applyChanges();
 
         // dealing with keys which can have prefixes (YANG identities)
-        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-identity-key=derived-identity,name", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
-  "example:list-with-identity-key": [
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-union-keys=derived-identity,name", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "example:list-with-union-keys": [
     {
       "type": "derived-identity",
       "name": "name"
@@ -304,8 +306,8 @@ TEST_CASE("reading data")
   ]
 }
 )"});
-        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-identity-key=example%3Aderived-identity,name", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
-  "example:list-with-identity-key": [
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-union-keys=example%3Aderived-identity,name", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "example:list-with-union-keys": [
     {
       "type": "derived-identity",
       "name": "name"
@@ -315,7 +317,7 @@ TEST_CASE("reading data")
 )"});
 
         // an identity from another module must be namespace-qualified
-        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-identity-key=another-derived-identity,name", {AUTH_ROOT}) == Response{404, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-union-keys=another-derived-identity,name", {AUTH_ROOT}) == Response{404, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -328,8 +330,8 @@ TEST_CASE("reading data")
 }
 )"});
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-identity-key=example-types%3Aanother-derived-identity,name", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
-  "example:list-with-identity-key": [
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-union-keys=example-types%3Aanother-derived-identity,name", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "example:list-with-union-keys": [
     {
       "type": "example-types:another-derived-identity",
       "name": "name"
@@ -345,6 +347,39 @@ TEST_CASE("reading data")
       "1.0"
     ]
   }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-union-keys=zero,name", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "example:list-with-union-keys": [
+    {
+      "type": "zero",
+      "name": "name"
+    }
+  ]
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-union-keys=example%3Azero,name", {AUTH_ROOT}) == Response{404, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "No data from sysrepo."
+      }
+    ]
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:list-with-union-keys=fiii,name", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "example:list-with-union-keys": [
+    {
+      "type": "fiii",
+      "name": "name"
+    }
+  ]
 }
 )"});
     }

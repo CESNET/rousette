@@ -13,6 +13,11 @@ module example {
     base base-identity;
   }
 
+  identity fruit { }
+  identity apple {
+    base fruit;
+  }
+
   leaf top-level-leaf { type string; }
   leaf top-level-leaf2 { type string; default "x"; }
 
@@ -121,10 +126,23 @@ module example {
     }
   }
 
-  list list-with-identity-key {
+  list list-with-union-keys {
     key "type name";
     leaf type {
-      type identityref { base base-identity; }
+      type union {
+        type identityref {
+          base base-identity;
+        }
+        type enumeration {
+          enum zero;
+          enum one;
+        }
+        type leafref {
+          require-instance true;
+          path "/fruit-list";
+        }
+        type string;
+      }
     }
     leaf name { type string; }
     leaf text { type string; }
@@ -132,6 +150,10 @@ module example {
 
   leaf-list leaf-list-with-identity-key {
     type identityref { base base-identity; }
+  }
+
+  leaf-list fruit-list {
+    type identityref { base fruit; }
   }
 
   rpc test-rpc {
