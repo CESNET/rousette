@@ -261,6 +261,21 @@ TEST_CASE("reading data")
 }
 )"});
 
+        // percent-encoded comma is a part of the key value, it is not a delimiter
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/radius/server=a%2Cb", {AUTH_DWDM}) == Response{404, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "No data from sysrepo."
+      }
+    ]
+  }
+}
+)"});
+
+        // comma is a delimiter of list key values
         REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/radius/server=a,b", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [

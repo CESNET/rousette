@@ -34,9 +34,9 @@ const auto percentEncodedChar = x3::rule<class percentEncodedChar, unsigned>{"pe
 /* reserved characters according to RFC 3986, sec. 2.2 with '%' added. The '%' character is not specified as reserved but it effectively is because
  * "Percent sign serves as the indicator for percent-encoded octets, it must be percent-encoded (...)" [RFC 3986, sec. 2.4]. */
 const auto reservedChars = x3::lit(':') | '/' | '?' | '#' | '[' | ']' | '@' | '!' | '$' | '&' | '\'' | '(' | ')' | '*' | '+' | ',' | ',' | ';' | '=' | '%';
-const auto keyValue = x3::rule<class keyValue, std::string>{"keyValue"} = *(percentEncodedChar | (x3::char_ - reservedChars));
+const auto percentEncodedString = x3::rule<class percentEncodedString, std::string>{"percentEncodedString"} = *(percentEncodedChar | (x3::char_ - reservedChars));
 
-const auto keyList = x3::rule<class keyList, std::vector<std::string>>{"keyList"} = keyValue % ',';
+const auto keyList = x3::rule<class keyList, std::vector<std::string>>{"keyList"} = percentEncodedString % ',';
 const auto identifier = x3::rule<class identifier, std::string>{"identifier"} = (x3::alpha | x3::char_('_')) >> *(x3::alnum | x3::char_('_') | x3::char_('-') | x3::char_('.'));
 const auto apiIdentifier = x3::rule<class apiIdentifier, ApiIdentifier>{"apiIdentifier"} = -(identifier >> ':') >> identifier;
 const auto listInstance = x3::rule<class keyList, PathSegment>{"listInstance"} = apiIdentifier >> -('=' >> keyList);

@@ -158,9 +158,9 @@ TEST_CASE("URI path parser")
                                                                             {{"prefix", "lst"}, {"key1"}},
                                                                             {{"prefix", "leaf"}},
                                                                         }}},
-                 {"/restconf/data/foo:bar/lst=key1,,key3", {{
+                 {"/restconf/data/foo:bar/lst=module%3Akey1,,key3", {{
                                                                {{"foo", "bar"}},
-                                                               {{"lst"}, {"key1", "", "key3"}},
+                                                               {{"lst"}, {"module:key1", "", "key3"}},
                                                            }}},
                  {"/restconf/data/foo:bar/lst=key%2CWithCommas,,key2C", {{
                                                                             {{"foo", "bar"}},
@@ -240,6 +240,7 @@ TEST_CASE("URI path parser")
                  "/restconf/data/foo:list=A%2",
                  "/restconf/data/foo:list=A%2,",
                  "/restconf/data/foo:bar/list1=%%",
+                 "/restconf/data/foo:bar/list1=module:smth",
                  "/restconf/data/foo:bar/",
                  "/restconf/data/ foo : bar",
                  "/rest conf/data / foo:bar",
