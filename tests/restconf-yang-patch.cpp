@@ -436,7 +436,7 @@ TEST_CASE("YANG patch")
                 "error-type": "protocol",
                 "error-tag": "invalid-value",
                 "error-path": "/example:tlc/list[name='asdasdauisbdhaijbsdad']/name",
-                "error-message": "List key mismatch between URI path and data."
+                "error-message": "List key mismatch between URI path ('libyang') and data ('asdasdauisbdhaijbsdad')."
               }
             ]
           }

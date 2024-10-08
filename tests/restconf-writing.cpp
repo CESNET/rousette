@@ -432,7 +432,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:tlc/list[name='ahoj']/name",
-        "error-message": "List key mismatch between URI path and data."
+        "error-message": "List key mismatch between URI path ('netconf') and data ('ahoj')."
       }
     ]
   }
@@ -447,7 +447,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:top-level-list[name='ahoj']/name",
-        "error-message": "List key mismatch between URI path and data."
+        "error-message": "List key mismatch between URI path ('netconf') and data ('ahoj')."
       }
     ]
   }
@@ -505,7 +505,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:tlc/list[name='netconf']/collection[.='666']",
-        "error-message": "List key mismatch between URI path and data."
+        "error-message": "List key mismatch between URI path ('667') and data ('666')."
       }
     ]
   }
@@ -520,7 +520,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:top-level-leaf-list[.='666']",
-        "error-message": "List key mismatch between URI path and data."
+        "error-message": "List key mismatch between URI path ('667') and data ('666')."
       }
     ]
   }
@@ -535,7 +535,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:tlc/list[name='sysrepo']/name",
-        "error-message": "List key mismatch between URI path and data."
+        "error-message": "List key mismatch between URI path ('netconf') and data ('sysrepo')."
       }
     ]
   }
@@ -550,7 +550,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:tlc/list[name='sysrepo']/name",
-        "error-message": "List key mismatch between URI path and data."
+        "error-message": "List key mismatch between URI path ('netconf') and data ('sysrepo')."
       }
     ]
   }
@@ -565,7 +565,7 @@ TEST_CASE("writing data")
         "error-type": "protocol",
         "error-tag": "invalid-value",
         "error-path": "/example:tlc/list[name='libyang']/collection[.='42']",
-        "error-message": "List key mismatch between URI path and data."
+        "error-message": "List key mismatch between URI path ('5') and data ('42')."
       }
     ]
   }

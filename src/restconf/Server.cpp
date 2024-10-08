@@ -154,9 +154,22 @@ auto rejectYangPatch(const std::string& patchId, const std::string& editId)
     };
 }
 
+struct KeyMismatch {
+    libyang::DataNode offendingNode;
+    std::optional<std::string> uriKeyValue;
+
+    std::string message() const {
+        if (uriKeyValue) {
+            return "List key mismatch between URI path ('"s + *uriKeyValue + "') and data ('" + offendingNode.asTerm().valueStr() + "').";
+        } else {
+            return "List key mismatch (key missing in the data).";
+        }
+    }
+};
+
 /** @brief In case node is a (leaf-)list check if the key values are the same as the keys specified in the lastPathSegment.
  * @return The node where the mismatch occurs */
-std::optional<libyang::DataNode> checkKeysMismatch(const libyang::DataNode& node, const PathSegment& lastPathSegment)
+std::optional<KeyMismatch> checkKeysMismatch(const libyang::DataNode& node, const PathSegment& lastPathSegment)
 {
     if (node.schema().nodeType() == libyang::NodeType::List) {
         const auto& listKeys = node.schema().asList().keys();
@@ -164,18 +177,18 @@ std::optional<libyang::DataNode> checkKeysMismatch(const libyang::DataNode& node
             const auto& keyValueURI = lastPathSegment.keys[i];
             auto keyNodeData = node.findPath(listKeys[i].module().name() + ':' + listKeys[i].name());
             if (!keyNodeData) {
-                return node;
+                return KeyMismatch{node, std::nullopt};
             }
 
             const auto& keyValueData = keyNodeData->asTerm().valueStr();
 
             if (keyValueURI != keyValueData) {
-                return keyNodeData;
+                return KeyMismatch{*keyNodeData, keyValueURI};
             }
         }
     } else if (node.schema().nodeType() == libyang::NodeType::Leaflist) {
         if (lastPathSegment.keys[0] != node.asTerm().valueStr()) {
-            return node;
+            return KeyMismatch{node, lastPathSegment.keys[0]};
         }
     }
     return std::nullopt;
@@ -350,8 +363,8 @@ libyang::CreatedNodes createEditForPutAndPatch(libyang::Context& ctx, const std:
             if (isSameNode(child, lastPathSegment)) {
                 // 1) a single child that is created by parseSubtree(), its name is the same as `lastPathSegment`.
                 // It could be a list; then we need to check if the keys in provided data match the keys in URI.
-                if (auto offendingNode = checkKeysMismatch(child, lastPathSegment)) {
-                    throw ErrorResponse(400, "protocol", "invalid-value", "List key mismatch between URI path and data.", offendingNode->path());
+                if (auto keyMismatch = checkKeysMismatch(child, lastPathSegment)) {
+                    throw ErrorResponse(400, "protocol", "invalid-value", keyMismatch->message(), keyMismatch->offendingNode.path());
                 }
                 replacementNode = child;
             } else if (isKeyNode(*node, child)) {
@@ -373,8 +386,8 @@ libyang::CreatedNodes createEditForPutAndPatch(libyang::Context& ctx, const std:
             if (!isSameNode(*replacementNode, lastPathSegment)) {
                 throw ErrorResponse(400, "protocol", "invalid-value", "Data contains invalid node.", replacementNode->path());
             }
-            if (auto offendingNode = checkKeysMismatch(*parent, lastPathSegment)) {
-                throw ErrorResponse(400, "protocol", "invalid-value", "List key mismatch between URI path and data.", offendingNode->path());
+            if (auto keyMismatch = checkKeysMismatch(*parent, lastPathSegment)) {
+                throw ErrorResponse(400, "protocol", "invalid-value", keyMismatch->message(), keyMismatch->offendingNode.path());
             }
         }
     }
