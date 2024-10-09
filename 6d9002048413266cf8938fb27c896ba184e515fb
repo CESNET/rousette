@@ -34,6 +34,24 @@
       "parentUuid": "868a30d9_ac72c5d9",
       "revId": "6d9002048413266cf8938fb27c896ba184e515fb",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7771503f_e466795a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-10-09T15:08:39Z",
+      "side": 1,
+      "message": "I glanced through 8040 again, and it seems to me that percent decoding only applies to list keys, ever -- right? Still, I\u0027d prefer to merge this patch with a portion of the followup one so that we separate keyvalue handling from prefix-aware comparisons.",
+      "parentUuid": "a5e691d5_3cfdbc62",
+      "revId": "6d9002048413266cf8938fb27c896ba184e515fb",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
