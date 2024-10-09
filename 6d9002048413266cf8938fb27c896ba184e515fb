@@ -16,6 +16,24 @@
       "message": "this looks like something that should be tested",
       "revId": "6d9002048413266cf8938fb27c896ba184e515fb",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a5e691d5_3cfdbc62",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-10-09T08:54:21Z",
+      "side": 1,
+      "message": "what I meant to say is that this should be preferably covered by an \"end to end\" test, i.e., send an HTTP request for a list where the key has an url-encoded coma in there; this should fail with the parent of this commit and pass with this change",
+      "parentUuid": "868a30d9_ac72c5d9",
+      "revId": "6d9002048413266cf8938fb27c896ba184e515fb",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
