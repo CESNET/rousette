@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0b5b5f25_475371ab",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-10-09T15:03:34Z",
+      "side": 1,
+      "message": "conceptually, this is a variant\u003cApiIdentifier,string\u003e, right?",
+      "range": {
+        "startLine": 46,
+        "startChar": 11,
+        "endLine": 46,
+        "endChar": 19
+      },
+      "revId": "4c08e855466adfeae8ccbb977f01e24d9ada3a56",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}

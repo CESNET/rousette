@@ -1,0 +1,101 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2d2494a9_e7d99f2a",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-10-09T15:03:34Z",
+      "side": 1,
+      "message": "I *think* that this really belongs to the previous patch, doesn\u0027t it?",
+      "range": {
+        "startLine": 37,
+        "startChar": 0,
+        "endLine": 39,
+        "endChar": 107
+      },
+      "revId": "f614cfb024c289b920c4033f66936b1036c54f1b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fa5aa766_61628a08",
+        "filename": "tests/restconf-reading.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 277,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-10-09T15:03:34Z",
+      "side": 1,
+      "message": "/ietf-system:system/radius/server is a list key of type `string`, it\u0027s not an identityref.",
+      "revId": "f614cfb024c289b920c4033f66936b1036c54f1b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1fbd5470_8ec20042",
+        "filename": "tests/restconf-reading.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 289,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-10-09T15:03:34Z",
+      "side": 1,
+      "message": "this looks like a good testcase for the previous patch",
+      "range": {
+        "startLine": 278,
+        "startChar": 8,
+        "endLine": 289,
+        "endChar": 5
+      },
+      "revId": "f614cfb024c289b920c4033f66936b1036c54f1b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cdcd08e9_5061457d",
+        "filename": "tests/restconf-reading.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 314,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-10-09T15:03:34Z",
+      "side": 1,
+      "message": "please add a comment, e.g., \"an identity from another module must be namespace-qualified\"",
+      "revId": "f614cfb024c289b920c4033f66936b1036c54f1b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fb041783_5432c2a9",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-10-09T15:03:34Z",
+      "side": 1,
+      "message": "should this change go to the previous patch?",
+      "revId": "f614cfb024c289b920c4033f66936b1036c54f1b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
