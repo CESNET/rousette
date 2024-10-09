@@ -3,6 +3,52 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "168b619d_1be39dda",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-10-09T15:13:16Z",
+      "side": 1,
+      "message": "better description, IMHO:\n Check if these two paths compare the same after path canonicalization",
+      "range": {
+        "startLine": 157,
+        "startChar": 11,
+        "endLine": 157,
+        "endChar": 174
+      },
+      "revId": "f614cfb024c289b920c4033f66936b1036c54f1b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "83907335_d575653f",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 194,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-10-09T15:13:16Z",
+      "side": 1,
+      "message": "Not just an identityref, this should apply to any other type which has a canonical format but where libyang accepts other textual representation as well. As an example, I think that for a decimal64 with fraction-digits 2 as a key, the following values should compare the same:\n - 1.00\n - 1.0\n - 1.\n - 1\n\nAnd the same probably also applies to, e.g. spaces or quoting within a leafref.\n\nCould you please add tests for this?",
+      "range": {
+        "startLine": 194,
+        "startChar": 15,
+        "endLine": 194,
+        "endChar": 47
+      },
+      "revId": "f614cfb024c289b920c4033f66936b1036c54f1b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "2d2494a9_e7d99f2a",
         "filename": "src/restconf/uri.cpp",
         "patchSetId": 7
