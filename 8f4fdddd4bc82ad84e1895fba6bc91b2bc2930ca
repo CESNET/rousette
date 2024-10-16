@@ -110,6 +110,24 @@
       "message": "consider adding a leafref with require-instance to test some extra corner cases as well",
       "revId": "8f4fdddd4bc82ad84e1895fba6bc91b2bc2930ca",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2965903d_f5faf666",
+        "filename": "tests/yang/example.yang",
+        "patchSetId": 3
+      },
+      "lineNbr": 129,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-10-16T17:05:15Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a244fd7_1550d3c7",
+      "revId": "8f4fdddd4bc82ad84e1895fba6bc91b2bc2930ca",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
