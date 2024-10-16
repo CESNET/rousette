@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "be433ee7_c95d26f0",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-10-16T13:01:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "168b619d_1be39dda",
+      "range": {
+        "startLine": 157,
+        "startChar": 11,
+        "endLine": 157,
+        "endChar": 174
+      },
+      "revId": "f614cfb024c289b920c4033f66936b1036c54f1b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "83907335_d575653f",
@@ -70,6 +94,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "e738c37c_658d8954",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-10-16T13:01:48Z",
+      "side": 1,
+      "message": "Yes, I think this should indeed go to the prev patch.",
+      "parentUuid": "2d2494a9_e7d99f2a",
+      "range": {
+        "startLine": 37,
+        "startChar": 0,
+        "endLine": 39,
+        "endChar": 107
+      },
+      "revId": "f614cfb024c289b920c4033f66936b1036c54f1b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "fa5aa766_61628a08",
@@ -83,6 +131,24 @@
       "writtenOn": "2024-10-09T15:03:34Z",
       "side": 1,
       "message": "/ietf-system:system/radius/server is a list key of type `string`, it\u0027s not an identityref.",
+      "revId": "f614cfb024c289b920c4033f66936b1036c54f1b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "063c5a56_55c7f388",
+        "filename": "tests/restconf-reading.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 277,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-10-16T13:01:48Z",
+      "side": 1,
+      "message": "removed whole testcase",
+      "parentUuid": "fa5aa766_61628a08",
       "revId": "f614cfb024c289b920c4033f66936b1036c54f1b",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -110,6 +176,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c5a39717_a9f78373",
+        "filename": "tests/restconf-reading.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 289,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-10-16T13:01:48Z",
+      "side": 1,
+      "message": "I am thinking about what have I done here. It looks like this testcase and the one before are the same. I added a `server\u003da%2Cb` test to the prev patch.\n\nThis test case is removed.",
+      "parentUuid": "1fbd5470_8ec20042",
+      "range": {
+        "startLine": 278,
+        "startChar": 8,
+        "endLine": 289,
+        "endChar": 5
+      },
+      "revId": "f614cfb024c289b920c4033f66936b1036c54f1b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "cdcd08e9_5061457d",
@@ -127,6 +217,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "7ba560f4_67b2111d",
+        "filename": "tests/restconf-reading.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 314,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-10-16T13:01:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cdcd08e9_5061457d",
+      "revId": "f614cfb024c289b920c4033f66936b1036c54f1b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "fb041783_5432c2a9",
@@ -140,6 +248,24 @@
       "writtenOn": "2024-10-09T15:03:34Z",
       "side": 1,
       "message": "should this change go to the previous patch?",
+      "revId": "f614cfb024c289b920c4033f66936b1036c54f1b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "655cb5ce_425b3e11",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-10-16T13:01:48Z",
+      "side": 1,
+      "message": "agreed",
+      "parentUuid": "fb041783_5432c2a9",
       "revId": "f614cfb024c289b920c4033f66936b1036c54f1b",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
