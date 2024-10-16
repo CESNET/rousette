@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "daa1ddfc_af04922c",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 406,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-10-16T13:07:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "aa9c6a8e_1752c3a8",
+      "range": {
+        "startLine": 406,
+        "startChar": 44,
+        "endLine": 406,
+        "endChar": 63
+      },
+      "revId": "8f4fdddd4bc82ad84e1895fba6bc91b2bc2930ca",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "d63c0b89_a4ac0266",
@@ -37,6 +61,30 @@
       "writtenOn": "2024-10-09T21:14:13Z",
       "side": 1,
       "message": "\"enum values are not namespace-prefixed\" because enums do have a namespace (i.e., `a:a` and `b:a` are two different enum valus), it\u0027s just that the namespace is always determined from the context where they are used (which means that tat most one of `a:a` or `b:a` is acceptable at any given leaf) and therefore one apparently cannot add that prefix explicitly",
+      "range": {
+        "startLine": 443,
+        "startChar": 43,
+        "endLine": 443,
+        "endChar": 77
+      },
+      "revId": "8f4fdddd4bc82ad84e1895fba6bc91b2bc2930ca",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "91685659_97767b01",
+        "filename": "tests/restconf-writing.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 443,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-10-16T13:07:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d63c0b89_a4ac0266",
       "range": {
         "startLine": 443,
         "startChar": 43,
