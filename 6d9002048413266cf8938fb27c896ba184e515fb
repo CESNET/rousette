@@ -52,6 +52,24 @@
       "parentUuid": "a5e691d5_3cfdbc62",
       "revId": "6d9002048413266cf8938fb27c896ba184e515fb",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7bd07302_fcf33aba",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-10-16T07:20:53Z",
+      "side": 1,
+      "message": "Yes, for list keys and for some query params (5.1)",
+      "parentUuid": "7771503f_e466795a",
+      "revId": "6d9002048413266cf8938fb27c896ba184e515fb",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
