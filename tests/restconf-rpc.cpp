@@ -301,7 +301,7 @@ TEST_CASE("invoking actions and rpcs")
       {
         "error-type": "application",
         "error-tag": "operation-failed",
-        "error-message": "Internal server error due to sysrepo exception: Couldn't send RPC: SR_ERR_CALLBACK_FAILED\u000A Operation failed (SR_ERR_OPERATION_FAILED)\u000A User callback failed. (SR_ERR_CALLBACK_FAILED)"
+        "error-message": "Internal server error due to sysrepo exception: Couldn't send RPC: SR_ERR_OPERATION_FAILED\u000A Operation failed (SR_ERR_OPERATION_FAILED)"
       }
     ]
   }
