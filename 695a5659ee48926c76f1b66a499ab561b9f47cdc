@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2a9fa955_137942a8",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 695,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-10-30T08:04:51Z",
+      "side": 1,
+      "message": "nit: I removed this so that it says \"output\"",
+      "range": {
+        "startLine": 695,
+        "startChar": 123,
+        "endLine": 695,
+        "endChar": 128
+      },
+      "revId": "695a5659ee48926c76f1b66a499ab561b9f47cdc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "be097fea_64853741",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 739,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-10-30T08:04:51Z",
+      "side": 1,
+      "message": "I changed this so that the prefix is put into the currentPath at the beginning, and this extra fixup can be removed.",
+      "revId": "695a5659ee48926c76f1b66a499ab561b9f47cdc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
