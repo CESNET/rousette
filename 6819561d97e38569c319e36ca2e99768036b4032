@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "807e9bf6_14f39051",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-11-04T08:44:38Z",
+      "side": 1,
+      "message": "Thanks for the changes. Not sure who should click on the CR score :)",
+      "revId": "6819561d97e38569c319e36ca2e99768036b4032",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
