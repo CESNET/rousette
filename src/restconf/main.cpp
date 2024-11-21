@@ -23,15 +23,19 @@
 #include <docopt.h>
 #include <spdlog/spdlog.h>
 #include <sysrepo-cpp/Session.hpp>
+#include <sysrepo.h>
 #include "restconf/Server.h"
 static const char usage[] =
   R"(Rousette - RESTCONF server
 Usage:
-  rousette [--syslog] [--timeout <SECONDS>] [--help]
+  rousette [--syslog] [--timeout <SECONDS>] [--sysrepo-log-level=<N>] [--help]
 Options:
   -h --help                         Show this screen.
   -t --timeout <SECONDS>            Change default timeout in sysrepo (if not set, use sysrepo internal).
   --syslog                          Log to syslog.
+  --sysrepo-log-level=<N>           Log level for the sysrepo library [default: 2]
+                                    (0 -> critical, 1 -> error, 2 -> warning, 3 -> info,
+                                    4 -> debug, 5 -> trace)
 )";
 #ifdef HAVE_SYSTEMD
 
@@ -72,6 +76,53 @@ public:
 };
 }
 #endif
+
+namespace {
+spdlog::level::level_enum parseLogLevel(const std::string& name, const docopt::value& option)
+{
+    long x;
+    try {
+        x = option.asLong();
+    } catch (std::runtime_error&) {
+        throw std::runtime_error(name + " log level: expecting integer");
+    }
+    static_assert(spdlog::level::trace < spdlog::level::off, "spdlog::level levels have changed");
+    static_assert(spdlog::level::off == 6, "spdlog::level levels have changed");
+    if (x < 0 || x > 5)
+        throw std::runtime_error(name + " log level invalid or out-of-range");
+
+    return static_cast<spdlog::level::level_enum>(5 - x);
+}
+}
+
+extern "C" {
+/** @short Propagate sysrepo events to spdlog */
+static void spdlog_sr_log_cb(sr_log_level_t level, const char* message)
+{
+    // Thread safety note: this is, as far as I know, thread safe:
+    // - the static initialization itself is OK
+    // - all loggers which we instantiate are thread-safe
+    // - std::shared_ptr::operator-> is const, and all const members of that class are documented to be thread-safe
+    static auto log = spdlog::get("sysrepo");
+    assert(log);
+    switch (level) {
+    case SR_LL_NONE:
+    case SR_LL_ERR:
+        log->error(message);
+        break;
+    case SR_LL_WRN:
+        log->warn(message);
+        break;
+    case SR_LL_INF:
+        log->info(message);
+        break;
+    case SR_LL_DBG:
+        log->debug(message);
+        break;
+    }
+}
+}
+
 int main(int argc, char* argv [])
 {
     auto args = docopt::docopt(usage, {argv + 1, argv + argc}, true,""/* version */, true);
@@ -96,6 +147,10 @@ int main(int argc, char* argv [])
         spdlog::set_default_logger(logger);
     }
     spdlog::set_level(spdlog::level::trace);
+
+    spdlog::register_logger(std::make_shared<spdlog::logger>("sysrepo", spdlog::default_logger()->sinks().front()));
+    spdlog::get("sysrepo")->set_level(parseLogLevel("Sysrepo library", args["--sysrepo-log-level"]));
+    sr_log_set_cb(spdlog_sr_log_cb);
 
     /* We will parse URIs using boost::spirit's alnum/alpha/... matchers which are locale-dependent.
      * Let's use something stable no matter what the system is using
