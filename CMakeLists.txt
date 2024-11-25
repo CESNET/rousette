@@ -72,7 +72,7 @@ find_package(spdlog REQUIRED)
 find_package(date REQUIRED) # FIXME: Remove when we have STL with __cpp_lib_chrono >= 201907 (gcc 14)
 find_package(PkgConfig)
 pkg_check_modules(nghttp2 REQUIRED IMPORTED_TARGET libnghttp2_asio>=0.0.90 libnghttp2)
-find_package(Boost REQUIRED COMPONENTS system thread)
+find_package(Boost REQUIRED CONFIG COMPONENTS system thread)
 
 pkg_check_modules(SYSREPO-CPP REQUIRED IMPORTED_TARGET sysrepo-cpp>=3)
 pkg_check_modules(LIBYANG-CPP REQUIRED IMPORTED_TARGET libyang-cpp>=3)
