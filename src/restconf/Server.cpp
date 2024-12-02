@@ -924,7 +924,7 @@ Server::Server(
     : m_monitoringSession(conn.sessionStart(sysrepo::Datastore::Operational))
     , nacm(conn)
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
-    , m_dynamicSubscriptions(netconfStreamRoot, *server, subNotifInactivityTimeout)
+    , m_dynamicSubscriptions(m_monitoringSession, netconfStreamRoot, *server, subNotifInactivityTimeout)
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
     server->num_threads(1); // we only use one thread for the server, so we can call join() right away
