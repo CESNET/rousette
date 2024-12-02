@@ -179,10 +179,11 @@ if(BUILD_TESTING)
         endif()
 
         if(TEST_WRAP_PAM)
+            # FIXME: remove UID_WRAPPER_... (and keep PAM_WRAPPER_...) once we require pam_wrapper 1.1.6+
             set(TEST_COMMAND
                 ${UNSHARE_EXECUTABLE} -r -m sh -c "set -ex $<SEMICOLON>
                     ${MOUNT_EXECUTABLE} -t tmpfs none /tmp $<SEMICOLON>
-                    export LD_PRELOAD=${pam_wrapper_LDFLAGS} PAM_WRAPPER_SERVICE_DIR=${CMAKE_CURRENT_BINARY_DIR}/tests/pam PAM_WRAPPER=1 UID_WRAPPER_DISABLE_DEEPBIND=1 $<SEMICOLON>
+		    export LD_PRELOAD=${pam_wrapper_LDFLAGS} PAM_WRAPPER_SERVICE_DIR=${CMAKE_CURRENT_BINARY_DIR}/tests/pam PAM_WRAPPER=1 UID_WRAPPER_DISABLE_DEEPBIND=1 PAM_WRAPPER_DISABLE_DEEPBIND=1 $<SEMICOLON>
                     $<TARGET_FILE:test-${TEST_NAME}>")
         else()
             set(TEST_COMMAND test-${TEST_NAME})
