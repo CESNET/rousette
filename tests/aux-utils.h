@@ -6,6 +6,7 @@
  *
  */
 
+#pragma once
 #include "trompeloeil_doctest.h"
 #include <iostream>
 #include <nghttp2/asio_http2_client.h>
