@@ -156,11 +156,14 @@ TEST_CASE("obtaining YANG schemas")
     {
         SECTION("unsupported methods")
         {
-            for (const std::string httpMethod : {"POST", "PUT", "PATCH", "DELETE"}) {
-                CAPTURE(httpMethod);
-                REQUIRE(clientRequest(httpMethod, YANG_ROOT "/ietf-yang-library@2019-01-04", "", {AUTH_ROOT})
-                        == Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS"}}, ""});
-            }
+            REQUIRE(post(YANG_ROOT "/ietf-yang-library@2019-01-04", {AUTH_ROOT}, "")
+                    == Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS"}}, ""});
+            REQUIRE(put(YANG_ROOT "/ietf-yang-library@2019-01-04", {AUTH_ROOT}, "")
+                    == Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS"}}, ""});
+            REQUIRE(patch(YANG_ROOT "/ietf-yang-library@2019-01-04", {AUTH_ROOT}, "")
+                    == Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS"}}, ""});
+            REQUIRE(httpDelete(YANG_ROOT "/ietf-yang-library@2019-01-04", {AUTH_ROOT})
+                    == Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS"}}, ""});
         }
 
         REQUIRE(options(YANG_ROOT "/ietf-yang-library@2019-01-04", {}) == Response{200, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS"}}, ""});
@@ -190,12 +193,12 @@ TEST_CASE("obtaining YANG schemas")
                 SECTION("auth failure")
                 {
                     // wrong password
-                    REQUIRE(clientRequest("GET", YANG_ROOT "/ietf-system@2014-08-06", "", {AUTH_WRONG_PASSWORD}, boost::posix_time::seconds{5})
+                    REQUIRE(get(YANG_ROOT "/ietf-system@2014-08-06", {AUTH_WRONG_PASSWORD}, boost::posix_time::seconds{5})
                             == Response{401, plaintextHeaders, "Access denied."});
-                    REQUIRE(clientRequest("HEAD", YANG_ROOT "/ietf-system@2014-08-06", "", {AUTH_WRONG_PASSWORD}, boost::posix_time::seconds{5})
+                    REQUIRE(head(YANG_ROOT "/ietf-system@2014-08-06", {AUTH_WRONG_PASSWORD}, boost::posix_time::seconds{5})
                             == Response{401, plaintextHeaders, ""});
                     // anonymous request
-                    REQUIRE(clientRequest("HEAD", YANG_ROOT "/ietf-system@2014-08-06", "", {FORWARDED}, boost::posix_time::seconds{5})
+                    REQUIRE(head(YANG_ROOT "/ietf-system@2014-08-06", {FORWARDED}, boost::posix_time::seconds{5})
                             == Response{401, plaintextHeaders, ""});
                 }
             }
