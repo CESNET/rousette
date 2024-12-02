@@ -156,8 +156,8 @@ if(BUILD_TESTING)
     include(cmake/SysrepoTest.cmake)
 
     add_library(DoctestIntegration STATIC
-        tests/datastoreUtils.cpp
         tests/doctest_integration.cpp
+        tests/event_watchers.cpp
         tests/restconf_utils.cpp
         tests/trompeloeil_doctest.h
         tests/wait-a-bit-longer.cpp

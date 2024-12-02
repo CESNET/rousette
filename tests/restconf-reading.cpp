@@ -11,7 +11,7 @@ static const auto SERVER_PORT = "10081";
 #include <nghttp2/asio_http2.h>
 #include <spdlog/spdlog.h>
 #include "restconf/Server.h"
-#include "tests/datastoreUtils.h"
+#include "tests/event_watchers.h"
 
 TEST_CASE("reading data")
 {

@@ -10,7 +10,7 @@ static const auto SERVER_PORT = "10089";
 #include <spdlog/spdlog.h>
 #include "restconf/Server.h"
 #include "tests/aux-utils.h"
-#include "tests/datastoreUtils.h"
+#include "tests/event_watchers.h"
 #include "tests/pretty_printers.h"
 
 TEST_CASE("Plain patch")
