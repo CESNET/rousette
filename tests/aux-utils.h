@@ -8,6 +8,7 @@
 
 #pragma once
 #include "trompeloeil_doctest.h"
+#include <latch>
 #include <nghttp2/asio_http2_client.h>
 #include "restconf_utils.h"
 

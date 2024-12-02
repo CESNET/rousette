@@ -7,120 +7,18 @@
 
 #include "trompeloeil_doctest.h"
 static const auto SERVER_PORT = "10088";
-#include <latch>
 #include <libyang-cpp/Time.hpp>
 #include <nghttp2/asio_http2.h>
 #include <spdlog/spdlog.h>
 #include <sysrepo-cpp/utils/utils.hpp>
 #include "restconf/Server.h"
 #include "tests/aux-utils.h"
+#include "tests/event_watchers.h"
 #include "tests/pretty_printers.h"
 
 #define SEND_NOTIFICATION(DATA) notifSession.sendNotification(*ctx.parseOp(DATA, libyang::DataFormat::JSON, libyang::OperationType::NotificationYang).op, sysrepo::Wait::No);
 
 using namespace std::chrono_literals;
-
-struct SSEClient {
-    std::shared_ptr<ng_client::session> client;
-    boost::asio::deadline_timer t;
-
-    SSEClient(
-        boost::asio::io_service& io,
-        std::latch& requestSent,
-        const RestconfNotificationWatcher& notification,
-        const std::string& uri,
-        const std::map<std::string, std::string>& headers,
-        const boost::posix_time::seconds silenceTimeout = boost::posix_time::seconds(1)) // test code; the server should respond "soon"
-        : client(std::make_shared<ng_client::session>(io, SERVER_ADDRESS, SERVER_PORT))
-        , t(io, silenceTimeout)
-    {
-        ng::header_map reqHeaders;
-        for (const auto& [name, value] : headers) {
-            reqHeaders.insert({name, {value, false}});
-        }
-
-        // shutdown the client after a period of no traffic
-        t.async_wait([maybeClient = std::weak_ptr<ng_client::session>{client}](const boost::system::error_code& ec) {
-            if (ec == boost::asio::error::operation_aborted) {
-                return;
-            }
-            if (auto client = maybeClient.lock()) {
-                client->shutdown();
-            }
-        });
-
-        client->on_connect([&, uri, reqHeaders, silenceTimeout](auto) {
-            boost::system::error_code ec;
-
-            static const auto server_address_and_port = std::string("http://[") + SERVER_ADDRESS + "]" + ":" + SERVER_PORT;
-            auto req = client->submit(ec, "GET", server_address_and_port + uri, "", reqHeaders);
-            req->on_response([&, silenceTimeout](const ng_client::response& res) {
-                requestSent.count_down();
-                res.on_data([&, silenceTimeout](const uint8_t* data, std::size_t len) {
-                    // not a production-ready code. In real-life condition the data received in one callback might probably be incomplete
-                    for (const auto& event : parseEvents(std::string(reinterpret_cast<const char*>(data), len))) {
-                        notification(event);
-                    }
-                    t.expires_from_now(silenceTimeout);
-                });
-            });
-        });
-
-        client->on_error([&](const boost::system::error_code& ec) {
-            throw std::runtime_error{"HTTP client error: " + ec.message()};
-        });
-    }
-
-    static std::vector<std::string> parseEvents(const std::string& msg)
-    {
-        static const std::string prefix = "data:";
-
-        std::vector<std::string> res;
-        std::istringstream iss(msg);
-        std::string line;
-        std::string event;
-
-        while (std::getline(iss, line)) {
-            if (line.compare(0, prefix.size(), prefix) == 0) {
-                event += line.substr(prefix.size());
-            } else if (line.empty()) {
-                res.emplace_back(std::move(event));
-                event.clear();
-            } else {
-                FAIL("Unprefixed response");
-            }
-        }
-        return res;
-    }
-};
-
-#define PREPARE_LOOP_WITH_EXCEPTIONS \
-    boost::asio::io_service io; \
-    std::promise<void> bg; \
-    std::latch requestSent(1);
-
-#define RUN_LOOP_WITH_EXCEPTIONS \
-    do { \
-        io.run(); \
-        auto fut = bg.get_future(); \
-        REQUIRE(fut.wait_for(666ms /* "plenty of time" for the notificationThread to exit after it has called io.stop() */) == std::future_status::ready); \
-        fut.get(); \
-    } while (false)
-
-auto wrap_exceptions_and_asio(std::promise<void>& bg, boost::asio::io_service& io, std::function<void()> func)
-{
-    return [&bg, &io, func]()
-    {
-        try {
-            func();
-        } catch (...) {
-            bg.set_exception(std::current_exception());
-            return;
-        }
-        bg.set_value();
-        io.stop();
-    };
-}
 
 TEST_CASE("NETCONF notification streams")
 {
@@ -237,7 +135,7 @@ TEST_CASE("NETCONF notification streams")
             waitForCompletionAndBitMore(seqMod2);
         }));
 
-        SSEClient cli(io, requestSent, netconfWatcher, uri, headers);
+        SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, headers);
         RUN_LOOP_WITH_EXCEPTIONS;
     }
 
@@ -399,7 +297,7 @@ TEST_CASE("NETCONF notification streams")
         }
 
         oldNotificationsDone.wait();
-        SSEClient cli(io, requestSent, netconfWatcher, uri, {AUTH_ROOT});
+        SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, {AUTH_ROOT});
         RUN_LOOP_WITH_EXCEPTIONS;
     }
 }
