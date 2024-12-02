@@ -116,6 +116,21 @@ TEST_CASE("RESTCONF subscribed notifications")
     std::optional<std::string> rpcSubscriptionEncoding;
     std::optional<std::pair<std::string, std::string>> rpcRequestAuthHeader;
 
+    SECTION("Stream list")
+    {
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-subscribed-notifications:streams/stream=NETCONF", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "ietf-subscribed-notifications:streams": {
+    "stream": [
+      {
+        "name": "NETCONF",
+        "description": "Default NETCONF notification stream"
+      }
+    ]
+  }
+}
+)"});
+    }
+
     SECTION("NACM authorization")
     {
         SECTION("Anonymous access for establish-subscription is disabled")

@@ -96,7 +96,7 @@ public:
         bool isReady() const { return state == State::Start; };
     };
 
-    DynamicSubscriptions(const std::string& streamRootUri, const nghttp2::asio_http2::server::http2& server);
+    DynamicSubscriptions(sysrepo::Session& session, const std::string& streamRootUri, const nghttp2::asio_http2::server::http2& server);
     void stop();
     std::shared_ptr<SubscriptionData> getSubscriptionForUser(const boost::uuids::uuid& uuid, const std::optional<std::string>& user);
     void establishSubscription(sysrepo::Session& session, const libyang::DataFormat requestEncoding, const libyang::DataNode& rpcInput, libyang::DataNode& rpcOutput);
@@ -107,6 +107,7 @@ private:
     std::string m_restconfStreamUri;
     std::map<boost::uuids::uuid, std::shared_ptr<SubscriptionData>> m_subscriptions;
     boost::uuids::random_generator m_uuidGenerator;
+    std::optional<sysrepo::Subscription> m_notificationStreamListSub;
 
     void terminateSubscription(const uint32_t subId);
 };

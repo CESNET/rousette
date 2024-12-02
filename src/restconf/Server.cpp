@@ -860,7 +860,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     : m_monitoringSession(conn.sessionStart(sysrepo::Datastore::Operational))
     , nacm(conn)
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
-    , m_dynamicSubscriptions(netconfStreamRoot, *server)
+    , m_dynamicSubscriptions(m_monitoringSession, netconfStreamRoot, *server)
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
     for (const auto& [module, version, features] : {

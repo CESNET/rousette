@@ -224,6 +224,24 @@ void notificationStreamList(sysrepo::Session& session, std::optional<libyang::Da
     }
 }
 
+/** @brief Creates and fills ietf-subscribed-notifications:streams. To be called in oper callback. */
+void notificationStreamListSubscribed(sysrepo::Session& session, std::optional<libyang::DataNode>& parent)
+{
+    static const auto prefix = "/ietf-subscribed-notifications:streams"s;
+    const auto replayInfo = sysrepoReplayInfo(session);
+    if (!parent) {
+        parent = session.getContext().newPath(prefix + "/stream[name='NETCONF']/description", "Default NETCONF notification stream");
+    } else {
+        parent->newPath(prefix + "/stream[name='NETCONF']/description", "Default NETCONF notification stream");
+    }
+    if (replayInfo.enabled) {
+        session.setItem(prefix + "/stream[name='NETCONF']/replay-support", std::nullopt);
+        if (replayInfo.earliestNotification) {
+            session.setItem(prefix + "/stream[name='NETCONF']/replay-log-creation-time", libyang::yangTimeFormat(*replayInfo.earliestNotification, libyang::TimezoneInterpretation::Local));
+        }
+    }
+}
+
 libyang::DataNode replaceStreamLocations(const std::optional<std::string>& schemeAndHost, libyang::DataNode& node)
 {
     // if we were unable to parse scheme and hosts, end without doing any changes
@@ -242,11 +260,18 @@ libyang::DataNode replaceStreamLocations(const std::optional<std::string>& schem
     return node;
 }
 
-DynamicSubscriptions::DynamicSubscriptions(const std::string& streamRootUri, const nghttp2::asio_http2::server::http2& server)
+DynamicSubscriptions::DynamicSubscriptions(sysrepo::Session& session, const std::string& streamRootUri, const nghttp2::asio_http2::server::http2& server)
     : m_server(server)
     , m_restconfStreamUri(streamRootUri)
     , m_uuidGenerator(boost::uuids::random_generator())
 {
+        m_notificationStreamListSub = session.onOperGet(
+        "ietf-subscribed-notifications",
+        [](auto session, auto, auto, auto, auto, auto, auto& parent) {
+            notificationStreamListSubscribed(session, parent);
+            return sysrepo::ErrorCode::Ok;
+        },
+        "/ietf-subscribed-notifications:streams");
 }
 
 void DynamicSubscriptions::stop()
