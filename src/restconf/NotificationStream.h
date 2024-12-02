@@ -6,9 +6,12 @@
  */
 
 #pragma once
+#include <boost/asio.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <optional>
 #include <sysrepo-cpp/Session.hpp>
 #include <sysrepo-cpp/Subscription.hpp>
+#include <thread>
 #include "http/EventStream.h"
 
 namespace libyang {
@@ -49,6 +52,44 @@ public:
         const std::optional<sysrepo::NotificationTimeStamp>& startTime,
         const std::optional<sysrepo::NotificationTimeStamp>& stopTime);
     void activate();
+};
+
+struct SubscriptionData {
+    sysrepo::DynamicSubscription subscription;
+    std::optional<libyang::DataFormat> dataFormat;
+};
+
+class DynamicSubscriptions {
+public:
+    DynamicSubscriptions(sysrepo::Session session);
+    std::shared_ptr<SubscriptionData> getSubscription(const boost::uuids::uuid uuid);
+    void establishSubscription(const libyang::DataNode& rpcInput, libyang::DataNode& rpcOutput, const libyang::DataFormat requestEncoding);
+
+private:
+    std::mutex m_mutex;
+    sysrepo::Session m_session;
+    std::map<boost::uuids::uuid, std::shared_ptr<SubscriptionData>> m_subscriptions;
+    boost::uuids::random_generator m_uuidGenerator;
+};
+
+class DynamicSubscriptionHttpStream : public http::EventStream {
+public:
+    DynamicSubscriptionHttpStream(
+        const nghttp2::asio_http2::server::request& req,
+        const nghttp2::asio_http2::server::response& res,
+        std::shared_ptr<rousette::http::EventStream::Signal> signal,
+        sysrepo::Session session,
+        const std::shared_ptr<SubscriptionData>& subscription);
+    void activate();
+
+private:
+    sysrepo::Session m_session;
+    std::shared_ptr<SubscriptionData> m_subscriptionData;
+    std::shared_ptr<rousette::http::EventStream::Signal> m_signal;
+    boost::asio::posix::stream_descriptor m_stream;
+
+    void cb();
+    void awaitNextNotification();
 };
 
 void notificationStreamList(sysrepo::Session& session, std::optional<libyang::DataNode>& parent, const std::string& streamsPrefix);
