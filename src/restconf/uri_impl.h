@@ -67,6 +67,7 @@ BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::PathSegment, apiIdent, keys);
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::ApiIdentifier, prefix, identifier);
 
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::RestconfStreamRequest::NetconfStream, encoding);
+BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::RestconfStreamRequest::SubscribedNotification, uuid);
 
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::queryParams::fields::ParenExpr, lhs, rhs);
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::queryParams::fields::SlashExpr, lhs, rhs);
