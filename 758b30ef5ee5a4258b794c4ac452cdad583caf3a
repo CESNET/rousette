@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a7471e09_f3283988",
+        "filename": "tests/aux-utils.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-12-02T21:59:29Z",
+      "side": 1,
+      "message": "move this comment to that constant, please -- the comment applies to that arbitrary choice of 3s",
+      "range": {
+        "startLine": 162,
+        "startChar": 8,
+        "endLine": 162,
+        "endChar": 69
+      },
+      "revId": "758b30ef5ee5a4258b794c4ac452cdad583caf3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
