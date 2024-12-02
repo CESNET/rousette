@@ -26,5 +26,12 @@ public:
     ScopedDatastoreSwitch& operator=(ScopedDatastoreSwitch&&) = delete;
 };
 
+struct SysrepoReplayInfo {
+    bool enabled;
+    std::optional<sysrepo::NotificationTimeStamp> earliestNotification;
+};
+
 sysrepo::Datastore datastoreFromString(const std::string& datastore);
+bool canBeSubscribed(const libyang::Module& mod);
+SysrepoReplayInfo sysrepoReplayInfo(sysrepo::Session& session);
 }
