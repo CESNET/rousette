@@ -67,7 +67,7 @@ public:
         void inactivityCancel();
     };
 
-    DynamicSubscriptions(const std::string& streamRootUri, const nghttp2::asio_http2::server::http2& server, const std::chrono::seconds inactivityTimeout);
+    DynamicSubscriptions(sysrepo::Session& session, const std::string& streamRootUri, const nghttp2::asio_http2::server::http2& server, const std::chrono::seconds inactivityTimeout);
     ~DynamicSubscriptions();
     std::shared_ptr<SubscriptionData> getSubscriptionForUser(const boost::uuids::uuid& uuid, const std::optional<std::string>& user);
     std::shared_ptr<SubscriptionData> getSubscriptionForUser(const uint32_t subId, const std::optional<std::string>& user);
@@ -82,6 +82,7 @@ private:
     std::map<boost::uuids::uuid, std::shared_ptr<SubscriptionData>> m_subscriptions;
     boost::uuids::random_generator m_uuidGenerator;
     std::chrono::seconds m_inactivityTimeout;
+    std::optional<sysrepo::Subscription> m_notificationStreamListSub;
 
     void terminateSubscription(const uint32_t subId);
 
