@@ -87,7 +87,8 @@ struct SSEClient {
         client->on_connect([&, uri, reqHeaders, silenceTimeout](auto) {
             boost::system::error_code ec;
 
-            auto req = client->submit(ec, "GET", SERVER_ADDRESS_AND_PORT + uri, "", reqHeaders);
+            static const auto server_address_and_port = std::string("http://[") + SERVER_ADDRESS + "]" + ":" + SERVER_PORT;
+            auto req = client->submit(ec, "GET", server_address_and_port + uri, "", reqHeaders);
             req->on_response([&, silenceTimeout](const ng_client::response& res) {
                 requestSent.count_down();
                 res.on_data([&, silenceTimeout](const uint8_t* data, std::size_t len) {
