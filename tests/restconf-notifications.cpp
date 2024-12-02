@@ -277,18 +277,18 @@ TEST_CASE("NETCONF notification streams")
 
     SECTION("Other methods")
     {
-        REQUIRE(clientRequest("HEAD", "/streams/NETCONF/XML", "", {AUTH_ROOT}) == Response{200, eventStreamHeaders, ""});
-        REQUIRE(clientRequest("OPTIONS", "/streams/NETCONF/XML", "", {AUTH_ROOT}) == Response{200, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS"}}, ""});
+        REQUIRE(head("/streams/NETCONF/XML",  {AUTH_ROOT}) == Response{200, eventStreamHeaders, ""});
+        REQUIRE(options("/streams/NETCONF/XML", {AUTH_ROOT}) == Response{200, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS"}}, ""});
 
         const std::multimap<std::string, std::string> headers = {
             {"access-control-allow-origin", "*"},
             {"allow", "GET, HEAD, OPTIONS"},
             {"content-type", "text/plain"},
         };
-        REQUIRE(clientRequest("PUT", "/streams/NETCONF/XML", "", {AUTH_ROOT}) == Response{405, headers, "Method not allowed."});
-        REQUIRE(clientRequest("POST", "/streams/NETCONF/XML", "", {AUTH_ROOT}) == Response{405, headers, "Method not allowed."});
-        REQUIRE(clientRequest("PATCH", "/streams/NETCONF/XML", "", {AUTH_ROOT}) == Response{405, headers, "Method not allowed."});
-        REQUIRE(clientRequest("DELETE", "/streams/NETCONF/XML", "", {AUTH_ROOT}) == Response{405, headers, "Method not allowed."});
+        REQUIRE(put("/streams/NETCONF/XML", {AUTH_ROOT}, "") == Response{405, headers, "Method not allowed."});
+        REQUIRE(post("/streams/NETCONF/XML", {AUTH_ROOT}, "") == Response{405, headers, "Method not allowed."});
+        REQUIRE(patch("/streams/NETCONF/XML", {AUTH_ROOT}, "") == Response{405, headers, "Method not allowed."});
+        REQUIRE(httpDelete("/streams/NETCONF/XML", {AUTH_ROOT}) == Response{405, headers, "Method not allowed."});
     }
 
     SECTION("Invalid URLs")

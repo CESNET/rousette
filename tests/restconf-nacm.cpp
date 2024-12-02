@@ -225,9 +225,7 @@ TEST_CASE("NACM")
         {
             // wrong password: the server should delay its response, so let the client wait "long enough"
             const auto start = std::chrono::steady_clock::now();
-            REQUIRE(clientRequest("GET",
-                        RESTCONF_DATA_ROOT "/ietf-system:system",
-                        "",
+            REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system",
                         {AUTH_WRONG_PASSWORD},
                         boost::posix_time::seconds(5))
                     == Response{401, jsonHeaders, R"({
@@ -251,12 +249,10 @@ TEST_CASE("NACM")
             // wrong password: the server should delay its response, in this case let the client terminate its
             // request and check that the server doesn't crash
             const auto start = std::chrono::steady_clock::now();
-            REQUIRE_THROWS_WITH(clientRequest("GET",
-                        RESTCONF_DATA_ROOT "/ietf-system:system",
-                        "",
-                        {AUTH_WRONG_PASSWORD},
-                        boost::posix_time::milliseconds(100)),
-                    "HTTP client error: Connection timed out");
+            REQUIRE_THROWS_WITH(get(RESTCONF_DATA_ROOT "/ietf-system:system",
+                                    {AUTH_WRONG_PASSWORD},
+                                    boost::posix_time::milliseconds(100)),
+                                "HTTP client error: Connection timed out");
             auto processingMS = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
             REQUIRE(processingMS <= 500);
         }
