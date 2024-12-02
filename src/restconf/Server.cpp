@@ -814,6 +814,7 @@ Server::~Server()
 Server::Server(sysrepo::Connection conn, const std::string& address, const std::string& port, const std::chrono::milliseconds timeout)
     : m_monitoringSession(conn.sessionStart(sysrepo::Datastore::Operational))
     , nacm(conn)
+    , m_subscribedNotifications(conn.sessionStart(sysrepo::Datastore::Operational))
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
@@ -890,34 +891,39 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
             auto streamRequest = asRestconfStreamRequest(req.method(), req.uri().path, req.uri().raw_query);
 
-            switch(streamRequest.type) {
-            case RestconfStreamRequest::Type::NetconfNotificationJSON:
-                dataFormat = libyang::DataFormat::JSON;
-                break;
-            case RestconfStreamRequest::Type::NetconfNotificationXML:
-                dataFormat = libyang::DataFormat::XML;
-                break;
-            default:
-                // GCC 14 complains about uninitialized variable, but asRestconfStreamRequest() would have thrown
-                __builtin_unreachable();
-            }
+            if (streamRequest.type == RestconfStreamRequest::Type::SubscribedNotification) {
+                auto client = std::make_shared<SubscribedNotificationStream>(req, res, std::make_shared<rousette::http::EventStream::Signal>(), sess, m_subscribedNotifications, 1);
+                client->activate();
+            } else {
+                switch (streamRequest.type) {
+                case RestconfStreamRequest::Type::NetconfNotificationJSON:
+                    dataFormat = libyang::DataFormat::JSON;
+                    break;
+                case RestconfStreamRequest::Type::NetconfNotificationXML:
+                    dataFormat = libyang::DataFormat::XML;
+                    break;
+                default:
+                    // GCC 14 complains about uninitialized variable, but asRestconfStreamRequest() would have thrown
+                    __builtin_unreachable();
+                }
 
-            if (auto it = streamRequest.queryParams.find("filter"); it != streamRequest.queryParams.end()) {
-                xpathFilter = std::get<std::string>(it->second);
-            }
+                if (auto it = streamRequest.queryParams.find("filter"); it != streamRequest.queryParams.end()) {
+                    xpathFilter = std::get<std::string>(it->second);
+                }
 
-            if (auto it = streamRequest.queryParams.find("start-time"); it != streamRequest.queryParams.end()) {
-                startTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
-            }
-            if (auto it = streamRequest.queryParams.find("stop-time"); it != streamRequest.queryParams.end()) {
-                stopTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
-            }
+                if (auto it = streamRequest.queryParams.find("start-time"); it != streamRequest.queryParams.end()) {
+                    startTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
+                }
+                if (auto it = streamRequest.queryParams.find("stop-time"); it != streamRequest.queryParams.end()) {
+                    stopTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
+                }
 
-            // The signal is constructed outside NotificationStream class because it is required to be passed to
-            // NotificationStream's parent (EventStream) constructor where it already must be constructed
-            // Yes, this is a hack.
-            auto client = std::make_shared<NotificationStream>(req, res, std::make_shared<rousette::http::EventStream::Signal>(), sess, dataFormat, xpathFilter, startTime, stopTime);
-            client->activate();
+                // The signal is constructed outside NotificationStream class because it is required to be passed to
+                // NotificationStream's parent (EventStream) constructor where it already must be constructed
+                // Yes, this is a hack.
+                auto client = std::make_shared<NotificationStream>(req, res, std::make_shared<rousette::http::EventStream::Signal>(), sess, dataFormat, xpathFilter, startTime, stopTime);
+                client->activate();
+            }
         } catch (const auth::Error& e) {
             processAuthError(req, res, e, [&res]() {
                 res.write_head(401, {TEXT_PLAIN, CORS});
