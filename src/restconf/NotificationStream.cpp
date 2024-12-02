@@ -5,7 +5,9 @@
  *
  */
 
+#include <boost/uuid/uuid_io.hpp>
 #include <libyang-cpp/Time.hpp>
+#include <nghttp2/asio_http2_server.h>
 #include <sysrepo-cpp/Connection.hpp>
 #include <sysrepo-cpp/Subscription.hpp>
 #include <sysrepo-cpp/utils/exception.hpp>
@@ -79,6 +81,50 @@ SysrepoReplayInfo sysrepoReplayInfo(sysrepo::Session& session)
     }
 
     return {replayEnabled, globalEarliestNotification};
+}
+
+libyang::DataFormat subscribedNotificatonsEncoding(const libyang::DataNode& rpcInput, const libyang::DataFormat requestEncoding)
+{
+    if (auto encodingNode = rpcInput.findPath("encoding")) {
+        const auto encodingStr = encodingNode->asTerm().valueStr();
+        if (encodingStr == "ietf-subscribed-notifications:encode-json") {
+            return libyang::DataFormat::JSON;
+        } else if (encodingStr == "ietf-subscribed-notifications:encode-xml") {
+            return libyang::DataFormat::XML;
+        } else {
+            throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Unknown encoding in establish-subscription: '" + encodingStr + "'");
+        }
+    }
+
+    return requestEncoding;
+}
+
+bool isFdClosed(const int fd)
+{
+    pollfd fds = {
+        .fd = fd,
+        .events = POLLIN | POLLHUP,
+        .revents = 0};
+
+    return poll(&fds, 1, 0) == 1 && fds.revents & POLLHUP;
+}
+
+sysrepo::DynamicSubscription subscribeNotificationStream(sysrepo::Session& session, const libyang::DataNode& rpcInput)
+{
+    if (rpcInput.findPath("stream-filter-name")) {
+        throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Stream filtering is not supported");
+    }
+
+    std::optional<sysrepo::NotificationTimeStamp> stopTime;
+    if (auto stopTimeNode = rpcInput.findPath("stop-time")) {
+        stopTime = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(stopTimeNode->asTerm().valueStr());
+    }
+
+    return session.subscribeNotifications(
+        std::nullopt /* TODO xpath filter */,
+        rpcInput.findPath("stream")->asTerm().valueStr(),
+        stopTime,
+        std::nullopt /* TODO replayStart */);
 }
 }
 
@@ -164,6 +210,26 @@ void notificationStreamList(sysrepo::Session& session, std::optional<libyang::Da
     }
 }
 
+/** @brief Creates and fills ietf-subscribed-notifications:streams. To be called in oper callback. */
+void notificationStreamListSubscribed(sysrepo::Session& session, std::optional<libyang::DataNode>& parent)
+{
+    static const auto prefix = "/ietf-subscribed-notifications:streams"s;
+    const auto replayInfo = sysrepoReplayInfo(session);
+
+    if (!parent) {
+        parent = session.getContext().newPath(prefix + "/stream[name='NETCONF']/description", "Default NETCONF notification stream");
+    } else {
+        parent->newPath(prefix + "/stream[name='NETCONF']/description", "Default NETCONF notification stream");
+    }
+
+    if (replayInfo.enabled) {
+        session.setItem(prefix + "/stream[name='NETCONF']/replay-support", std::nullopt);
+        if (replayInfo.earliestNotification) {
+            session.setItem(prefix + "/stream[name='NETCONF']/replay-log-creation-time", libyang::yangTimeFormat(*replayInfo.earliestNotification, libyang::TimezoneInterpretation::Local));
+        }
+    }
+}
+
 libyang::DataNode replaceStreamLocations(const std::optional<std::string>& schemeAndHost, libyang::DataNode& node)
 {
     // if we were unable to parse scheme and hosts, end without doing any changes
@@ -180,5 +246,95 @@ libyang::DataNode replaceStreamLocations(const std::optional<std::string>& schem
     }
 
     return node;
+}
+
+DynamicSubscriptions::DynamicSubscriptions(sysrepo::Connection& conn)
+    : m_uuidGenerator(boost::uuids::random_generator())
+    , m_session(conn.sessionStart(sysrepo::Datastore::Operational))
+{
+    m_notificationStreamListSub = m_session.onOperGet(
+        "ietf-subscribed-notifications",
+        [](auto session, auto, auto, auto, auto, auto, auto& parent) {
+            notificationStreamListSubscribed(session, parent);
+            return sysrepo::ErrorCode::Ok;
+        },
+        "/ietf-subscribed-notifications:streams");
+}
+
+void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, const libyang::DataFormat requestEncoding, const libyang::DataNode& rpcInput, libyang::DataNode& rpcOutput)
+{
+    // Generate a new UUID associated with the subscription. The UUID will be used as a part of the URI so that the URI is not predictable (RFC 8650, section 5)
+    auto uuid = m_uuidGenerator();
+
+    auto dataFormat = subscribedNotificatonsEncoding(rpcInput, requestEncoding);
+
+    // TODO: We are not yet following the state machine from RFC8639 2.4.1, we are always in state "receiver active"
+
+    try {
+        std::optional<sysrepo::DynamicSubscription> sub;
+
+        if (rpcInput.findPath("stream")) {
+            sub = subscribeNotificationStream(session, rpcInput);
+        } else {
+            throw ErrorResponse(400, "application", "missing-attribute", "stream attribute is required");
+        }
+
+        rpcOutput.newPath("id", std::to_string(sub->subscriptionId()), libyang::CreationOptions::Output);
+        rpcOutput.newPath("ietf-restconf-subscribed-notifications:uri", "/streams/subscribed/" + boost::uuids::to_string(uuid), libyang::CreationOptions::Output);
+
+        std::unique_lock lock(m_mutex);
+        m_subscriptions[uuid] = std::make_shared<SubscriptionData>(std::move(*sub), dataFormat);
+    } catch (const sysrepo::ErrorWithCode& e) {
+        throw ErrorResponse(400, "application", "invalid-attribute", e.what());
+    }
+}
+
+std::shared_ptr<DynamicSubscriptions::SubscriptionData> DynamicSubscriptions::getSubscription(const boost::uuids::uuid uuid)
+{
+    std::unique_lock lock(m_mutex);
+    if (auto it = m_subscriptions.find(uuid); it != m_subscriptions.end()) {
+        return it->second;
+    }
+
+    return nullptr;
+}
+
+DynamicSubscriptionHttpStream::DynamicSubscriptionHttpStream(
+    const nghttp2::asio_http2::server::request& req,
+    const nghttp2::asio_http2::server::response& res,
+    std::shared_ptr<rousette::http::EventStream::Signal> signal,
+    sysrepo::Session session,
+    const std::shared_ptr<DynamicSubscriptions::SubscriptionData>& subscription)
+    : EventStream(req, res, *signal)
+    , m_session(std::move(session))
+    , m_subscriptionData(subscription)
+    , m_signal(signal)
+    , m_stream(res.io_service(), m_subscriptionData->subscription.fd())
+{
+}
+
+/** @brief Waits for the next notification and calls cb() */
+void DynamicSubscriptionHttpStream::awaitNextNotification()
+{
+    m_stream.async_wait(boost::asio::posix::stream_descriptor::wait_read, [this](const boost::system::error_code& err) {
+        // unfortunately wait_read does not return operation_aborted when the file descriptor is closed and poll results in POLLHUP
+        if (err == boost::asio::error::operation_aborted || isFdClosed(m_subscriptionData->subscription.fd())) {
+            return;
+        }
+
+        // process the incoming notification
+        m_subscriptionData->subscription.processEvent([&](const std::optional<libyang::DataNode>& notificationTree, const sysrepo::NotificationTimeStamp& time) {
+            (*m_signal)(rousette::restconf::as_restconf_notification(m_session.getContext(), m_subscriptionData->dataFormat, *notificationTree, time));
+        });
+
+        // and wait for the next one
+        awaitNextNotification();
+    });
+}
+
+void DynamicSubscriptionHttpStream::activate()
+{
+    awaitNextNotification();
+    EventStream::activate();
 }
 }
