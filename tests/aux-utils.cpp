@@ -157,3 +157,70 @@ void setupRealNacm(sysrepo::Session session)
     session.applyChanges();
 }
 
+SSEClient::SSEClient(
+    boost::asio::io_service& io,
+    std::latch& requestSent,
+    const NotificationWatcher& notification,
+    const std::string& uri,
+    const std::map<std::string, std::string>& headers,
+    const boost::posix_time::seconds silenceTimeout)
+    : client(std::make_shared<ng_client::session>(io, SERVER_ADDRESS, SERVER_PORT))
+    , t(io, silenceTimeout)
+{
+    ng::header_map reqHeaders;
+    for (const auto& [name, value] : headers) {
+        reqHeaders.insert({name, {value, false}});
+    }
+
+    // shutdown the client after a period of no traffic
+    t.async_wait([maybeClient = std::weak_ptr<ng_client::session>{client}](const boost::system::error_code& ec) {
+        if (ec == boost::asio::error::operation_aborted) {
+            return;
+        }
+        if (auto client = maybeClient.lock()) {
+            client->shutdown();
+        }
+    });
+
+    client->on_connect([&, uri, reqHeaders, silenceTimeout](auto) {
+        boost::system::error_code ec;
+
+        auto req = client->submit(ec, "GET", SERVER_ADDRESS_AND_PORT + uri, "", reqHeaders);
+        req->on_response([&, silenceTimeout](const ng_client::response& res) {
+            requestSent.count_down();
+            res.on_data([&, silenceTimeout](const uint8_t* data, std::size_t len) {
+                // not a production-ready code. In real-life condition the data received in one callback might probably be incomplete
+                for (const auto& event : parseEvents(std::string(reinterpret_cast<const char*>(data), len))) {
+                    notification(event);
+                }
+                t.expires_from_now(silenceTimeout);
+            });
+        });
+    });
+
+    client->on_error([&](const boost::system::error_code& ec) {
+        throw std::runtime_error{"HTTP client error: " + ec.message()};
+    });
+}
+
+std::vector<std::string> SSEClient::parseEvents(const std::string& msg)
+{
+    static const std::string prefix = "data:";
+
+    std::vector<std::string> res;
+    std::istringstream iss(msg);
+    std::string line;
+    std::string event;
+
+    while (std::getline(iss, line)) {
+        if (line.compare(0, prefix.size(), prefix) == 0) {
+            event += line.substr(prefix.size());
+        } else if (line.empty()) {
+            res.emplace_back(std::move(event));
+            event.clear();
+        } else {
+            FAIL("Unprefixed response");
+        }
+    }
+    return res;
+}
