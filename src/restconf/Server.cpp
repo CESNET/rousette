@@ -814,6 +814,7 @@ Server::~Server()
 Server::Server(sysrepo::Connection conn, const std::string& address, const std::string& port, const std::chrono::milliseconds timeout)
     : m_monitoringSession(conn.sessionStart(sysrepo::Datastore::Operational))
     , nacm(conn)
+    , m_subscribedNotifications(conn.sessionStart(sysrepo::Datastore::Operational))
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
@@ -823,6 +824,8 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
              {"ietf-netconf", ""},
              {"ietf-yang-library", "2019-01-04"},
              {"ietf-yang-patch", "2017-02-22"},
+             {"ietf-subscribed-notifications", "2019-09-09"},
+             {"ietf-yang-push", "2019-09-09"},
              }) {
         if (!conn.sessionStart().getContext().getModuleImplemented(module)) {
             throw std::runtime_error("Module "s + module + "@" + version + " is not implemented in sysrepo");
@@ -890,34 +893,44 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
             auto streamRequest = asRestconfStreamRequest(req.method(), req.uri().path, req.uri().raw_query);
 
-            switch(streamRequest.type) {
-            case RestconfStreamRequest::NetconfNotification::JSON:
-                dataFormat = libyang::DataFormat::JSON;
-                break;
-            case RestconfStreamRequest::NetconfNotification::XML:
-                dataFormat = libyang::DataFormat::XML;
-                break;
-            default:
-                // GCC 14 complains about uninitialized variable, but asRestconfStreamRequest() would have thrown
-                __builtin_unreachable();
-            }
+            if (std::holds_alternative<RestconfStreamRequest::SubscribedNotification>(streamRequest.type)) {
+                auto ypSub = m_subscribedNotifications.getSubscription(std::get<RestconfStreamRequest::SubscribedNotification>(streamRequest.type).uuid);
+                if (!ypSub) {
+                    throw ErrorResponse(404, "application", "no-such-subscription", "Subscription not found.");
+                }
 
-            if (auto it = streamRequest.queryParams.find("filter"); it != streamRequest.queryParams.end()) {
-                xpathFilter = std::get<std::string>(it->second);
-            }
+                auto client = std::make_shared<SubscribedNotificationStream>(req, res, std::make_shared<rousette::http::EventStream::Signal>(), sess, libyang::DataFormat::JSON, ypSub);
+                client->activate();
+            } else {
+                switch(std::get<RestconfStreamRequest::NetconfNotification>(streamRequest.type)) {
+                case RestconfStreamRequest::NetconfNotification::JSON:
+                    dataFormat = libyang::DataFormat::JSON;
+                    break;
+                case RestconfStreamRequest::NetconfNotification::XML:
+                    dataFormat = libyang::DataFormat::XML;
+                    break;
+                default:
+                    // GCC 14 complains about uninitialized variable, but asRestconfStreamRequest() would have thrown
+                    __builtin_unreachable();
+                }
 
-            if (auto it = streamRequest.queryParams.find("start-time"); it != streamRequest.queryParams.end()) {
-                startTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
-            }
-            if (auto it = streamRequest.queryParams.find("stop-time"); it != streamRequest.queryParams.end()) {
-                stopTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
-            }
+                if (auto it = streamRequest.queryParams.find("filter"); it != streamRequest.queryParams.end()) {
+                    xpathFilter = std::get<std::string>(it->second);
+                }
 
-            // The signal is constructed outside NotificationStream class because it is required to be passed to
-            // NotificationStream's parent (EventStream) constructor where it already must be constructed
-            // Yes, this is a hack.
-            auto client = std::make_shared<NotificationStream>(req, res, std::make_shared<rousette::http::EventStream::Signal>(), sess, dataFormat, xpathFilter, startTime, stopTime);
-            client->activate();
+                if (auto it = streamRequest.queryParams.find("start-time"); it != streamRequest.queryParams.end()) {
+                    startTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
+                }
+                if (auto it = streamRequest.queryParams.find("stop-time"); it != streamRequest.queryParams.end()) {
+                    stopTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
+                }
+
+                // The signal is constructed outside NotificationStream class because it is required to be passed to
+                // NotificationStream's parent (EventStream) constructor where it already must be constructed
+                // Yes, this is a hack.
+                auto client = std::make_shared<NotificationStream>(req, res, std::make_shared<rousette::http::EventStream::Signal>(), sess, dataFormat, xpathFilter, startTime, stopTime);
+                client->activate();
+            }
         } catch (const auth::Error& e) {
             processAuthError(req, res, e, [&res]() {
                 res.write_head(401, {TEXT_PLAIN, CORS});

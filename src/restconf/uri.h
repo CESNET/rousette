@@ -6,6 +6,7 @@
 
 #pragma once
 #include <boost/optional.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/variant.hpp>
 #include <libyang-cpp/Module.hpp>
 #include <libyang-cpp/SchemaNode.hpp>
@@ -201,7 +202,14 @@ struct RestconfStreamRequest {
         JSON,
         XML,
     };
-    NetconfNotification type;
+
+    struct SubscribedNotification {
+        SubscribedNotification();
+        SubscribedNotification(const boost::uuids::uuid& uuid);
+        boost::uuids::uuid uuid;
+    };
+
+    std::variant<NetconfNotification, SubscribedNotification> type;
     queryParams::QueryParams queryParams;
 };
 
