@@ -39,6 +39,7 @@ endif()
 
 set(ANONYMOUS_USER "yangnobody" CACHE STRING "Configures system user used for anonymous access to sysrepo")
 set(ANONYMOUS_USER_GROUP "yangnobody" CACHE STRING "Configures system user group used for anonymous access to sysrepo")
+set(ANONYMOUS_SUBSCRIPTION_INACTIVE_TIMELIMIT 60 CACHE STRING "Configures how many seconds a dynamic subscription created by anonymous user can live without an active consumer client")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
@@ -115,6 +116,7 @@ add_library(rousette-restconf STATIC
     src/restconf/YangSchemaLocations.cpp
     src/restconf/uri.cpp
     src/restconf/utils/dataformat.cpp
+    src/restconf/utils/io.cpp
     src/restconf/utils/sysrepo.cpp
     src/restconf/utils/yang.cpp
 )
@@ -211,7 +213,11 @@ if(BUILD_TESTING)
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf-monitoring@2017-01-26.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-yang-patch@2017-02-22.yang
-        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-subscribed-notifications@2019-09-09.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/iana-if-type@2014-05-08.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-interfaces@2018-02-20.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-ip@2018-02-22.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-network-instance@2019-01-21.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-subscribed-notifications@2019-09-09.yang --enable-feature replay --enable-feature encode-xml --enable-feature encode-json
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf-subscribed-notifications@2019-11-17.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang --enable-feature f1
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-delete.yang
@@ -227,6 +233,7 @@ if(BUILD_TESTING)
     rousette_test(NAME restconf-notifications LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
     rousette_test(NAME restconf-plain-patch LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
     rousette_test(NAME restconf-yang-patch LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
+    rousette_test(NAME restconf-subscribed-notifications LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
     set(nested-models
         ${common-models}
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/root-mod.yang)
