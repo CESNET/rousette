@@ -11,7 +11,7 @@ static const auto SERVER_PORT = "10087";
 #include <spdlog/spdlog.h>
 #include "restconf/Server.h"
 #include "tests/aux-utils.h"
-#include "tests/datastoreUtils.h"
+#include "tests/eventWatchers.h"
 
 TEST_CASE("default handling")
 {
