@@ -38,4 +38,36 @@ sysrepo::Datastore datastoreFromString(const std::string& datastore)
 
     throw std::runtime_error("Unknown datastore '" + datastore + "'");
 }
+
+/** @brief Early filter for modules that can be subscribed to. This returns true for module without any notification node, but sysrepo will throw when subscribing */
+bool canBeSubscribed(const libyang::Module& mod)
+{
+    return mod.implemented() && mod.name() != "sysrepo";
+}
+
+/** @brief Gathers information about replay support from all modules in the sysrepo session's context. */
+SysrepoReplayInfo sysrepoReplayInfo(sysrepo::Session& session)
+{
+    decltype(sysrepo::ModuleReplaySupport::earliestNotification) globalEarliestNotification;
+    bool replayEnabled = false;
+
+    for (const auto& mod : session.getContext().modules()) {
+        if (!canBeSubscribed(mod)) {
+            continue;
+        }
+
+        auto replay = session.getConnection().getModuleReplaySupport(mod.name());
+        replayEnabled |= replay.enabled;
+
+        if (replay.earliestNotification) {
+            if (!globalEarliestNotification) {
+                globalEarliestNotification = replay.earliestNotification;
+            } else {
+                globalEarliestNotification = std::min(*replay.earliestNotification, *globalEarliestNotification);
+            }
+        }
+    }
+
+    return {replayEnabled, globalEarliestNotification};
+}
 }
