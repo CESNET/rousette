@@ -814,6 +814,7 @@ Server::~Server()
 Server::Server(sysrepo::Connection conn, const std::string& address, const std::string& port, const std::chrono::milliseconds timeout)
     : m_monitoringSession(conn.sessionStart(sysrepo::Datastore::Operational))
     , nacm(conn)
+    , m_dynamicSubscriptions(conn.sessionStart(sysrepo::Datastore::Operational))
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
@@ -823,6 +824,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
              {"ietf-netconf", ""},
              {"ietf-yang-library", "2019-01-04"},
              {"ietf-yang-patch", "2017-02-22"},
+             {"ietf-subscribed-notifications", "2019-09-09"},
              }) {
         if (!conn.sessionStart().getContext().getModuleImplemented(module)) {
             throw std::runtime_error("Module "s + module + "@" + version + " is not implemented in sysrepo");
@@ -889,22 +891,33 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
             auto streamRequest = asRestconfStreamRequest(req.method(), req.uri().path, req.uri().raw_query);
 
-            if (auto it = streamRequest.queryParams.find("filter"); it != streamRequest.queryParams.end()) {
-                xpathFilter = std::get<std::string>(it->second);
-            }
+            if (std::holds_alternative<RestconfStreamRequest::SubscribedNotification>(streamRequest.type)) {
+                if (auto sub = m_dynamicSubscriptions.getSubscription(std::get<RestconfStreamRequest::SubscribedNotification>(streamRequest.type).uuid)) {
+                    auto client = std::make_shared<DynamicSubscriptionHttpStream>(req, res, std::make_shared<rousette::http::EventStream::Signal>(), sess, sub);
+                    client->activate();
+                } else {
+                    throw ErrorResponse(404, "application", "no-such-subscription", "Subscription not found.");
+                }
+            } else {
+                if (auto it = streamRequest.queryParams.find("filter"); it != streamRequest.queryParams.end()) {
+                    xpathFilter = std::get<std::string>(it->second);
+                }
 
-            if (auto it = streamRequest.queryParams.find("start-time"); it != streamRequest.queryParams.end()) {
-                startTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
-            }
-            if (auto it = streamRequest.queryParams.find("stop-time"); it != streamRequest.queryParams.end()) {
-                stopTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
-            }
+                if (auto it = streamRequest.queryParams.find("start-time"); it != streamRequest.queryParams.end()) {
+                    startTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
+                }
+                if (auto it = streamRequest.queryParams.find("stop-time"); it != streamRequest.queryParams.end()) {
+                    stopTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
+                }
 
-            // The signal is constructed outside NotificationStream class because it is required to be passed to
-            // NotificationStream's parent (EventStream) constructor where it already must be constructed
-            // Yes, this is a hack.
-            auto client = std::make_shared<NotificationStream>(req, res, std::make_shared<rousette::http::EventStream::Signal>(), sess, streamRequest.type.encoding, xpathFilter, startTime, stopTime);
-            client->activate();
+                auto dataFormat = std::get<RestconfStreamRequest::NetconfStream>(streamRequest.type).encoding;
+
+                // The signal is constructed outside NotificationStream class because it is required to be passed to
+                // NotificationStream's parent (EventStream) constructor where it already must be constructed
+                // Yes, this is a hack.
+                auto client = std::make_shared<NotificationStream>(req, res, std::make_shared<rousette::http::EventStream::Signal>(), sess, dataFormat, xpathFilter, startTime, stopTime);
+                client->activate();
+            }
         } catch (const auth::Error& e) {
             processAuthError(req, res, e, [&res]() {
                 res.write_head(401, {TEXT_PLAIN, CORS});

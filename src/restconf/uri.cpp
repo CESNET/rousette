@@ -7,6 +7,7 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/fusion/adapted/struct/adapt_struct.hpp>
 #include <boost/fusion/include/std_pair.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/spirit/home/x3/support/ast/variant.hpp>
 #include <experimental/iterator>
 #include <libyang-cpp/Enum.hpp>
@@ -57,12 +58,31 @@ const auto resources = x3::rule<class resources, URIPath>{"resources"} =
     ((x3::lit("/") | x3::eps) /* /restconf/ and /restconf */ >> x3::attr(URIPrefix{URIPrefix::Type::RestconfRoot}) >> x3::attr(std::vector<PathSegment>{}));
 const auto uriGrammar = x3::rule<class grammar, URIPath>{"grammar"} = x3::lit("/restconf") >> resources;
 
+const auto string_to_uuid = [](auto& ctx) {
+    try {
+        _val(ctx) = boost::uuids::string_generator()(_attr(ctx));
+        _pass(ctx) = true;
+    } catch (const std::runtime_error&) {
+        _pass(ctx) = false;
+    }
+};
+
+const auto uuid_impl = x3::rule<class uuid_impl, std::string>{"uuid_impl"} =
+    x3::repeat(8)[x3::xdigit] >> x3::char_('-') >>
+    x3::repeat(4)[x3::xdigit] >> x3::char_('-') >>
+    x3::repeat(4)[x3::xdigit] >> x3::char_('-') >>
+    x3::repeat(4)[x3::xdigit] >> x3::char_('-') >>
+    x3::repeat(12)[x3::xdigit];
+const auto uuid = x3::rule<class uuid, boost::uuids::uuid>{"uuid"} = uuid_impl[string_to_uuid];
+const auto subscribedStream = x3::rule<class subscribedStream, RestconfStreamRequest::SubscribedNotification>{"subscribedStream"} = x3::lit("/subscribed") >> "/" >> uuid;
 
 const auto netconfStream = x3::rule<class netconfStream, RestconfStreamRequest::NetconfStream>{"netconfStream"} =
     x3::lit("/NETCONF") >>
     ((x3::lit("/XML") >> x3::attr(libyang::DataFormat::XML)) |
      (x3::lit("/JSON") >> x3::attr(libyang::DataFormat::JSON)));
-const auto streamUriGrammar = x3::rule<class grammar, RestconfStreamRequest::NetconfStream>{"streamsGrammar"} = x3::lit("/streams") >> netconfStream;
+
+const auto streamUriGrammar = x3::rule<class grammar, std::variant<RestconfStreamRequest::NetconfStream, RestconfStreamRequest::SubscribedNotification>>{"streamsGrammar"} =
+    x3::lit("/streams") >> (netconfStream | subscribedStream);
 
 // clang-format on
 }
@@ -204,9 +224,9 @@ std::optional<queryParams::QueryParams> parseQueryParams(const std::string& quer
     return ret;
 }
 
-std::optional<RestconfStreamRequest::NetconfStream> parseStreamUri(const std::string& queryString)
+std::optional<std::variant<RestconfStreamRequest::NetconfStream, RestconfStreamRequest::SubscribedNotification>> parseStreamUri(const std::string& queryString)
 {
-    std::optional<RestconfStreamRequest::NetconfStream> ret;
+    std::optional<std::variant<RestconfStreamRequest::NetconfStream, RestconfStreamRequest::SubscribedNotification>> ret;
 
     if (!x3::parse(std::begin(queryString), std::end(queryString), streamUriGrammar >> x3::eoi, ret)) {
         return std::nullopt;
@@ -658,6 +678,12 @@ std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> asYangMod
 RestconfStreamRequest::NetconfStream::NetconfStream() = default;
 RestconfStreamRequest::NetconfStream::NetconfStream(const libyang::DataFormat& encoding)
     : encoding(encoding)
+{
+}
+
+RestconfStreamRequest::SubscribedNotification::SubscribedNotification() = default;
+RestconfStreamRequest::SubscribedNotification::SubscribedNotification(const boost::uuids::uuid& uuid)
+    : uuid(uuid)
 {
 }
 

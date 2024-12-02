@@ -7,6 +7,7 @@
  */
 
 #include "trompeloeil_doctest.h"
+#include <boost/uuid/string_generator.hpp>
 #include <experimental/iterator>
 #include <string>
 #include <sysrepo-cpp/Connection.hpp>
@@ -1072,13 +1073,22 @@ TEST_CASE("URI path parser")
 
         {
             auto [type, queryParams] = asRestconfStreamRequest("GET", "/streams/NETCONF/XML", "");
-            REQUIRE(type.encoding == libyang::DataFormat::XML);
+            REQUIRE(std::holds_alternative<RestconfStreamRequest::NetconfStream>(type));
+            REQUIRE(std::get<RestconfStreamRequest::NetconfStream>(type).encoding == libyang::DataFormat::XML);
             REQUIRE(queryParams.empty());
         }
 
         {
             auto [type, queryParams] = asRestconfStreamRequest("GET", "/streams/NETCONF/JSON", "");
-            REQUIRE(type.encoding == libyang::DataFormat::JSON);
+            REQUIRE(std::holds_alternative<RestconfStreamRequest::NetconfStream>(type));
+            REQUIRE(std::get<RestconfStreamRequest::NetconfStream>(type).encoding == libyang::DataFormat::JSON);
+            REQUIRE(queryParams.empty());
+        }
+
+        {
+            auto [type, queryParams] = asRestconfStreamRequest("GET", "/streams/subscribed/a40f0a50-061a-4832-a6ac-c4db7df81a10", "");
+            REQUIRE(std::holds_alternative<RestconfStreamRequest::SubscribedNotification>(type));
+            REQUIRE(std::get<RestconfStreamRequest::SubscribedNotification>(type).uuid == boost::uuids::string_generator()("a40f0a50-061a-4832-a6ac-c4db7df81a10"));
             REQUIRE(queryParams.empty());
         }
 
@@ -1092,6 +1102,12 @@ TEST_CASE("URI path parser")
                 serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
                 rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF/XM", ""),
+                serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
+                rousette::restconf::ErrorResponse);
+        REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/subscribed", ""),
+                serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
+                rousette::restconf::ErrorResponse);
+        REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/subscribed/123-456-789", ""),
                 serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
                 rousette::restconf::ErrorResponse);
 
