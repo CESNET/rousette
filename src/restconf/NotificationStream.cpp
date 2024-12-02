@@ -5,7 +5,9 @@
  *
  */
 
+#include <boost/uuid/uuid_io.hpp>
 #include <libyang-cpp/Time.hpp>
+#include <nghttp2/asio_http2_server.h>
 #include <sysrepo-cpp/Connection.hpp>
 #include <sysrepo-cpp/Subscription.hpp>
 #include <sysrepo-cpp/utils/exception.hpp>
@@ -180,5 +182,121 @@ libyang::DataNode replaceStreamLocations(const std::optional<std::string>& schem
     }
 
     return node;
+}
+
+DynamicSubscriptions::DynamicSubscriptions(sysrepo::Session session)
+    : m_session(std::move(session))
+    , m_uuidGenerator(boost::uuids::random_generator())
+{
+    m_session.switchDatastore(sysrepo::Datastore::Operational);
+
+    const auto replayInfo = sysrepoReplayInfo(session);
+    static const auto prefix = "/ietf-subscribed-notifications:streams"s;
+    m_session.setItem(prefix + "/stream[name='NETCONF']/description", "Default NETCONF notification stream");
+    if (replayInfo.enabled) {
+        m_session.setItem(prefix + "/stream[name='NETCONF']/replay-support", std::nullopt);
+        if (replayInfo.earliestNotification) {
+            m_session.setItem(prefix + "/replay-log-creation-time", libyang::yangTimeFormat(*replayInfo.earliestNotification, libyang::TimezoneInterpretation::Local));
+        }
+    }
+
+    m_notifSubs = m_session.onRPCAction("/ietf-subscribed-notifications:establish-subscription",
+                                        [&](sysrepo::Session session, auto, auto, const libyang::DataNode& input, auto, auto, libyang::DataNode output) {
+                                            return establishSubscription(session, input, output);
+                                        });
+
+    m_notifSubs->onRPCAction("/ietf-subscribed-notifications:modify-subscription",
+                             [&](auto, auto, auto, auto, auto, auto, auto) {
+                                 return sysrepo::ErrorCode::Unsupported;
+                             });
+    m_notifSubs->onRPCAction("/ietf-subscribed-notifications:delete-subscription",
+                             [&](auto, auto, auto, auto, auto, auto, auto) {
+                                 return sysrepo::ErrorCode::Unsupported;
+                             });
+    m_notifSubs->onRPCAction("/ietf-subscribed-notifications:kill-subscription",
+                             [&](auto, auto, auto, auto, auto, auto, auto) {
+                                 return sysrepo::ErrorCode::Unsupported;
+                             });
+}
+
+sysrepo::ErrorCode DynamicSubscriptions::establishSubscription(sysrepo::Session, const libyang::DataNode& input, libyang::DataNode& output)
+{
+    std::string stream;
+
+    if (auto streamNode = input.findPath("stream")) {
+        stream = streamNode->asTerm().valueStr();
+    } else {
+        return sysrepo::ErrorCode::InvalidArgument;
+    }
+
+    std::optional<sysrepo::NotificationTimeStamp> stopTime;
+    if (auto stopTimeNode = input.findPath("stop-time")) {
+        stopTime = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(stopTimeNode->asTerm().valueStr());
+    }
+
+    // Generate a new UUID associated with the subscription. The UUID will be used as a part of the URI so that the URI is not predictable (RFC 8650, section 5)
+    auto uuid = m_uuidGenerator();
+
+    auto subHandle = std::make_shared<sysrepo::DynamicSubscription>(m_session.subscribeNotifications(std::nullopt));
+
+    output.newPath("id", std::to_string(subHandle->subscriptionId()), libyang::CreationOptions::Output);
+    output.newPath("ietf-restconf-subscribed-notifications:uri", "/streams/subscribed/" + boost::uuids::to_string(uuid), libyang::CreationOptions::Output);
+
+    m_ypSubs.emplace(uuid, subHandle);
+    return sysrepo::ErrorCode::Ok;
+}
+
+std::shared_ptr<sysrepo::DynamicSubscription> DynamicSubscriptions::getSubscription(const boost::uuids::uuid uuid) const
+{
+    if (auto it = m_ypSubs.find(uuid); it != m_ypSubs.end()) {
+        return it->second;
+    }
+
+    return nullptr;
+}
+
+DynamicSubscriptionHttpStream::DynamicSubscriptionHttpStream(
+    const nghttp2::asio_http2::server::request& req,
+    const nghttp2::asio_http2::server::response& res,
+    std::shared_ptr<rousette::http::EventStream::Signal> signal,
+    sysrepo::Session session,
+    libyang::DataFormat dataFormat,
+    const std::shared_ptr<sysrepo::DynamicSubscription>& yangPushSubscription)
+    : EventStream(req, res, *signal)
+    , m_session(std::move(session))
+    , m_yangPushSubscription(yangPushSubscription)
+    , m_signal(signal)
+    , m_stream(res.io_service(), m_yangPushSubscription->fd())
+    , m_dataFormat(dataFormat)
+{
+}
+
+/** @brief Waits for the next notification and calls cb() */
+void DynamicSubscriptionHttpStream::awaitNextNotification()
+{
+    m_stream.async_read_some(boost::asio::null_buffers(), [this](const boost::system::error_code& err, auto) {
+        spdlog::trace("SubscribedNotificationStream::activate async_read_some: {}", err.message());
+        if (err == boost::asio::error::operation_aborted) {
+            return;
+        }
+        cb();
+    });
+}
+
+void DynamicSubscriptionHttpStream::activate()
+{
+    awaitNextNotification();
+    EventStream::activate();
+}
+
+void DynamicSubscriptionHttpStream::cb()
+{
+    // process the incoming notification
+    m_yangPushSubscription->processEvent([this](const std::optional<libyang::DataNode>& notificationTree, const sysrepo::NotificationTimeStamp& time) {
+        (*m_signal)(rousette::restconf::as_restconf_notification(m_session.getContext(), m_dataFormat, *notificationTree, time));
+    });
+
+    // and wait for the next one
+    awaitNextNotification();
 }
 }
