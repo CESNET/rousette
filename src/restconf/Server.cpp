@@ -430,13 +430,31 @@ libyang::CreatedNodes createEditForPutAndPatch(libyang::Context& ctx, const std:
     return {editNode, replacementNode};
 }
 
-std::optional<libyang::DataNode> processInternalRPC(sysrepo::Session&, const libyang::DataNode&)
+std::optional<libyang::DataNode> processInternalRPC(sysrepo::Session& sess, const libyang::DataNode& rpcInput, const libyang::DataFormat requestEncoding, DynamicSubscriptions& dynamicSubscriptions)
 {
-    // TODO: Implement internal RPCs
-    throw ErrorResponse(501, "application", "operation-not-supported", "Internal RPCs are not yet supported.");
+    using InternalRPCHandler = std::function<void(sysrepo::Session&, const libyang::DataFormat, const libyang::DataNode&, libyang::DataNode&)>;
+    const std::map<std::string, InternalRPCHandler> handlers{
+        {"/ietf-subscribed-notifications:establish-subscription", [&dynamicSubscriptions](auto&&... args) { return dynamicSubscriptions.establishSubscription(std::forward<decltype(args)>(args)...); }},
+    };
+
+    const auto rpcPath = rpcInput.path();
+
+    // is the user authorized to call the operation?
+    auto [parent, rpcNode] = sess.getContext().newPath2(rpcPath, std::nullopt);
+    if (!sess.checkNacmOperation(*rpcNode)) {
+        throw ErrorResponse(403, "application", "access-denied", "Access denied.", rpcNode->path());
+    }
+
+    if (auto it = handlers.find(rpcPath); it != handlers.end()) {
+        auto [parent, rpcOutput] = sess.getContext().newPath2(rpcPath, std::nullopt);
+        it->second(sess, requestEncoding, rpcInput, *rpcOutput);
+        return *parent;
+    }
+
+    throw ErrorResponse(501, "application", "operation-not-supported", "Unsupported RPC call to {}", rpcPath);
 }
 
-void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx, const std::chrono::milliseconds timeout)
+void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx, const std::chrono::milliseconds timeout, DynamicSubscriptions& dynamicSubscriptions)
 {
     requestCtx->sess.switchDatastore(sysrepo::Datastore::Operational);
     auto ctx = requestCtx->sess.getContext();
@@ -470,7 +488,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx, const std::c
     if (requestCtx->restconfRequest.type == RestconfRequest::Type::Execute) {
         rpcReply = requestCtx->sess.sendRPC(*rpcNode, timeout);
     } else if (requestCtx->restconfRequest.type == RestconfRequest::Type::ExecuteInternal) {
-        rpcReply = processInternalRPC(requestCtx->sess, *rpcNode);
+        rpcReply = processInternalRPC(requestCtx->sess, *rpcNode, *requestCtx->dataFormat.request, dynamicSubscriptions);
     }
 
     if (!rpcReply || rpcReply->immediateChildren().empty()) {
@@ -835,6 +853,7 @@ Server::~Server()
 Server::Server(sysrepo::Connection conn, const std::string& address, const std::string& port, const std::chrono::milliseconds timeout)
     : m_monitoringSession(conn.sessionStart(sysrepo::Datastore::Operational))
     , nacm(conn)
+    , m_dynamicSubscriptions(m_monitoringSession, netconfStreamRoot)
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
@@ -844,7 +863,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
              {"ietf-netconf", "", {}},
              {"ietf-yang-library", "2019-01-04", {}},
              {"ietf-yang-patch", "2017-02-22", {}},
-             {"ietf-subscribed-notifications", "2019-09-09", {}},
+             {"ietf-subscribed-notifications", "2019-09-09", {"encode-xml", "encode-json"}},
              {"ietf-restconf-subscribed-notifications", "2019-11-17", {}},
          }) {
         if (auto mod = conn.sessionStart().getContext().getModuleImplemented(module)) {
@@ -918,22 +937,33 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
             auto streamRequest = asRestconfStreamRequest(req.method(), req.uri().path, req.uri().raw_query);
 
-            if (auto it = streamRequest.queryParams.find("filter"); it != streamRequest.queryParams.end()) {
-                xpathFilter = std::get<std::string>(it->second);
-            }
+            if (std::holds_alternative<RestconfStreamRequest::SubscribedStream>(streamRequest.type)) {
+                if (auto sub = m_dynamicSubscriptions.getSubscription(std::get<RestconfStreamRequest::SubscribedStream>(streamRequest.type).uuid)) {
+                    auto client = std::make_shared<DynamicSubscriptionHttpStream>(req, res, std::make_shared<rousette::http::EventStream::Signal>(), sess, sub);
+                    client->activate();
+                } else {
+                    throw ErrorResponse(404, "application", "no-such-subscription", "Subscription not found.");
+                }
+            } else {
+                if (auto it = streamRequest.queryParams.find("filter"); it != streamRequest.queryParams.end()) {
+                    xpathFilter = std::get<std::string>(it->second);
+                }
 
-            if (auto it = streamRequest.queryParams.find("start-time"); it != streamRequest.queryParams.end()) {
-                startTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
-            }
-            if (auto it = streamRequest.queryParams.find("stop-time"); it != streamRequest.queryParams.end()) {
-                stopTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
-            }
+                if (auto it = streamRequest.queryParams.find("start-time"); it != streamRequest.queryParams.end()) {
+                    startTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
+                }
+                if (auto it = streamRequest.queryParams.find("stop-time"); it != streamRequest.queryParams.end()) {
+                    stopTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
+                }
 
-            // The signal is constructed outside NotificationStream class because it is required to be passed to
-            // NotificationStream's parent (EventStream) constructor where it already must be constructed
-            // Yes, this is a hack.
-            auto client = std::make_shared<NotificationStream>(req, res, std::make_shared<rousette::http::EventStream::Signal>(), sess, streamRequest.type.encoding, xpathFilter, startTime, stopTime);
-            client->activate();
+                auto dataFormat = std::get<RestconfStreamRequest::NetconfStream>(streamRequest.type).encoding;
+
+                // The signal is constructed outside NotificationStream class because it is required to be passed to
+                // NotificationStream's parent (EventStream) constructor where it already must be constructed
+                // Yes, this is a hack.
+                auto client = std::make_shared<NotificationStream>(req, res, std::make_shared<rousette::http::EventStream::Signal>(), sess, dataFormat, xpathFilter, startTime, stopTime);
+                client->activate();
+            }
         } catch (const auth::Error& e) {
             processAuthError(req, res, e, [&res]() {
                 res.write_head(401, {TEXT_PLAIN, CORS});
@@ -1137,11 +1167,11 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 case RestconfRequest::Type::ExecuteInternal: {
                     auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, restconfRequest);
 
-                    req.on_data([requestCtx, timeout](const uint8_t* data, std::size_t length) {
+                    req.on_data([requestCtx, timeout, this](const uint8_t* data, std::size_t length) {
                         if (length > 0) {
                             requestCtx->payload.append(reinterpret_cast<const char*>(data), length);
                         } else {
-                            WITH_RESTCONF_EXCEPTIONS(processActionOrRPC, rejectWithError)(requestCtx, timeout);
+                            WITH_RESTCONF_EXCEPTIONS(processActionOrRPC, rejectWithError)(requestCtx, timeout, m_dynamicSubscriptions);
                         }
                     });
                     break;
