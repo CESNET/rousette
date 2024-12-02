@@ -153,12 +153,14 @@ const ng::header_map eventStreamHeaders {
 #define ACCESS_CONTROL_ALLOW_ORIGIN {"access-control-allow-origin", "*"}
 #define ACCEPT_PATCH {"accept-patch", "application/yang-data+json, application/yang-data+xml, application/yang-patch+xml, application/yang-patch+json"}
 
+// this is a test, and the server is expected to reply "soon"
+static const boost::posix_time::time_duration CLIENT_TIMEOUT = boost::posix_time::seconds(3);
+
 Response clientRequest(auto method,
         auto uri,
         const std::string& data,
         const std::map<std::string, std::string>& headers,
-        // this is a test, and the server is expected to reply "soon"
-        const boost::posix_time::time_duration timeout=boost::posix_time::seconds(3))
+        const boost::posix_time::time_duration timeout = CLIENT_TIMEOUT)
 {
     boost::asio::io_service io_service;
     auto client = std::make_shared<ng_client::session>(io_service, SERVER_ADDRESS, SERVER_PORT);
@@ -199,39 +201,39 @@ Response clientRequest(auto method,
     return {statusCode, resHeaders, oss.str()};
 }
 
-Response get(auto uri, const std::map<std::string, std::string>& headers)
+Response get(auto uri, const std::map<std::string, std::string>& headers, const boost::posix_time::time_duration timeout = CLIENT_TIMEOUT)
 {
-    return clientRequest("GET", uri, "", headers);
+    return clientRequest("GET", uri, "", headers, timeout);
 }
 
-Response options(auto uri, const std::map<std::string, std::string>& headers)
+Response options(auto uri, const std::map<std::string, std::string>& headers, const boost::posix_time::time_duration timeout = CLIENT_TIMEOUT)
 {
-    return clientRequest("OPTIONS", uri, "", headers);
+    return clientRequest("OPTIONS", uri, "", headers, timeout);
 }
 
-Response head(auto uri, const std::map<std::string, std::string>& headers)
+Response head(auto uri, const std::map<std::string, std::string>& headers, const boost::posix_time::time_duration timeout = CLIENT_TIMEOUT)
 {
-    return clientRequest("HEAD", uri, "", headers);
+    return clientRequest("HEAD", uri, "", headers, timeout);
 }
 
-Response put(auto xpath, const std::map<std::string, std::string>& headers, const std::string& data)
+Response put(auto xpath, const std::map<std::string, std::string>& headers, const std::string& data, const boost::posix_time::time_duration timeout = CLIENT_TIMEOUT)
 {
-    return clientRequest("PUT", xpath, data, headers);
+    return clientRequest("PUT", xpath, data, headers, timeout);
 }
 
-Response post(auto xpath, const std::map<std::string, std::string>& headers, const std::string& data)
+Response post(auto xpath, const std::map<std::string, std::string>& headers, const std::string& data, const boost::posix_time::time_duration timeout = CLIENT_TIMEOUT)
 {
-    return clientRequest("POST", xpath, data, headers);
+    return clientRequest("POST", xpath, data, headers, timeout);
 }
 
-Response patch(auto uri, const std::map<std::string, std::string>& headers, const std::string& data)
+Response patch(auto uri, const std::map<std::string, std::string>& headers, const std::string& data, const boost::posix_time::time_duration timeout = CLIENT_TIMEOUT)
 {
-    return clientRequest("PATCH", uri, data, headers);
+    return clientRequest("PATCH", uri, data, headers, timeout);
 }
 
-Response httpDelete(auto uri, const std::map<std::string, std::string>& headers)
+Response httpDelete(auto uri, const std::map<std::string, std::string>& headers, const boost::posix_time::time_duration timeout = CLIENT_TIMEOUT)
 {
-    return clientRequest("DELETE", uri, "", headers);
+    return clientRequest("DELETE", uri, "", headers, timeout);
 }
 
 auto manageNacm(sysrepo::Session session)
