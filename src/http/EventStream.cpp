@@ -37,6 +37,9 @@ EventStream::EventStream(const server::request& req, const server::response& res
 
 This cannot be a part of the constructor because of enable_shared_from_this<> semantics. When in constructor,
 shared_from_this() throws bad_weak_ptr, so we need a two-phase construction.
+
+Side note: Please make sure that you are subclassing your class using public inheritance. If not, you are going to
+experience very nice and hard-to-debug crashes and you will spent hours trying to figure out what is wrong.
 */
 void EventStream::activate()
 {
