@@ -12,6 +12,7 @@
 #include "http/EventStream.h"
 #include "restconf/Exceptions.h"
 #include "restconf/NotificationStream.h"
+#include "restconf/utils/sysrepo.h"
 #include "utils/yang.h"
 
 using namespace std::string_literals;
@@ -43,42 +44,6 @@ void subscribe(
     } else {
         sub->onNotification(moduleName, std::move(notifCb), filter, startTime, stopTime);
     }
-}
-
-/** @brief Early filter for modules that can be subscribed to. This returns true for module without any notification node, but sysrepo will throw when subscribing */
-bool canBeSubscribed(const libyang::Module& mod)
-{
-    return mod.implemented() && mod.name() != "sysrepo";
-}
-
-struct SysrepoReplayInfo {
-    bool enabled;
-    std::optional<sysrepo::NotificationTimeStamp> earliestNotification;
-};
-
-SysrepoReplayInfo sysrepoReplayInfo(sysrepo::Session& session)
-{
-    decltype(sysrepo::ModuleReplaySupport::earliestNotification) globalEarliestNotification;
-    bool replayEnabled = false;
-
-    for (const auto& mod : session.getContext().modules()) {
-        if (!canBeSubscribed(mod)) {
-            continue;
-        }
-
-        auto replay = session.getConnection().getModuleReplaySupport(mod.name());
-        replayEnabled |= replay.enabled;
-
-        if (replay.earliestNotification) {
-            if (!globalEarliestNotification) {
-                globalEarliestNotification = replay.earliestNotification;
-            } else {
-                globalEarliestNotification = std::min(*replay.earliestNotification, *globalEarliestNotification);
-            }
-        }
-    }
-
-    return {replayEnabled, globalEarliestNotification};
 }
 }
 

@@ -205,16 +205,41 @@ sysrepo::DynamicSubscription makeYangPushPeriodicSubscription(sysrepo::Session& 
         anchorTime,
         stopTime);
 }
+
+/** @brief Creates and fills ietf-subscribed-notifications:streams. To be called in oper callback. */
+void notificationStreamListSubscribed(sysrepo::Session& session, std::optional<libyang::DataNode>& parent)
+{
+    static const std::string prefix = "/ietf-subscribed-notifications:streams";
+    const auto replayInfo = rousette::restconf::sysrepoReplayInfo(session);
+    if (!parent) {
+        parent = session.getContext().newPath(prefix + "/stream[name='NETCONF']/description", "Default NETCONF notification stream");
+    } else {
+        parent->newPath(prefix + "/stream[name='NETCONF']/description", "Default NETCONF notification stream");
+    }
+    if (replayInfo.enabled) {
+        session.setItem(prefix + "/stream[name='NETCONF']/replay-support", std::nullopt);
+        if (replayInfo.earliestNotification) {
+            session.setItem(prefix + "/stream[name='NETCONF']/replay-log-creation-time", libyang::yangTimeFormat(*replayInfo.earliestNotification, libyang::TimezoneInterpretation::Local));
+        }
+    }
+}
 }
 
 namespace rousette::restconf {
 
-DynamicSubscriptions::DynamicSubscriptions(const std::string& streamRootUri, const nghttp2::asio_http2::server::http2& server, const std::chrono::seconds inactivityTimeout)
+DynamicSubscriptions::DynamicSubscriptions(sysrepo::Session& session, const std::string& streamRootUri, const nghttp2::asio_http2::server::http2& server, const std::chrono::seconds inactivityTimeout)
     : m_restconfStreamUri(streamRootUri)
     , m_server(server)
     , m_uuidGenerator(boost::uuids::random_generator())
     , m_inactivityTimeout(inactivityTimeout)
 {
+    m_notificationStreamListSub = session.onOperGet(
+        "ietf-subscribed-notifications",
+        [](auto session, auto, auto, auto, auto, auto, auto& parent) {
+            notificationStreamListSubscribed(session, parent);
+            return sysrepo::ErrorCode::Ok;
+        },
+        "/ietf-subscribed-notifications:streams");
 }
 
 DynamicSubscriptions::~DynamicSubscriptions() = default;
