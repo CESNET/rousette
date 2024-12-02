@@ -16,44 +16,9 @@ static const auto SERVER_PORT = "10088";
 #include "tests/aux-utils.h"
 #include "tests/pretty_printers.h"
 
-#define EXPECT_NOTIFICATION(DATA, SEQ) expectations.emplace_back(NAMED_REQUIRE_CALL(netconfWatcher, data(DATA)).IN_SEQUENCE(SEQ));
 #define SEND_NOTIFICATION(DATA) notifSession.sendNotification(*ctx.parseOp(DATA, libyang::DataFormat::JSON, libyang::OperationType::NotificationYang).op, sysrepo::Wait::No);
 
 using namespace std::chrono_literals;
-
-struct NotificationWatcher {
-    libyang::Context ctx;
-    libyang::DataFormat dataFormat;
-
-    NotificationWatcher(const libyang::Context& ctx)
-        : ctx(ctx)
-        , dataFormat(libyang::DataFormat::JSON)
-    {
-    }
-
-    void setDataFormat(const libyang::DataFormat dataFormat)
-    {
-        this->dataFormat = dataFormat;
-    }
-
-    void operator()(const std::string& msg) const
-    {
-        spdlog::trace("Client received data: {}", msg);
-        auto notifDataNode = ctx.parseOp(msg,
-                                         dataFormat,
-                                         dataFormat == libyang::DataFormat::JSON ? libyang::OperationType::NotificationRestconf : libyang::OperationType::NotificationNetconf);
-
-        // parsing nested notifications does not return the data tree root node but the notification data node
-        auto dataRoot = notifDataNode.op;
-        while (dataRoot->parent()) {
-            dataRoot = *dataRoot->parent();
-        }
-
-        data(*dataRoot->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink));
-    }
-
-    MAKE_CONST_MOCK1(data, void(const std::string&));
-};
 
 struct SSEClient {
     std::shared_ptr<ng_client::session> client;
