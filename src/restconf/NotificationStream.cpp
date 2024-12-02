@@ -5,13 +5,18 @@
  *
  */
 
+#include <boost/uuid/uuid_io.hpp>
+#include <fmt/ostream.h>
 #include <libyang-cpp/Time.hpp>
+#include <nghttp2/asio_http2_server.h>
 #include <sysrepo-cpp/Connection.hpp>
 #include <sysrepo-cpp/Subscription.hpp>
 #include <sysrepo-cpp/utils/exception.hpp>
+#include "configure.cmake.h"
 #include "http/EventStream.h"
 #include "restconf/Exceptions.h"
 #include "restconf/NotificationStream.h"
+#include "restconf/utils/io.h"
 #include "utils/yang.h"
 
 using namespace std::string_literals;
@@ -79,6 +84,60 @@ SysrepoReplayInfo sysrepoReplayInfo(sysrepo::Session& session)
     }
 
     return {replayEnabled, globalEarliestNotification};
+}
+
+libyang::DataFormat subscribedNotificatonsEncoding(const libyang::DataNode& rpcInput, const libyang::DataFormat requestEncoding)
+{
+    /* FIXME: So far we allow only encode-json or encode-xml encoding values and not their derived values.
+     * We do not know what those derived values might mean and how do they change the meaning of the encoding leaf.
+     */
+    if (auto encodingNode = rpcInput.findPath("encoding")) {
+        const auto encodingStr = encodingNode->asTerm().valueStr();
+        if (encodingStr == "ietf-subscribed-notifications:encode-json") {
+            return libyang::DataFormat::JSON;
+        } else if (encodingStr == "ietf-subscribed-notifications:encode-xml") {
+            return libyang::DataFormat::XML;
+        } else {
+            throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Unsupported encoding in establish-subscription: '" + encodingStr + "'. Currently we support only 'encode-xml' and 'encode-json' identities.");
+        }
+    }
+
+    return requestEncoding;
+}
+
+/** @brief Parses the YANG date-and-time attribute from the RPC input and returns it as an optional sysrepo::NotificationTimeStamp.
+ *
+ * @param rpcInput The RPC input node.
+ * @param path The path to the YANG leaf.
+ * @return An optional sysrepo::NotificationTimeStamp if the attribute is present and valid, otherwise std::nullopt.
+ */
+template <typename T>
+std::optional<sysrepo::NotificationTimeStamp> optionalTime(const libyang::DataNode& rpcInput, const std::string& path)
+{
+    if (auto stopTimeNode = rpcInput.findPath(path)) {
+        return libyang::fromYangTimeFormat<typename T::clock>(stopTimeNode->asTerm().valueStr());
+    }
+
+    return std::nullopt;
+}
+
+sysrepo::DynamicSubscription subscribeNotificationStream(sysrepo::Session& session, const libyang::DataNode& rpcInput)
+{
+    if (!rpcInput.findPath("stream")) {
+        throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Stream is required");
+    }
+
+    if (rpcInput.findPath("stream-filter-name")) {
+        throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Stream filtering is not supported");
+    }
+
+    auto stopTime = optionalTime<sysrepo::NotificationTimeStamp>(rpcInput, "stop-time");
+
+    return session.subscribeNotifications(
+        std::nullopt /* TODO xpath filter */,
+        rpcInput.findPath("stream")->asTerm().valueStr(),
+        stopTime,
+        std::nullopt /* TODO replayStart */);
 }
 }
 
@@ -181,5 +240,226 @@ libyang::DataNode replaceStreamLocations(const std::optional<std::string>& schem
     }
 
     return node;
+}
+
+DynamicSubscriptions::DynamicSubscriptions(const std::string& streamRootUri, const nghttp2::asio_http2::server::http2& server)
+    : m_server(server)
+    , m_restconfStreamUri(streamRootUri)
+    , m_uuidGenerator(boost::uuids::random_generator())
+{
+}
+
+void DynamicSubscriptions::stop()
+{
+    std::lock_guard lock(m_mutex);
+    for (const auto& [uuid, subscriptionData] : m_subscriptions) {
+        subscriptionData->clientInactiveTimer.cancel();
+    }
+}
+
+void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, const libyang::DataFormat requestEncoding, const libyang::DataNode& rpcInput, libyang::DataNode& rpcOutput)
+{
+    // Generate a new UUID associated with the subscription. The UUID will be used as a part of the URI so that the URI is not predictable (RFC 8650, section 5)
+    auto uuid = m_uuidGenerator();
+
+    auto dataFormat = subscribedNotificatonsEncoding(rpcInput, requestEncoding);
+
+    try {
+        std::optional<sysrepo::DynamicSubscription> sub;
+
+        if (rpcInput.findPath("stream")) {
+            sub = subscribeNotificationStream(session, rpcInput);
+        } else {
+            throw ErrorResponse(400, "application", "missing-attribute", "stream attribute is required");
+        }
+
+        rpcOutput.newPath("id", std::to_string(sub->subscriptionId()), libyang::CreationOptions::Output);
+        rpcOutput.newPath("ietf-restconf-subscribed-notifications:uri", m_restconfStreamUri + "subscribed/" + boost::uuids::to_string(uuid), libyang::CreationOptions::Output);
+
+        auto subId = sub.value().subscriptionId();
+        std::unique_lock lock(m_mutex);
+        m_subscriptions[uuid] = std::make_shared<SubscriptionData>(
+            std::move(*sub),
+            dataFormat,
+            uuid,
+            *session.getNacmUser(),
+            *m_server.io_services().at(0), // Pick any io context. Using at() here to be sure no undefined behavior happens.
+            [subId, this]() { terminateSubscription(subId); });
+    } catch (const sysrepo::ErrorWithCode& e) {
+        throw ErrorResponse(400, "application", "invalid-attribute", e.what());
+    }
+}
+
+void DynamicSubscriptions::terminateSubscription(const uint32_t subId)
+{
+    std::unique_lock lock(m_mutex);
+
+    for (const auto& [uuid, subscriptionData] : m_subscriptions) { // TODO: Store by both id and uuid in order to search fast by both keys
+        if (subscriptionData->subscription.subscriptionId() == subId) {
+            spdlog::debug("{}: termination requested", fmt::streamed(*subscriptionData));
+            subscriptionData->subscription.terminate("ietf-subscribed-notifications:no-such-subscription");
+            m_subscriptions.erase(uuid);
+            return;
+        }
+    }
+
+    spdlog::warn("Requested termination of subscription with id {}, but subscription not found", subId);
+}
+
+/** @brief Returns the subscription data for the given UUID and user.
+ *
+ * @param uuid The UUID of the subscription.
+ * @return A shared pointer to the SubscriptionData object if found and user is the one who established the subscription (or NACM recovery user), otherwise nullptr.
+ */
+std::shared_ptr<DynamicSubscriptions::SubscriptionData> DynamicSubscriptions::getSubscriptionForUser(const boost::uuids::uuid& uuid, const std::optional<std::string>& user)
+{
+    std::unique_lock lock(m_mutex);
+    if (auto it = m_subscriptions.find(uuid); it != m_subscriptions.end() && (it->second->user == user || user == sysrepo::Session::getNacmRecoveryUser())) {
+        return it->second;
+    }
+
+    return nullptr;
+}
+
+
+DynamicSubscriptions::SubscriptionData::SubscriptionData(
+    sysrepo::DynamicSubscription sub,
+    libyang::DataFormat format,
+    boost::uuids::uuid uuid,
+    const std::string& user,
+    boost::asio::io_context& io,
+    std::function<void()> onInactiveCallback)
+    : subscription(std::move(sub))
+    , dataFormat(format)
+    , uuid(uuid)
+    , user(user)
+    , clientInactiveTimer(io)
+    , onClientInactiveCallback(std::move(onInactiveCallback))
+    , state(State::Start)
+{
+    spdlog::debug("{}: created", fmt::streamed(*this));
+    setupInactivityTimer();
+}
+
+DynamicSubscriptions::SubscriptionData::~SubscriptionData()
+{
+    try {
+        subscription.terminate();
+    } catch (const sysrepo::ErrorWithCode& e) { // Maybe it was already terminated (stop-time).
+        spdlog::warn("Failed to terminate {}: {}", fmt::streamed(*this), e.what());
+    }
+
+    clientInactiveTimer.cancel();
+}
+
+void DynamicSubscriptions::SubscriptionData::clientDisconnected()
+{
+    spdlog::debug("{}: client disconnected", fmt::streamed(*this));
+
+    if (state == State::Shutdown) {
+        return;
+    }
+
+    state = State::Start;
+    setupInactivityTimer();
+}
+
+void DynamicSubscriptions::SubscriptionData::clientConnected()
+{
+    spdlog::debug("{}: client connected", fmt::streamed(*this));
+    spdlog::trace("{}: stopping inactivity timer", fmt::streamed(*this));
+    state = State::ReceiverActive;
+    clientInactiveTimer.cancel();
+}
+
+void DynamicSubscriptions::SubscriptionData::setupInactivityTimer()
+{
+    spdlog::trace("{}: starting inactivity timer ({} seconds)", fmt::streamed(*this), SUBSCRIPTION_INACTIVE_TIMELIMIT);
+    clientInactiveTimer.expires_after(std::chrono::seconds(SUBSCRIPTION_INACTIVE_TIMELIMIT));
+    clientInactiveTimer.async_wait([maybe = weak_from_this()](const boost::system::error_code& err) {
+        auto subscriptionData = maybe.lock();
+        if (!subscriptionData) {
+            spdlog::trace("Inactivity timer: subscriptionData already gone.");
+            return;
+        }
+
+        if (err == boost::asio::error::operation_aborted) {
+            spdlog::trace("{}: inactivity timer cancelled", fmt::streamed(*subscriptionData));
+            return;
+        }
+
+        spdlog::trace("{}: client inactive, perform inactivity callback", fmt::streamed(*subscriptionData));
+        subscriptionData->onClientInactiveCallback();
+    });
+}
+
+std::ostream& operator<<(std::ostream& os, const DynamicSubscriptions::SubscriptionData& sub)
+{
+    return os << "dynamic subscription (id " << sub.subscription.subscriptionId()
+              << ", uuid " << boost::uuids::to_string(sub.uuid)
+              << ", created by user " << sub.user
+              << ")";
+}
+
+DynamicSubscriptionHttpStream::DynamicSubscriptionHttpStream(
+    const nghttp2::asio_http2::server::request& req,
+    const nghttp2::asio_http2::server::response& res,
+    rousette::http::EventStream::Termination& termination,
+    std::shared_ptr<rousette::http::EventStream::EventSignal> signal,
+    const std::shared_ptr<DynamicSubscriptions::SubscriptionData>& subscriptionData)
+    : EventStream(req, res, termination, *signal)
+    , m_subscriptionData(subscriptionData)
+    , m_signal(signal)
+    , m_stream(res.io_service(), m_subscriptionData->subscription.fd())
+{
+    setOnTerminationCb([this]() {
+        m_subscriptionData->state = DynamicSubscriptions::SubscriptionData::State::Shutdown;
+        m_subscriptionData->clientInactiveTimer.cancel();
+        std::lock_guard lock{m_subscriptionData->mutex};
+        m_subscriptionData->subscription.terminate("ietf-subscribed-notifications:no-such-subscription");
+    });
+
+    setOnClientDisconnectedCb([this]() {
+        m_subscriptionData->clientDisconnected();
+    });
+}
+
+DynamicSubscriptionHttpStream::~DynamicSubscriptionHttpStream()
+{
+    // The stream does not own the file descriptor, sysrepo does. It will be closed when the subscription terminates.
+    m_stream.release();
+}
+
+/** @brief Waits for the next notifications and process them */
+void DynamicSubscriptionHttpStream::awaitNextNotification()
+{
+    m_stream.async_wait(boost::asio::posix::stream_descriptor::wait_read, [this](const boost::system::error_code& err) {
+        // Unfortunately wait_read does not return operation_aborted when the file descriptor is closed and poll results in POLLHUP
+        if (err == boost::asio::error::operation_aborted || utils::pipeIsClosedAndNoData(m_subscriptionData->subscription.fd())) {
+            return;
+        }
+
+        // process all the available notifications
+        while (utils::pipeHasData(m_subscriptionData->subscription.fd())) {
+            std::lock_guard lock{m_subscriptionData->mutex};
+            m_subscriptionData->subscription.processEvent([&](const std::optional<libyang::DataNode>& notificationTree, const sysrepo::NotificationTimeStamp& time) {
+                (*m_signal)(rousette::restconf::as_restconf_notification(
+                    m_subscriptionData->subscription.getSession().getContext(),
+                    m_subscriptionData->dataFormat,
+                    *notificationTree,
+                    time));
+            });
+        }
+
+        // and wait for more
+        awaitNextNotification();
+    });
+}
+
+void DynamicSubscriptionHttpStream::activate()
+{
+    m_subscriptionData->clientConnected();
+    EventStream::activate();
+    awaitNextNotification();
 }
 }
