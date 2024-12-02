@@ -209,12 +209,17 @@ sysrepo::DynamicSubscription makeYangPushPeriodicSubscription(sysrepo::Session& 
 
 namespace rousette::restconf {
 
-DynamicSubscriptions::DynamicSubscriptions(const std::string& streamRootUri, const nghttp2::asio_http2::server::http2& server, const std::chrono::seconds inactivityTimeout)
+DynamicSubscriptions::DynamicSubscriptions(sysrepo::Session& session, const std::string& streamRootUri, const nghttp2::asio_http2::server::http2& server, const std::chrono::seconds inactivityTimeout)
     : m_restconfStreamUri(streamRootUri)
     , m_server(server)
     , m_uuidGenerator(boost::uuids::random_generator())
     , m_inactivityTimeout(inactivityTimeout)
 {
+    m_notificationStreamListSub = session.onOperGet(
+        "ietf-subscribed-notifications",
+        sysrepo::subscribedNotificationsStreams,
+        "/ietf-subscribed-notifications:streams",
+        sysrepo::SubscribeOptions::OperMerge);
 }
 
 DynamicSubscriptions::~DynamicSubscriptions() = default;
