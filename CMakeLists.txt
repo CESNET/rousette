@@ -111,6 +111,7 @@ target_link_libraries(rousette-auth PUBLIC spdlog::spdlog PkgConfig::SYSREPO-CPP
 add_library(rousette-restconf STATIC
     src/restconf/NotificationStream.cpp
     src/restconf/Server.cpp
+    src/restconf/SubscribedNotifications.cpp
     src/restconf/YangSchemaLocations.cpp
     src/restconf/uri.cpp
     src/restconf/utils/dataformat.cpp
@@ -145,6 +146,13 @@ install(FILES
     ${CMAKE_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang
     ${CMAKE_SOURCE_DIR}/yang/ietf-restconf-monitoring@2017-01-26.yang
     ${CMAKE_SOURCE_DIR}/yang/ietf-yang-patch@2017-02-22.yang
+    ${CMAKE_SOURCE_DIR}/yang/iana-if-type@2014-05-08.yang
+    ${CMAKE_SOURCE_DIR}/yang/ietf-interfaces@2018-02-20.yang
+    ${CMAKE_SOURCE_DIR}/yang/ietf-ip@2018-02-22.yang
+    ${CMAKE_SOURCE_DIR}/yang/ietf-network-instance@2019-01-21.yang
+    ${CMAKE_SOURCE_DIR}/yang/ietf-restconf-subscribed-notifications@2019-11-17.yang
+    ${CMAKE_SOURCE_DIR}/yang/ietf-subscribed-notifications@2019-09-09.yang
+    ${CMAKE_SOURCE_DIR}/yang/ietf-yang-push@2019-09-09.yang
     DESTINATION ${CMAKE_INSTALL_PREFIX}/share/yang/modules/rousette)
 
 include(CTest)
@@ -204,6 +212,13 @@ if(BUILD_TESTING)
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf-monitoring@2017-01-26.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-yang-patch@2017-02-22.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/iana-if-type@2014-05-08.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-interfaces@2018-02-20.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-ip@2018-02-22.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-network-instance@2019-01-21.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-subscribed-notifications@2019-09-09.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf-subscribed-notifications@2019-11-17.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-yang-push@2019-09-09.yang --enable-feature on-change
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang --enable-feature f1
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-delete.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-augment.yang
@@ -218,6 +233,7 @@ if(BUILD_TESTING)
     rousette_test(NAME restconf-notifications LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
     rousette_test(NAME restconf-plain-patch LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
     rousette_test(NAME restconf-yang-patch LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
+    rousette_test(NAME restconf-yang-push LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM)
     set(nested-models
         ${common-models}
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/root-mod.yang)
