@@ -650,6 +650,8 @@ RestconfStreamRequest asRestconfStreamRequest(const std::string& httpMethod, con
         type = RestconfStreamRequest::Type::NetconfNotificationXML;
     } else if (uriPath == netconfStreamRoot + "JSON"s) {
         type = RestconfStreamRequest::Type::NetconfNotificationJSON;
+    } else if (uriPath == "/streams/subscribed/1"s) {
+        type = RestconfStreamRequest::Type::SubscribedNotification;
     } else {
         throw ErrorResponse(404, "application", "invalid-value", "Invalid stream");
     }
