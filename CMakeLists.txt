@@ -157,8 +157,8 @@ if(BUILD_TESTING)
 
     add_library(DoctestIntegration STATIC
         tests/aux-utils.cpp
-        tests/datastoreUtils.cpp
         tests/doctest_integration.cpp
+        tests/eventWatchers.cpp
         tests/trompeloeil_doctest.h
         tests/wait-a-bit-longer.cpp
         )

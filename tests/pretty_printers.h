@@ -13,7 +13,7 @@
 #include <optional>
 #include <sstream>
 #include <trompeloeil.hpp>
-#include "datastoreUtils.h"
+#include "eventWatchers.h"
 #include "restconf/uri.h"
 #include "restconf/uri_impl.h"
 
