@@ -6,6 +6,7 @@
 
 #pragma once
 #include <boost/optional.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/variant.hpp>
 #include <libyang-cpp/Module.hpp>
 #include <libyang-cpp/SchemaNode.hpp>
@@ -16,6 +17,7 @@
 #include <string>
 #include <sysrepo-cpp/Enum.hpp>
 #include <variant>
+#include "restconf/NotificationStream.h"
 
 namespace libyang {
 class Context;
@@ -203,7 +205,16 @@ struct RestconfStreamRequest {
 
         NetconfStream();
         NetconfStream(const libyang::DataFormat& encoding);
-    } type;
+    };
+
+    struct SubscribedStream {
+        boost::uuids::uuid uuid;
+
+        SubscribedStream();
+        SubscribedStream(const boost::uuids::uuid& uuid);
+    };
+
+    std::variant<NetconfStream, SubscribedStream> type;
     queryParams::QueryParams queryParams;
 };
 

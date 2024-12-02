@@ -51,5 +51,16 @@ private:
     size_t send_chunk(uint8_t* destination, std::size_t len, uint32_t* data_flags);
     ssize_t process(uint8_t* destination, std::size_t len, uint32_t* data_flags);
     void enqueue(const std::string& what);
+
+    std::function<void()> onTerminationCb;
+    std::function<void()> onClientDisconnectedCb;
+
+protected:
+    void setOnTerminationCb(std::function<void()> cb) {
+        onTerminationCb = std::move(cb);
+    }
+    void setOnClientDisconnectedCb(std::function<void()> cb) {
+        onClientDisconnectedCb = std::move(cb);
+    }
 };
 }
