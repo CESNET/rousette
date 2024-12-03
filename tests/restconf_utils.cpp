@@ -13,6 +13,12 @@ using namespace std::string_literals;
 namespace ng = nghttp2::asio_http2;
 namespace ng_client = ng::client;
 
+namespace {
+std::string serverAddressAndPort(const std::string& server_address, const std::string& server_port) {
+    return "http://["s + server_address + "]" + ":" + server_port;
+}
+}
+
 Response::Response(int statusCode, const Response::Headers& headers, const std::string& data)
     : Response(statusCode, transformHeaders(headers), data)
 {
@@ -75,8 +81,7 @@ Response clientRequest(const std::string& server_address,
             reqHeaders.insert({name, {value, false}});
         }
 
-        const auto server_address_and_port = std::string("http://[") + server_address + "]" + ":" + server_port;
-        auto req = client->submit(ec, method, server_address_and_port + uri, data, reqHeaders);
+        auto req = client->submit(ec, method, serverAddressAndPort(server_address, server_port) + uri, data, reqHeaders);
         req->on_response([&](const ng_client::response& res) {
             res.on_data([&oss](const uint8_t* data, std::size_t len) {
                 oss.write(reinterpret_cast<const char*>(data), len);
