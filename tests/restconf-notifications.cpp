@@ -21,11 +21,11 @@ static const auto SERVER_PORT = "10088";
 
 using namespace std::chrono_literals;
 
-struct NotificationWatcher {
+struct RestconfNotificationWatcher {
     libyang::Context ctx;
     libyang::DataFormat dataFormat;
 
-    NotificationWatcher(const libyang::Context& ctx)
+    RestconfNotificationWatcher(const libyang::Context& ctx)
         : ctx(ctx)
         , dataFormat(libyang::DataFormat::JSON)
     {
@@ -62,7 +62,7 @@ struct SSEClient {
     SSEClient(
         boost::asio::io_service& io,
         std::latch& requestSent,
-        const NotificationWatcher& notification,
+        const RestconfNotificationWatcher& notification,
         const std::string& uri,
         const std::map<std::string, std::string>& headers,
         const boost::posix_time::seconds silenceTimeout = boost::posix_time::seconds(1)) // test code; the server should respond "soon"
@@ -186,7 +186,7 @@ TEST_CASE("NETCONF notification streams")
         R"({"example:tlc":{"list":[{"name":"k1","notif":{"message":"nested"}}]}})",
     };
 
-    NotificationWatcher netconfWatcher(srConn.sessionStart().getContext());
+    RestconfNotificationWatcher netconfWatcher(srConn.sessionStart().getContext());
 
     SECTION("NETCONF streams")
     {
