@@ -7,6 +7,7 @@
 
 #include "trompeloeil_doctest.h"
 static const auto SERVER_PORT = "10088";
+#include <latch>
 #include <libyang-cpp/Time.hpp>
 #include <nghttp2/asio_http2.h>
 #include <spdlog/spdlog.h>
@@ -119,8 +120,7 @@ TEST_CASE("NETCONF notification streams")
             auto notifSession = sysrepo::Connection{}.sessionStart();
             auto ctx = notifSession.getContext();
 
-            // wait until the client sends its HTTP request
-            requestSent.wait();
+            WAIT_UNTIL_SSE_CLIENT_REQUESTS;
 
             SEND_NOTIFICATION(notificationsJSON[0]);
             SEND_NOTIFICATION(notificationsJSON[1]);
@@ -239,7 +239,7 @@ TEST_CASE("NETCONF notification streams")
                     SEND_NOTIFICATION(notificationsJSON[3]);
                     SEND_NOTIFICATION(notificationsJSON[4]);
                     oldNotificationsDone.count_down();
-                    requestSent.wait();
+                    WAIT_UNTIL_SSE_CLIENT_REQUESTS;
 
                     waitForCompletionAndBitMore(seqMod1);
                     waitForCompletionAndBitMore(seqMod2);
@@ -256,7 +256,7 @@ TEST_CASE("NETCONF notification streams")
                     SEND_NOTIFICATION(notificationsJSON[1]);
 
                     oldNotificationsDone.count_down();
-                    requestSent.wait();
+                    WAIT_UNTIL_SSE_CLIENT_REQUESTS;
 
                     SEND_NOTIFICATION(notificationsJSON[2]);
                     SEND_NOTIFICATION(notificationsJSON[3]);
@@ -290,7 +290,7 @@ TEST_CASE("NETCONF notification streams")
                 SEND_NOTIFICATION(notificationsJSON[4]);
 
                 oldNotificationsDone.count_down();
-                requestSent.wait();
+                WAIT_UNTIL_SSE_CLIENT_REQUESTS;
                 waitForCompletionAndBitMore(seqMod1);
                 waitForCompletionAndBitMore(seqMod2);
             }));
