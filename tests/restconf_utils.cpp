@@ -164,7 +164,7 @@ SSEClient::SSEClient(
     boost::asio::io_service& io,
     const std::string& server_address,
     const std::string& server_port,
-    std::latch& requestSent,
+    std::binary_semaphore& requestSent,
     const RestconfNotificationWatcher& notification,
     const std::string& uri,
     const std::map<std::string, std::string>& headers,
@@ -192,7 +192,7 @@ SSEClient::SSEClient(
 
         auto req = client->submit(ec, "GET", serverAddressAndPort(server_address, server_port) + uri, "", reqHeaders);
         req->on_response([&, silenceTimeout](const ng_client::response& res) {
-            requestSent.count_down();
+            requestSent.release();
             res.on_data([&, silenceTimeout](const uint8_t* data, std::size_t len) {
                 // not a production-ready code. In real-life condition the data received in one callback might probably be incomplete
                 for (const auto& event : parseEvents(std::string(reinterpret_cast<const char*>(data), len))) {
