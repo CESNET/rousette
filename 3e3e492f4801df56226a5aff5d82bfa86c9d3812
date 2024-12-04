@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5ece17a3_b6702fe9",
+        "filename": "tests/restconf_utils.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-12-04T15:14:26Z",
+      "side": 1,
+      "message": "I RTFM-ed a bit, and read that the try_acquire() function is prone to an a rare phenomenon where it would spuriously say \"nope\" when there *is*, in fact, some state to acquire. However, there\u0027s no word on that for `try_acquire_for`, so let\u0027s hope for the best.",
+      "range": {
+        "startLine": 117,
+        "startChar": 51,
+        "endLine": 117,
+        "endChar": 66
+      },
+      "revId": "3e3e492f4801df56226a5aff5d82bfa86c9d3812",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
