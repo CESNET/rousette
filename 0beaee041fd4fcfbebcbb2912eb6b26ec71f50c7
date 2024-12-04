@@ -16,6 +16,24 @@
       "message": "on a quick glance -- if this was still in the header, this change would not be required. Is it worth reverting this small part of this change? (I\u0027m not insisting on changing the code, I only want your reply here)",
       "revId": "0beaee041fd4fcfbebcbb2912eb6b26ec71f50c7",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7b69c9bc_972b8726",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-12-04T10:39:01Z",
+      "side": 1,
+      "message": "my bad -- the port is going to vary between different TUs, so this cannot really be a macro",
+      "parentUuid": "a167e3b0_b88fe665",
+      "revId": "0beaee041fd4fcfbebcbb2912eb6b26ec71f50c7",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
