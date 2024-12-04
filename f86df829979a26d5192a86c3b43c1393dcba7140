@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2445e91b_5a2c630b",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-12-04T09:39:25Z",
+      "side": 1,
+      "message": "I\u0027m confused by the CR-1 from you.\n\nI\u0027m assuming that you want to distinguish \"a notification sent via the 8040 channel\" from \"a notification sent via YANG push\". If that\u0027s the case, please put that into the commit message, otherwise I don\u0027t really care.",
+      "revId": "f86df829979a26d5192a86c3b43c1393dcba7140",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
