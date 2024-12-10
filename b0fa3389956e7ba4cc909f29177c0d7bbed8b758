@@ -34,6 +34,24 @@
       "parentUuid": "ecc81031_c6e78315",
       "revId": "b0fa3389956e7ba4cc909f29177c0d7bbed8b758",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1513566c_7ae4ddd4",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-12-10T23:01:39Z",
+      "side": 1,
+      "message": "Awesome -- and we\u0027ll try harder to include links to upstream fixes into commit messages. Let\u0027s close this one.",
+      "parentUuid": "0069f890_2379aa14",
+      "revId": "b0fa3389956e7ba4cc909f29177c0d7bbed8b758",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
