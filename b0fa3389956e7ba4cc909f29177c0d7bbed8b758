@@ -16,6 +16,24 @@
       "message": "Any chance of cherry-picking https://github.com/buildroot/buildroot/commit/96f10934763edd7ca781de44c6a7cc9e915e4cff to your buildroot tree instead? If not, then we can talk about this, but since it\u0027s \"only Buildroot\", and it\u0027s also been fixed recently, I\u0027d prefer you to use the upstream fix unless it\u0027s a big, big hassle for you.",
       "revId": "b0fa3389956e7ba4cc909f29177c0d7bbed8b758",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0069f890_2379aa14",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000164
+      },
+      "writtenOn": "2024-12-10T22:36:59Z",
+      "side": 1,
+      "message": "I did not know about that. I agree about the approach to use the upstream fix, specially since it was so small.",
+      "parentUuid": "ecc81031_c6e78315",
+      "revId": "b0fa3389956e7ba4cc909f29177c0d7bbed8b758",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
