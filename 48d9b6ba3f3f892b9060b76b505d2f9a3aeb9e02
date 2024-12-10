@@ -16,6 +16,23 @@
       "message": "recheck",
       "revId": "48d9b6ba3f3f892b9060b76b505d2f9a3aeb9e02",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1aaf4daf_1a4a069d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-12-10T23:02:28Z",
+      "side": 1,
+      "message": "Just for the record, here\u0027s the upstream fix in Buildroot:\n\nhttps://github.com/buildroot/buildroot/commit/96f10934763edd7ca781de44c6a7cc9e915e4cff",
+      "revId": "48d9b6ba3f3f892b9060b76b505d2f9a3aeb9e02",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
