@@ -74,7 +74,7 @@ find_package(PkgConfig)
 pkg_check_modules(nghttp2 REQUIRED IMPORTED_TARGET libnghttp2_asio>=0.0.90 libnghttp2)
 find_package(Boost REQUIRED CONFIG COMPONENTS system thread)
 
-pkg_check_modules(SYSREPO-CPP REQUIRED IMPORTED_TARGET sysrepo-cpp>=3)
+pkg_check_modules(SYSREPO-CPP REQUIRED IMPORTED_TARGET sysrepo-cpp>=4)
 pkg_check_modules(LIBYANG-CPP REQUIRED IMPORTED_TARGET libyang-cpp>=3)
 pkg_check_modules(SYSTEMD IMPORTED_TARGET libsystemd)
 pkg_check_modules(PAM REQUIRED IMPORTED_TARGET pam)

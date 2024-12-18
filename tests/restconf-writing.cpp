@@ -772,7 +772,7 @@ TEST_CASE("writing data")
       {
         "error-type": "protocol",
         "error-tag": "invalid-value",
-        "error-message": "Session::applyChanges: Couldn't apply changes: SR_ERR_NOT_FOUND\u000A Node \"lst\" instance to insert next to not found. (SR_ERR_NOT_FOUND)\u000A Applying operation \"replace\" failed. (SR_ERR_NOT_FOUND)"
+        "error-message": "Session::applyChanges: Couldn't apply changes: SR_ERR_NOT_FOUND\u000A Node \"lst\" instance to insert next to not found. (SR_ERR_NOT_FOUND)"
       }
     ]
   }
@@ -855,7 +855,7 @@ TEST_CASE("writing data")
       {
         "error-type": "protocol",
         "error-tag": "invalid-value",
-        "error-message": "Session::applyChanges: Couldn't apply changes: SR_ERR_NOT_FOUND\u000A Node \"ll\" instance to insert next to not found. (SR_ERR_NOT_FOUND)\u000A Applying operation \"replace\" failed. (SR_ERR_NOT_FOUND)"
+        "error-message": "Session::applyChanges: Couldn't apply changes: SR_ERR_NOT_FOUND\u000A Node \"ll\" instance to insert next to not found. (SR_ERR_NOT_FOUND)"
       }
     ]
   }
@@ -1560,7 +1560,7 @@ TEST_CASE("writing data")
       {
         "error-type": "protocol",
         "error-tag": "invalid-value",
-        "error-message": "Session::applyChanges: Couldn't apply changes: SR_ERR_NOT_FOUND\u000A Node \"lst\" instance to insert next to not found. (SR_ERR_NOT_FOUND)\u000A Applying operation \"create\" failed. (SR_ERR_NOT_FOUND)"
+        "error-message": "Session::applyChanges: Couldn't apply changes: SR_ERR_NOT_FOUND\u000A Node \"lst\" instance to insert next to not found. (SR_ERR_NOT_FOUND)"
       }
     ]
   }
@@ -1626,7 +1626,7 @@ TEST_CASE("writing data")
       {
         "error-type": "protocol",
         "error-tag": "invalid-value",
-        "error-message": "Session::applyChanges: Couldn't apply changes: SR_ERR_NOT_FOUND\u000A Node \"ll\" instance to insert next to not found. (SR_ERR_NOT_FOUND)\u000A Applying operation \"create\" failed. (SR_ERR_NOT_FOUND)"
+        "error-message": "Session::applyChanges: Couldn't apply changes: SR_ERR_NOT_FOUND\u000A Node \"ll\" instance to insert next to not found. (SR_ERR_NOT_FOUND)"
       }
     ]
   }
