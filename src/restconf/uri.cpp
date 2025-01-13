@@ -57,6 +57,13 @@ const auto resources = x3::rule<class resources, URIPath>{"resources"} =
     ((x3::lit("/") | x3::eps) /* /restconf/ and /restconf */ >> x3::attr(URIPrefix{URIPrefix::Type::RestconfRoot}) >> x3::attr(std::vector<PathSegment>{}));
 const auto uriGrammar = x3::rule<class grammar, URIPath>{"grammar"} = x3::lit("/restconf") >> resources;
 
+
+const auto netconfStream = x3::rule<class resources, RestconfStreamRequest::NetconfNotification>{"netconfStream"} =
+    x3::lit("/NETCONF") >>
+    ((x3::lit("/XML") >> x3::attr(RestconfStreamRequest::NetconfNotification::XML)) |
+     (x3::lit("/JSON") >> x3::attr(RestconfStreamRequest::NetconfNotification::JSON)));
+const auto streamUriGrammar = x3::rule<class grammar, RestconfStreamRequest::NetconfNotification>{"streamsGrammar"} = x3::lit("/streams") >> netconfStream;
+
 // clang-format on
 }
 
@@ -191,6 +198,17 @@ std::optional<queryParams::QueryParams> parseQueryParams(const std::string& quer
     std::optional<queryParams::QueryParams> ret;
 
     if (!x3::parse(std::begin(queryString), std::end(queryString), queryParamGrammar >> x3::eoi, ret)) {
+        return std::nullopt;
+    }
+
+    return ret;
+}
+
+std::optional<RestconfStreamRequest::NetconfNotification> parseStreamUri(const std::string& queryString)
+{
+    std::optional<RestconfStreamRequest::NetconfNotification> ret;
+
+    if (!x3::parse(std::begin(queryString), std::end(queryString), streamUriGrammar >> x3::eoi, ret)) {
         return std::nullopt;
     }
 
@@ -639,18 +657,12 @@ std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> asYangMod
 
 RestconfStreamRequest asRestconfStreamRequest(const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString)
 {
-    static const auto netconfStreamRoot = "/streams/NETCONF/";
-    RestconfStreamRequest::Type type;
-
     if (httpMethod != "GET" && httpMethod != "HEAD") {
         throw ErrorResponse(405, "application", "operation-not-supported", "Method not allowed.");
     }
 
-    if (uriPath == netconfStreamRoot + "XML"s) {
-        type = RestconfStreamRequest::Type::NetconfNotificationXML;
-    } else if (uriPath == netconfStreamRoot + "JSON"s) {
-        type = RestconfStreamRequest::Type::NetconfNotificationJSON;
-    } else {
+    auto type = impl::parseStreamUri(uriPath);
+    if (!type) {
         throw ErrorResponse(404, "application", "invalid-value", "Invalid stream");
     }
 
@@ -661,7 +673,7 @@ RestconfStreamRequest asRestconfStreamRequest(const std::string& httpMethod, con
 
     validateQueryParametersForStream(*queryParameters);
 
-    return {type, *queryParameters};
+    return {*type, *queryParameters};
 }
 
 /** @brief Returns a set of allowed HTTP methods for given URI. Usable for the 'allow' header */

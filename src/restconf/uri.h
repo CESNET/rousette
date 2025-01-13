@@ -197,11 +197,11 @@ struct RestconfRequest {
 };
 
 struct RestconfStreamRequest {
-    enum class Type {
-        NetconfNotificationJSON,
-        NetconfNotificationXML,
+    enum class NetconfNotification {
+        JSON,
+        XML,
     };
-    Type type;
+    NetconfNotification type;
     queryParams::QueryParams queryParams;
 };
 

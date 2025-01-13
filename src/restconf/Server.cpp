@@ -891,10 +891,10 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             auto streamRequest = asRestconfStreamRequest(req.method(), req.uri().path, req.uri().raw_query);
 
             switch(streamRequest.type) {
-            case RestconfStreamRequest::Type::NetconfNotificationJSON:
+            case RestconfStreamRequest::NetconfNotification::JSON:
                 dataFormat = libyang::DataFormat::JSON;
                 break;
-            case RestconfStreamRequest::Type::NetconfNotificationXML:
+            case RestconfStreamRequest::NetconfNotification::XML:
                 dataFormat = libyang::DataFormat::XML;
                 break;
             default:
