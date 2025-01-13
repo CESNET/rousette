@@ -197,11 +197,12 @@ struct RestconfRequest {
 };
 
 struct RestconfStreamRequest {
-    enum class Type {
-        NetconfNotificationJSON,
-        NetconfNotificationXML,
-    };
-    Type type;
+    struct NetconfStream {
+        libyang::DataFormat encoding;
+
+        NetconfStream();
+        NetconfStream(const libyang::DataFormat& encoding);
+    } type;
     queryParams::QueryParams queryParams;
 };
 

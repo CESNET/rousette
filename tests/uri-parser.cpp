@@ -1072,13 +1072,13 @@ TEST_CASE("URI path parser")
 
         {
             auto [type, queryParams] = asRestconfStreamRequest("GET", "/streams/NETCONF/XML", "");
-            REQUIRE(type == RestconfStreamRequest::Type::NetconfNotificationXML);
+            REQUIRE(type.encoding == libyang::DataFormat::XML);
             REQUIRE(queryParams.empty());
         }
 
         {
             auto [type, queryParams] = asRestconfStreamRequest("GET", "/streams/NETCONF/JSON", "");
-            REQUIRE(type == RestconfStreamRequest::Type::NetconfNotificationJSON);
+            REQUIRE(type.encoding == libyang::DataFormat::JSON);
             REQUIRE(queryParams.empty());
         }
 
