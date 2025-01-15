@@ -5,6 +5,7 @@
  *
  */
 
+#pragma once
 #include <optional>
 #include <sysrepo-cpp/Session.hpp>
 #include <sysrepo-cpp/Subscription.hpp>
