@@ -50,6 +50,36 @@ bool canBeSubscribed(const libyang::Module& mod)
 {
     return mod.implemented() && mod.name() != "sysrepo";
 }
+
+struct SysrepoReplayInfo {
+    bool enabled;
+    std::optional<sysrepo::NotificationTimeStamp> earliestNotification;
+};
+
+SysrepoReplayInfo sysrepoReplayInfo(sysrepo::Session& session)
+{
+    decltype(sysrepo::ModuleReplaySupport::earliestNotification) globalEarliestNotification;
+    bool replayEnabled = false;
+
+    for (const auto& mod : session.getContext().modules()) {
+        if (!canBeSubscribed(mod)) {
+            continue;
+        }
+
+        auto replay = session.getConnection().getModuleReplaySupport(mod.name());
+        replayEnabled |= replay.enabled;
+
+        if (replay.earliestNotification) {
+            if (!globalEarliestNotification) {
+                globalEarliestNotification = replay.earliestNotification;
+            } else {
+                globalEarliestNotification = std::min(*replay.earliestNotification, *globalEarliestNotification);
+            }
+        }
+    }
+
+    return {replayEnabled, globalEarliestNotification};
+}
 }
 
 namespace rousette::restconf {
@@ -114,27 +144,8 @@ void NotificationStream::activate()
 /** @brief Creates and fills ietf-restconf-monitoring:restconf-state/stream. To be called in oper callback. */
 void notificationStreamList(sysrepo::Session& session, std::optional<libyang::DataNode>& parent, const std::string& streamsPrefix)
 {
+    const auto replayInfo = sysrepoReplayInfo(session);
     static const auto prefix = "/ietf-restconf-monitoring:restconf-state/streams/stream[name='NETCONF']"s;
-
-    decltype(sysrepo::ModuleReplaySupport::earliestNotification) globalEarliestNotification;
-    bool replayEnabled = false;
-
-    for (const auto& mod : session.getContext().modules()) {
-        if (!canBeSubscribed(mod)) {
-            continue;
-        }
-
-        auto replay = session.getConnection().getModuleReplaySupport(mod.name());
-        replayEnabled |= replay.enabled;
-
-        if (replay.earliestNotification) {
-            if (!globalEarliestNotification) {
-                globalEarliestNotification = replay.earliestNotification;
-            } else {
-                globalEarliestNotification = std::min(*replay.earliestNotification, *globalEarliestNotification);
-            }
-        }
-    }
 
     if (!parent) {
         parent = session.getContext().newPath(prefix + "/description", "Default NETCONF notification stream");
@@ -144,11 +155,11 @@ void notificationStreamList(sysrepo::Session& session, std::optional<libyang::Da
     parent->newPath(prefix + "/access[encoding='xml']/location", streamsPrefix + "NETCONF/XML");
     parent->newPath(prefix + "/access[encoding='json']/location", streamsPrefix + "NETCONF/JSON");
 
-    if (replayEnabled) {
+    if (replayInfo.enabled) {
         parent->newPath(prefix + "/replay-support", "true");
 
-        if (globalEarliestNotification) {
-            parent->newPath(prefix + "/replay-log-creation-time", libyang::yangTimeFormat(*globalEarliestNotification, libyang::TimezoneInterpretation::Local));
+        if (replayInfo.earliestNotification) {
+            parent->newPath(prefix + "/replay-log-creation-time", libyang::yangTimeFormat(*replayInfo.earliestNotification, libyang::TimezoneInterpretation::Local));
         }
     }
 }
