@@ -180,6 +180,7 @@ struct RestconfRequest {
         CreateOrReplaceThisNode, ///< PUT on a data resource
         DeleteNode, ///< DELETE on a data resource
         Execute, ///< POST on a operation resource (Execute an RPC or an action)
+        ExecuteInternal, ///< POST on a operation resource (RPC or action) that is not sent to sysrepo but handled in roustte directly
         CreateChildren, ///< POST on a data resource
         YangLibraryVersion, ///< Report ietf-yang-library version
         OptionsQuery, ///< Request for allowed HTTP methods for a path
