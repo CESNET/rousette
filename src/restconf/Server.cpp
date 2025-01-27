@@ -430,6 +430,12 @@ libyang::CreatedNodes createEditForPutAndPatch(libyang::Context& ctx, const std:
     return {editNode, replacementNode};
 }
 
+libyang::DataNode processInternalRPC(sysrepo::Session&, const libyang::DataNode&)
+{
+    // TODO: Implement internal RPCs
+    throw ErrorResponse(501, "application", "operation-not-supported", "Internal RPCs are not yet supported.");
+}
+
 void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx, const std::chrono::milliseconds timeout)
 {
     requestCtx->sess.switchDatastore(sysrepo::Datastore::Operational);
@@ -460,15 +466,20 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx, const std::c
         rpcNode->parseOp(requestCtx->payload, *requestCtx->dataFormat.request, libyang::OperationType::RpcRestconf);
     }
 
-    auto rpcReply = requestCtx->sess.sendRPC(*rpcNode, timeout);
+    std::optional<libyang::DataNode> rpcReply;
+    if (requestCtx->restconfRequest.type == RestconfRequest::Type::Execute) {
+        rpcReply = requestCtx->sess.sendRPC(*rpcNode, timeout);
+    } else if (requestCtx->restconfRequest.type == RestconfRequest::Type::ExecuteInternal) {
+        rpcReply = processInternalRPC(requestCtx->sess, *rpcNode);
+    }
 
-    if (rpcReply.immediateChildren().empty()) {
+    if (rpcReply->immediateChildren().empty()) {
         requestCtx->res.write_head(204, {CORS});
         requestCtx->res.end();
         return;
     }
 
-    auto responseNode = rpcReply.child();
+    auto responseNode = rpcReply->child();
     responseNode->unlinkWithSiblings();
 
     auto envelope = ctx.newOpaqueJSON(rpcNode->schema().module().name(), "output", std::nullopt);
@@ -823,6 +834,8 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
              {"ietf-netconf", "", {}},
              {"ietf-yang-library", "2019-01-04", {}},
              {"ietf-yang-patch", "2017-02-22", {}},
+             {"ietf-subscribed-notifications", "2019-09-09", {}},
+             {"ietf-restconf-subscribed-notifications", "2019-11-17", {}},
          }) {
         if (auto mod = conn.sessionStart().getContext().getModuleImplemented(module)) {
             for (const auto& feature : features) {
@@ -1109,7 +1122,8 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                     res.end();
                     break;
 
-                case RestconfRequest::Type::Execute: {
+                case RestconfRequest::Type::Execute:
+                case RestconfRequest::Type::ExecuteInternal: {
                     auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, restconfRequest);
 
                     req.on_data([requestCtx, timeout](const uint8_t* data, std::size_t length) {
