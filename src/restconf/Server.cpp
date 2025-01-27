@@ -817,14 +817,20 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
-    for (const auto& [module, version] : {
-             std::pair<std::string, std::string>{"ietf-restconf", "2017-01-26"},
-             {"ietf-restconf-monitoring", "2017-01-26"},
-             {"ietf-netconf", ""},
-             {"ietf-yang-library", "2019-01-04"},
-             {"ietf-yang-patch", "2017-02-22"},
-             }) {
-        if (!conn.sessionStart().getContext().getModuleImplemented(module)) {
+    for (const auto& [module, version, features] : {
+             std::tuple<std::string, std::string, std::vector<std::string>>{"ietf-restconf", "2017-01-26", {}},
+             {"ietf-restconf-monitoring", "2017-01-26", {}},
+             {"ietf-netconf", "", {}},
+             {"ietf-yang-library", "2019-01-04", {}},
+             {"ietf-yang-patch", "2017-02-22", {}},
+         }) {
+        if (auto mod = conn.sessionStart().getContext().getModuleImplemented(module)) {
+            for (const auto& feature : features) {
+                if (!mod->featureEnabled(feature)) {
+                    throw std::runtime_error("Module "s + module + "@" + version + " does not implement feature " + feature);
+                }
+            }
+        } else {
             throw std::runtime_error("Module "s + module + "@" + version + " is not implemented in sysrepo");
         }
     }
