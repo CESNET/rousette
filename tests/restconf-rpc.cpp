@@ -97,6 +97,10 @@ TEST_CASE("invoking actions and rpcs")
       "ietf-system:set-current-datetime": [null],
       "ietf-system:system-restart": [null],
       "ietf-system:system-shutdown": [null],
+      "ietf-subscribed-notifications:establish-subscription": [null],
+      "ietf-subscribed-notifications:modify-subscription": [null],
+      "ietf-subscribed-notifications:delete-subscription": [null],
+      "ietf-subscribed-notifications:kill-subscription": [null],
       "example:test-rpc": [null],
       "example:test-rpc-no-output": [null],
       "example:test-rpc-no-input": [null],
@@ -126,6 +130,10 @@ TEST_CASE("invoking actions and rpcs")
     <set-current-datetime xmlns="urn:ietf:params:xml:ns:yang:ietf-system"/>
     <system-restart xmlns="urn:ietf:params:xml:ns:yang:ietf-system"/>
     <system-shutdown xmlns="urn:ietf:params:xml:ns:yang:ietf-system"/>
+    <establish-subscription xmlns="urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications"/>
+    <modify-subscription xmlns="urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications"/>
+    <delete-subscription xmlns="urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications"/>
+    <kill-subscription xmlns="urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications"/>
     <test-rpc xmlns="http://example.tld/example"/>
     <test-rpc-no-output xmlns="http://example.tld/example"/>
     <test-rpc-no-input xmlns="http://example.tld/example"/>
