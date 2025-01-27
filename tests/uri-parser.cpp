@@ -63,6 +63,8 @@ TEST_CASE("URI path parser")
     auto ctx = libyang::Context{std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "tests" / "yang"};
     ctx.loadModule("example", std::nullopt, {"f1"});
     ctx.loadModule("example-augment");
+    ctx.setSearchDir(std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "yang");
+    ctx.loadModule("ietf-subscribed-notifications");
 
     SECTION("Valid paths")
     {
@@ -398,23 +400,32 @@ TEST_CASE("URI path parser")
             {
                 std::string uri;
                 std::string expectedPath;
+                RestconfRequest::Type expectedRequestType;
 
                 SECTION("RPC")
                 {
                     uri = "/restconf/operations/example:test-rpc";
                     expectedPath = "/example:test-rpc";
+                    expectedRequestType = RestconfRequest::Type::Execute;
                 }
                 SECTION("Action")
                 {
                     uri = "/restconf/data/example:tlc/list=hello-world/example-action";
                     expectedPath = "/example:tlc/list[name='hello-world']/example-action";
+                    expectedRequestType = RestconfRequest::Type::Execute;
+                }
+                SECTION("Internally handled RPC")
+                {
+                    uri = "/restconf/operations/ietf-subscribed-notifications:establish-subscription";
+                    expectedPath = "/ietf-subscribed-notifications:establish-subscription";
+                    expectedRequestType = RestconfRequest::Type::ExecuteInternal;
                 }
 
                 CAPTURE(uri);
                 auto [action, datastore, path, queryParams] = rousette::restconf::asRestconfRequest(ctx, "POST", uri);
                 REQUIRE(path == expectedPath);
                 REQUIRE(datastore == std::nullopt);
-                REQUIRE(action == RestconfRequest::Type::Execute);
+                REQUIRE(action == expectedRequestType);
                 REQUIRE(queryParams.empty());
             }
 
