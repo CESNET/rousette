@@ -555,6 +555,19 @@ std::vector<PathSegment> asPathSegments(const std::string& uriPath)
     return uri->segments;
 }
 
+/** @brief Checks if the RPC with this schema path should be handled internally by the RESTCONF server */
+constexpr bool isInternalRPCPath(const std::string& schemaPath)
+{
+    std::vector<std::string> arr{
+        "/ietf-subscribed-notifications:establish-subscription",
+        "/ietf-subscribed-notifications:modify-subscription",
+        "/ietf-subscribed-notifications:delete-subscription",
+        "/ietf-subscribed-notifications:kill-subscription",
+    };
+
+    return std::find(arr.begin(), arr.end(), schemaPath) != arr.end();
+}
+
 /** @brief Parse requested URL as a RESTCONF requested
  *
  * The URI path (i.e., a resource identifier) will be parsed into an action that is supposed to be performed,
@@ -601,7 +614,7 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
     } else if (httpMethod == "DELETE" && schemaNode) {
         type = RestconfRequest::Type::DeleteNode;
     } else if (httpMethod == "POST" && schemaNode && (schemaNode->nodeType() == libyang::NodeType::Action || schemaNode->nodeType() == libyang::NodeType::RPC)) {
-        type = RestconfRequest::Type::Execute;
+        type = isInternalRPCPath(schemaNode->path()) ? RestconfRequest::Type::ExecuteInternal : RestconfRequest::Type::Execute;
     } else if (httpMethod == "POST" && (uri->prefix.resourceType == impl::URIPrefix::Type::BasicRestconfData || uri->prefix.resourceType == impl::URIPrefix::Type::NMDADatastore)) {
         type = RestconfRequest::Type::CreateChildren;
     } else if (httpMethod == "PATCH") {
