@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ad8d8cb8_121b846b",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-01-29T20:31:29Z",
+      "side": 1,
+      "message": "(just a note to myself, this is used in https://gerrit.cesnet.cz/c/CzechLight/rousette/+/8096/9)",
+      "revId": "577e05e85e6d5998d53db8461165378e3155b724",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
