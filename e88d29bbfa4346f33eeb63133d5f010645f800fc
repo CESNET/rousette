@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f6cfb5b6_88925e4c",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 207,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-01-30T11:32:53Z",
+      "side": 1,
+      "message": "This should be uriPath",
+      "range": {
+        "startLine": 207,
+        "startChar": 86,
+        "endLine": 207,
+        "endChar": 97
+      },
+      "revId": "e88d29bbfa4346f33eeb63133d5f010645f800fc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
