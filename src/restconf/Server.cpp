@@ -462,13 +462,13 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx, const std::c
 
     auto rpcReply = requestCtx->sess.sendRPC(*rpcNode, timeout);
 
-    if (rpcReply.immediateChildren().empty()) {
+    if (!rpcReply || rpcReply->immediateChildren().empty()) {
         requestCtx->res.write_head(204, {CORS});
         requestCtx->res.end();
         return;
     }
 
-    auto responseNode = rpcReply.child();
+    auto responseNode = rpcReply->child();
     responseNode->unlinkWithSiblings();
 
     auto envelope = ctx.newOpaqueJSON(rpcNode->schema().module().name(), "output", std::nullopt);
