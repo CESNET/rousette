@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9039c390_d1341176",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-03-03T14:08:00Z",
+      "side": 1,
+      "message": "https://gerrit.cesnet.cz/c/CzechLight/rousette/+/8290",
+      "revId": "7ba62f779eb67756391ed852e810c5220ce7fe87",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
