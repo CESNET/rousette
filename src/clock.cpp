@@ -5,7 +5,6 @@
  *
 */
 
-#include <boost/asio/io_service.hpp>
 #include <boost/lexical_cast.hpp>
 #include <chrono>
 #include <nghttp2/asio_http2_server.h>

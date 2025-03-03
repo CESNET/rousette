@@ -71,8 +71,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 find_package(spdlog REQUIRED)
 find_package(date REQUIRED) # FIXME: Remove when we have STL with __cpp_lib_chrono >= 201907 (gcc 14)
 find_package(PkgConfig)
-pkg_check_modules(nghttp2 REQUIRED IMPORTED_TARGET libnghttp2_asio>=0.0.90 libnghttp2)
-find_package(Boost REQUIRED CONFIG COMPONENTS system thread)
+pkg_check_modules(nghttp2 REQUIRED IMPORTED_TARGET libnghttp2_asio>=0.0.90 libnghttp2) # To compile under boost 1.87 you have to patch nghttp2-asio using https://github.com/nghttp2/nghttp2-asio/issues/23
+find_package(Boost 1.66 REQUIRED CONFIG COMPONENTS system thread)
 
 pkg_check_modules(SYSREPO-CPP REQUIRED IMPORTED_TARGET sysrepo-cpp>=5)
 pkg_check_modules(LIBYANG-CPP REQUIRED IMPORTED_TARGET libyang-cpp>=3)

@@ -117,6 +117,6 @@ void EventStream::enqueue(const std::string& what)
     spdlog::trace("{}: new event, ∑ queue size = {}", peer, len);
     queue.push_back(buf);
     state = HasEvents;
-    res.io_service().post([&res = this->res]() { res.resume(); });
+    boost::asio::post(res.io_service(), [&res = this->res]() { res.resume(); });
 }
 }
