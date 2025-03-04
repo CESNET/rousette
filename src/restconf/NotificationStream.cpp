@@ -246,13 +246,18 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
         encoding = requestEncoding;
     }
 
+    std::optional<std::string> xpathFilter;
+    if (auto streamXPathFilterNode = rpcInput.findPath("stream-xpath-filter")) {
+        xpathFilter = streamXPathFilterNode->asTerm().valueStr();
+    }
+
     // TODO: We are not yet following the state machine from RFC8639 2.4.1, we are always in state "receiver active"
 
     // Generate a new UUID associated with the subscription. The UUID will be used as a part of the URI so that the URI is not predictable (RFC 8650, section 5)
     auto uuid = m_uuidGenerator();
 
     auto sub = session.subscribeNotifications(
-        std::nullopt /* TODO filter */,
+        xpathFilter,
         stream,
         stopTime,
         std::nullopt /* TODO replayStart */);
