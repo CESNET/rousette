@@ -223,6 +223,7 @@ if(BUILD_TESTING)
             --enable-feature encode-json
             --enable-feature xpath
             --enable-feature subtree
+            --enable-feature replay
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf-subscribed-notifications@2019-11-17.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang --enable-feature f1
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-delete.yang

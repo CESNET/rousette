@@ -932,7 +932,7 @@ Server::Server(
              {"ietf-netconf", "", {}},
              {"ietf-yang-library", "2019-01-04", {}},
              {"ietf-yang-patch", "2017-02-22", {}},
-             {"ietf-subscribed-notifications", "2019-09-09", {"encode-xml", "encode-json", "xpath", "subtree"}},
+             {"ietf-subscribed-notifications", "2019-09-09", {"encode-xml", "encode-json", "xpath", "subtree", "replay"}},
              {"ietf-restconf-subscribed-notifications", "2019-11-17", {}},
          }) {
         if (auto mod = m_monitoringSession.getContext().getModuleImplemented(module)) {
