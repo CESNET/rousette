@@ -50,7 +50,7 @@ libyang::DataFormat getEncoding(const libyang::DataNode& rpcInput, const libyang
     return requestEncoding;
 }
 
-sysrepo::DynamicSubscription makeStreamSubscription(sysrepo::Session& session, const libyang::DataNode& rpcInput)
+sysrepo::DynamicSubscription makeStreamSubscription(sysrepo::Session& session, const libyang::DataNode& rpcInput, libyang::DataNode& rpcOutput)
 {
     auto streamNode = rpcInput.findPath("stream");
 
@@ -73,11 +73,27 @@ sysrepo::DynamicSubscription makeStreamSubscription(sysrepo::Session& session, c
         filter = node->asAny();
     }
 
-    return session.subscribeNotifications(
+    std::optional<sysrepo::NotificationTimeStamp> replayStartTime;
+    if (auto node = rpcInput.findPath("replay-start-time")) {
+        replayStartTime = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(node->asTerm().valueStr());
+    }
+
+    auto sub = session.subscribeNotifications(
         filter,
         streamNode->asTerm().valueStr(),
         stopTime,
-        std::nullopt /* TODO replayStart */);
+        replayStartTime);
+
+    /* Node replay-start-time-revision should be set only if time was revised to be different than the requested start time,
+     * i.e. when the "replay-start-time" contains a value that is earlier than what a publisher's retained history.
+     * Then the actual publisher's revised start time MUST be set in the returned "replay-start-time-revision" object.
+     * (RFC 8639, 2.4.2.1)
+     * */
+    if (auto replayStartTimeRevision = sub.replayStartTime(); replayStartTimeRevision && replayStartTime) {
+        rpcOutput.newPath("replay-start-time-revision", libyang::yangTimeFormat(*replayStartTimeRevision, libyang::TimezoneInterpretation::Local), libyang::CreationOptions::Output);
+    }
+
+    return sub;
 }
 }
 
@@ -111,7 +127,7 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
     auto dataFormat = getEncoding(rpcInput, requestEncoding);
 
     try {
-        auto sub = makeStreamSubscription(session, rpcInput);
+        auto sub = makeStreamSubscription(session, rpcInput, rpcOutput);
 
         rpcOutput.newPath("id", std::to_string(sub.subscriptionId()), libyang::CreationOptions::Output);
         rpcOutput.newPath("ietf-restconf-subscribed-notifications:uri", m_restconfStreamUri + "subscribed/" + boost::uuids::to_string(uuid), libyang::CreationOptions::Output);
