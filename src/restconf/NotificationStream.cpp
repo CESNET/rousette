@@ -109,7 +109,7 @@ bool isFdClosed(const int fd)
     return poll(&fds, 1, 0) == 1 && fds.revents & POLLHUP;
 }
 
-sysrepo::DynamicSubscription subscribeNotificationStream(sysrepo::Session& session, const libyang::DataNode& rpcInput)
+sysrepo::DynamicSubscription subscribeNotificationStream(sysrepo::Session& session, const libyang::DataNode& rpcInput, libyang::DataNode& rpcOutput)
 {
     if (rpcInput.findPath("stream-filter-name")) {
         throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Stream filtering with predefined filters is not supported");
@@ -125,11 +125,22 @@ sysrepo::DynamicSubscription subscribeNotificationStream(sysrepo::Session& sessi
         xpathFilter = xpathFilterNode->asTerm().valueStr();
     }
 
-    return session.subscribeNotifications(
+    std::optional<sysrepo::NotificationTimeStamp> replayStartTime;
+    if (auto replayStartTimeNode = rpcInput.findPath("replay-start-time")) {
+        replayStartTime = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(replayStartTimeNode->asTerm().valueStr());
+    }
+
+    auto sub = session.subscribeNotifications(
         xpathFilter,
         rpcInput.findPath("stream")->asTerm().valueStr(),
         stopTime,
-        std::nullopt /* TODO replayStart */);
+        replayStartTime);
+
+    if (auto replayStartTimeRevision = sub.replayStartTime(); replayStartTimeRevision && replayStartTime /* revision should be sent only if time was revised to be different than the requested start time */) {
+        rpcOutput.newPath("replay-start-time-revision", libyang::yangTimeFormat(*replayStartTimeRevision, libyang::TimezoneInterpretation::Local), libyang::CreationOptions::Output);
+    }
+
+    return sub;
 }
 }
 
@@ -279,7 +290,7 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
         std::optional<sysrepo::DynamicSubscription> sub;
 
         if (rpcInput.findPath("stream")) {
-            sub = subscribeNotificationStream(session, rpcInput);
+            sub = subscribeNotificationStream(session, rpcInput, rpcOutput);
         } else {
             throw ErrorResponse(400, "application", "missing-attribute", "stream attribute is required");
         }
