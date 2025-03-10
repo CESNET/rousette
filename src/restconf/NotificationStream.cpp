@@ -109,7 +109,7 @@ bool isFdClosed(const int fd)
     return poll(&fds, 1, 0) == 1 && fds.revents & POLLHUP;
 }
 
-sysrepo::DynamicSubscription subscribeNotificationStream(sysrepo::Session& session, const libyang::DataNode& rpcInput)
+sysrepo::DynamicSubscription subscribeNotificationStream(sysrepo::Session& session, const libyang::DataNode& rpcInput, libyang::DataNode& rpcOutput)
 {
     if (!rpcInput.findPath("stream")) {
         throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Stream is required");
@@ -131,11 +131,22 @@ sysrepo::DynamicSubscription subscribeNotificationStream(sysrepo::Session& sessi
         filter = node->asAny();
     }
 
-    return session.subscribeNotifications(
+    std::optional<sysrepo::NotificationTimeStamp> replayStartTime;
+    if (auto node = rpcInput.findPath("replay-start-time")) {
+        replayStartTime = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(node->asTerm().valueStr());
+    }
+
+    auto sub = session.subscribeNotifications(
         filter,
         rpcInput.findPath("stream")->asTerm().valueStr(),
         stopTime,
-        std::nullopt /* TODO replayStart */);
+        replayStartTime);
+
+    if (auto replayStartTimeRevision = sub.replayStartTime(); replayStartTimeRevision && replayStartTime /* revision should be sent only if time was revised to be different than the requested start time */) {
+        rpcOutput.newPath("replay-start-time-revision", libyang::yangTimeFormat(*replayStartTimeRevision, libyang::TimezoneInterpretation::Local), libyang::CreationOptions::Output);
+    }
+
+    return sub;
 }
 }
 
@@ -285,7 +296,7 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
         std::optional<sysrepo::DynamicSubscription> sub;
 
         if (rpcInput.findPath("stream")) {
-            sub = subscribeNotificationStream(session, rpcInput);
+            sub = subscribeNotificationStream(session, rpcInput, rpcOutput);
         } else {
             throw ErrorResponse(400, "application", "missing-attribute", "stream attribute is required");
         }

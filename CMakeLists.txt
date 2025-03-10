@@ -215,7 +215,7 @@ if(BUILD_TESTING)
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-interfaces@2018-02-20.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-ip@2018-02-22.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-network-instance@2019-01-21.yang
-        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-subscribed-notifications@2019-09-09.yang -e replay -e encode-xml -e encode-json -e xpath -e subtree
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-subscribed-notifications@2019-09-09.yang -e replay -e encode-xml -e encode-json -e xpath -e subtree -e replay
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf-subscribed-notifications@2019-11-17.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang --enable-feature f1
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-delete.yang
