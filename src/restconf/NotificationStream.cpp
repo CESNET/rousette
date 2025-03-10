@@ -251,6 +251,24 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
         xpathFilter = streamXPathFilterNode->asTerm().valueStr();
     }
 
+    std::optional<sysrepo::NotificationTimeStamp> replayStartTime;
+    if (auto replayStartTimeNode = rpcInput.findPath("replay-start-time")) {
+        replayStartTime = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(replayStartTimeNode->asTerm().valueStr());
+        const auto replayInfo = sysrepoReplayInfo(session);
+
+        auto now = std::chrono::system_clock::now();
+        if (replayStartTime >= now) {
+            throw ErrorResponse(400,
+                                "application",
+                                "invalid-attribute",
+                                "replay-start-time must be in the past (replay-start-time='" + replayStartTimeNode->asTerm().valueStr() + "', now='"
+                                    + libyang::yangTimeFormat(now, libyang::TimezoneInterpretation::Local) + "')");
+        } else if (!replayInfo.enabled) {
+            // it seems that RFC 8639 (sec 2.4.2.1) does not state what should happen if replay is not enabled
+            throw ErrorResponse(400, "application", "invalid-attribute", "Replay is not enabled for this stream");
+        }
+    }
+
     // TODO: We are not yet following the state machine from RFC8639 2.4.1, we are always in state "receiver active"
 
     // Generate a new UUID associated with the subscription. The UUID will be used as a part of the URI so that the URI is not predictable (RFC 8650, section 5)
@@ -260,10 +278,13 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
         xpathFilter,
         stream,
         stopTime,
-        std::nullopt /* TODO replayStart */);
+        replayStartTime);
 
     rpcOutput.newPath("id", std::to_string(sub.subscriptionId()), libyang::CreationOptions::Output);
     rpcOutput.newPath("ietf-restconf-subscribed-notifications:uri", "/streams/subscribed/" + boost::uuids::to_string(uuid), libyang::CreationOptions::Output);
+    if (auto replayStartTimeRevision = sub.replayStartTime(); replayStartTimeRevision && replayStartTime /* revision should be sent only if time was revised to be different than the requested start time */) {
+        rpcOutput.newPath("replay-start-time-revision", libyang::yangTimeFormat(*replayStartTimeRevision, libyang::TimezoneInterpretation::Local), libyang::CreationOptions::Output);
+    }
 
     std::unique_lock lock(m_mutex);
     m_subscriptions[uuid] = std::make_shared<SubscriptionData>(std::move(sub), encoding);
