@@ -32,7 +32,7 @@ TEST_CASE("default handling")
     auto server = rousette::restconf::Server{srConn, SERVER_ADDRESS, SERVER_PORT};
 
     // default value of /example:a/b/c/enabled is implicitly set so it should not be printed
-    REQUIRE(get(RESTCONF_DATA_ROOT "/example:a", {}) == Response{200, jsonHeaders, R"({
+    REQUIRE(get(RESTCONF_DATA_ROOT "/example:a/b/c", {}) == Response{200, jsonHeaders, R"({
 
 }
 )"});
@@ -72,7 +72,7 @@ TEST_CASE("default handling")
 )"});
 
     // default value is explicitly set so it should be printed
-    REQUIRE(get(RESTCONF_DATA_ROOT "/example:a", {}) == Response{200, jsonHeaders, R"({
+    REQUIRE(get(RESTCONF_DATA_ROOT "/example:a/b/c", {}) == Response{200, jsonHeaders, R"({
   "example:a": {
     "b": {
       "c": {
@@ -86,8 +86,8 @@ TEST_CASE("default handling")
     // RFC 6243, sec. 2.3.3: A valid 'delete' operation attribute for a data node that has been set by a client to its schema default value MUST succeed.
     REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:a/b/c/enabled", {AUTH_ROOT}) == Response{204, noContentTypeHeaders, ""});
 
-    // default value is implicitly set so it should be printed
-    REQUIRE(get(RESTCONF_DATA_ROOT "/example:a", {}) == Response{200, jsonHeaders, R"({
+    // default value is only there implicitly, so it should *not* be printed
+    REQUIRE(get(RESTCONF_DATA_ROOT "/example:a/b/c", {}) == Response{200, jsonHeaders, R"({
 
 }
 )"});
