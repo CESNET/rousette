@@ -879,7 +879,7 @@ TEST_CASE("reading data")
 
     SECTION("Implicit node with default value")
     {
-        // RFC 4080, 3.5.4: If target of the query is implicitly created node with default value, ignore basic mode
+        // RFC 8040, 3.5.4: If target of the query is implicitly created node with default value, ignore basic mode
         REQUIRE(get(RESTCONF_DATA_ROOT "/example:a/b/c/enabled", {}) == Response{200, jsonHeaders, R"({
   "example:a": {
     "b": {
