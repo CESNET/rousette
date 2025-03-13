@@ -244,6 +244,13 @@ TEST_CASE("reading data")
 
         REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/radius?depth=1", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
   "ietf-system:system": {
+    "radius": {}
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/radius?depth=2", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
+  "ietf-system:system": {
     "radius": {
       "server": [
         {
@@ -1035,6 +1042,25 @@ TEST_CASE("reading data")
             "first": "1",
             "second": 2,
             "third": "3",
+            "data": {}
+          }
+        ]
+      }
+    ]
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=blabla?fields=nested/data&depth=2", {}) == Response{200, jsonHeaders, R"({
+  "example:tlc": {
+    "list": [
+      {
+        "name": "blabla",
+        "nested": [
+          {
+            "first": "1",
+            "second": 2,
+            "third": "3",
             "data": {
               "a": "a",
               "other-data": {}
@@ -1049,6 +1075,25 @@ TEST_CASE("reading data")
 
         // whole datastore with fields filtering
         REQUIRE(get(RESTCONF_DATA_ROOT "?fields=example:tlc/list/nested/data&depth=1", {}) == Response{200, jsonHeaders, R"({
+  "example:tlc": {
+    "list": [
+      {
+        "name": "blabla",
+        "nested": [
+          {
+            "first": "1",
+            "second": 2,
+            "third": "3",
+            "data": {}
+          }
+        ]
+      }
+    ]
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "?fields=example:tlc/list/nested/data&depth=2", {}) == Response{200, jsonHeaders, R"({
   "example:tlc": {
     "list": [
       {
