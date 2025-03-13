@@ -33,7 +33,11 @@ TEST_CASE("default handling")
 
     // default value of /example:a/b/c/enabled is implicitly set so it should not be printed
     REQUIRE(get(RESTCONF_DATA_ROOT "/example:a/b/c", {}) == Response{200, jsonHeaders, R"({
-
+  "example:a": {
+    "b": {
+      "c": {}
+    }
+  }
 }
 )"});
 
@@ -88,7 +92,11 @@ TEST_CASE("default handling")
 
     // default value is only there implicitly, so it should *not* be printed
     REQUIRE(get(RESTCONF_DATA_ROOT "/example:a/b/c", {}) == Response{200, jsonHeaders, R"({
-
+  "example:a": {
+    "b": {
+      "c": {}
+    }
+  }
 }
 )"});
 }

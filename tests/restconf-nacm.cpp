@@ -130,6 +130,9 @@ TEST_CASE("NACM")
     "clock": {
       "timezone-utc-offset": 2
     },
+    "dns-resolver": {
+      "options": {}
+    },
     "radius": {
       "server": [
         {
@@ -139,7 +142,8 @@ TEST_CASE("NACM")
             "shared-secret": "shared-secret"
           }
         }
-      ]
+      ],
+      "options": {}
     }
   }
 }
@@ -207,6 +211,9 @@ TEST_CASE("NACM")
     "clock": {
       "timezone-utc-offset": 2
     },
+    "dns-resolver": {
+      "options": {}
+    },
     "radius": {
       "server": [
         {
@@ -216,7 +223,8 @@ TEST_CASE("NACM")
             "shared-secret": "shared-secret"
           }
         }
-      ]
+      ],
+      "options": {}
     }
   }
 }

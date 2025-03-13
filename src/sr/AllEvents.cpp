@@ -109,7 +109,7 @@ sysrepo::ErrorCode AllEvents::onChange(sysrepo::Session session, const std::stri
                 break;
             }
         };
-        auto json = *copy.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings);
+        auto json = *copy.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings | libyang::PrintFlags::KeepEmptyCont);
         spdlog::info("JSON: {}", json);
         spdlog::warn("FULL JSON: {}",
                 *session.getData('/' + module + ":*")->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings));

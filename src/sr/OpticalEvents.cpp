@@ -15,7 +15,7 @@
 namespace {
 std::string dumpDataFrom(sysrepo::Session session, const std::string& module)
 {
-    return *session.getData('/' + module + ":*")->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings);
+    return *session.getData('/' + module + ":*")->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings | libyang::PrintFlags::KeepEmptyCont);
 }
 }
 

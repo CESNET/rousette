@@ -62,10 +62,22 @@ TEST_CASE("reading data")
         // this relies on a NACM rule for anonymous access that filters out "a lot of stuff"
         REQUIRE(get(RESTCONF_DATA_ROOT, {}) == Response{200, jsonHeaders, R"({
   "example:top-level-leaf": "moo",
+  "example:tlc": {},
+  "example:a": {
+    "b": {
+      "c": {}
+    },
+    "b1": {},
+    "example-augment:b": {
+      "c": {}
+    }
+  },
+  "example:two-leafs": {},
   "example:config-nonconfig": {
     "config-node": "foo-config-true",
     "nonconfig-node": "foo-config-false"
   },
+  "example:ordered-lists": {},
   "ietf-restconf-monitoring:restconf-state": {
     "capabilities": {
       "capability": [
@@ -107,10 +119,22 @@ TEST_CASE("reading data")
 
         REQUIRE(get(RESTCONF_ROOT_DS("operational"), {}) == Response{200, jsonHeaders, R"({
   "example:top-level-leaf": "moo",
+  "example:tlc": {},
+  "example:a": {
+    "b": {
+      "c": {}
+    },
+    "b1": {},
+    "example-augment:b": {
+      "c": {}
+    }
+  },
+  "example:two-leafs": {},
   "example:config-nonconfig": {
     "config-node": "foo-config-true",
     "nonconfig-node": "foo-config-false"
   },
+  "example:ordered-lists": {},
   "ietf-restconf-monitoring:restconf-state": {
     "capabilities": {
       "capability": [
@@ -152,9 +176,21 @@ TEST_CASE("reading data")
 
         REQUIRE(get(RESTCONF_ROOT_DS("running"), {}) == Response{200, jsonHeaders, R"({
   "example:top-level-leaf": "moo",
+  "example:tlc": {},
+  "example:a": {
+    "b": {
+      "c": {}
+    },
+    "b1": {},
+    "example-augment:b": {
+      "c": {}
+    }
+  },
+  "example:two-leafs": {},
   "example:config-nonconfig": {
     "config-node": "foo-config-true"
-  }
+  },
+  "example:ordered-lists": {}
 }
 )"});
     }
@@ -213,7 +249,8 @@ TEST_CASE("reading data")
         {
           "name": "a"
         }
-      ]
+      ],
+      "options": {}
     }
   }
 }
@@ -244,7 +281,8 @@ TEST_CASE("reading data")
             "shared-secret": "shared-secret"
           }
         }
-      ]
+      ],
+      "options": {}
     }
   }
 }
@@ -714,6 +752,7 @@ TEST_CASE("reading data")
         "enabled": true
       }
     },
+    "b1": {},
     "example-augment:b": {
       "c": {
         "enabled": true
@@ -723,9 +762,18 @@ TEST_CASE("reading data")
 }
 )"});
             REQUIRE(get(RESTCONF_DATA_ROOT "/example:a?with-defaults=explicit", {}) == Response{200, jsonHeaders, R"({
-
+  "example:a": {
+    "b": {
+      "c": {}
+    },
+    "b1": {},
+    "example-augment:b": {
+      "c": {}
+    }
+  }
 }
 )"});
+            // FIXME: libyang is not really consistent in printing of NP-containers when trimming away the defaults...
             REQUIRE(get(RESTCONF_DATA_ROOT "/example:a?with-defaults=trim", {}) == Response{200, jsonHeaders, R"({
 
 }
@@ -740,6 +788,7 @@ TEST_CASE("reading data")
         }
       }
     },
+    "b1": {},
     "example-augment:b": {
       "c": {
         "enabled": true,
@@ -766,6 +815,7 @@ TEST_CASE("reading data")
         "enabled": true
       }
     },
+    "b1": {},
     "example-augment:b": {
       "c": {
         "enabled": true
@@ -781,13 +831,24 @@ TEST_CASE("reading data")
       "c": {
         "enabled": true
       }
+    },
+    "b1": {},
+    "example-augment:b": {
+      "c": {}
     }
   }
 }
 )"});
 
+            // FIXME: libyang is not consistent here:
+            // - /example:a/b/c NP-container *is* printed,
+            // - /example:a/example-augment:b/c NP-container is *not* printed
             REQUIRE(get(RESTCONF_DATA_ROOT "/example:a?with-defaults=trim", {}) == Response{200, jsonHeaders, R"({
-
+  "example:a": {
+    "b": {
+      "c": {}
+    }
+  }
 }
 )"});
 
@@ -801,6 +862,7 @@ TEST_CASE("reading data")
         }
       }
     },
+    "b1": {},
     "example-augment:b": {
       "c": {
         "enabled": true,
@@ -830,10 +892,15 @@ TEST_CASE("reading data")
 )"});
 
         REQUIRE(get(RESTCONF_DATA_ROOT "/example:a/b/c/enabled?with-defaults=explicit", {}) == Response{200, jsonHeaders, R"({
-
+  "example:a": {
+    "b": {
+      "c": {}
+    }
+  }
 }
 )"});
 
+        // again, libyang is not 100% consistent in the `trim` mode
         REQUIRE(get(RESTCONF_DATA_ROOT "/example:a/b/c/enabled?with-defaults=trim", {}) == Response{200, jsonHeaders, R"({
 
 }

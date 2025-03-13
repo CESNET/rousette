@@ -478,7 +478,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx, const std::c
                                         contentType(requestCtx->dataFormat.response),
                                         CORS,
                                     });
-    requestCtx->res.end(*envelope->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::WithSiblings));
+    requestCtx->res.end(*envelope->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::WithSiblings | libyang::PrintFlags::KeepEmptyCont));
 }
 
 void processPost(std::shared_ptr<RequestContext> requestCtx, const std::chrono::milliseconds timeout)
@@ -768,7 +768,7 @@ libyang::PrintFlags libyangPrintFlags(const libyang::DataNode& dataNode, const s
     } catch(const libyang::Error& e) {
     }
 
-    libyang::PrintFlags ret = libyang::PrintFlags::WithSiblings;
+    libyang::PrintFlags ret = libyang::PrintFlags::WithSiblings | libyang::PrintFlags::KeepEmptyCont;
 
     if (!withDefaults && node && (node->schema().nodeType() == libyang::NodeType::Leaf || node->schema().nodeType() == libyang::NodeType::Leaflist) && node->asTerm().isImplicitDefault()) {
         return ret | libyang::PrintFlags::WithDefaultsAll;
