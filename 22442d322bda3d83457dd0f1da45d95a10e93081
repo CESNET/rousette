@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d5dab4a5_4364ba76",
+        "filename": "tests/restconf-reading.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 843,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-03-14T09:13:00Z",
+      "side": 1,
+      "message": "That is, in gen-z words, sus.",
+      "range": {
+        "startLine": 843,
+        "startChar": 12,
+        "endLine": 843,
+        "endChar": 53
+      },
+      "revId": "22442d322bda3d83457dd0f1da45d95a10e93081",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
