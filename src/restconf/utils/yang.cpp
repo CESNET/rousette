@@ -89,6 +89,7 @@ std::string as_restconf_notification(const libyang::Context& ctx, libyang::DataF
 {
     static const auto jsonNamespace = "ietf-restconf";
     static const auto xmlNamespace = "urn:ietf:params:xml:ns:netconf:notification:1.0";
+    static const auto xmlPrefix = "ietf-netconf-notifications";
 
     std::optional<libyang::DataNode> envelope;
     std::optional<libyang::DataNode> eventTime;
@@ -96,11 +97,11 @@ std::string as_restconf_notification(const libyang::Context& ctx, libyang::DataF
 
     /* The namespaces for XML and JSON envelopes are different. See https://datatracker.ietf.org/doc/html/rfc8040#section-6.4 */
     if (dataFormat == libyang::DataFormat::JSON) {
-        envelope = ctx.newOpaqueJSON(jsonNamespace, "notification", std::nullopt);
-        eventTime = ctx.newOpaqueJSON(jsonNamespace, "eventTime", libyang::JSON{timeStr});
+        envelope = ctx.newOpaqueJSON({jsonNamespace, jsonNamespace, "notification"}, std::nullopt);
+        eventTime = ctx.newOpaqueJSON({jsonNamespace, jsonNamespace, "eventTime"}, libyang::JSON{timeStr});
     } else {
-        envelope = ctx.newOpaqueXML(xmlNamespace, "notification", std::nullopt);
-        eventTime = ctx.newOpaqueXML(xmlNamespace, "eventTime", libyang::XML{timeStr});
+        envelope = ctx.newOpaqueXML({xmlNamespace, xmlPrefix, "notification"}, std::nullopt);
+        eventTime = ctx.newOpaqueXML({xmlNamespace, xmlPrefix, "eventTime"}, libyang::XML{timeStr});
     }
 
     // the notification data node holds only the notification data tree but for nested notification we should print the whole YANG data tree
