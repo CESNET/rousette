@@ -79,7 +79,9 @@ TEST_CASE("invoking actions and rpcs")
 
     SECTION("List RPCs")
     {
-        REQUIRE(get(RESTCONF_OPER_ROOT, {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+        SECTION("JSON")
+        {
+            REQUIRE(get(RESTCONF_OPER_ROOT, {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
   "ietf-restconf:restconf": {
     "operations": {
       "ietf-factory-default:factory-reset": [null],
@@ -103,6 +105,35 @@ TEST_CASE("invoking actions and rpcs")
   }
 }
 )"});
+        }
+
+        SECTION("XML")
+        {
+            REQUIRE(get(RESTCONF_OPER_ROOT, {AUTH_ROOT, CONTENT_TYPE_XML})
+                    == Response{200, xmlHeaders,
+                                R"(<restconf xmlns="urn:ietf:params:xml:ns:yang:ietf-restconf">
+  <operations>
+    <factory-reset xmlns="urn:ietf:params:xml:ns:yang:ietf-factory-default"/>
+    <get-config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"/>
+    <edit-config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"/>
+    <copy-config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"/>
+    <delete-config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"/>
+    <lock xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"/>
+    <unlock xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"/>
+    <get xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"/>
+    <close-session xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"/>
+    <kill-session xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"/>
+    <set-current-datetime xmlns="urn:ietf:params:xml:ns:yang:ietf-system"/>
+    <system-restart xmlns="urn:ietf:params:xml:ns:yang:ietf-system"/>
+    <system-shutdown xmlns="urn:ietf:params:xml:ns:yang:ietf-system"/>
+    <test-rpc xmlns="http://example.tld/example"/>
+    <test-rpc-no-output xmlns="http://example.tld/example"/>
+    <test-rpc-no-input xmlns="http://example.tld/example"/>
+    <test-rpc-no-input-no-output xmlns="http://example.tld/example"/>
+  </operations>
+</restconf>
+)"});
+        }
     }
 
     SECTION("RPC")
