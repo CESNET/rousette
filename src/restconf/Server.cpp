@@ -712,7 +712,7 @@ void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx, const st
 }
 
 /** @brief Build data trees for endpoints returning ietf-restconf:restconf data */
-libyang::DataNode apiResource(const libyang::Context& ctx, const RestconfRequest::Type& type)
+libyang::DataNode apiResource(const libyang::Context& ctx, const RestconfRequest::Type& type, libyang::DataFormat dataFormat)
 {
     const auto yangLib = *ctx.getModuleLatest("ietf-yang-library");
     const auto yangApiExt = ctx.getModuleImplemented("ietf-restconf")->extensionInstance("yang-api");
@@ -736,7 +736,16 @@ libyang::DataNode apiResource(const libyang::Context& ctx, const RestconfRequest
             }
 
             for (const auto& rpc : mod.actionRpcs()) {
-                operations.insertChild(*ctx.newOpaqueJSON({rpc.module().name(), rpc.module().name(), rpc.name()}, libyang::JSON{"[null]"}));
+                switch (dataFormat) {
+                case libyang::DataFormat::JSON:
+                    operations.insertChild(*ctx.newOpaqueJSON({rpc.module().name(), rpc.module().name(), rpc.name()}, libyang::JSON{"[null]"}));
+                    break;
+                case libyang::DataFormat::XML:
+                    operations.insertChild(*ctx.newOpaqueXML({rpc.module().ns(), rpc.module().name(), rpc.name()}, std::nullopt));
+                    break;
+                default:
+                    throw std::logic_error{"Invalid data format for apiResource()"};
+                }
             }
         }
     } else {
@@ -987,7 +996,8 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 case RestconfRequest::Type::YangLibraryVersion:
                 case RestconfRequest::Type::ListRPC:
                     res.write_head(200, {contentType(dataFormat.response), CORS});
-                    res.end(*apiResource(sess.getContext(), restconfRequest.type).printStr(dataFormat.response, libyang::PrintFlags::WithSiblings | libyang::PrintFlags::KeepEmptyCont));
+                    res.end(*apiResource(sess.getContext(), restconfRequest.type, dataFormat.response)
+                                 .printStr(dataFormat.response, libyang::PrintFlags::WithSiblings | libyang::PrintFlags::KeepEmptyCont));
                     break;
 
                 case RestconfRequest::Type::GetData: {
