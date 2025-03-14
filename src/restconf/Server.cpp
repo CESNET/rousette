@@ -471,7 +471,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx, const std::c
     auto responseNode = rpcReply->child();
     responseNode->unlinkWithSiblings();
 
-    auto envelope = ctx.newOpaqueJSON(rpcNode->schema().module().name(), "output", std::nullopt);
+    auto envelope = ctx.newOpaqueJSON({rpcNode->schema().module().name(), rpcNode->schema().module().name(), "output"}, std::nullopt);
     envelope->insertChild(*responseNode);
 
     requestCtx->res.write_head(200, {
@@ -735,7 +735,7 @@ libyang::DataNode apiResource(const libyang::Context& ctx, const RestconfRequest
             }
 
             for (const auto& rpc : mod.actionRpcs()) {
-                operations.insertChild(*ctx.newOpaqueJSON(rpc.module().name(), rpc.name(), libyang::JSON{"[null]"}));
+                operations.insertChild(*ctx.newOpaqueJSON({rpc.module().name(), rpc.module().name(), rpc.name()}, libyang::JSON{"[null]"}));
             }
         }
     } else {
