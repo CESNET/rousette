@@ -16,6 +16,23 @@
       "message": "ARM CI fails due to the API change, and that\u0027s fixed via https://gerrit.cesnet.cz/c/CzechLight/velia/+/8439 and verified by https://gerrit.cesnet.cz/c/CzechLight/br2-external/+/8443",
       "revId": "009b2b01fb4a1ca854402debd66d899a264db8f2",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5874921d_e11a9aa8",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-03-17T19:55:16Z",
+      "side": 1,
+      "message": "recheck after a change in dependencies",
+      "revId": "009b2b01fb4a1ca854402debd66d899a264db8f2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
