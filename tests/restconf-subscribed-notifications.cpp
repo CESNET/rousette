@@ -25,7 +25,8 @@ std::string establishSubscription(
     const libyang::Context& ctx,
     const libyang::DataFormat rpcEncoding,
     const std::optional<std::pair<std::string, std::string>>& rpcRequestAuthHeader,
-    const std::optional<std::string>& encodingLeafValue)
+    const std::optional<std::string>& encodingLeafValue,
+    const std::optional<std::string>& filter)
 {
     auto stopTime = libyang::yangTimeFormat(std::chrono::system_clock::now() + 5s, libyang::TimezoneInterpretation::Local);
     std::string body;
@@ -39,20 +40,34 @@ std::string establishSubscription(
     switch (rpcEncoding) {
     case libyang::DataFormat::JSON: {
         std::string encodingJsonNode;
+        std::string xpathFilterJsonNode;
+
         if (encodingLeafValue) {
             encodingJsonNode = "\"encoding\": \"" + *encodingLeafValue + "\", ";
         }
-        body = "{\"ietf-subscribed-notifications:input\": {" + encodingJsonNode + "\"stream\": \"NETCONF\", \"stop-time\": \"" + stopTime + "\"}}";
+
+        if (filter) {
+            xpathFilterJsonNode = "\"stream-xpath-filter\": \"" + *filter + "\", ";
+        }
+
+        body = "{\"ietf-subscribed-notifications:input\": {" + encodingJsonNode + xpathFilterJsonNode + "\"stream\": \"NETCONF\", \"stop-time\": \"" + stopTime + "\"}}";
         requestHeaders.insert(CONTENT_TYPE_JSON);
         expectedHeaders = jsonHeaders;
         break;
     }
     case libyang::DataFormat::XML: {
         std::string encodingXmlNode;
+        std::string xpathFilterXmlNode;
+
         if (encodingLeafValue) {
             encodingXmlNode = "<encoding>" + *encodingLeafValue + "</encoding>";
         }
-        body = "<input xmlns=\"urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications\">" + encodingXmlNode + "<stream>NETCONF</stream><stop-time>" + stopTime + "</stop-time></input>";
+
+        if (filter) {
+            xpathFilterXmlNode = "<stream-xpath-filter>" + *filter + "</stream-xpath-filter>";
+        }
+
+        body = "<input xmlns=\"urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications\">" + encodingXmlNode + xpathFilterXmlNode + "<stream>NETCONF</stream><stop-time>" + stopTime + "</stop-time></input>";
         requestHeaders.insert(CONTENT_TYPE_XML);
         expectedHeaders = xmlHeaders;
         break;
@@ -107,6 +122,7 @@ TEST_CASE("RESTCONF subscribed notifications")
 
     libyang::DataFormat rpcRequestEncoding = libyang::DataFormat::JSON;
     std::optional<std::string> rpcSubscriptionEncoding;
+    std::optional<std::string> rpcStreamXPathFilter;
     std::optional<std::pair<std::string, std::string>> rpcRequestAuthHeader;
 
     SECTION("Invalid establish-subscription requests")
@@ -155,7 +171,7 @@ TEST_CASE("RESTCONF subscribed notifications")
       {
         "error-type": "application",
         "error-tag": "invalid-attribute",
-        "error-message": "Stream filtering is not supported"
+        "error-message": "Stream filtering with predefined filters is not supported"
       }
     ]
   }
@@ -212,6 +228,17 @@ TEST_CASE("RESTCONF subscribed notifications")
                 EXPECT_NOTIFICATION(notificationsJSON[4], seq1);
             }
 
+            SECTION("XPath filter set")
+            {
+                rpcRequestAuthHeader = AUTH_ROOT;
+                rpcRequestEncoding = libyang::DataFormat::JSON;
+                rpcStreamXPathFilter = "/example:eventA | /example:eventB";
+                rpcSubscriptionEncoding = "encode-json";
+                EXPECT_NOTIFICATION(notificationsJSON[0], seq1);
+                EXPECT_NOTIFICATION(notificationsJSON[1], seq1);
+                EXPECT_NOTIFICATION(notificationsJSON[3], seq1);
+            }
+
             SECTION("Content-type with set encode leaf")
             {
                 rpcRequestAuthHeader = AUTH_ROOT;
@@ -242,7 +269,7 @@ TEST_CASE("RESTCONF subscribed notifications")
             }
         }
 
-        auto uri = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding);
+        auto uri = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, rpcStreamXPathFilter);
 
         PREPARE_LOOP_WITH_EXCEPTIONS
 

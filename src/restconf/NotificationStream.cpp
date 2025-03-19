@@ -112,7 +112,7 @@ bool isFdClosed(const int fd)
 sysrepo::DynamicSubscription subscribeNotificationStream(sysrepo::Session& session, const libyang::DataNode& rpcInput)
 {
     if (rpcInput.findPath("stream-filter-name")) {
-        throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Stream filtering is not supported");
+        throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Stream filtering with predefined filters is not supported");
     }
 
     std::optional<sysrepo::NotificationTimeStamp> stopTime;
@@ -120,8 +120,13 @@ sysrepo::DynamicSubscription subscribeNotificationStream(sysrepo::Session& sessi
         stopTime = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(stopTimeNode->asTerm().valueStr());
     }
 
+    std::optional<std::string> xpathFilter;
+    if (auto xpathFilterNode = rpcInput.findPath("stream-xpath-filter")) {
+        xpathFilter = xpathFilterNode->asTerm().valueStr();
+    }
+
     return session.subscribeNotifications(
-        std::nullopt /* TODO xpath filter */,
+        xpathFilter,
         rpcInput.findPath("stream")->asTerm().valueStr(),
         stopTime,
         std::nullopt /* TODO replayStart */);
