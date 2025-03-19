@@ -34,7 +34,8 @@ EstablishSubscriptionResult establishSubscription(
     const libyang::Context& ctx,
     const libyang::DataFormat rpcEncoding,
     const std::optional<std::pair<std::string, std::string>>& rpcRequestAuthHeader,
-    const std::optional<std::string>& encodingLeafValue)
+    const std::optional<std::string>& encodingLeafValue,
+    const std::variant<std::monostate, std::string, libyang::XML>& filter)
 {
     constexpr auto jsonPrefix = "ietf-subscribed-notifications";
     constexpr auto xmlNamespace = "urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications";
@@ -54,6 +55,14 @@ EstablishSubscriptionResult establishSubscription(
 
     if (encodingLeafValue) {
         rpcTree.newPath("encoding", *encodingLeafValue);
+    }
+
+    if (std::holds_alternative<std::string>(filter)) {
+        rpcTree.newPath("stream-xpath-filter", std::get<std::string>(filter));
+    }
+
+    if (std::holds_alternative<libyang::XML>(filter)) {
+        rpcTree.newPath2("stream-subtree-filter", std::get<libyang::XML>(filter));
     }
 
     switch (rpcEncoding) {
@@ -128,6 +137,7 @@ TEST_CASE("RESTCONF subscribed notifications")
 
     libyang::DataFormat rpcRequestEncoding = libyang::DataFormat::JSON;
     std::optional<std::string> rpcSubscriptionEncoding;
+    std::variant<std::monostate, std::string, libyang::XML> rpcFilter;
     std::optional<std::pair<std::string, std::string>> rpcRequestAuthHeader;
 
     SECTION("NACM authorization")
@@ -161,7 +171,7 @@ TEST_CASE("RESTCONF subscribed notifications")
         SECTION("User DWDM establishes subscription")
         {
             std::pair<std::string, std::string> user = AUTH_DWDM;
-            auto [id, uri] = establishSubscription(srSess.getContext(), libyang::DataFormat::JSON, user, std::nullopt);
+            auto [id, uri] = establishSubscription(srSess.getContext(), libyang::DataFormat::JSON, user, std::nullopt, rpcFilter);
 
             std::map<std::string, std::string> headers;
 
@@ -278,6 +288,23 @@ TEST_CASE("RESTCONF subscribed notifications")
   }
 }
 )###"});
+
+        srSess.switchDatastore(sysrepo::Datastore::Operational);
+        srSess.setItem("/ietf-subscribed-notifications:filters/stream-filter[name='xyz']/stream-xpath-filter", "/example:eventA");
+        srSess.applyChanges();
+        REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription", {CONTENT_TYPE_JSON}, R"###({ "ietf-subscribed-notifications:input": { "stream": "NETCONF", "stream-filter-name": "xyz" } })###")
+                == Response{400, jsonHeaders, R"###({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-attribute",
+        "error-message": "Stream filtering with predefined filters is not supported"
+      }
+    ]
+  }
+}
+)###"});
     }
 
     SECTION("Valid requests")
@@ -330,6 +357,28 @@ TEST_CASE("RESTCONF subscribed notifications")
                 EXPECT_NOTIFICATION(notificationsJSON[4], seq1);
             }
 
+            SECTION("XPath filter set")
+            {
+                rpcRequestAuthHeader = AUTH_ROOT;
+                rpcRequestEncoding = libyang::DataFormat::JSON;
+                rpcFilter = "/example:eventA | /example:eventB";
+                rpcSubscriptionEncoding = "encode-json";
+                EXPECT_NOTIFICATION(notificationsJSON[0], seq1);
+                EXPECT_NOTIFICATION(notificationsJSON[1], seq1);
+                EXPECT_NOTIFICATION(notificationsJSON[3], seq1);
+            }
+
+            SECTION("Subtree filter set")
+            {
+                rpcRequestAuthHeader = AUTH_ROOT;
+                rpcRequestEncoding = libyang::DataFormat::JSON;
+                // Constructing the filter as XML is only an implementation detail. The tree is then constructed as JSON in establishSubscription
+                rpcFilter = libyang::XML{"<eventA xmlns='http://example.tld/example' />"};
+                rpcSubscriptionEncoding = "encode-json";
+                EXPECT_NOTIFICATION(notificationsJSON[0], seq1);
+                EXPECT_NOTIFICATION(notificationsJSON[3], seq1);
+            }
+
             SECTION("Content-type with set encode leaf")
             {
                 rpcRequestAuthHeader = AUTH_ROOT;
@@ -361,7 +410,7 @@ TEST_CASE("RESTCONF subscribed notifications")
             }
         }
 
-        auto [id, uri] = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding);
+        auto [id, uri] = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, rpcFilter);
         REQUIRE(std::regex_match(uri, std::regex("/streams/subscribed/"s + uuidV4Regex)));
 
         PREPARE_LOOP_WITH_EXCEPTIONS
@@ -474,7 +523,7 @@ TEST_CASE("RESTCONF subscribed notifications")
 )"};
             }
 
-            auto [id, uri] = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding);
+            auto [id, uri] = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, rpcFilter);
             auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + "}}";
             REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:delete-subscription", headers, body) == expectedResponse);
         }
@@ -482,7 +531,7 @@ TEST_CASE("RESTCONF subscribed notifications")
         SECTION("Anonymous user cannot delete subscription craeted by anonymous user")
         {
             rpcRequestAuthHeader = std::nullopt;
-            auto [id, uri] = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding);
+            auto [id, uri] = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, rpcFilter);
             auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + "}}";
             REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:delete-subscription", headers, body) == Response{403, jsonHeaders, R"({
   "ietf-restconf:errors": {
@@ -538,7 +587,7 @@ TEST_CASE("RESTCONF subscribed notifications")
             expectedResponse = Response{204, noContentTypeHeaders, ""};
         }
 
-        auto [id, uri] = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding);
+        auto [id, uri] = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, rpcFilter);
         auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + "}}";
         REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:kill-subscription", headers, body) == expectedResponse);
     }
@@ -582,7 +631,7 @@ TEST_CASE("Terminating server under notification load")
     std::optional<std::pair<std::string, std::string>> rpcRequestAuthHeader;
 
     std::pair<std::string, std::string> auth = AUTH_ROOT;
-    auto [id, uri] = establishSubscription(srSess.getContext(), libyang::DataFormat::JSON, auth, std::nullopt);
+    auto [id, uri] = establishSubscription(srSess.getContext(), libyang::DataFormat::JSON, auth, std::nullopt, {});
 
     PREPARE_LOOP_WITH_EXCEPTIONS;
 
@@ -633,7 +682,7 @@ TEST_CASE("Cleaning up inactive subscriptions")
     constexpr auto inactivityTimeout = 2s;
     auto server = rousette::restconf::Server{srConn, SERVER_ADDRESS, SERVER_PORT, 0ms, 55s, inactivityTimeout};
 
-    auto [id, uri] = establishSubscription(srSess.getContext(), libyang::DataFormat::JSON, {AUTH_ROOT}, std::nullopt);
+    auto [id, uri] = establishSubscription(srSess.getContext(), libyang::DataFormat::JSON, {AUTH_ROOT}, std::nullopt, {});
 
     SECTION("Client connects and disconnects")
     {
