@@ -116,7 +116,9 @@ sysrepo::DynamicSubscription subscribeNotificationStream(sysrepo::Session& sessi
     }
 
     if (rpcInput.findPath("stream-filter-name")) {
-        throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Stream filtering is not supported");
+        /* TODO: This requires support for modifying subscriptions first; a change of entry in filters container must change all
+         * subscriptions using this stream-filter, see for instance https://datatracker.ietf.org/doc/html/rfc8639.html#section-2.7.2 */
+        throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Stream filtering with predefined filters is not supported");
     }
 
     std::optional<sysrepo::NotificationTimeStamp> stopTime;
@@ -124,8 +126,15 @@ sysrepo::DynamicSubscription subscribeNotificationStream(sysrepo::Session& sessi
         stopTime = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(stopTimeNode->asTerm().valueStr());
     }
 
+    std::optional<std::variant<std::string, libyang::DataNodeAny>> filter;
+    if (auto node = rpcInput.findPath("stream-xpath-filter")) {
+        filter = node->asTerm().valueStr();
+    } else if (auto node = rpcInput.findPath("stream-subtree-filter")) {
+        filter = node->asAny();
+    }
+
     return session.subscribeNotifications(
-        std::nullopt /* TODO xpath filter */,
+        filter,
         rpcInput.findPath("stream")->asTerm().valueStr(),
         stopTime,
         std::nullopt /* TODO replayStart */);
