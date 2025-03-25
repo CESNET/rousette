@@ -26,4 +26,5 @@ public:
     ScopedDatastoreSwitch& operator=(ScopedDatastoreSwitch&&) = delete;
 };
 
+sysrepo::Datastore datastoreFromString(const std::string& datastore);
 }

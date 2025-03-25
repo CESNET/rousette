@@ -17,6 +17,7 @@
 #include "restconf/Exceptions.h"
 #include "restconf/uri.h"
 #include "restconf/uri_impl.h"
+#include "restconf/utils/sysrepo.h"
 #include "restconf/utils/yang.h"
 
 using namespace std::string_literals;
@@ -298,21 +299,11 @@ std::optional<sysrepo::Datastore> datastoreFromApiIdentifier(const boost::option
         return std::nullopt;
     }
 
-    if (*datastore->prefix == "ietf-datastores") {
-        if (datastore->identifier == "running") {
-            return sysrepo::Datastore::Running;
-        } else if (datastore->identifier == "operational") {
-            return sysrepo::Datastore::Operational;
-        } else if (datastore->identifier == "candidate") {
-            return sysrepo::Datastore::Candidate;
-        } else if (datastore->identifier == "startup") {
-            return sysrepo::Datastore::Startup;
-        } else if (datastore->identifier == "factory-default") {
-            return sysrepo::Datastore::FactoryDefault;
-        }
+    try {
+        return datastoreFromString(*datastore->prefix + ":"s + datastore->identifier);
+    } catch (const std::runtime_error&) {
+        throw ErrorResponse(400, "application", "operation-failed", "Unsupported datastore " + *datastore->prefix + ":" + datastore->identifier);
     }
-
-    throw ErrorResponse(400, "application", "operation-failed", "Unsupported datastore " + *datastore->prefix + ":" + datastore->identifier);
 }
 
 std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> getModuleOrSubmodule(const libyang::Context& ctx, const std::string& name, const std::optional<std::string>& revision)
