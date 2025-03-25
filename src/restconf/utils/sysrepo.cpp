@@ -22,4 +22,21 @@ ScopedDatastoreSwitch::~ScopedDatastoreSwitch()
     m_session.switchDatastore(m_oldDatastore);
 }
 
+sysrepo::Datastore datastoreFromString(const std::string& datastore)
+{
+    if (datastore == "ietf-datastores:running") {
+        return sysrepo::Datastore::Running;
+    } else if (datastore == "ietf-datastores:operational") {
+        return sysrepo::Datastore::Operational;
+    } else if (datastore == "ietf-datastores:candidate") {
+        return sysrepo::Datastore::Candidate;
+    } else if (datastore == "ietf-datastores:startup") {
+        return sysrepo::Datastore::Startup;
+    } else if (datastore == "ietf-datastores:factory-default") {
+        return sysrepo::Datastore::FactoryDefault;
+    }
+
+    throw std::runtime_error("Unknown datastore '" + datastore + "'");
+}
+
 }
