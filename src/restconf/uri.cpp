@@ -17,6 +17,7 @@
 #include "restconf/Exceptions.h"
 #include "restconf/uri.h"
 #include "restconf/uri_impl.h"
+#include "restconf/utils/sysrepo.h"
 #include "restconf/utils/yang.h"
 
 using namespace std::string_literals;
@@ -300,17 +301,7 @@ std::optional<sysrepo::Datastore> datastoreFromApiIdentifier(const boost::option
     }
 
     if (*datastore->prefix == "ietf-datastores") {
-        if (datastore->identifier == "running") {
-            return sysrepo::Datastore::Running;
-        } else if (datastore->identifier == "operational") {
-            return sysrepo::Datastore::Operational;
-        } else if (datastore->identifier == "candidate") {
-            return sysrepo::Datastore::Candidate;
-        } else if (datastore->identifier == "startup") {
-            return sysrepo::Datastore::Startup;
-        } else if (datastore->identifier == "factory-default") {
-            return sysrepo::Datastore::FactoryDefault;
-        }
+        return datastoreFromString(*datastore->prefix + ":"s + datastore->identifier);
     }
 
     throw ErrorResponse(400, "application", "operation-failed", "Unsupported datastore " + *datastore->prefix + ":" + datastore->identifier);
