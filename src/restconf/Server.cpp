@@ -600,7 +600,7 @@ void processYangPatchEdit(const std::shared_ptr<RequestContext>& requestCtx, con
     if (!mergedEdits) {
         mergedEdits = *singleEdit;
     } else {
-        mergedEdits->insertSibling(*singleEdit);
+        mergedEdits = mergedEdits->insertSibling(*singleEdit); // make sure we point to the first sibling, sysrepo::editBatch requires that
     }
 }
 
