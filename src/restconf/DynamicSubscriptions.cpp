@@ -13,6 +13,7 @@
 #include "restconf/DynamicSubscriptions.h"
 #include "restconf/Exceptions.h"
 #include "restconf/utils/io.h"
+#include "restconf/utils/sysrepo.h"
 #include "restconf/utils/yang.h"
 
 namespace {
@@ -50,6 +51,57 @@ libyang::DataFormat getEncoding(const libyang::DataNode& rpcInput, const libyang
     return requestEncoding;
 }
 
+sysrepo::YangPushChange yangPushChange(const std::string& str)
+{
+    if (str == "create") {
+        return sysrepo::YangPushChange::Create;
+    } else if (str == "delete") {
+        return sysrepo::YangPushChange::Delete;
+    } else if (str == "insert") {
+        return sysrepo::YangPushChange::Insert;
+    } else if (str == "move") {
+        return sysrepo::YangPushChange::Move;
+    } else if (str == "replace") {
+        return sysrepo::YangPushChange::Replace;
+    }
+
+    throw std::invalid_argument("Unknown YangPushChange: " + str);
+}
+
+/** @brief Creates a filter for the subscription.
+ *
+ * Filters for YANG Push and for subscribed notifications are specified in the same way,
+ * only in a different YANG node.
+ * */
+std::optional<std::variant<std::string, libyang::DataNodeAny>> createFilter(const libyang::DataNode& rpcInput, const std::string& xpathFilterPath, const std::string& subtreeFilterPath)
+{
+    if (auto node = rpcInput.findPath(xpathFilterPath)) {
+        return node->asTerm().valueStr();
+    }
+
+    if (auto node = rpcInput.findPath(subtreeFilterPath)) {
+        return node->asAny();
+    }
+
+    return std::nullopt;
+}
+
+/** @brief Reads interval from the YANG node and converts it to std::milliseconds.
+ *
+ *  @tparam SourceRatio Ratio of the interval from the YANG node (e.g. centiseconds, seconds, ...)
+ * */
+template <class SourceRatio>
+std::optional<std::chrono::milliseconds> createInterval(const libyang::DataNode& rpcInput, const std::string& path)
+{
+    if (auto node = rpcInput.findPath(path)) {
+        auto value = std::get<uint32_t>(node->asTerm().value());
+        std::chrono::duration<std::chrono::milliseconds::rep, SourceRatio> duration(value);
+        return std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+    }
+
+    return std::nullopt;
+}
+
 sysrepo::DynamicSubscription makeStreamSubscription(sysrepo::Session& session, const libyang::DataNode& rpcInput, libyang::DataNode& rpcOutput)
 {
     auto streamNode = rpcInput.findPath("stream");
@@ -66,20 +118,13 @@ sysrepo::DynamicSubscription makeStreamSubscription(sysrepo::Session& session, c
 
     auto stopTime = optionalTime(rpcInput, "stop-time");
 
-    std::optional<std::variant<std::string, libyang::DataNodeAny>> filter;
-    if (auto node = rpcInput.findPath("stream-xpath-filter")) {
-        filter = node->asTerm().valueStr();
-    } else if (auto node = rpcInput.findPath("stream-subtree-filter")) {
-        filter = node->asAny();
-    }
-
     std::optional<sysrepo::NotificationTimeStamp> replayStartTime;
     if (auto node = rpcInput.findPath("replay-start-time")) {
         replayStartTime = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(node->asTerm().valueStr());
     }
 
     auto sub = session.subscribeNotifications(
-        filter,
+        createFilter(rpcInput, "stream-xpath-filter", "stream-subtree-filter"),
         streamNode->asTerm().valueStr(),
         stopTime,
         replayStartTime);
@@ -94,6 +139,39 @@ sysrepo::DynamicSubscription makeStreamSubscription(sysrepo::Session& session, c
     }
 
     return sub;
+}
+
+sysrepo::DynamicSubscription makeYangPushOnChangeSubscription(sysrepo::Session& session, const libyang::DataNode& rpcInput, libyang::DataNode&)
+{
+    sysrepo::Datastore datastore = sysrepo::Datastore::Running;
+    if (auto node = rpcInput.findPath("ietf-yang-push:datastore")) {
+        datastore = rousette::restconf::datastoreFromString(node->asTerm().valueStr());
+    } else {
+        throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Datastore is required for ietf-yang-push:on-change");
+    }
+
+    std::optional<sysrepo::NotificationTimeStamp> stopTime;
+    if (auto node = rpcInput.findPath("stop-time")) {
+        stopTime = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(node->asTerm().valueStr());
+    }
+
+    sysrepo::SyncOnStart syncOnStart = sysrepo::SyncOnStart::No;
+    if (auto node = rpcInput.findPath("ietf-yang-push:on-change/sync-on-start")) {
+        syncOnStart = std::get<bool>(node->asTerm().value()) ? sysrepo::SyncOnStart::Yes : sysrepo::SyncOnStart::No;
+    }
+
+    std::set<sysrepo::YangPushChange> excludedChanges;
+    for (const auto& node : rpcInput.findXPath("ietf-yang-push:on-change/excluded-change")) {
+        excludedChanges.emplace(yangPushChange(node.asTerm().valueStr()));
+    }
+
+    rousette::restconf::ScopedDatastoreSwitch dsSwitch(session, datastore);
+    return session.yangPushOnChange(
+        createFilter(rpcInput, "ietf-yang-push:datastore-xpath-filter", "ietf-yang-push:datastore-subtree-filter"),
+        createInterval<std::centi>(rpcInput, "ietf-yang-push:on-change/dampening-period"),
+        syncOnStart,
+        excludedChanges,
+        stopTime);
 }
 }
 
@@ -127,20 +205,30 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
     auto dataFormat = getEncoding(rpcInput, requestEncoding);
 
     try {
-        auto sub = makeStreamSubscription(session, rpcInput, rpcOutput);
+        std::optional<sysrepo::DynamicSubscription> sub;
 
-        rpcOutput.newPath("id", std::to_string(sub.subscriptionId()), libyang::CreationOptions::Output);
+        if (rpcInput.findPath("stream")) {
+            sub = makeStreamSubscription(session, rpcInput, rpcOutput);
+        } else if (rpcInput.findPath("ietf-yang-push:on-change")) {
+            sub = makeYangPushOnChangeSubscription(session, rpcInput, rpcOutput);
+        } else if (rpcInput.findPath("ietf-yang-push:periodic")) {
+            throw ErrorResponse(400, "application", "invalid-attribute", "Periodic subscriptions are not yet implemented");
+        } else {
+            throw ErrorResponse(400, "application", "invalid-attribute", "Could not deduce if YANG push on-change, YANG push periodic or subscribed notification");
+        }
+
+        rpcOutput.newPath("id", std::to_string(sub->subscriptionId()), libyang::CreationOptions::Output);
         rpcOutput.newPath("ietf-restconf-subscribed-notifications:uri", m_restconfStreamUri + "subscribed/" + boost::uuids::to_string(uuid), libyang::CreationOptions::Output);
 
         std::lock_guard lock(m_mutex);
         m_subscriptions[uuid] = std::make_shared<SubscriptionData>(
-            std::move(sub),
+            std::move(*sub),
             dataFormat,
             uuid,
             *session.getNacmUser(),
             *m_server.io_services().at(0),
             m_inactivityTimeout,
-            [this, subId = sub.subscriptionId()]() { terminateSubscription(subId); });
+            [this, subId = sub->subscriptionId()]() { terminateSubscription(subId); });
         m_subscriptions[uuid]->inactivityStart();
     } catch (const sysrepo::ErrorWithCode& e) {
         throw ErrorResponse(400, "application", "invalid-attribute", e.what());
