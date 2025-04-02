@@ -41,9 +41,16 @@ struct RestconfNotificationWatcher {
     void setDataFormat(const libyang::DataFormat dataFormat);
     void dataEvent(const std::string& msg) const;
     void commentEvent(const std::string& msg) const;
+    virtual void operator()(const std::string& msg) const;
 
     MAKE_CONST_MOCK1(comment, void(const std::string&));
     MAKE_CONST_MOCK1(data, void(const std::string&));
 };
 
+struct RestconfYangPushWatcher : public RestconfNotificationWatcher {
+    using RestconfNotificationWatcher::RestconfNotificationWatcher;
+    void operator()(const std::string& msg) const override;
+};
+
 #define EXPECT_NOTIFICATION(DATA, SEQ) expectations.emplace_back(NAMED_REQUIRE_CALL(netconfWatcher, data(DATA)).IN_SEQUENCE(SEQ));
+#define EXPECT_YP_UPDATE(DATA, SEQ) expectations.emplace_back(NAMED_REQUIRE_CALL(ypWatcher, data(DATA)).IN_SEQUENCE(SEQ));
