@@ -852,6 +852,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
              {"ietf-yang-patch", "2017-02-22", {}},
              {"ietf-subscribed-notifications", "2019-09-09", {"encode-xml", "encode-json", "xpath", "subtree", "replay"}},
              {"ietf-restconf-subscribed-notifications", "2019-11-17", {}},
+             {"ietf-yang-push", "2019-09-09", {"on-change"}},
          }) {
         if (auto mod = conn.sessionStart().getContext().getModuleImplemented(module)) {
             for (const auto& feature : features) {
