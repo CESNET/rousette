@@ -6,6 +6,7 @@
  */
 
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 #include <libyang-cpp/Time.hpp>
 #include <nghttp2/asio_http2_server.h>
 #include <sysrepo-cpp/Connection.hpp>
@@ -14,6 +15,7 @@
 #include "http/EventStream.h"
 #include "restconf/Exceptions.h"
 #include "restconf/NotificationStream.h"
+#include "restconf/utils/sysrepo.h"
 #include "utils/yang.h"
 
 using namespace std::string_literals;
@@ -21,6 +23,23 @@ using namespace std::string_literals;
 namespace {
 
 const auto streamListXPath = "/ietf-restconf-monitoring:restconf-state/streams/stream"s;
+
+sysrepo::YangPushChange yangPushChange(const std::string& str)
+{
+    if (str == "create") {
+        return sysrepo::YangPushChange::Create;
+    } else if (str == "delete") {
+        return sysrepo::YangPushChange::Delete;
+    } else if (str == "insert") {
+        return sysrepo::YangPushChange::Insert;
+    } else if (str == "move") {
+        return sysrepo::YangPushChange::Move;
+    } else if (str == "replace") {
+        return sysrepo::YangPushChange::Replace;
+    }
+
+    throw std::invalid_argument("Unknown YangPushChange: " + str);
+}
 
 void subscribe(
     std::optional<sysrepo::Subscription>& sub,
@@ -149,6 +168,48 @@ sysrepo::DynamicSubscription subscribeNotificationStream(sysrepo::Session& sessi
     }
 
     return sub;
+}
+
+sysrepo::DynamicSubscription subscribeYangPush(sysrepo::Session& session, const libyang::DataNode& rpcInput, libyang::DataNode&)
+{
+    sysrepo::Datastore datastore = sysrepo::Datastore::Running;
+    if (auto node = rpcInput.findPath("ietf-yang-push:datastore")) {
+        datastore = rousette::restconf::datastoreFromString(node->asTerm().valueStr());
+    } else {
+        throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Datastore is required for ietf-yang-push:on-change");
+    }
+
+    std::optional<std::variant<std::string, libyang::DataNodeAny>> filter;
+    if (auto node = rpcInput.findPath("ietf-yang-push:datastore-xpath-filter")) {
+        filter = node->asTerm().valueStr();
+    } else if (auto node = rpcInput.findPath("ietf-yang-push:datastore-subtree-filter")) {
+        filter = node->asAny();
+    }
+
+    std::optional<sysrepo::NotificationTimeStamp> stopTime;
+    if (auto node = rpcInput.findPath("stop-time")) {
+        stopTime = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(node->asTerm().valueStr());
+    }
+
+    std::optional<std::chrono::milliseconds> dampeningPeriod;
+    if (auto node = rpcInput.findPath("ietf-yang-push:on-change/dampening-period")) {
+        // dampening period is in centiseconds, but sysrepo expects milliseconds
+        const std::chrono::duration<std::chrono::milliseconds::rep, std::centi> centiseconds(std::get<int64_t>(node->asTerm().value()));
+        dampeningPeriod = std::chrono::duration_cast<std::chrono::milliseconds>(centiseconds);
+    }
+
+    sysrepo::SyncOnStart syncOnStart = sysrepo::SyncOnStart::No;
+    if (auto node = rpcInput.findPath("ietf-yang-push:on-change/sync-on-start")) {
+        syncOnStart = std::get<bool>(node->asTerm().value()) ? sysrepo::SyncOnStart::Yes : sysrepo::SyncOnStart::No;
+    }
+
+    std::set<sysrepo::YangPushChange> excludedChanges;
+    for (const auto& node : rpcInput.findXPath("ietf-yang-push:on-change/excluded-change")) {
+        excludedChanges.emplace(yangPushChange(node.asTerm().valueStr()));
+    }
+
+    rousette::restconf::ScopedDatastoreSwitch dsSwitch(session, datastore);
+    return session.yangPushOnChange(filter, dampeningPeriod, syncOnStart, excludedChanges, stopTime);
 }
 }
 
@@ -299,8 +360,12 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
 
         if (rpcInput.findPath("stream")) {
             sub = subscribeNotificationStream(session, rpcInput, rpcOutput);
+        } else if (rpcInput.findPath("ietf-yang-push:on-change")) {
+            sub = subscribeYangPush(session, rpcInput, rpcOutput);
+        } else if (rpcInput.findPath("ietf-yang-push:periodic")) {
+            throw ErrorResponse(400, "application", "invalid-attribute", "Periodic subscriptions are not yet implemented");
         } else {
-            throw ErrorResponse(400, "application", "missing-attribute", "stream attribute is required");
+            throw ErrorResponse(400, "application", "invalid-attribute", "Could not deduce if YANG push on-change, YANG push periodic or subscribed notification");
         }
 
         rpcOutput.newPath("id", std::to_string(sub->subscriptionId()), libyang::CreationOptions::Output);
