@@ -52,4 +52,4 @@ struct RestconfYangPushWatcher : public RestconfNotificationWatcher {
 };
 
 #define EXPECT_NOTIFICATION(DATA, SEQ,...) expectations.emplace_back(NAMED_REQUIRE_CALL(netconfWatcher, data(DATA)).IN_SEQUENCE(SEQ __VA_OPT__(,) __VA_ARGS__));
-#define EXPECT_YP_UPDATE(DATA, SEQ) expectations.emplace_back(NAMED_REQUIRE_CALL(ypWatcher, data(DATA)).IN_SEQUENCE(SEQ));
+#define EXPECT_YP_UPDATE(DATA) expectations.emplace_back(NAMED_REQUIRE_CALL(ypWatcher, data(DATA)).IN_SEQUENCE(seq1));
