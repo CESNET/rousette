@@ -78,3 +78,37 @@ void RestconfNotificationWatcher::operator()(const std::string& msg) const
 
     data(*dataRoot->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink));
 }
+
+void RestconfYangPushWatcher::operator()(const std::string& msg) const
+{
+    spdlog::trace("Client received data: {}", msg);
+
+    auto notifDataNode = ctx.parseOp(msg,
+                                     dataFormat,
+                                     dataFormat == libyang::DataFormat::JSON ? libyang::OperationType::NotificationRestconf : libyang::OperationType::NotificationNetconf);
+
+    // remove nodes that do not contain data but rather some identifiers of subscription etc.
+    if (notifDataNode.op->path() == "/ietf-yang-push:push-change-update") {
+        if (auto node = notifDataNode.op->findPath("id")) {
+            node->unlink();
+        }
+
+        if (auto node = notifDataNode.op->findPath("datastore-changes/yang-patch/patch-id")) {
+            node->unlink();
+        }
+    } else if (notifDataNode.op->path() == "/ietf-yang-push:push-update") {
+        if (auto node = notifDataNode.op->findPath("id")) {
+            node->unlink();
+        }
+    } else {
+        throw std::invalid_argument("Unexpected notification: " + notifDataNode.op->path());
+    }
+
+    // parsing nested notifications does not return the data tree root node but the notification data node
+    auto dataRoot = notifDataNode.op;
+    while (dataRoot->parent()) {
+        dataRoot = *dataRoot->parent();
+    }
+
+    data(*dataRoot->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink));
+}
