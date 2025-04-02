@@ -24,6 +24,25 @@ constexpr auto uuidV4Regex = "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89a
 using namespace std::chrono_literals;
 using namespace std::string_literals;
 
+std::string datastoreToString(sysrepo::Datastore ds)
+{
+    switch (ds) {
+    case sysrepo::Datastore::Startup:
+        return "ietf-datastores:startup";
+    case sysrepo::Datastore::Running:
+        return "ietf-datastores:running";
+    case sysrepo::Datastore::Candidate:
+        return "ietf-datastores:candidate";
+    case sysrepo::Datastore::Operational:
+        return "ietf-datastores:operational";
+    case sysrepo::Datastore::FactoryDefault:
+        return "ietf-datastores:factory-default";
+    default:
+        FAIL("Unhandled sysrepo::Datastore");
+        __builtin_unreachable(); // To make GCC 13.2.1 happy
+    }
+}
+
 struct EstablishSubscriptionResult {
     uint32_t id;
     std::string url;
@@ -41,13 +60,21 @@ struct SubscribedNotifications {
 
 constexpr auto netconfSubscribedNotif = SubscribedNotifications{.stream = "NETCONF", .filter = {}, .replayStartTime = std::nullopt};
 
+struct YangPushOnChange {
+    sysrepo::Datastore datastore;
+    Filter filter;
+    std::optional<std::chrono::milliseconds> dampeningPeriod;
+    std::optional<sysrepo::SyncOnStart> syncOnStart;
+    std::vector<std::string> excludedChangeTypes;
+};
+
 /** @brief Calls establish-subscription rpc, returns the url of the stream associated with the created subscription */
 EstablishSubscriptionResult establishSubscription(
     const libyang::Context& ctx,
     const libyang::DataFormat rpcEncoding,
     const std::optional<std::pair<std::string, std::string>>& rpcRequestAuthHeader,
     const std::optional<std::string>& encodingLeafValue,
-    const SubscribedNotifications& params)
+    const std::variant<SubscribedNotifications, YangPushOnChange>& params)
 {
     constexpr auto jsonPrefix = "ietf-subscribed-notifications";
     constexpr auto xmlNamespace = "urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications";
@@ -68,16 +95,43 @@ EstablishSubscriptionResult establishSubscription(
         rpcTree.newPath("encoding", *encodingLeafValue);
     }
 
-    rpcTree.newPath("stream", params.stream);
+    if (std::holds_alternative<SubscribedNotifications>(params)) {
+        const auto& sn = std::get<SubscribedNotifications>(params);
+        rpcTree.newPath("stream", sn.stream);
 
-    if (std::holds_alternative<XPath>(params.filter)) {
-        rpcTree.newPath("stream-xpath-filter", std::get<XPath>(params.filter));
-    } else if (std::holds_alternative<libyang::XML>(params.filter)) {
-        rpcTree.newPath2("stream-subtree-filter", std::get<libyang::XML>(params.filter));
-    }
+        if (std::holds_alternative<XPath>(sn.filter)) {
+            rpcTree.newPath("stream-xpath-filter", std::get<XPath>(sn.filter));
+        } else if (std::holds_alternative<libyang::XML>(sn.filter)) {
+            rpcTree.newPath2("stream-subtree-filter", std::get<libyang::XML>(sn.filter));
+        }
 
-    if (params.replayStartTime) {
-        rpcTree.newPath("replay-start-time", libyang::yangTimeFormat(*params.replayStartTime, libyang::TimezoneInterpretation::Local));
+        if (sn.replayStartTime) {
+            rpcTree.newPath("replay-start-time", libyang::yangTimeFormat(*sn.replayStartTime, libyang::TimezoneInterpretation::Local));
+        }
+    } else if (std::holds_alternative<YangPushOnChange>(params)) {
+        const auto& yp = std::get<YangPushOnChange>(params);
+
+        rpcTree.newPath("ietf-yang-push:datastore", datastoreToString(yp.datastore));
+        rpcTree.newPath("ietf-yang-push:on-change", std::nullopt);
+
+        if (std::holds_alternative<XPath>(yp.filter)) {
+            rpcTree.newPath("ietf-yang-push:datastore-xpath-filter", std::get<XPath>(yp.filter));
+        } else if (std::holds_alternative<libyang::XML>(yp.filter)) {
+            rpcTree.newPath2("ietf-yang-push:datastore-subtree-filter", std::get<libyang::XML>(yp.filter));
+        }
+
+        if (yp.syncOnStart) {
+            rpcTree.newPath("ietf-yang-push:on-change/sync-on-start", *yp.syncOnStart == sysrepo::SyncOnStart::Yes ? "true" : "false");
+        }
+
+        if (yp.dampeningPeriod) {
+            const auto dampeningCentiseconds = std::chrono::duration_cast<std::chrono::duration<std::chrono::milliseconds::rep, std::centi>>(*yp.dampeningPeriod);
+            rpcTree.newPath("ietf-yang-push:on-change/dampening-period", std::to_string(dampeningCentiseconds.count()));
+        }
+
+        for (const auto& changeType : yp.excludedChangeTypes) {
+            rpcTree.newPath("ietf-yang-push:on-change/excluded-change[.='" + changeType + "']");
+        }
     }
 
     switch (rpcEncoding) {
@@ -142,8 +196,6 @@ TEST_CASE("RESTCONF subscribed notifications")
 
     std::vector<std::unique_ptr<trompeloeil::expectation>> expectations;
 
-    RestconfNotificationWatcher netconfWatcher(srConn.sessionStart().getContext());
-
     libyang::DataFormat rpcRequestEncoding = libyang::DataFormat::JSON;
     std::optional<std::string> rpcSubscriptionEncoding;
     std::optional<std::pair<std::string, std::string>> rpcRequestAuthHeader;
@@ -181,6 +233,7 @@ TEST_CASE("RESTCONF subscribed notifications")
             std::pair<std::string, std::string> user = AUTH_DWDM;
             auto [id, uri, replayStartTimeRevision] = establishSubscription(srSess.getContext(), libyang::DataFormat::JSON, user, std::nullopt, netconfSubscribedNotif);
             std::map<std::string, std::string> headers;
+            RestconfNotificationWatcher netconfWatcher(srConn.sessionStart().getContext());
 
             SECTION("Users who cannot GET")
             {
@@ -319,6 +372,8 @@ TEST_CASE("RESTCONF subscribed notifications")
 
     SECTION("Subscribed notifications requests")
     {
+        RestconfNotificationWatcher netconfWatcher(srConn.sessionStart().getContext());
+
         // parent for nested notification
         srSess.switchDatastore(sysrepo::Datastore::Operational);
         srSess.setItem("/example:tlc/list[name='k1']/choice1", "something must me here");
@@ -651,6 +706,178 @@ TEST_CASE("RESTCONF subscribed notifications")
         auto [id, uri, replayStartTimeRevision] = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, netconfSubscribedNotif);
         auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + "}}";
         REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:kill-subscription", headers, body) == expectedResponse);
+    }
+
+    SECTION("YANG push on change")
+    {
+        RestconfYangPushWatcher ypWatcher(srConn.sessionStart().getContext());
+
+        YangPushOnChange yp;
+        yp.datastore = sysrepo::Datastore::Running;
+
+        SECTION("Encoding")
+        {
+            SECTION("XML stream")
+            {
+                ypWatcher.setDataFormat(libyang::DataFormat::XML);
+                rpcRequestAuthHeader = AUTH_ROOT;
+
+                SECTION("Stream encoding inferred from request content-type")
+                {
+                    rpcRequestEncoding = libyang::DataFormat::XML;
+                }
+
+                SECTION("Explicitly asked for XML stream encoding")
+                {
+                    rpcSubscriptionEncoding = "encode-xml";
+
+                    SECTION("Request content-type JSON")
+                    {
+                        rpcRequestEncoding = libyang::DataFormat::JSON;
+                    }
+
+                    SECTION("Request content-type XML")
+                    {
+                        rpcRequestEncoding = libyang::DataFormat::XML;
+                    }
+                }
+            }
+
+            SECTION("JSON stream")
+            {
+                ypWatcher.setDataFormat(libyang::DataFormat::JSON);
+                rpcRequestAuthHeader = AUTH_ROOT;
+
+                SECTION("Stream encoding inferred from request content-type")
+                {
+                    rpcRequestEncoding = libyang::DataFormat::JSON;
+                }
+
+                SECTION("Explicitly asked for XML stream encoding")
+                {
+                    rpcSubscriptionEncoding = "encode-json";
+
+                    SECTION("Request content-type JSON")
+                    {
+                        rpcRequestEncoding = libyang::DataFormat::JSON;
+                    }
+
+                    SECTION("Request content-type XML")
+                    {
+                        rpcRequestEncoding = libyang::DataFormat::XML;
+                    }
+                }
+            }
+
+            // the notifications are expected to be in XML by netconfWatcher.setDataFormat call, this JSON is only for content match, not datatype match
+            EXPECT_YP_UPDATE(R"({"ietf-yang-push:push-change-update":{"datastore-changes":{"yang-patch":{"edit":[{"edit-id":"edit-1","operation":"create","target":"/example:top-level-leaf","value":{"example:top-level-leaf":"42"}}]}}}})");
+            EXPECT_YP_UPDATE(R"({"ietf-yang-push:push-change-update":{"datastore-changes":{"yang-patch":{"edit":[{"edit-id":"edit-1","operation":"replace","target":"/example:top-level-leaf","value":{"example:top-level-leaf":"44"}},{"edit-id":"edit-2","operation":"create","target":"/example:top-level-list[name='key1']","value":{"example:top-level-list":[{"name":"key1"}]}}]}}}})");
+            EXPECT_YP_UPDATE(R"({"ietf-yang-push:push-change-update":{"datastore-changes":{"yang-patch":{"edit":[{"edit-id":"edit-1","operation":"create","target":"/example-delete:secret[name='bla']","value":{"example-delete:secret":[{"name":"bla"}]}}]}}}})");
+            EXPECT_YP_UPDATE(R"({"ietf-yang-push:push-change-update":{"datastore-changes":{"yang-patch":{"edit":[{"edit-id":"edit-1","operation":"delete","target":"/example:top-level-leaf"}]}}}})");
+        }
+
+        SECTION("Only startup DS changes")
+        {
+            yp.datastore = sysrepo::Datastore::Startup;
+            EXPECT_YP_UPDATE(R"({"ietf-yang-push:push-change-update":{"datastore-changes":{"yang-patch":{"edit":[{"edit-id":"edit-1","operation":"create","target":"/example:top-level-leaf","value":{"example:top-level-leaf":"43"}}]}}}})");
+        }
+
+        SECTION("NACM works")
+        {
+            rpcRequestAuthHeader = std::nullopt;
+            EXPECT_YP_UPDATE(R"({"ietf-yang-push:push-change-update":{"datastore-changes":{"yang-patch":{"edit":[{"edit-id":"edit-1","operation":"create","target":"/example:top-level-leaf","value":{"example:top-level-leaf":"42"}}]}}}})");
+            EXPECT_YP_UPDATE(R"({"ietf-yang-push:push-change-update":{"datastore-changes":{"yang-patch":{"edit":[{"edit-id":"edit-1","operation":"replace","target":"/example:top-level-leaf","value":{"example:top-level-leaf":"44"}},{"edit-id":"edit-2","operation":"create","target":"/example:top-level-list[name='key1']","value":{"example:top-level-list":[{"name":"key1"}]}}]}}}})");
+            EXPECT_YP_UPDATE(R"({"ietf-yang-push:push-change-update":{"datastore-changes":{"yang-patch":{"edit":[{"edit-id":"edit-1","operation":"delete","target":"/example:top-level-leaf"}]}}}})");
+        }
+
+        SECTION("Filter")
+        {
+            SECTION("XPath filter")
+            {
+                yp.filter = XPath{"/example:top-level-list"};
+            }
+
+            SECTION("Subtree filter is set")
+            {
+                yp.filter = libyang::XML{"<top-level-list xmlns='http://example.tld/example' />"};
+            }
+
+            EXPECT_YP_UPDATE(R"({"ietf-yang-push:push-change-update":{"datastore-changes":{"yang-patch":{"edit":[{"edit-id":"edit-1","operation":"create","target":"/example:top-level-list[name='key1']","value":{"example:top-level-list":[{"name":"key1"}]}}]}}}})");
+        }
+
+        SECTION("Excluded changes")
+        {
+            yp.excludedChangeTypes = {"delete", "insert", "create", "move"};
+
+            EXPECT_YP_UPDATE(R"({"ietf-yang-push:push-change-update":{"datastore-changes":{"yang-patch":{"edit":[{"edit-id":"edit-1","operation":"replace","target":"/example:top-level-leaf","value":{"example:top-level-leaf":"44"}}]}}}})");
+        }
+
+        SECTION("Sync on start")
+        {
+            // push some data in advance
+            srSess.switchDatastore(sysrepo::Datastore::Startup);
+            srSess.setItem("/example:tlc/list[name='k1']/choice1", "choice1-startup");
+            srSess.applyChanges();
+
+            yp.datastore = sysrepo::Datastore::Startup;
+
+            SECTION("Yes")
+            {
+                yp.syncOnStart = sysrepo::SyncOnStart::Yes;
+
+                EXPECT_YP_UPDATE(R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:tlc":{"list":[{"name":"k1","choice1":"choice1-startup"}]}}}})");
+            }
+
+            SECTION("No")
+            {
+                yp.syncOnStart = sysrepo::SyncOnStart::No;
+            }
+
+            EXPECT_YP_UPDATE(R"({"ietf-yang-push:push-change-update":{"datastore-changes":{"yang-patch":{"edit":[{"edit-id":"edit-1","operation":"create","target":"/example:top-level-leaf","value":{"example:top-level-leaf":"43"}}]}}}})");
+        }
+
+        auto uri = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, yp).url;
+
+        // The thread cooperation is described in the subscribed notification subcase
+
+        PREPARE_LOOP_WITH_EXCEPTIONS;
+        std::jthread notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
+            auto sess = sysrepo::Connection{}.sessionStart();
+            auto ctx = sess.getContext();
+
+            WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+
+            sess.switchDatastore(sysrepo::Datastore::Running);
+            sess.setItem("/example:top-level-leaf", "42");
+            sess.applyChanges();
+
+            sess.switchDatastore(sysrepo::Datastore::Startup);
+            sess.setItem("/example:top-level-leaf", "43");
+            sess.applyChanges();
+
+            std::this_thread::sleep_for(400ms);
+
+            sess.switchDatastore(sysrepo::Datastore::Running);
+            sess.setItem("/example:top-level-leaf", "44");
+            sess.setItem("/example:top-level-list[name='key1']", std::nullopt);
+            sess.setItem("/example-delete:secret[name='bla']", std::nullopt);
+            sess.applyChanges();
+
+            std::this_thread::sleep_for(400ms);
+
+            sess.deleteItem("/example:top-level-leaf");
+            sess.applyChanges();
+
+            // once the main thread has processed all the notifications, stop the ASIO loop
+            waitForCompletionAndBitMore(seq1);
+        }));
+
+        std::map<std::string, std::string> streamHeaders;
+        if (rpcRequestAuthHeader) {
+            streamHeaders.insert(*rpcRequestAuthHeader);
+        }
+        SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, ypWatcher, uri, streamHeaders);
+        RUN_LOOP_WITH_EXCEPTIONS;
     }
 }
 

@@ -154,6 +154,7 @@ install(FILES
     ${CMAKE_SOURCE_DIR}/yang/ietf-network-instance@2019-01-21.yang
     ${CMAKE_SOURCE_DIR}/yang/ietf-subscribed-notifications@2019-09-09.yang
     ${CMAKE_SOURCE_DIR}/yang/ietf-restconf-subscribed-notifications@2019-11-17.yang
+    ${CMAKE_SOURCE_DIR}/yang/ietf-yang-push@2019-09-09.yang
     DESTINATION ${CMAKE_INSTALL_PREFIX}/share/yang/modules/rousette)
 
 include(CTest)
@@ -219,6 +220,7 @@ if(BUILD_TESTING)
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-network-instance@2019-01-21.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-subscribed-notifications@2019-09-09.yang --enable-feature replay --enable-feature encode-xml --enable-feature encode-json --enable-feature xpath --enable-feature subtree --enable-feature replay
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-restconf-subscribed-notifications@2019-11-17.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-yang-push@2019-09-09.yang --enable-feature on-change
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example.yang --enable-feature f1
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-delete.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-augment.yang

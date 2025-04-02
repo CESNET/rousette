@@ -101,6 +101,7 @@ TEST_CASE("invoking actions and rpcs")
       "ietf-subscribed-notifications:modify-subscription": [null],
       "ietf-subscribed-notifications:delete-subscription": [null],
       "ietf-subscribed-notifications:kill-subscription": [null],
+      "ietf-yang-push:resync-subscription": [null],
       "example:test-rpc": [null],
       "example:test-rpc-no-output": [null],
       "example:test-rpc-no-input": [null],
@@ -134,6 +135,7 @@ TEST_CASE("invoking actions and rpcs")
     <modify-subscription xmlns="urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications"/>
     <delete-subscription xmlns="urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications"/>
     <kill-subscription xmlns="urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications"/>
+    <resync-subscription xmlns="urn:ietf:params:xml:ns:yang:ietf-yang-push"/>
     <test-rpc xmlns="http://example.tld/example"/>
     <test-rpc-no-output xmlns="http://example.tld/example"/>
     <test-rpc-no-input xmlns="http://example.tld/example"/>
