@@ -173,6 +173,38 @@ sysrepo::DynamicSubscription makeYangPushOnChangeSubscription(sysrepo::Session& 
         excludedChanges,
         stopTime);
 }
+
+sysrepo::DynamicSubscription makeYangPushPeriodicSubscription(sysrepo::Session& session, const libyang::DataNode& rpcInput, libyang::DataNode&)
+{
+    sysrepo::Datastore datastore = sysrepo::Datastore::Running;
+    if (auto node = rpcInput.findPath("ietf-yang-push:datastore")) {
+        datastore = rousette::restconf::datastoreFromString(node->asTerm().valueStr());
+    } else {
+        throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Datastore is required for ietf-yang-push:periodic");
+    }
+
+    auto period = createInterval<std::centi>(rpcInput, "ietf-yang-push:periodic/period");
+    if (!period) {
+        throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "period is required for ietf-yang-push:periodic");
+    }
+
+    std::optional<sysrepo::NotificationTimeStamp> stopTime;
+    if (auto node = rpcInput.findPath("stop-time")) {
+        stopTime = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(node->asTerm().valueStr());
+    }
+
+    std::optional<sysrepo::NotificationTimeStamp> anchorTime;
+    if (auto node = rpcInput.findPath("ietf-yang-push:periodic/anchor-time")) {
+        anchorTime = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(node->asTerm().valueStr());
+    }
+
+    rousette::restconf::ScopedDatastoreSwitch dsSwitch(session, datastore);
+    return session.yangPushPeriodic(
+        createFilter(rpcInput, "ietf-yang-push:datastore-xpath-filter", "ietf-yang-push:datastore-subtree-filter"),
+        *period,
+        anchorTime,
+        stopTime);
+}
 }
 
 namespace rousette::restconf {
@@ -212,7 +244,7 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
         } else if (rpcInput.findPath("ietf-yang-push:on-change")) {
             sub = makeYangPushOnChangeSubscription(session, rpcInput, rpcOutput);
         } else if (rpcInput.findPath("ietf-yang-push:periodic")) {
-            throw ErrorResponse(400, "application", "invalid-attribute", "Periodic subscriptions are not yet implemented");
+            sub = makeYangPushPeriodicSubscription(session, rpcInput, rpcOutput);
         } else {
             throw ErrorResponse(400, "application", "invalid-attribute", "Could not deduce if YANG push on-change, YANG push periodic or subscribed notification");
         }
