@@ -60,12 +60,20 @@ struct SubscribedNotifications {
 
 constexpr auto netconfSubscribedNotif = SubscribedNotifications{.stream = "NETCONF", .filter = {}, .replayStartTime = std::nullopt};
 
-struct YangPushOnChange {
+struct YangPushBase {
     sysrepo::Datastore datastore;
     Filter filter;
+};
+
+struct YangPushOnChange : public YangPushBase {
     std::optional<std::chrono::milliseconds> dampeningPeriod;
     std::optional<sysrepo::SyncOnStart> syncOnStart;
     std::vector<std::string> excludedChangeTypes;
+};
+
+struct YangPushPeriodic : public YangPushBase {
+    std::chrono::milliseconds period;
+    std::optional<sysrepo::NotificationTimeStamp> anchorTime;
 };
 
 /** @brief Calls establish-subscription rpc, returns the url of the stream associated with the created subscription */
@@ -74,7 +82,7 @@ EstablishSubscriptionResult establishSubscription(
     const libyang::DataFormat rpcEncoding,
     const std::optional<std::pair<std::string, std::string>>& rpcRequestAuthHeader,
     const std::optional<std::string>& encodingLeafValue,
-    const std::variant<SubscribedNotifications, YangPushOnChange>& params)
+    const std::variant<SubscribedNotifications, YangPushOnChange, YangPushPeriodic>& params)
 {
     constexpr auto jsonPrefix = "ietf-subscribed-notifications";
     constexpr auto xmlNamespace = "urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications";
@@ -131,6 +139,22 @@ EstablishSubscriptionResult establishSubscription(
 
         for (const auto& changeType : yp.excludedChangeTypes) {
             rpcTree.newPath("ietf-yang-push:on-change/excluded-change[.='" + changeType + "']");
+        }
+    } else if (std::holds_alternative<YangPushPeriodic>(params)) {
+        const auto& yp = std::get<YangPushPeriodic>(params);
+        const auto periodCentiseconds = std::chrono::duration_cast<std::chrono::duration<std::chrono::milliseconds::rep, std::centi>>(yp.period);
+
+        rpcTree.newPath("ietf-yang-push:datastore", datastoreToString(yp.datastore));
+        rpcTree.newPath("ietf-yang-push:periodic/period", std::to_string(periodCentiseconds.count()));
+
+        if (std::holds_alternative<XPath>(yp.filter)) {
+            rpcTree.newPath("ietf-yang-push:datastore-xpath-filter", std::get<XPath>(yp.filter));
+        } else if (std::holds_alternative<libyang::XML>(yp.filter)) {
+            rpcTree.newPath2("ietf-yang-push:datastore-subtree-filter", std::get<libyang::XML>(yp.filter));
+        }
+
+        if (yp.anchorTime) {
+            rpcTree.newPath("ietf-yang-push:periodic/period", libyang::yangTimeFormat(*yp.anchorTime, libyang::TimezoneInterpretation::Local));
         }
     }
 
@@ -870,6 +894,93 @@ TEST_CASE("RESTCONF subscribed notifications")
 
             // once the main thread has processed all the notifications, stop the ASIO loop
             waitForCompletionAndBitMore(seq1);
+        }));
+
+        std::map<std::string, std::string> streamHeaders;
+        if (rpcRequestAuthHeader) {
+            streamHeaders.insert(*rpcRequestAuthHeader);
+        }
+        SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, ypWatcher, uri, streamHeaders);
+        RUN_LOOP_WITH_EXCEPTIONS;
+    }
+
+    SECTION("YANG push periodic")
+    {
+        RestconfYangPushWatcher ypWatcher(srConn.sessionStart().getContext());
+
+        YangPushPeriodic yp;
+        yp.period = 50ms;
+        yp.datastore = sysrepo::Datastore::Startup; // I'm intentionally avoiding running and operational datastores; they contain a lot of data (for instance, config false stuff in operational and NACM rules in running)
+
+        SECTION("Explicitly set encoding")
+        {
+            /* I am skipping testing full matrix of all possible configuration...
+             * This goes through the same code as YP On Change, let's just set everything to JSON here */
+
+            rpcRequestAuthHeader = AUTH_ROOT;
+
+            ypWatcher.setDataFormat(libyang::DataFormat::JSON);
+            rpcRequestEncoding = libyang::DataFormat::JSON;
+            rpcSubscriptionEncoding = "encode-json";
+
+            EXPECT_YP_PERIODIC_UPDATE(R"({"ietf-yang-push:push-update":{"datastore-contents":{}}})");
+            EXPECT_YP_PERIODIC_UPDATE(R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:top-level-leaf":"42"}}})");
+            EXPECT_YP_PERIODIC_UPDATE(R"({"ietf-yang-push:push-update":{"datastore-contents":{"example-delete:secret":[{"name":"bla"}]}}})");
+        }
+
+        SECTION("NACM works")
+        {
+            rpcRequestAuthHeader = std::nullopt;
+
+            EXPECT_YP_PERIODIC_UPDATE(R"({"ietf-yang-push:push-update":{"datastore-contents":{}}})");
+            EXPECT_YP_PERIODIC_UPDATE(R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:top-level-leaf":"42"}}})");
+            EXPECT_YP_PERIODIC_UPDATE(R"({"ietf-yang-push:push-update":{"datastore-contents":{}}})");
+        }
+
+        SECTION("Filter")
+        {
+            SECTION("XPath filter")
+            {
+                yp.filter = XPath{"/example:top-level-leaf"};
+            }
+
+            SECTION("Subtree filter is set")
+            {
+                yp.filter = libyang::XML{"<top-level-leaf xmlns='http://example.tld/example' />"};
+            }
+
+            EXPECT_YP_PERIODIC_UPDATE(R"({"ietf-yang-push:push-update":{"datastore-contents":{}}})");
+            EXPECT_YP_PERIODIC_UPDATE(R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:top-level-leaf":"42"}}})");
+            EXPECT_YP_PERIODIC_UPDATE(R"({"ietf-yang-push:push-update":{"datastore-contents":{}}})");
+        }
+
+        auto uri = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, yp).url;
+
+        // The thread cooperation is described in the subscribed notification subcase
+
+        PREPARE_LOOP_WITH_EXCEPTIONS;
+        std::jthread notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
+            auto sess = sysrepo::Connection{}.sessionStart();
+            auto ctx = sess.getContext();
+
+            WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+
+            std::this_thread::sleep_for(400ms);
+
+            sess.switchDatastore(sysrepo::Datastore::Startup);
+            sess.setItem("/example:top-level-leaf", "42");
+            sess.applyChanges();
+
+            std::this_thread::sleep_for(400ms);
+
+            sess.switchDatastore(sysrepo::Datastore::Startup);
+            sess.deleteItem("/example:top-level-leaf");
+            sess.setItem("/example-delete:secret[name='bla']", std::nullopt);
+            sess.applyChanges();
+
+            // once the main thread has processed all the notifications, stop the ASIO loop
+            waitForCompletionAndBitMore(seq1);
+            waitForCompletionAndBitMore(seq2);
         }));
 
         std::map<std::string, std::string> streamHeaders;
