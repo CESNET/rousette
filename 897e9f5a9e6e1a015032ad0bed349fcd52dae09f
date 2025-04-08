@@ -1,6 +1,23 @@
 {
   "comments": [
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "5caa779b_0339d42d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 9
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:17:26Z",
+      "side": 1,
+      "message": "oopsie, I shouldn\u0027t CR+2 with unresolved comments I guess",
+      "revId": "897e9f5a9e6e1a015032ad0bed349fcd52dae09f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "2bf8583f_5e6f848c",
