@@ -1,0 +1,267 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f076599f_3ed86b14",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 22
+      },
+      "lineNbr": 218,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:14:24Z",
+      "side": 1,
+      "message": "please use the longer `--enable-feature` syntax because that\u0027s what the rest of the code is already using",
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "add57bf7_b44201d6",
+        "filename": "src/http/EventStream.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:14:24Z",
+      "side": 1,
+      "message": "❤️",
+      "range": {
+        "startLine": 41,
+        "startChar": 0,
+        "endLine": 42,
+        "endChar": 107
+      },
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "09dd96a6_37f87b51",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:14:24Z",
+      "side": 1,
+      "message": "This is a bit more complex because these leafs are actually identyrefs, and identities allow for derived values. What happens if there\u0027s an installed module which provides an identity \u0027example:compact-json` that\u0027s derived from `ietf-subscribed-identities:encode-json`? Should the RESTCONF server accept it as-is?\n\nI don\u0027t know the answer to this; on one hand it might be useful to recognize it as a JSON, on the other hand it\u0027s also possible that this derived identity mandates some \"special\" behavior.\n\nPlease include a FIXME in the code which says that we explicitly ignore any derived identities because:\n- we have no idea what these derived identities might be used for,\n- both XML and JSON appear to be well working encoding already :).\n\n...and maybe also add that info to the error message.",
+      "range": {
+        "startLine": 89,
+        "startChar": 0,
+        "endLine": 93,
+        "endChar": 44
+      },
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ff407246_7e5682cd",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 257,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:14:24Z",
+      "side": 1,
+      "message": "I would prefer not having \"so many sysrepo sessions\". Given that this one is \"only\" used for filing some data which looks like it\u0027s related to monitoring, would it be OK to use the Server::m_monitoringSession for this?",
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5b7b1274_a559739c",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 287,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:14:24Z",
+      "side": 1,
+      "message": "make this configurable and pass the Server.cpp\u0027s `netconfStreamRoot` here. No need to modify the parser, that one already duplicates the strings in Server.cpp, but let\u0027s please prevent additional strings scattered around place.",
+      "range": {
+        "startLine": 287,
+        "startChar": 73,
+        "endLine": 287,
+        "endChar": 81
+      },
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a93fb3ab_b1710f94",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 325,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:14:24Z",
+      "side": 1,
+      "message": "On today\u0027s call you mentioned a bug that the server won\u0027t report the last notification when a subscription is terminated. This is probably the cause of the error; this function returns `true` as soon as the FD is closed, even if there are still some pending data which could be read from the FD.",
+      "range": {
+        "startLine": 325,
+        "startChar": 60,
+        "endLine": 325,
+        "endChar": 70
+      },
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c2d49334_0cbfcbe6",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 330,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:14:24Z",
+      "side": 1,
+      "message": "should the code maybe loop while there are some pending R events? I don\u0027t know the async machinery to understand whether the overhead is \"significant\", but still, I think that would be a bit cleaner code, not re-entering the async event loop \"all the time\" when there\u0027s \"a lot\" of pending events.",
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ab15d64b_19336229",
+        "filename": "src/restconf/NotificationStream.h",
+        "patchSetId": 22
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:14:24Z",
+      "side": 1,
+      "message": "So far, this is only used for error reporting (via its libyang context). Just use the session in m_subscriptionData instead.",
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c998a63f_4aa70443",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 437,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:14:24Z",
+      "side": 1,
+      "message": "This needs NACM authentication *for the actual RPC* (as you pointed out during the call, so I\u0027m just recording it here as a reminder).",
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1ced363d_6d99e716",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 929,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:14:24Z",
+      "side": 1,
+      "message": "I was wondering if we actually *need* a sysrepo session here, so I wrote https://gerrit.cesnet.cz/c/CzechLight/rousette/+/8534. Then I realized that you still have to check whether the just-authenticated user of this HTTP session is the same one as the one who created the dynamic subscription, and I guess that the easiest approach is to check the session\u0027s NACM username.\n\n-\u003e please check the username here.\n\nBut IMHO there\u0027s no need to pass the sysrepo session down to DynamicSubscriptionHttpRequest.",
+      "range": {
+        "startLine": 929,
+        "startChar": 149,
+        "endLine": 929,
+        "endChar": 153
+      },
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6fab23fd_e98b55a1",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 427,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:14:24Z",
+      "side": 1,
+      "message": "The previous format was more readable",
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d4230940_0828bd70",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:14:24Z",
+      "side": 1,
+      "message": "please use longer timeouts to prevent spurious CI failures; 500ms looks like a reasonable value to me",
+      "range": {
+        "startLine": 276,
+        "startChar": 40,
+        "endLine": 276,
+        "endChar": 45
+      },
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9c594eca_a2525818",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 279,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:14:24Z",
+      "side": 1,
+      "message": "same here",
+      "range": {
+        "startLine": 279,
+        "startChar": 40,
+        "endLine": 279,
+        "endChar": 45
+      },
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
