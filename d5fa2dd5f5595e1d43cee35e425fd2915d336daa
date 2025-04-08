@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "04520455_c74dd99a",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:25:42Z",
+      "side": 1,
+      "message": "this is not an std::optional\u003cstd::variant\u003cstd::monostate,...\u003e\u003e which looks redundant to me",
+      "revId": "d5fa2dd5f5595e1d43cee35e425fd2915d336daa",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
