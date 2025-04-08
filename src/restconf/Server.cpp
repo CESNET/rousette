@@ -847,7 +847,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
              {"ietf-subscribed-notifications", "2019-09-09", {}},
              {"ietf-restconf-subscribed-notifications", "2019-11-17", {}},
          }) {
-        if (auto mod = conn.sessionStart().getContext().getModuleImplemented(module)) {
+        if (auto mod = m_monitoringSession.getContext().getModuleImplemented(module)) {
             for (const auto& feature : features) {
                 if (!mod->featureEnabled(feature)) {
                     throw std::runtime_error("Module "s + module + "@" + version + " does not implement feature " + feature);
