@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6fef68b9_53e94df0",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 5
+      },
+      "lineNbr": 218,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:20:31Z",
+      "side": 1,
+      "message": "nit: --enable-feature",
+      "revId": "fe338b1ca33f583a2339438be7073bb381e863bd",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a459f034_bd19573c",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 308,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:20:31Z",
+      "side": 1,
+      "message": "there\u0027s a subtle off-by-one in the number of digits here",
+      "range": {
+        "startLine": 308,
+        "startChar": 72,
+        "endLine": 308,
+        "endChar": 77
+      },
+      "revId": "fe338b1ca33f583a2339438be7073bb381e863bd",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6429cfe5_fb8fdc8a",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 317,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:20:31Z",
+      "side": 1,
+      "message": "I don\u0027t understand this comment; what am I missing?",
+      "range": {
+        "startLine": 317,
+        "startChar": 141,
+        "endLine": 317,
+        "endChar": 178
+      },
+      "revId": "fe338b1ca33f583a2339438be7073bb381e863bd",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
