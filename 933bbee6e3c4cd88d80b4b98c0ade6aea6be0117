@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9af18824_3a6a7322",
+        "filename": "tests/event_watchers.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:27:14Z",
+      "side": 1,
+      "message": "nit: \"tree\u0027s\"?",
+      "range": {
+        "startLine": 107,
+        "startChar": 61,
+        "endLine": 107,
+        "endChar": 65
+      },
+      "revId": "933bbee6e3c4cd88d80b4b98c0ade6aea6be0117",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
