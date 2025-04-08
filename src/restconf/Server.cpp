@@ -902,7 +902,6 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     });
 
     server->handle(netconfStreamRoot, [this, conn](const auto& req, const auto& res) mutable {
-        auto sess = conn.sessionStart();
         std::optional<std::string> xpathFilter;
         std::optional<sysrepo::NotificationTimeStamp> startTime;
         std::optional<sysrepo::NotificationTimeStamp> stopTime;
@@ -914,6 +913,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
         }
 
         try {
+            auto sess = conn.sessionStart();
             authorizeRequest(nacm, sess, req);
 
             auto streamRequest = asRestconfStreamRequest(req.method(), req.uri().path, req.uri().raw_query);
@@ -962,9 +962,8 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             return;
         }
 
-        auto sess = conn.sessionStart(sysrepo::Datastore::Operational);
-
         try {
+            auto sess = conn.sessionStart(sysrepo::Datastore::Operational);
             authorizeRequest(nacm, sess, req);
 
             if (auto mod = asYangModule(sess.getContext(), req.uri().path); mod && hasAccessToYangSchema(sess, *mod)) {
