@@ -66,6 +66,29 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "c98c13a0_b9129eba",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:43:53Z",
+      "side": 1,
+      "message": "suggestion: I think a helper for this will be useful because they are used a lot in the following commits, so that you could do:\n\nauto stopTime \u003d optionalTime\u003csysrepo::NotificationTimeStamp\u003e(rpcInput, \"stop-time\");",
+      "range": {
+        "startLine": 122,
+        "startChar": 0,
+        "endLine": 125,
+        "endChar": 5
+      },
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "ff407246_7e5682cd",
         "filename": "src/restconf/NotificationStream.cpp",
         "patchSetId": 22
