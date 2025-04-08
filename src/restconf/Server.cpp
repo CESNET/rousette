@@ -447,6 +447,10 @@ std::optional<libyang::DataNode> processInternalRPC(sysrepo::Session& sess, liby
     const std::map<std::string, InternalRPCHandler> handlers{
         {"/ietf-subscribed-notifications:establish-subscription",
          {"/ietf-subscribed-notifications:filters", [&dynamicSubscriptions](auto&&... args) { return dynamicSubscriptions.establishSubscription(std::forward<decltype(args)>(args)...); }}},
+        {"/ietf-subscribed-notifications:kill-subscription",
+         {std::nullopt, [&dynamicSubscriptions](auto&&... args) { return dynamicSubscriptions.deleteSubscription(std::forward<decltype(args)>(args)...); }}},
+        {"/ietf-subscribed-notifications:delete-subscription",
+         {std::nullopt, [&dynamicSubscriptions](auto&&... args) { return dynamicSubscriptions.deleteSubscription(std::forward<decltype(args)>(args)...); }}},
     };
 
     const auto rpcPath = rpcInput.path();
