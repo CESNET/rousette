@@ -24,8 +24,13 @@ constexpr auto uuidV4Regex = "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89a
 using namespace std::chrono_literals;
 using namespace std::string_literals;
 
+struct EstablishSubscriptionResult {
+    uint32_t id;
+    std::string url;
+};
+
 /** @brief Calls establish-subscription rpc, returns the url of the stream associated with the created subscription */
-std::string establishSubscription(
+EstablishSubscriptionResult establishSubscription(
     const libyang::Context& ctx,
     const libyang::DataFormat rpcEncoding,
     const std::optional<std::pair<std::string, std::string>>& rpcRequestAuthHeader,
@@ -79,10 +84,16 @@ std::string establishSubscription(
     auto reply = ctx.newPath("/ietf-subscribed-notifications:establish-subscription");
     REQUIRE(reply.parseOp(resp.data, rpcEncoding, libyang::OperationType::ReplyRestconf).tree);
 
+    auto idNode = reply.findPath("id", libyang::InputOutputNodes::Output);
+    REQUIRE(idNode);
+
     auto urlNode = reply.findPath("ietf-restconf-subscribed-notifications:uri", libyang::InputOutputNodes::Output);
     REQUIRE(urlNode);
 
-    return urlNode->asTerm().valueStr();
+    return {
+        std::get<uint32_t>(idNode->asTerm().value()),
+        urlNode->asTerm().valueStr(),
+    };
 }
 
 TEST_CASE("RESTCONF subscribed notifications")
@@ -149,7 +160,7 @@ TEST_CASE("RESTCONF subscribed notifications")
         SECTION("User DWDM establishes subscription")
         {
             std::pair<std::string, std::string> user = AUTH_DWDM;
-            auto uri = establishSubscription(srSess.getContext(), libyang::DataFormat::JSON, user, std::nullopt);
+            auto [id, uri] = establishSubscription(srSess.getContext(), libyang::DataFormat::JSON, user, std::nullopt);
 
             std::map<std::string, std::string> headers;
 
@@ -367,7 +378,7 @@ TEST_CASE("RESTCONF subscribed notifications")
             }
         }
 
-        auto uri = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding);
+        auto [id, uri] = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding);
         REQUIRE(std::regex_match(uri, std::regex("/streams/subscribed/"s + uuidV4Regex)));
 
         PREPARE_LOOP_WITH_EXCEPTIONS
@@ -410,6 +421,126 @@ TEST_CASE("RESTCONF subscribed notifications")
         SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, streamHeaders);
         RUN_LOOP_WITH_EXCEPTIONS;
     }
+
+    SECTION("delete-subscription")
+    {
+        std::optional<Response> expectedResponse;
+        std::map<std::string, std::string> headers;
+        headers.insert(CONTENT_TYPE_JSON);
+
+        SECTION("Subscription created by dwdm")
+        {
+            rpcRequestAuthHeader = AUTH_DWDM;
+
+            SECTION("dwdm (author) can delete")
+            {
+                headers.insert(AUTH_DWDM);
+                expectedResponse = Response{204, noContentTypeHeaders, ""};
+            }
+
+            SECTION("Anonymous cannot delete anything because of NACM")
+            {
+                expectedResponse = Response{403, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "access-denied",
+        "error-path": "/ietf-subscribed-notifications:delete-subscription",
+        "error-message": "Access denied."
+      }
+    ]
+  }
+}
+)"};
+            }
+
+            SECTION("norules user")
+            {
+                headers.insert(AUTH_NORULES);
+                expectedResponse = Response{404, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-path": "/ietf-subscribed-notifications:delete-subscription",
+        "error-message": "Subscription not found."
+      }
+    ]
+  }
+}
+)"};
+            }
+
+            auto [id, uri] = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding);
+            auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + "}}";
+            REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:delete-subscription", headers, body) == expectedResponse);
+        }
+
+        SECTION("Anonymous user cannot delete subscription craeted by anonymous user")
+        {
+            rpcRequestAuthHeader = std::nullopt;
+            auto [id, uri] = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding);
+            auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + "}}";
+            REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:delete-subscription", headers, body) == Response{403, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "access-denied",
+        "error-path": "/ietf-subscribed-notifications:delete-subscription",
+        "error-message": "Access denied."
+      }
+    ]
+  }
+}
+)"});
+        }
+    }
+
+    SECTION("kill-subscription")
+    {
+        std::optional<Response> expectedResponse;
+        std::map<std::string, std::string> headers;
+        headers.insert(CONTENT_TYPE_JSON);
+
+        SECTION("User cannot kill")
+        {
+            SECTION("dwdm (author)")
+            {
+                headers.insert(AUTH_DWDM);
+            }
+
+            SECTION("anonymous")
+            {
+            }
+
+            expectedResponse = Response{403, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "access-denied",
+        "error-path": "/ietf-subscribed-notifications:kill-subscription",
+        "error-message": "Access denied."
+      }
+    ]
+  }
+}
+)"};
+        }
+
+        SECTION("root")
+        {
+            headers.insert(AUTH_ROOT);
+            expectedResponse = Response{204, noContentTypeHeaders, ""};
+        }
+
+        auto [id, uri] = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding);
+        auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + "}}";
+        REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:kill-subscription", headers, body) == expectedResponse);
+    }
 }
 
 TEST_CASE("Terminating server under notification load")
@@ -433,7 +564,7 @@ TEST_CASE("Terminating server under notification load")
     std::optional<std::pair<std::string, std::string>> rpcRequestAuthHeader;
 
     std::pair<std::string, std::string> auth = AUTH_ROOT;
-    auto uri = establishSubscription(srSess.getContext(), libyang::DataFormat::JSON, auth, std::nullopt);
+    auto [id, uri] = establishSubscription(srSess.getContext(), libyang::DataFormat::JSON, auth, std::nullopt);
 
     PREPARE_LOOP_WITH_EXCEPTIONS;
 
@@ -484,7 +615,7 @@ TEST_CASE("Cleaning up inactive subscriptions")
     constexpr auto inactivityTimeout = 2s;
     auto server = rousette::restconf::Server{srConn, SERVER_ADDRESS, SERVER_PORT, 0ms, 55s, inactivityTimeout};
 
-    auto uri = establishSubscription(srSess.getContext(), libyang::DataFormat::JSON, {AUTH_ROOT}, std::nullopt);
+    auto [id, uri] = establishSubscription(srSess.getContext(), libyang::DataFormat::JSON, {AUTH_ROOT}, std::nullopt);
 
     SECTION("Client connects and disconnects")
     {
