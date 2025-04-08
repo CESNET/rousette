@@ -443,6 +443,8 @@ std::optional<libyang::DataNode> processInternalRPC(sysrepo::Session& sess, cons
     using InternalRPCHandler = std::function<void(sysrepo::Session&, const libyang::DataFormat, const libyang::DataNode&, libyang::DataNode&)>;
     const std::map<std::string, InternalRPCHandler> handlers{
         {"/ietf-subscribed-notifications:establish-subscription", [&dynamicSubscriptions](auto&&... args) { return dynamicSubscriptions.establishSubscription(std::forward<decltype(args)>(args)...); }},
+        {"/ietf-subscribed-notifications:kill-subscription", [&dynamicSubscriptions](auto&&... args) { return dynamicSubscriptions.deleteSubscription(std::forward<decltype(args)>(args)...); }},
+        {"/ietf-subscribed-notifications:delete-subscription", [&dynamicSubscriptions](auto&&... args) { return dynamicSubscriptions.deleteSubscription(std::forward<decltype(args)>(args)...); }},
     };
 
     const auto rpcPath = rpcInput.path();
