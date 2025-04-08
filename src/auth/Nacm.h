@@ -20,6 +20,7 @@ class Nacm {
 public:
     Nacm(sysrepo::Connection conn);
     bool authorize(sysrepo::Session session, const std::string& user) const;
+    bool authorizeWithoutSession(const std::string& user) const;
 
 private:
     sysrepo::Session m_srSession;

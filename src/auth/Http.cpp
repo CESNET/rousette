@@ -14,18 +14,28 @@
 #include "auth/PAM.h"
 
 namespace rousette::auth {
-
-void authorizeRequest(const Nacm& nacm, sysrepo::Session& sess, [[maybe_unused]] const nghttp2::asio_http2::server::request& req)
+namespace {
+std::string do_http_auth(const nghttp2::asio_http2::server::request& req)
 {
-    std::string nacmUser;
     if (auto authHeader = http::getHeaderValue(req.header(), "authorization")) {
         // FIXME: propagate the remote host to PAM/auditd safely, https://github.com/CESNET/rousette/issues/11
-        nacmUser = rousette::auth::authenticate_pam(*authHeader, std::nullopt);
+        return rousette::auth::authenticate_pam(*authHeader, std::nullopt);
     } else {
-        nacmUser = ANONYMOUS_USER;
+        return ANONYMOUS_USER;
     }
+}
+}
 
-    if (!nacm.authorize(sess, nacmUser)) {
+void authorizeRequestWithoutSession(const Nacm& nacm, const nghttp2::asio_http2::server::request& req)
+{
+    if (!nacm.authorizeWithoutSession(do_http_auth(req))) {
+        throw Error{"Access denied."};
+    }
+}
+
+void authorizeRequest(const Nacm& nacm, sysrepo::Session& sess, const nghttp2::asio_http2::server::request& req)
+{
+    if (!nacm.authorize(sess, do_http_auth(req))) {
         throw Error{"Access denied."};
     }
 }
