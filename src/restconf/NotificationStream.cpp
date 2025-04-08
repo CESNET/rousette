@@ -315,6 +315,40 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
     }
 }
 
+void DynamicSubscriptions::deleteSubscription(sysrepo::Session& session, const libyang::DataFormat, const libyang::DataNode& rpcInput, libyang::DataNode&)
+{
+    const auto isKill = rpcInput.findPath("/ietf-subscribed-notifications:kill-subscription") != std::nullopt;
+
+    uint64_t subId;
+    if (auto node = rpcInput.findPath("id")) {
+        subId = std::get<uint32_t>(node->asTerm().value());
+    } else {
+        throw ErrorResponse(400, "application", "invalid-value", "Leaf 'id' is required.", rpcInput.path());
+    }
+
+    auto subscriptionData = getSubscriptionForUser(subId, session.getNacmUser());
+    if (!subscriptionData) {
+        throw ErrorResponse(404, "application", "invalid-value", "Subscription not found.", rpcInput.path());
+    }
+
+    /* I *think* the RFC 8639 silently disallows root executing delete-subscription on subscription that *was not* created by root.
+     * This is not explicitly stated in the RFC but the RPC node description says:
+     * > This RPC allows a subscriber to delete a subscription that
+     * > was previously created by that same subscriber using the
+     * > 'establish-subscription' RPC.
+     */
+    if (!isKill && session.getNacmUser() == session.getNacmRecoveryUser() && subscriptionData->user != session.getNacmRecoveryUser()) {
+        throw ErrorResponse(400, "application", "invalid-attribute", "Trying to delete subscription not created by root. Use kill-subscription instead.", rpcInput.path());
+    }
+
+    spdlog::debug("Terminating subscription id {}", subId);
+    subscriptionData->subscription.terminate("ietf-subscribed-notifications:no-such-subscription");
+    spdlog::debug("Terminating subscription id {}", subId);
+
+    std::unique_lock lock(m_mutex);
+    m_subscriptions.erase(subscriptionData->uuid);
+}
+
 void DynamicSubscriptions::terminateSubscription(const uint32_t subId)
 {
     std::unique_lock lock(m_mutex);
@@ -346,6 +380,22 @@ std::shared_ptr<DynamicSubscriptions::SubscriptionData> DynamicSubscriptions::ge
     return nullptr;
 }
 
+/** @brief Returns the subscription data for the given subscription id and user.
+ *
+ * @param id The ID of the subscription.
+ * @return A shared pointer to the SubscriptionData object if found and user is the one who established the subscription (or NACM recovery user), otherwise nullptr.
+ */
+std::shared_ptr<DynamicSubscriptions::SubscriptionData> DynamicSubscriptions::getSubscriptionForUser(const uint32_t subId, const std::optional<std::string>& user)
+{
+    std::unique_lock lock(m_mutex);
+    for (const auto& [uuid, subscriptionData] : m_subscriptions) {
+        if (subscriptionData->subscription.subscriptionId() == subId && (subscriptionData->user == user || user == sysrepo::Session::getNacmRecoveryUser())) {
+            return subscriptionData;
+        }
+    }
+
+    return nullptr;
+}
 
 DynamicSubscriptions::SubscriptionData::SubscriptionData(
     sysrepo::DynamicSubscription sub,
