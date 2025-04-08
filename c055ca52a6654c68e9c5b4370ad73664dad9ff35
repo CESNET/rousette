@@ -1,0 +1,90 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e8850f05_05392232",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:48:50Z",
+      "side": 1,
+      "message": "(this goes to the previous commit)",
+      "revId": "c055ca52a6654c68e9c5b4370ad73664dad9ff35",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e642df76_5d76209e",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 141,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:48:50Z",
+      "side": 1,
+      "message": "let\u0027s enjoy a nice duration_cast here :)",
+      "range": {
+        "startLine": 141,
+        "startChar": 73,
+        "endLine": 141,
+        "endChar": 95
+      },
+      "revId": "c055ca52a6654c68e9c5b4370ad73664dad9ff35",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c56bea0a_1f887a26",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 682,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:48:50Z",
+      "side": 1,
+      "message": "nit: consider rephrasing, because it took me a second to figure out that this is about content which gets stored into these DSes by \"other SW\". Now, `operational` was easy, that\u0027s because of the config:false noise, but it took me some more time to figure out that the `running` DS contains NACM rules, etc.",
+      "range": {
+        "startLine": 682,
+        "startChar": 55,
+        "endLine": 682,
+        "endChar": 147
+      },
+      "revId": "c055ca52a6654c68e9c5b4370ad73664dad9ff35",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4b95d270_3e5ff907",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 737,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-08T16:48:50Z",
+      "side": 1,
+      "message": "I think that these serialization formats have been already tested by the other code, so let\u0027s just stick with, say, JSON/JSON/JSON encoding. No need to test the rest, IMHO, right?",
+      "range": {
+        "startLine": 687,
+        "startChar": 0,
+        "endLine": 737,
+        "endChar": 13
+      },
+      "revId": "c055ca52a6654c68e9c5b4370ad73664dad9ff35",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
