@@ -224,6 +224,7 @@ std::vector<std::string> SSEClient::parseEvents(const std::string& msg)
             res.emplace_back(std::move(event));
             event.clear();
         } else {
+            CAPTURE(msg);
             FAIL("Unprefixed response");
         }
     }
