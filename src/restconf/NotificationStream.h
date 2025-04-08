@@ -100,7 +100,9 @@ public:
 
     DynamicSubscriptions(sysrepo::Session& session, const std::string& streamRootUri, const nghttp2::asio_http2::server::http2& server);
     std::shared_ptr<SubscriptionData> getSubscriptionForUser(const boost::uuids::uuid& uuid, const std::optional<std::string>& user);
+    std::shared_ptr<SubscriptionData> getSubscriptionForUser(const uint32_t subId, const std::optional<std::string>& user);
     void establishSubscription(sysrepo::Session& session, const libyang::DataFormat requestEncoding, const libyang::DataNode& rpcInput, libyang::DataNode& rpcOutput);
+    void deleteSubscription(sysrepo::Session& session, const libyang::DataFormat requestEncoding, const libyang::DataNode& rpcInput, libyang::DataNode& rpcOutput);
 
 private:
     const nghttp2::asio_http2::server::http2& m_server; // for getting io_contexts
