@@ -308,6 +308,30 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
     }
 }
 
+/** @brief Endpoint for kill or delete subscription RPC */
+void DynamicSubscriptions::deleteSubscription(sysrepo::Session& session, const libyang::DataFormat, const libyang::DataNode& rpcInput, libyang::DataNode&)
+{
+    const auto isKill = rpcInput.findPath("/ietf-subscribed-notifications:kill-subscription") != std::nullopt;
+    const auto rpcPath = isKill ? "/ietf-subscribed-notifications:kill-subscription" : "/ietf-subscribed-notifications:delete-subscription";
+
+    uint64_t subId;
+    if (auto node = rpcInput.findPath("id")) {
+        subId = std::get<uint32_t>(node->asTerm().value());
+    } else {
+        throw ErrorResponse(400, "application", "invalid-attribute", "Subscription id required.", rpcPath);
+    }
+
+    auto subscriptionData = getSubscriptionForUser(subId, isKill ? session.getNacmRecoveryUser() : session.getNacmUser());
+    if (!subscriptionData) {
+        throw ErrorResponse(404, "application", "invalid-value", "Subscription not found.", rpcPath);
+    }
+
+    terminateSubscription(subscriptionData->subscription.subscriptionId());
+
+    std::unique_lock lock(m_mutex);
+    m_subscriptions.erase(subscriptionData->uuid);
+}
+
 void DynamicSubscriptions::terminateSubscription(const uint32_t subId)
 {
     std::unique_lock lock(m_mutex);
@@ -339,6 +363,22 @@ std::shared_ptr<DynamicSubscriptions::SubscriptionData> DynamicSubscriptions::ge
     return nullptr;
 }
 
+/** @brief Returns the subscription data for the given subscription id and user.
+ *
+ * @param id The ID of the subscription.
+ * @return A shared pointer to the SubscriptionData object if found and user is the one who established the subscription (or NACM recovery user), otherwise nullptr.
+ */
+std::shared_ptr<DynamicSubscriptions::SubscriptionData> DynamicSubscriptions::getSubscriptionForUser(const uint32_t subId, const std::optional<std::string>& user)
+{
+    std::unique_lock lock(m_mutex);
+    for (const auto& [uuid, subscriptionData] : m_subscriptions) {
+        if (subscriptionData->subscription.subscriptionId() == subId && (subscriptionData->user == user || user == sysrepo::Session::getNacmRecoveryUser())) {
+            return subscriptionData;
+        }
+    }
+
+    return nullptr;
+}
 
 DynamicSubscriptions::SubscriptionData::SubscriptionData(
     sysrepo::DynamicSubscription sub,
