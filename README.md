@@ -66,7 +66,7 @@ When certain conditions are met, the anonymous access will be mapped to a NACM a
 There must be some specific access rights set up in `ietf-netconf-acm` model (these are currently very opinionated for our use-case):
 
 1. The first entry of `rule-list` list must be configured for `ANONYMOUS_USER_GROUP`.
-2. All the rules except the last one in this rule-list entry must enable only "read" access operation.
+2. All the rules except the last one in this rule-list entry must enable only "read" or "exec" access operation. Take extra care in specifying what modules and paths are allowed for anonymous users!
 3. The last rule in the first rule-set must be a wildcard rule that disables all operations over all modules.
 
 The anonymous user access is disabled whenever these rules are not met.

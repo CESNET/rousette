@@ -9,11 +9,11 @@
 #include "NacmIdentities.h"
 
 namespace {
-bool isRuleReadOnly(const libyang::DataNode& rule)
+bool isRuleReadOnlyOrExec(const libyang::DataNode& rule)
 {
     auto accessOperations = rule.findXPath("access-operations");
     return !accessOperations.empty() && std::all_of(accessOperations.begin(), accessOperations.end(), [](const auto& e) {
-        return e.asTerm().valueStr() == "read";
+        return e.asTerm().valueStr() == "read" || e.asTerm().valueStr() == "exec";
     });
 }
 
@@ -27,7 +27,7 @@ bool isRuleWildcardDeny(const libyang::DataNode& rule)
  *
  * The first rule-list element contains rules for anonymous user access, i.e.:
  *  - The group is set to @p anonGroup (this one should contain the anonymous user)
- *  - In rules (except the last one) the access-operation allowed is "read"
+ *  - In rules (except the last one) the access-operation allowed is "read" or "exec"
  *  - The last rule has module-name="*" and action "deny".
  *
  *  @return boolean indicating whether the rules are configured properly for anonymous user access
@@ -62,8 +62,8 @@ bool validAnonymousNacmRules(sysrepo::Session session, const std::string& anonGr
         return false;
     }
 
-    if (!std::all_of(rules.begin(), rules.end() - 1, isRuleReadOnly)) {
-        spdlog::debug("NACM config validation: First n-1 rules in the anonymous rule-list must be configured for read-access only");
+    if (!std::all_of(rules.begin(), rules.end() - 1, isRuleReadOnlyOrExec)) {
+        spdlog::debug("NACM config validation: First n-1 rules in the anonymous rule-list must be configured for read-access or exec only");
         return false;
     }
 
