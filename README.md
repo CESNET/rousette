@@ -94,7 +94,7 @@ In practical terms, this means that the NACM access rules for the following XPat
 - C++20 compiler (e.g., GCC 10.x+, clang 10+)
 - CMake 3.19+
 - optionally systemd - the shared library for logging to `sd-journal`
-- optionally for built-in tests, [Doctest](https://github.com/onqtam/doctest/) as a C++ unit test framework
+- optionally for built-in tests, [Doctest](https://github.com/doctest/doctest/) as a C++ unit test framework
 - optionally for built-in tests, [trompeloeil](https://github.com/rollbear/trompeloeil) for mock objects in C++
 - optionally for built-in tests, [`pam_matrix` and `pam_wrapper`](https://cwrap.org/pam_wrapper.html) for PAM mocking
 
