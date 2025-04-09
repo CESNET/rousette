@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e85a211f_ce47671b",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-09T19:46:05Z",
+      "side": 1,
+      "message": "As I said over Matrix, I think that we should only allow the establish-subscription RPC (or maybe all RPCs/actions from the `ietf-subscribed-notifications` module). I realize that the user would still have to configure an RPC, but if we disallow writes globally, it doesn\u0027t make much sense to open up to arbitrary RFCs.",
+      "revId": "de57996096c411e9e6836e4e857fec16b9a7bd7a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c7a36ade_8dcab2aa",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-09T19:46:05Z",
+      "side": 1,
+      "message": "nit: one sentence per line, please (just to make diffs pretty)",
+      "revId": "de57996096c411e9e6836e4e857fec16b9a7bd7a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
