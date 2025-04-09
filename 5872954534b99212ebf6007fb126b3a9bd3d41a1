@@ -20,6 +20,24 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "5ff1d0ea_559d7da0",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 22
+      },
+      "lineNbr": 218,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-04-09T19:26:29Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f076599f_3ed86b14",
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "add57bf7_b44201d6",
         "filename": "src/http/EventStream.cpp",
         "patchSetId": 22
@@ -66,6 +84,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "48b7954f_03cedc87",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-04-09T19:26:29Z",
+      "side": 1,
+      "message": "Done, except for the last part, not sure what exactly should that error message say.",
+      "parentUuid": "09dd96a6_37f87b51",
+      "range": {
+        "startLine": 89,
+        "startChar": 0,
+        "endLine": 93,
+        "endChar": 44
+      },
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "c98c13a0_b9129eba",
         "filename": "src/restconf/NotificationStream.cpp",
         "patchSetId": 22
@@ -77,6 +119,30 @@
       "writtenOn": "2025-04-08T16:43:53Z",
       "side": 1,
       "message": "suggestion: I think a helper for this will be useful because they are used a lot in the following commits, so that you could do:\n\nauto stopTime \u003d optionalTime\u003csysrepo::NotificationTimeStamp\u003e(rpcInput, \"stop-time\");",
+      "range": {
+        "startLine": 122,
+        "startChar": 0,
+        "endLine": 125,
+        "endChar": 5
+      },
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f2856504_6bb92573",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-04-09T19:26:29Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c98c13a0_b9129eba",
       "range": {
         "startLine": 122,
         "startChar": 0,
@@ -104,6 +170,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "61b9fb49_813f3d70",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 257,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-04-09T19:26:29Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ff407246_7e5682cd",
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "5b7b1274_a559739c",
@@ -117,6 +201,30 @@
       "writtenOn": "2025-04-08T16:14:24Z",
       "side": 1,
       "message": "make this configurable and pass the Server.cpp\u0027s `netconfStreamRoot` here. No need to modify the parser, that one already duplicates the strings in Server.cpp, but let\u0027s please prevent additional strings scattered around place.",
+      "range": {
+        "startLine": 287,
+        "startChar": 73,
+        "endLine": 287,
+        "endChar": 81
+      },
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3fabd8be_8c004d7d",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 287,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-04-09T19:26:29Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5b7b1274_a559739c",
       "range": {
         "startLine": 287,
         "startChar": 73,
@@ -152,6 +260,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "1dba6be3_9ca1646c",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 325,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-04-09T19:26:29Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a93fb3ab_b1710f94",
+      "range": {
+        "startLine": 325,
+        "startChar": 60,
+        "endLine": 325,
+        "endChar": 70
+      },
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "c2d49334_0cbfcbe6",
         "filename": "src/restconf/NotificationStream.cpp",
         "patchSetId": 22
@@ -163,6 +295,24 @@
       "writtenOn": "2025-04-08T16:14:24Z",
       "side": 1,
       "message": "should the code maybe loop while there are some pending R events? I don\u0027t know the async machinery to understand whether the overhead is \"significant\", but still, I think that would be a bit cleaner code, not re-entering the async event loop \"all the time\" when there\u0027s \"a lot\" of pending events.",
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2a0cf5ff_146935a9",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 330,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-04-09T19:26:29Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c2d49334_0cbfcbe6",
       "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -186,6 +336,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "f90488f6_c8814d3b",
+        "filename": "src/restconf/NotificationStream.h",
+        "patchSetId": 22
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-04-09T19:26:29Z",
+      "side": 1,
+      "message": "The problem is that there is only a raw session there and it is hidden in sysrepo-cpp internals. We would have to expose session getter in sysrepo::DynamicSubscription.\nThis is probably desirable though",
+      "parentUuid": "ab15d64b_19336229",
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "c998a63f_4aa70443",
         "filename": "src/restconf/Server.cpp",
         "patchSetId": 22
@@ -197,6 +365,24 @@
       "writtenOn": "2025-04-08T16:14:24Z",
       "side": 1,
       "message": "This needs NACM authentication *for the actual RPC* (as you pointed out during the call, so I\u0027m just recording it here as a reminder).",
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0efc527f_6b3b75fd",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 437,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-04-09T19:26:29Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c998a63f_4aa70443",
       "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -241,6 +427,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2fdac099_5828b1d6",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 427,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-04-09T19:26:29Z",
+      "side": 1,
+      "message": "Sorry, clang-format.",
+      "parentUuid": "6fab23fd_e98b55a1",
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "d4230940_0828bd70",
@@ -266,6 +470,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "125fc81c_ff90333e",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-04-09T19:26:29Z",
+      "side": 1,
+      "message": "Done. But can this really cause any CI failures? we are not waiting for something based on this time.",
+      "parentUuid": "d4230940_0828bd70",
+      "range": {
+        "startLine": 276,
+        "startChar": 40,
+        "endLine": 276,
+        "endChar": 45
+      },
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "9c594eca_a2525818",
         "filename": "tests/restconf-subscribed-notifications.cpp",
         "patchSetId": 22
@@ -277,6 +505,30 @@
       "writtenOn": "2025-04-08T16:14:24Z",
       "side": 1,
       "message": "same here",
+      "range": {
+        "startLine": 279,
+        "startChar": 40,
+        "endLine": 279,
+        "endChar": 45
+      },
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2a01f7a0_7b6991f8",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 279,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-04-09T19:26:29Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9c594eca_a2525818",
       "range": {
         "startLine": 279,
         "startChar": 40,
