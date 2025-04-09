@@ -9,10 +9,23 @@
 #include "NacmIdentities.h"
 
 namespace {
-bool isRuleReadOnly(const libyang::DataNode& rule)
+bool isWhitelistedRPC(const std::optional<libyang::DataNode>& moduleNameNode, const std::optional<libyang::DataNode>& rpcNameNode)
+{
+    if (!moduleNameNode || !rpcNameNode) {
+        return false;
+    }
+
+    return moduleNameNode->asTerm().valueStr() == "ietf-subscribed-notifications" && rpcNameNode->asTerm().valueStr() == "establish-subscription";
+}
+
+bool isRuleForAnonymousAccess(const libyang::DataNode& rule)
 {
     auto accessOperations = rule.findXPath("access-operations");
-    return accessOperations.size() == 1 && accessOperations.begin()->asTerm().valueStr() == "read";
+    auto rpcName = rule.findPath("rpc-name");
+    return accessOperations.size() == 1 && // Combining access operations is not allowed in anonymous user rules
+        (accessOperations.begin()->asTerm().valueStr() == "read" || // Either read...
+         (accessOperations.begin()->asTerm().valueStr() == "exec" && isWhitelistedRPC(rule.findPath("module-name"), rule.findPath("rpc-name"))) // ...or exec on whitelisted RPC.
+        );
 }
 
 bool isRuleWildcardDeny(const libyang::DataNode& rule)
@@ -25,7 +38,7 @@ bool isRuleWildcardDeny(const libyang::DataNode& rule)
  *
  * The first rule-list element contains rules for anonymous user access, i.e.:
  *  - The group is set to @p anonGroup (this one should contain the anonymous user)
- *  - In rules (except the last one) the access-operation allowed is "read"
+ *  - In rules (except the last one) the access-operation allowed is either "read" or "exec" on a whitelisted RPC.
  *  - The last rule has module-name="*" and action "deny".
  *
  *  @return boolean indicating whether the rules are configured properly for anonymous user access
@@ -60,8 +73,8 @@ bool validAnonymousNacmRules(sysrepo::Session session, const std::string& anonGr
         return false;
     }
 
-    if (!std::all_of(rules.begin(), rules.end() - 1, isRuleReadOnly)) {
-        spdlog::debug("NACM config validation: First n-1 rules in the anonymous rule-list must be configured for read-access only");
+    if (!std::all_of(rules.begin(), rules.end() - 1, isRuleForAnonymousAccess)) {
+        spdlog::debug("NACM config validation: First n-1 rules in the anonymous rule-list must be configured either for read-access only or exec on listed RPC paths");
         return false;
     }
 
