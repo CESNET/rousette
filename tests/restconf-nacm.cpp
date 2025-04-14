@@ -20,6 +20,8 @@ TEST_CASE("NACM")
     auto nacmGuard = manageNacm(srSess);
     auto server = rousette::restconf::Server{srConn, SERVER_ADDRESS, SERVER_PORT};
 
+    srSess.sendRPC(srSess.getContext().newPath("/ietf-factory-default:factory-reset"));
+
     // something we can read
     srSess.switchDatastore(sysrepo::Datastore::Operational);
     srSess.setItem("/ietf-system:system/contact", "contact");
