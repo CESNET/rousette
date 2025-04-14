@@ -12,9 +12,7 @@ namespace {
 bool isRuleReadOnly(const libyang::DataNode& rule)
 {
     auto accessOperations = rule.findXPath("access-operations");
-    return !accessOperations.empty() && std::all_of(accessOperations.begin(), accessOperations.end(), [](const auto& e) {
-        return e.asTerm().valueStr() == "read";
-    });
+    return accessOperations.size() == 1 && accessOperations.begin()->asTerm().valueStr() == "read";
 }
 
 bool isRuleWildcardDeny(const libyang::DataNode& rule)

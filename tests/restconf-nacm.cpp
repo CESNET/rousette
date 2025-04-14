@@ -95,6 +95,24 @@ TEST_CASE("NACM")
             srSess.applyChanges();
         }
 
+        DOCTEST_SUBCASE("Anonymous has one rule with both read and update access operations")
+        {
+            srSess.deleteItem("/ietf-netconf-acm:nacm/rule-list");
+            srSess.applyChanges();
+            srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/group[.='yangnobody']", "");
+            srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='1']/module-name", "ietf-system");
+            srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='1']/action", "permit");
+            srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='1']/access-operations", "read update");
+            srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='1']/path", "/ietf-system:system");
+            srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='2']/module-name", "*");
+            srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='2']/action", "deny");
+
+            srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/group[.='optics']", "");
+            srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/rule[name='1']/module-name", "ietf-system");
+            srSess.setItem("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/rule[name='1']/action", "permit");
+            srSess.applyChanges();
+        }
+
         DOCTEST_SUBCASE("Anonymous rulelist OK, but not at first place")
         {
             srSess.deleteItem("/ietf-netconf-acm:nacm/rule-list");
