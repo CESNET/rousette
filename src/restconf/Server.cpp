@@ -902,6 +902,9 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     });
 
     server->handle(netconfStreamRoot, [this, conn](const auto& req, const auto& res) mutable {
+        const auto& peer = http::peer_from_request(req);
+        spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
+
         std::optional<std::string> xpathFilter;
         std::optional<sysrepo::NotificationTimeStamp> startTime;
         std::optional<sysrepo::NotificationTimeStamp> stopTime;
