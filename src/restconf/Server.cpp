@@ -17,7 +17,6 @@
 #include "restconf/Exceptions.h"
 #include "restconf/NotificationStream.h"
 #include "auth/Http.h"
-#include "auth/PAM.h"
 #include "restconf/Server.h"
 #include "restconf/YangSchemaLocations.h"
 #include "restconf/uri.h"
