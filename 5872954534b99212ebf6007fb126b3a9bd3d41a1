@@ -352,6 +352,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "35a07d9b_2e83e867",
+        "filename": "src/restconf/NotificationStream.h",
+        "patchSetId": 22
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-05-05T20:00:05Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f90488f6_c8814d3b",
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c998a63f_4aa70443",
@@ -400,6 +418,30 @@
       "writtenOn": "2025-04-08T16:14:24Z",
       "side": 1,
       "message": "I was wondering if we actually *need* a sysrepo session here, so I wrote https://gerrit.cesnet.cz/c/CzechLight/rousette/+/8534. Then I realized that you still have to check whether the just-authenticated user of this HTTP session is the same one as the one who created the dynamic subscription, and I guess that the easiest approach is to check the session\u0027s NACM username.\n\n-\u003e please check the username here.\n\nBut IMHO there\u0027s no need to pass the sysrepo session down to DynamicSubscriptionHttpRequest.",
+      "range": {
+        "startLine": 929,
+        "startChar": 149,
+        "endLine": 929,
+        "endChar": 153
+      },
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "04969572_bc043e9d",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 929,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-05-05T20:00:05Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1ced363d_6d99e716",
       "range": {
         "startLine": 929,
         "startChar": 149,
