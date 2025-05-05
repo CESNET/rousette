@@ -22,8 +22,6 @@ EventStream::EventStream(const server::request& req, const server::response& res
     : res{res}
     , peer{peer_from_request(req)}
 {
-    spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
-
     if (initialEvent) {
         enqueue(*initialEvent);
     }

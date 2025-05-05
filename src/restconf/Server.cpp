@@ -41,6 +41,12 @@ constexpr auto notifPrefix = R"json({"ietf-restconf:notification":{"eventTime":"
 constexpr auto notifMid = R"json(","ietf-yang-push:push-update":{"datastore-contents":)json";
 constexpr auto notifSuffix = R"json(}}})json";
 
+void logRequest(const auto& request)
+{
+    const auto& peer = http::peer_from_request(request);
+    spdlog::info("{}: {} {}", peer, request.method(), request.uri().raw_path);
+}
+
 template <typename T>
 auto as_restconf_push_update(const std::string& content, const T& time)
 {
@@ -878,15 +884,15 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     });
 
     server->handle("/", [](const auto& req, const auto& res) {
-        const auto& peer = http::peer_from_request(req);
-        spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
+        logRequest(req);
+
         res.write_head(404, {TEXT_PLAIN, CORS});
         res.end();
     });
 
     server->handle("/.well-known/host-meta", [](const auto& req, const auto& res) {
-        const auto& peer = http::peer_from_request(req);
-        spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
+        logRequest(req);
+
         res.write_head(
                    200,
                    {
@@ -897,13 +903,14 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     });
 
     server->handle("/telemetry/optics", [this](const auto& req, const auto& res) {
+        logRequest(req);
+
         auto client = std::make_shared<http::EventStream>(req, res, opticsChange, as_restconf_push_update(dwdmEvents->currentData(), std::chrono::system_clock::now()));
         client->activate();
     });
 
     server->handle(netconfStreamRoot, [this, conn](const auto& req, const auto& res) mutable {
-        const auto& peer = http::peer_from_request(req);
-        spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
+        logRequest(req);
 
         std::optional<std::string> xpathFilter;
         std::optional<sysrepo::NotificationTimeStamp> startTime;
@@ -956,8 +963,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     });
 
     server->handle(yangSchemaRoot, [this, conn /* intentional copy */](const auto& req, const auto& res) mutable {
-        const auto& peer = http::peer_from_request(req);
-        spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
+        logRequest(req);
 
         if (req.method() == "OPTIONS" || (req.method() != "GET" && req.method() != "HEAD")) {
             res.write_head(req.method() == "OPTIONS" ? 200 : 405, {CORS, ALLOW_GET_HEAD_OPTIONS});
@@ -992,8 +998,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
     server->handle(restconfRoot,
         [conn /* intentionally by value, otherwise conn gets destroyed when the ctor returns */, this, timeout](const auto& req, const auto& res) mutable {
-            const auto& peer = http::peer_from_request(req);
-            spdlog::info("{}: {} {}", peer, req.method(), req.uri().raw_path);
+            logRequest(req);
 
             auto sess = conn.sessionStart(sysrepo::Datastore::Operational);
             DataFormat dataFormat;
