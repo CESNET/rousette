@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b55ab4f0_ad1de65d",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 914,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-05-06T11:32:08Z",
+      "side": 1,
+      "message": "this move looks like a result of a wrong rebase, so I reverted it now",
+      "revId": "0ba7984c1d724b1b0c68c386dc97ace5ee27ada6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
