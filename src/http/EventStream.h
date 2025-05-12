@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <boost/asio/deadline_timer.hpp>
 #include <boost/signals2.hpp>
 #include <list>
 #include <memory>
@@ -30,7 +31,12 @@ public:
     using EventSignal = boost::signals2::signal<void(const std::string& message)>;
     using Termination = boost::signals2::signal<void()>;
 
-    EventStream(const nghttp2::asio_http2::server::request& req, const nghttp2::asio_http2::server::response& res, Termination& terminate, EventSignal& signal, const std::optional<std::string>& initialEvent = std::nullopt);
+    EventStream(const nghttp2::asio_http2::server::request& req,
+                const nghttp2::asio_http2::server::response& res,
+                Termination& terminate,
+                EventSignal& signal,
+                const std::chrono::seconds keepAlivePingInterval,
+                const std::optional<std::string>& initialEvent = std::nullopt);
     void activate();
 
 private:
@@ -43,13 +49,16 @@ private:
     };
 
     State state = WaitingForEvents;
+    boost::asio::deadline_timer ping;
     std::list<std::string> queue;
     mutable std::mutex mtx; // for `state` and `queue`
     boost::signals2::scoped_connection eventSub, terminateSub;
     const std::string peer;
+    const std::chrono::seconds m_keepAlivePingInterval;
 
     size_t send_chunk(uint8_t* destination, std::size_t len, uint32_t* data_flags);
     ssize_t process(uint8_t* destination, std::size_t len, uint32_t* data_flags);
-    void enqueue(const std::string& what);
+    void enqueue(const std::string& fieldName, const std::string& what);
+    void start_ping();
 };
 }
