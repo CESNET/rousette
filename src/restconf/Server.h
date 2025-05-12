@@ -28,7 +28,11 @@ std::optional<std::string> as_subtree_path(const std::string& path);
 /** @short A RESTCONF-ish server */
 class Server {
 public:
-    explicit Server(sysrepo::Connection conn, const std::string& address, const std::string& port, const std::chrono::milliseconds timeout = std::chrono::milliseconds{0});
+    explicit Server(sysrepo::Connection conn,
+                    const std::string& address,
+                    const std::string& port,
+                    const std::chrono::milliseconds timeout = std::chrono::milliseconds{0},
+                    const std::chrono::seconds keepAlivePingInterval = std::chrono::seconds{55});
     ~Server();
     void join();
     void stop();

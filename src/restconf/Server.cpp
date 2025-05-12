@@ -864,13 +864,14 @@ std::vector<std::shared_ptr<boost::asio::io_context>> Server::io_services() cons
     return server->io_services();
 }
 
-Server::Server(sysrepo::Connection conn, const std::string& address, const std::string& port, const std::chrono::milliseconds timeout)
+Server::Server(sysrepo::Connection conn, const std::string& address, const std::string& port, const std::chrono::milliseconds timeout, const std::chrono::seconds keepAlivePingInterval)
     : m_monitoringSession(conn.sessionStart(sysrepo::Datastore::Operational))
     , nacm(conn)
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
     server->num_threads(1); // we only use one thread for the server, so we can call join() right away
+    server->read_timeout(boost::posix_time::seconds{60}); // terminate connection after 60 seconds of inactivity (this is explicitly setting the default value)
 
     for (const auto& [module, version, features] : {
              std::tuple<std::string, std::string, std::vector<std::string>>{"ietf-restconf", "2017-01-26", {}},
@@ -930,14 +931,14 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
         res.end("<XRD xmlns='http://docs.oasis-open.org/ns/xri/xrd-1.0'><Link rel='restconf' href='"s + restconfRoot + "'></XRD>"s);
     });
 
-    server->handle("/telemetry/optics", [this](const auto& req, const auto& res) {
+    server->handle("/telemetry/optics", [this, keepAlivePingInterval](const auto& req, const auto& res) {
         logRequest(req);
 
-        auto client = std::make_shared<http::EventStream>(req, res, shutdownRequested, opticsChange, as_restconf_push_update(dwdmEvents->currentData(), std::chrono::system_clock::now()));
+        auto client = std::make_shared<http::EventStream>(req, res, shutdownRequested, opticsChange, keepAlivePingInterval, as_restconf_push_update(dwdmEvents->currentData(), std::chrono::system_clock::now()));
         client->activate();
     });
 
-    server->handle(netconfStreamRoot, [this, conn](const auto& req, const auto& res) mutable {
+    server->handle(netconfStreamRoot, [this, conn, keepAlivePingInterval](const auto& req, const auto& res) mutable {
         logRequest(req);
 
         std::optional<std::string> xpathFilter;
@@ -970,7 +971,17 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
             // The signal is constructed outside NotificationStream class because it is required to be passed to
             // NotificationStream's parent (EventStream) constructor where it already must be constructed
             // Yes, this is a hack.
-            auto client = std::make_shared<NotificationStream>(req, res, shutdownRequested, std::make_shared<rousette::http::EventStream::EventSignal>(), sess, streamRequest.type.encoding, xpathFilter, startTime, stopTime);
+            auto client = std::make_shared<NotificationStream>(
+                req,
+                res,
+                shutdownRequested,
+                std::make_shared<rousette::http::EventStream::EventSignal>(),
+                keepAlivePingInterval,
+                sess,
+                streamRequest.type.encoding,
+                xpathFilter,
+                startTime,
+                stopTime);
             client->activate();
         } catch (const auth::Error& e) {
             processAuthError(req, res, e, [&res]() {
