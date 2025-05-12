@@ -6,6 +6,7 @@
  *
  */
 
+#include <spdlog/spdlog.h>
 #include "restconf_utils.h"
 #include "sysrepo-cpp/Session.hpp"
 
@@ -222,7 +223,12 @@ std::vector<std::string> SSEClient::parseEvents(const std::string& msg)
     std::string event;
 
     while (std::getline(iss, line)) {
-        if (line.compare(0, prefix.size(), prefix) == 0) {
+        if (line.starts_with(":")) {
+            spdlog::trace("SSE client received a comment: '{}'", line);
+            REQUIRE(std::getline(iss, line));
+            REQUIRE(line.empty());
+            continue;
+        } else if (line.compare(0, prefix.size(), prefix) == 0) {
             event += line.substr(prefix.size());
         } else if (line.empty()) {
             res.emplace_back(std::move(event));
