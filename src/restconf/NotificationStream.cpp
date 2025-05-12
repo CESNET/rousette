@@ -89,12 +89,13 @@ NotificationStream::NotificationStream(
     const nghttp2::asio_http2::server::response& res,
     rousette::http::EventStream::Termination& termination,
     std::shared_ptr<rousette::http::EventStream::EventSignal> signal,
+    const std::chrono::seconds keepAlivePingInterval,
     sysrepo::Session session,
     libyang::DataFormat dataFormat,
     const std::optional<std::string>& filter,
     const std::optional<sysrepo::NotificationTimeStamp>& startTime,
     const std::optional<sysrepo::NotificationTimeStamp>& stopTime)
-    : EventStream(req, res, termination, *signal)
+    : EventStream(req, res, termination, *signal, keepAlivePingInterval)
     , m_notificationSignal(signal)
     , m_session(std::move(session))
     , m_dataFormat(dataFormat)
