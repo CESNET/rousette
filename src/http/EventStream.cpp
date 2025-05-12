@@ -17,17 +17,27 @@ using namespace nghttp2::asio_http2;
 
 namespace rousette::http {
 
+constexpr auto FIELD_DATA = "data";
+constexpr auto FIELD_EMPTY = std::nullopt;
+
 /** @short After constructing, make sure to call activate() immediately. */
-EventStream::EventStream(const server::request& req, const server::response& res, Termination& termination, EventSignal& signal, const std::optional<std::string>& initialEvent)
+EventStream::EventStream(const server::request& req,
+                         const server::response& res,
+                         Termination& termination,
+                         EventSignal& signal,
+                         const std::chrono::seconds keepAlivePingInterval,
+                         const std::optional<std::string>& initialEvent)
     : res{res}
+    , ping{res.io_service()}
     , peer{peer_from_request(req)}
+    , m_keepAlivePingInterval(keepAlivePingInterval)
 {
     if (initialEvent) {
-        enqueue(*initialEvent);
+        enqueue(FIELD_DATA, *initialEvent);
     }
 
     eventSub = signal.connect([this](const auto& msg) {
-        enqueue(msg);
+        enqueue(FIELD_DATA, msg);
     });
 
     terminateSub = termination.connect([this]() {
@@ -56,6 +66,8 @@ shared_from_this() throws bad_weak_ptr, so we need a two-phase construction.
 */
 void EventStream::activate()
 {
+    start_ping();
+
     auto client = shared_from_this();
     res.write_head(200, {
         {"content-type", {"text/event-stream", false}},
@@ -65,6 +77,7 @@ void EventStream::activate()
     res.on_close([client](const auto ec) {
         spdlog::debug("{}: closed ({})", client->peer, nghttp2_http2_strerror(ec));
         std::lock_guard lock{client->mtx};
+        client->ping.cancel();
         client->eventSub.disconnect();
         client->terminateSub.disconnect();
         client->state = Closed;
@@ -113,14 +126,15 @@ ssize_t EventStream::process(uint8_t* destination, std::size_t len, uint32_t* da
     __builtin_unreachable();
 }
 
-void EventStream::enqueue(const std::string& what)
+void EventStream::enqueue(const std::optional<std::string>& field_name, const std::string& what)
 {
     std::string buf;
     buf.reserve(what.size());
     const std::regex newline{"\n"};
     for (auto it = std::sregex_token_iterator{what.begin(), what.end(), newline, -1};
             it != std::sregex_token_iterator{}; ++it) {
-        buf += "data: ";
+        buf += field_name.value_or("");
+        buf += ": ";
         buf += *it;
         buf += '\n';
     }
@@ -138,5 +152,26 @@ void EventStream::enqueue(const std::string& what)
     queue.push_back(buf);
     state = HasEvents;
     boost::asio::post(res.io_service(), [&res = this->res]() { res.resume(); });
+}
+
+void EventStream::start_ping()
+{
+    ping.expires_from_now(boost::posix_time::seconds(m_keepAlivePingInterval.count()));
+    ping.async_wait([maybeClient = weak_from_this()](const boost::system::error_code& ec) {
+        auto client = maybeClient.lock();
+        if (!client) {
+            spdlog::trace("ping: client already gone");
+            return;
+        }
+
+        if (ec == boost::asio::error::operation_aborted) {
+            spdlog::trace("{}: ping scheduler cancelled", client->peer);
+            return;
+        }
+
+        client->enqueue(FIELD_EMPTY, "keep-alive\n");
+        spdlog::debug("{}: keep-alive ping enqueued", client->peer);
+        client->start_ping();
+    });
 }
 }

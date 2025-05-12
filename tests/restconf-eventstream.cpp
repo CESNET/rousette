@@ -21,9 +21,9 @@ static const auto SERVER_PORT = "10091";
 
 using namespace std::chrono_literals;
 
-TEST_CASE("Termination on server shutdown")
+TEST_CASE("Event stream tests")
 {
-    trompeloeil::sequence seqMod1;
+    trompeloeil::sequence seq1, seq2;
     sysrepo::setLogLevelStderr(sysrepo::LogLevel::Information);
     spdlog::set_level(spdlog::level::trace);
 
@@ -34,37 +34,76 @@ TEST_CASE("Termination on server shutdown")
     srSess.sendRPC(srSess.getContext().newPath("/ietf-factory-default:factory-reset"));
 
     auto nacmGuard = manageNacm(srSess);
-    auto server = std::make_unique<rousette::restconf::Server>(srConn, SERVER_ADDRESS, SERVER_PORT);
     setupRealNacm(srSess);
 
+    const std::string notification(R"({"example:eventA":{"message":"blabla","progress":11}})");
     RestconfNotificationWatcher netconfWatcher(srConn.sessionStart().getContext());
 
-    const std::string notification(R"({"example:eventA":{"message":"blabla","progress":11}})");
-    EXPECT_NOTIFICATION(notification, seqMod1);
-    EXPECT_NOTIFICATION(notification, seqMod1);
-    EXPECT_NOTIFICATION(notification, seqMod1);
+    SECTION("Termination on server shutdown")
+    {
+        auto server = std::make_unique<rousette::restconf::Server>(srConn, SERVER_ADDRESS, SERVER_PORT);
 
-    auto notifSession = sysrepo::Connection{}.sessionStart();
-    auto ctx = notifSession.getContext();
+        EXPECT_NOTIFICATION(notification, seq1);
+        EXPECT_NOTIFICATION(notification, seq1);
+        EXPECT_NOTIFICATION(notification, seq1);
 
-    PREPARE_LOOP_WITH_EXCEPTIONS;
-    auto notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
         auto notifSession = sysrepo::Connection{}.sessionStart();
         auto ctx = notifSession.getContext();
 
-        WAIT_UNTIL_SSE_CLIENT_REQUESTS;
-        SEND_NOTIFICATION(notification);
-        SEND_NOTIFICATION(notification);
-        SEND_NOTIFICATION(notification);
-        waitForCompletionAndBitMore(seqMod1);
+        PREPARE_LOOP_WITH_EXCEPTIONS;
+        auto notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
+            auto notifSession = sysrepo::Connection{}.sessionStart();
+            auto ctx = notifSession.getContext();
 
-        auto beforeShutdown = std::chrono::system_clock::now();
-        server.reset();
-        auto shutdownDuration = std::chrono::system_clock::now() - beforeShutdown;
-        REQUIRE(shutdownDuration < 5s);
-    }));
+            WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+            SEND_NOTIFICATION(notification);
+            SEND_NOTIFICATION(notification);
+            SEND_NOTIFICATION(notification);
+            waitForCompletionAndBitMore(seq1);
 
-    SSEClient client(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, "/streams/NETCONF/JSON", std::map<std::string, std::string>{AUTH_ROOT});
+            auto beforeShutdown = std::chrono::system_clock::now();
+            server.reset();
+            auto shutdownDuration = std::chrono::system_clock::now() - beforeShutdown;
+            REQUIRE(shutdownDuration < 5s);
+        }));
 
-    RUN_LOOP_WITH_EXCEPTIONS;
+        SSEClient client(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, "/streams/NETCONF/JSON", std::map<std::string, std::string>{AUTH_ROOT});
+
+        RUN_LOOP_WITH_EXCEPTIONS;
+    }
+
+    SECTION("Keep-alive pings")
+    {
+        constexpr auto pingInterval = 1s;
+
+        RestconfNotificationWatcher netconfWatcher(srConn.sessionStart().getContext());
+        auto server = std::make_unique<rousette::restconf::Server>(srConn, SERVER_ADDRESS, SERVER_PORT, std::chrono::milliseconds{0}, pingInterval);
+
+        auto notifSession = sysrepo::Connection{}.sessionStart();
+        auto ctx = notifSession.getContext();
+
+        EXPECT_NOTIFICATION(notification, seq1);
+        expectations.emplace_back(NAMED_REQUIRE_CALL(netconfWatcher, comment(": keep-alive")).IN_SEQUENCE(seq2).TIMES(AT_LEAST(1)));
+
+        PREPARE_LOOP_WITH_EXCEPTIONS;
+        auto notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
+            WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+            SEND_NOTIFICATION(notification);
+            std::this_thread::sleep_for(3s); // Wait for the server to send at least one keep-alive ping
+            server.reset();
+        }));
+
+        SSEClient client(
+            io,
+            SERVER_ADDRESS,
+            SERVER_PORT,
+            requestSent,
+            netconfWatcher,
+            "/streams/NETCONF/JSON",
+            std::map<std::string, std::string>{AUTH_ROOT},
+            boost::posix_time::seconds{5},
+            SSEClient::ReportIgnoredLines::Yes);
+
+        RUN_LOOP_WITH_EXCEPTIONS;
+    }
 }

@@ -14,6 +14,8 @@
 
 using namespace std::literals;
 
+constexpr auto keepAlivePingInterval = std::chrono::seconds{55};
+
 int main(int argc [[maybe_unused]], char** argv [[maybe_unused]])
 {
     spdlog::set_level(spdlog::level::trace);
@@ -32,7 +34,7 @@ int main(int argc [[maybe_unused]], char** argv [[maybe_unused]])
     server.num_threads(4);
 
     server.handle("/events", [&shutdown, &sig](const auto& req, const auto& res) {
-        auto client = std::make_shared<rousette::http::EventStream>(req, res, shutdown, sig);
+        auto client = std::make_shared<rousette::http::EventStream>(req, res, shutdown, sig, keepAlivePingInterval);
         client->activate();
     });
 
