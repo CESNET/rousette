@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <boost/asio/deadline_timer.hpp>
 #include <boost/signals2.hpp>
 #include <list>
 #include <memory>
@@ -43,6 +44,7 @@ private:
     };
 
     State state = WaitingForEvents;
+    boost::asio::deadline_timer ping;
     std::list<std::string> queue;
     mutable std::mutex mtx; // for `state` and `queue`
     boost::signals2::scoped_connection eventSub, terminateSub;
@@ -50,6 +52,7 @@ private:
 
     size_t send_chunk(uint8_t* destination, std::size_t len, uint32_t* data_flags);
     ssize_t process(uint8_t* destination, std::size_t len, uint32_t* data_flags);
-    void enqueue(const std::string& what);
+    void enqueue(const std::optional<std::string>& field_name, const std::string& what);
+    void start_ping();
 };
 }
