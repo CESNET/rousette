@@ -228,7 +228,7 @@ std::vector<std::string> SSEClient::parseEvents(const std::string& msg)
     std::string event;
 
     while (std::getline(iss, line)) {
-        if (line.compare(0, prefix.size(), prefix) == 0) {
+        if (line.starts_with(prefix)) {
             event += line.substr(prefix.size());
         } else if (line.empty()) {
             res.emplace_back(std::move(event));
