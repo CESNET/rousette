@@ -36,7 +36,9 @@ public:
                                                Termination& terminate,
                                                EventSignal& signal,
                                                const std::chrono::seconds keepAlivePingInterval,
-                                               const std::optional<std::string>& initialEvent = std::nullopt);
+                                               const std::optional<std::string>& initialEvent = std::nullopt,
+                                               const std::function<void()>& onTerminationCb = std::function<void()>(),
+                                               const std::function<void()>& onClientDisconnectedCb = std::function<void()>());
 
 private:
     const nghttp2::asio_http2::server::response& res;
@@ -54,6 +56,8 @@ private:
     boost::signals2::scoped_connection eventSub, terminateSub;
     const std::string peer;
     const std::chrono::seconds m_keepAlivePingInterval;
+    std::function<void()> onTerminationCb; ///< optional callback when the stream is terminated
+    std::function<void()> onClientDisconnectedCb; ///< optional callback invoked in client.on_close()
 
     size_t send_chunk(uint8_t* destination, std::size_t len, uint32_t* data_flags);
     ssize_t process(uint8_t* destination, std::size_t len, uint32_t* data_flags);
@@ -66,7 +70,9 @@ protected:
                 Termination& terminate,
                 EventSignal& signal,
                 const std::chrono::seconds keepAlivePingInterval,
-                const std::optional<std::string>& initialEvent = std::nullopt);
+                const std::optional<std::string>& initialEvent = std::nullopt,
+                const std::function<void()>& onTerminationCb = std::function<void()>(),
+                const std::function<void()>& onClientDisconnectedCb = std::function<void()>());
     void activate();
 };
 }

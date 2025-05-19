@@ -25,11 +25,15 @@ EventStream::EventStream(const server::request& req,
                          Termination& termination,
                          EventSignal& signal,
                          const std::chrono::seconds keepAlivePingInterval,
-                         const std::optional<std::string>& initialEvent)
+                         const std::optional<std::string>& initialEvent,
+                         const std::function<void()>& onTerminationCb,
+                         const std::function<void()>& onClientDisconnectedCb)
     : res{res}
     , ping{res.io_service()}
     , peer{peer_from_request(req)}
     , m_keepAlivePingInterval(keepAlivePingInterval)
+    , onTerminationCb(onTerminationCb)
+    , onClientDisconnectedCb(onClientDisconnectedCb)
 {
     if (initialEvent) {
         enqueue(FIELD_DATA, *initialEvent);
@@ -41,6 +45,9 @@ EventStream::EventStream(const server::request& req,
 
     terminateSub = termination.connect([this]() {
         spdlog::trace("{}: will terminate", peer);
+        if (this->onTerminationCb) {
+            this->onTerminationCb();
+        }
         std::lock_guard lock{mtx};
         if (state == Closed) { // we are late to the party, res is already gone
             return;
@@ -80,6 +87,9 @@ void EventStream::activate()
         myself->eventSub.disconnect();
         myself->terminateSub.disconnect();
         myself->state = Closed;
+        if (myself->onClientDisconnectedCb) {
+            myself->onClientDisconnectedCb();
+        }
     });
 
     res.end([myself](uint8_t* destination, std::size_t len, uint32_t* data_flags) {
@@ -187,9 +197,11 @@ std::shared_ptr<EventStream> EventStream::create(const nghttp2::asio_http2::serv
                                                  Termination& terminate,
                                                  EventSignal& signal,
                                                  const std::chrono::seconds keepAlivePingInterval,
-                                                 const std::optional<std::string>& initialEvent)
+                                                 const std::optional<std::string>& initialEvent,
+                                                 const std::function<void()>& onTerminationCb,
+                                                 const std::function<void()>& onClientDisconnectedCb)
 {
-    auto stream = std::shared_ptr<EventStream>(new EventStream(req, res, terminate, signal, keepAlivePingInterval, initialEvent));
+    auto stream = std::shared_ptr<EventStream>(new EventStream(req, res, terminate, signal, keepAlivePingInterval, initialEvent, onTerminationCb, onClientDisconnectedCb));
     stream->activate();
     return stream;
 }
