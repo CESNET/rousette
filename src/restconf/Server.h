@@ -10,6 +10,7 @@
 #include <sysrepo-cpp/Subscription.hpp>
 #include "auth/Nacm.h"
 #include "http/EventStream.h"
+#include "restconf/DynamicSubscriptions.h"
 
 namespace nghttp2::asio_http2::server {
 class http2;
@@ -43,6 +44,7 @@ private:
     std::optional<sysrepo::Subscription> m_monitoringOperSub;
     auth::Nacm nacm;
     std::unique_ptr<nghttp2::asio_http2::server::http2> server;
+    DynamicSubscriptions m_dynamicSubscriptions;
     std::unique_ptr<sr::OpticalEvents> dwdmEvents;
     using JsonDiffSignal = boost::signals2::signal<void(const std::string& json)>;
     JsonDiffSignal opticsChange;
