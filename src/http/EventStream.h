@@ -54,5 +54,12 @@ private:
     ssize_t process(uint8_t* destination, std::size_t len, uint32_t* data_flags);
     void enqueue(const std::optional<std::string>& field_name, const std::string& what);
     void start_ping();
+
+    std::function<void()> onTerminationCb;
+    std::function<void()> onClientDisconnectedCb;
+
+protected:
+    void setOnTerminationCb(std::function<void()> cb);
+    void setOnClientDisconnectedCb(std::function<void()> cb);
 };
 }
