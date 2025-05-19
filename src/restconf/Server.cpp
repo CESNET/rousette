@@ -438,13 +438,16 @@ libyang::CreatedNodes createEditForPutAndPatch(libyang::Context& ctx, const std:
     return {editNode, replacementNode};
 }
 
-std::optional<libyang::DataNode> processInternalRPC(sysrepo::Session& sess, libyang::DataNode& rpcInput, const libyang::DataFormat requestEncoding)
+std::optional<libyang::DataNode> processInternalRPC(sysrepo::Session& sess, libyang::DataNode& rpcInput, const libyang::DataFormat requestEncoding, DynamicSubscriptions& dynamicSubscriptions)
 {
     struct InternalRPCHandler {
         std::optional<std::string> validationDataXPath; ///< XPath to data used for RPC input validation
         std::function<void(sysrepo::Session&, const libyang::DataFormat, const libyang::DataNode&, libyang::DataNode&)> rpcHandler; // The function that processes the RPC
     };
-    const std::map<std::string, InternalRPCHandler> handlers;
+    const std::map<std::string, InternalRPCHandler> handlers{
+        {"/ietf-subscribed-notifications:establish-subscription",
+         {"/ietf-subscribed-notifications:filters", [&dynamicSubscriptions](auto&&... args) { return dynamicSubscriptions.establishSubscription(std::forward<decltype(args)>(args)...); }}},
+    };
 
     const auto rpcPath = rpcInput.path();
 
@@ -482,7 +485,7 @@ std::optional<libyang::DataNode> processInternalRPC(sysrepo::Session& sess, liby
     return *parent;
 }
 
-void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx, const std::chrono::milliseconds timeout)
+void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx, const std::chrono::milliseconds timeout, DynamicSubscriptions& dynamicSubscriptions)
 {
     requestCtx->sess.switchDatastore(sysrepo::Datastore::Operational);
     auto ctx = requestCtx->sess.getContext();
@@ -516,7 +519,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx, const std::c
     if (requestCtx->restconfRequest.type == RestconfRequest::Type::Execute) {
         rpcReply = requestCtx->sess.sendRPC(*rpcNode, timeout);
     } else if (requestCtx->restconfRequest.type == RestconfRequest::Type::ExecuteInternal) {
-        rpcReply = processInternalRPC(requestCtx->sess, *rpcNode, *requestCtx->dataFormat.request);
+        rpcReply = processInternalRPC(requestCtx->sess, *rpcNode, *requestCtx->dataFormat.request, dynamicSubscriptions);
     }
 
     if (!rpcReply || rpcReply->immediateChildren().empty()) {
@@ -902,10 +905,16 @@ std::vector<std::shared_ptr<boost::asio::io_context>> Server::io_services() cons
     return server->io_services();
 }
 
-Server::Server(sysrepo::Connection conn, const std::string& address, const std::string& port, const std::chrono::milliseconds timeout, const std::chrono::seconds keepAlivePingInterval)
+Server::Server(
+    sysrepo::Connection conn,
+    const std::string& address,
+    const std::string& port,
+    const std::chrono::milliseconds timeout,
+    const std::chrono::seconds keepAlivePingInterval)
     : m_monitoringSession(conn.sessionStart(sysrepo::Datastore::Operational))
     , nacm(conn)
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
+    , m_dynamicSubscriptions(netconfStreamRoot)
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
     server->num_threads(1); // we only use one thread for the server, so we can call join() right away
@@ -917,7 +926,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
              {"ietf-netconf", "", {}},
              {"ietf-yang-library", "2019-01-04", {}},
              {"ietf-yang-patch", "2017-02-22", {}},
-             {"ietf-subscribed-notifications", "2019-09-09", {}},
+             {"ietf-subscribed-notifications", "2019-09-09", {"encode-xml", "encode-json"}},
              {"ietf-restconf-subscribed-notifications", "2019-11-17", {}},
          }) {
         if (auto mod = m_monitoringSession.getContext().getModuleImplemented(module)) {
@@ -1217,12 +1226,12 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 case RestconfRequest::Type::ExecuteInternal: {
                     auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, restconfRequest);
 
-                    req.on_data([requestCtx, timeout, peer=http::peer_from_request(req)](const uint8_t* data, std::size_t length) {
+                    req.on_data([this, requestCtx, timeout, peer=http::peer_from_request(req)](const uint8_t* data, std::size_t length) {
                         if (length > 0) {
                             requestCtx->payload.append(reinterpret_cast<const char*>(data), length);
                         } else {
                             spdlog::trace("{}: HTTP payload: {}", peer, requestCtx->payload);
-                            WITH_RESTCONF_EXCEPTIONS(processActionOrRPC, rejectWithError)(requestCtx, timeout);
+                            WITH_RESTCONF_EXCEPTIONS(processActionOrRPC, rejectWithError)(requestCtx, timeout, m_dynamicSubscriptions);
                         }
                     });
                     break;
