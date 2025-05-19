@@ -54,6 +54,8 @@ private:
     boost::signals2::scoped_connection eventSub, terminateSub;
     const std::string peer;
     const std::chrono::seconds m_keepAlivePingInterval;
+    std::function<void()> onTerminationCb; ///< optional callback when the stream is terminated
+    std::function<void()> onClientDisconnectedCb; ///< optional callback invoked in client.on_close()
 
     size_t send_chunk(uint8_t* destination, std::size_t len, uint32_t* data_flags);
     ssize_t process(uint8_t* destination, std::size_t len, uint32_t* data_flags);
@@ -68,5 +70,8 @@ protected:
                 const std::chrono::seconds keepAlivePingInterval,
                 const std::optional<std::string>& initialEvent = std::nullopt);
     void activate();
+
+    void setOnTerminationCb(std::function<void()> cb);
+    void setOnClientDisconnectedCb(std::function<void()> cb);
 };
 }

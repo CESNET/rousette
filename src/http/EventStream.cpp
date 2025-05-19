@@ -41,6 +41,9 @@ EventStream::EventStream(const server::request& req,
 
     terminateSub = termination.connect([this]() {
         spdlog::trace("{}: will terminate", peer);
+        if (onTerminationCb) {
+            onTerminationCb();
+        }
         std::lock_guard lock{mtx};
         if (state == Closed) { // we are late to the party, res is already gone
             return;
@@ -62,6 +65,9 @@ EventStream::EventStream(const server::request& req,
 
 This cannot be a part of the constructor because of enable_shared_from_this<> semantics. When in constructor,
 shared_from_this() throws bad_weak_ptr, so we need a two-phase construction.
+
+Side note: Please make sure that you are subclassing your class using public inheritance. If not, you are going to
+experience very nice and hard-to-debug crashes and you will spent hours trying to figure out what is wrong.
 */
 void EventStream::activate()
 {
@@ -80,6 +86,9 @@ void EventStream::activate()
         client->eventSub.disconnect();
         client->terminateSub.disconnect();
         client->state = Closed;
+        if (client->onClientDisconnectedCb) {
+            client->onClientDisconnectedCb();
+        }
     });
 
     res.end([client](uint8_t* destination, std::size_t len, uint32_t* data_flags) {
@@ -192,5 +201,15 @@ std::shared_ptr<EventStream> EventStream::create(const nghttp2::asio_http2::serv
     auto stream = std::shared_ptr<EventStream>(new EventStream(req, res, terminate, signal, keepAlivePingInterval, initialEvent));
     stream->activate();
     return stream;
+}
+
+void EventStream::setOnTerminationCb(std::function<void()> cb)
+{
+    onTerminationCb = std::move(cb);
+}
+
+void EventStream::setOnClientDisconnectedCb(std::function<void()> cb)
+{
+    onClientDisconnectedCb = std::move(cb);
 }
 }
