@@ -420,4 +420,22 @@ TEST_CASE("invoking actions and rpcs")
 )"});
         }
     }
+
+    SECTION("Internal RPC handlers")
+    {
+        // check NACM access
+        REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:kill-subscription", {CONTENT_TYPE_JSON}, R"({"ietf-subscribed-notifications:input": {}})") == Response{403, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "access-denied",
+        "error-path": "/ietf-subscribed-notifications:kill-subscription",
+        "error-message": "Access denied."
+      }
+    ]
+  }
+}
+)"});
+    }
 }
