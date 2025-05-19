@@ -25,11 +25,15 @@ EventStream::EventStream(const server::request& req,
                          Termination& termination,
                          EventSignal& signal,
                          const std::chrono::seconds keepAlivePingInterval,
-                         const std::optional<std::string>& initialEvent)
+                         const std::optional<std::string>& initialEvent,
+                         const std::function<void()>& onTerminationCb,
+                         const std::function<void()>& onClientDisconnectedCb)
     : res{res}
     , ping{res.io_service()}
     , peer{peer_from_request(req)}
     , m_keepAlivePingInterval(keepAlivePingInterval)
+    , onTerminationCb(onTerminationCb)
+    , onClientDisconnectedCb(onClientDisconnectedCb)
 {
     if (initialEvent) {
         enqueue(FIELD_DATA, *initialEvent);
@@ -41,6 +45,9 @@ EventStream::EventStream(const server::request& req,
 
     terminateSub = termination.connect([this]() {
         spdlog::trace("{}: will terminate", peer);
+        if (this->onTerminationCb) {
+            this->onTerminationCb();
+        }
         std::lock_guard lock{mtx};
         if (state == Closed) { // we are late to the party, res is already gone
             return;
@@ -62,6 +69,9 @@ EventStream::EventStream(const server::request& req,
 
 This cannot be a part of the constructor because of enable_shared_from_this<> semantics. When in constructor,
 shared_from_this() throws bad_weak_ptr, so we need a two-phase construction.
+
+Side note: Please make sure that you are subclassing your class using public inheritance. If not, you are going to
+experience very nice and hard-to-debug crashes and you will spent hours trying to figure out what is wrong.
 */
 void EventStream::activate()
 {
@@ -80,6 +90,9 @@ void EventStream::activate()
         client->eventSub.disconnect();
         client->terminateSub.disconnect();
         client->state = Closed;
+        if (client->onClientDisconnectedCb) {
+            client->onClientDisconnectedCb();
+        }
     });
 
     res.end([client](uint8_t* destination, std::size_t len, uint32_t* data_flags) {
@@ -187,9 +200,11 @@ std::shared_ptr<EventStream> EventStream::create(const nghttp2::asio_http2::serv
                                                  Termination& terminate,
                                                  EventSignal& signal,
                                                  const std::chrono::seconds keepAlivePingInterval,
-                                                 const std::optional<std::string>& initialEvent)
+                                                 const std::optional<std::string>& initialEvent,
+                                                 const std::function<void()>& onTerminationCb,
+                                                 const std::function<void()>& onClientDisconnectedCb)
 {
-    auto stream = std::shared_ptr<EventStream>(new EventStream(req, res, terminate, signal, keepAlivePingInterval, initialEvent));
+    auto stream = std::shared_ptr<EventStream>(new EventStream(req, res, terminate, signal, keepAlivePingInterval, initialEvent, onTerminationCb, onClientDisconnectedCb));
     stream->activate();
     return stream;
 }
