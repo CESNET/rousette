@@ -16,6 +16,52 @@
       "message": "recheck",
       "revId": "6f43a8551f735f7ff8abffdde7ac2edd5c2817ce",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2259997f_f2984ed3",
+        "filename": "src/http/EventStream.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-05-20T09:33:33Z",
+      "side": 1,
+      "message": "Given the default timeout is 60s, let\u0027s use 55s here. Green computing and what not.",
+      "range": {
+        "startLine": 22,
+        "startChar": 60,
+        "endLine": 22,
+        "endChar": 62
+      },
+      "revId": "6f43a8551f735f7ff8abffdde7ac2edd5c2817ce",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5ace3779_ec5c43d1",
+        "filename": "src/http/EventStream.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-05-20T09:33:33Z",
+      "side": 1,
+      "message": "Does it make sense to send an empty ping if there are no initial data? (An honest question.)",
+      "range": {
+        "startLine": 30,
+        "startChar": 0,
+        "endLine": 32,
+        "endChar": 5
+      },
+      "revId": "6f43a8551f735f7ff8abffdde7ac2edd5c2817ce",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
