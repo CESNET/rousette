@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "aac96a5e_41cf6da6",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-05-20T12:40:36Z",
+      "side": 1,
+      "message": "the TSAN failure looks legit on a quick glance (and the fact that ASAN/UBSAN also fails is important as well)",
+      "revId": "2198fc073cdbe4f7ce2a169758c09f422e9ae073",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
