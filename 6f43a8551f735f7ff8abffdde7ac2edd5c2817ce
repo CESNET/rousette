@@ -41,6 +41,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "dc36bc43_fcad7618",
+        "filename": "src/http/EventStream.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-05-20T09:42:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2259997f_f2984ed3",
+      "range": {
+        "startLine": 22,
+        "startChar": 60,
+        "endLine": 22,
+        "endChar": 62
+      },
+      "revId": "6f43a8551f735f7ff8abffdde7ac2edd5c2817ce",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "5ace3779_ec5c43d1",
@@ -54,6 +78,30 @@
       "writtenOn": "2025-05-20T09:33:33Z",
       "side": 1,
       "message": "Does it make sense to send an empty ping if there are no initial data? (An honest question.)",
+      "range": {
+        "startLine": 30,
+        "startChar": 0,
+        "endLine": 32,
+        "endChar": 5
+      },
+      "revId": "6f43a8551f735f7ff8abffdde7ac2edd5c2817ce",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3c320915_3d3b930a",
+        "filename": "src/http/EventStream.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-05-20T09:42:20Z",
+      "side": 1,
+      "message": "I understand the pings are for \"not terminating\" the connection. Why would I want to send it as an initial event? It might make sense to inform the client that the stream is OK and server actually sends something without waiting 55 seconds but I do not think that it is neccessary.",
+      "parentUuid": "5ace3779_ec5c43d1",
       "range": {
         "startLine": 30,
         "startChar": 0,
