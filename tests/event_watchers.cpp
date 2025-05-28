@@ -1,4 +1,5 @@
 #include <spdlog/spdlog.h>
+#include <sysrepo-cpp/Changes.hpp>
 #include "UniqueResource.h"
 #include "event_watchers.h"
 
