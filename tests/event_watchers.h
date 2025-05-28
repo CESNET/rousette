@@ -2,7 +2,7 @@
 #include "trompeloeil_doctest.h"
 #include <optional>
 #include <string>
-#include <sysrepo-cpp/Session.hpp>
+#include <sysrepo-cpp/Subscription.hpp>
 #include <vector>
 
 #define _CHANGE(OP, KEY, VAL) {OP, KEY, VAL}
