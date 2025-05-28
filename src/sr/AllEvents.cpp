@@ -9,6 +9,7 @@
 #include <set>
 #include <spdlog/spdlog.h>
 #include <libyang-cpp/Utils.hpp>
+#include <sysrepo-cpp/Changes.hpp>
 #include <sysrepo-cpp/utils/exception.hpp>
 #include <sysrepo.h>
 #include "sr/AllEvents.h"

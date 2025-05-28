@@ -8,7 +8,7 @@
 #include <boost/signals2.hpp>
 #include <memory>
 #include <optional>
-#include <sysrepo-cpp/Connection.hpp>
+#include <sysrepo-cpp/Subscription.hpp>
 
 /** @short Communication with sysrepo */
 namespace rousette::sr {
