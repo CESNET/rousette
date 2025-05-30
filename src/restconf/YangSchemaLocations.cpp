@@ -4,7 +4,6 @@
  * Written by Tomáš Pecka <tomas.pecka@cesnet.cz>
  */
 
-#include <boost/algorithm/string/predicate.hpp>
 #include <libyang-cpp/Collection.hpp>
 #include <libyang-cpp/Set.hpp>
 #include <sysrepo-cpp/Session.hpp>
@@ -61,7 +60,7 @@ libyang::DataNode replaceYangLibraryLocations(const std::optional<std::string>& 
 
         std::string locationLeafName;
 
-        if (boost::algorithm::starts_with(n.path(), "/ietf-yang-library:modules-state")) {
+        if (n.path().starts_with("/ietf-yang-library:modules-state")) {
             locationLeafName = "schema";
         } else {
             locationLeafName = "location";
