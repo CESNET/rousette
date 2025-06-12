@@ -44,6 +44,9 @@ void logRequest(const auto& request)
 {
     const auto& peer = http::peer_from_request(request);
     spdlog::info("{}: {} {}", peer, request.method(), request.uri().raw_path);
+    for (const auto& hdr: req.header()) {
+        spdlog::trace("{}: header: {}: {}", hdr.first, hdr.second);
+    }
 }
 
 template <typename T>
@@ -1085,6 +1088,8 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                             return;
                         }
 
+                        spdlog::trace("{}: HTTP payload: {}", http::peer_from_request(req), requestCtx->payload);
+
                         if (restconfRequest.type == RestconfRequest::Type::CreateChildren) {
                             WITH_RESTCONF_EXCEPTIONS(processPost, rejectWithError)(requestCtx, timeout);
                         } else if (restconfRequest.type == RestconfRequest::Type::MergeData && isYangPatch(requestCtx->req)) {
@@ -1147,6 +1152,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                         if (length > 0) {
                             requestCtx->payload.append(reinterpret_cast<const char*>(data), length);
                         } else {
+                            spdlog::trace("{}: HTTP payload: {}", http::peer_from_request(req), requestCtx->payload);
                             WITH_RESTCONF_EXCEPTIONS(processActionOrRPC, rejectWithError)(requestCtx, timeout);
                         }
                     });
