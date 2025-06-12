@@ -44,6 +44,9 @@ void logRequest(const auto& request)
 {
     const auto& peer = http::peer_from_request(request);
     spdlog::info("{}: {} {}", peer, request.method(), request.uri().raw_path);
+    for (const auto& hdr: request.header()) {
+        spdlog::trace("{}: header: {}: {}", peer, hdr.first, hdr.second.sensitive ? "<sensitive>"s : hdr.second.value);
+    }
 }
 
 template <typename T>
@@ -1079,11 +1082,13 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
 
                     auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, restconfRequest);
 
-                    req.on_data([requestCtx, restconfRequest /* intentional copy */, timeout](const uint8_t* data, std::size_t length) {
+                    req.on_data([requestCtx, restconfRequest /* intentional copy */, timeout, peer=http::peer_from_request(req)](const uint8_t* data, std::size_t length) {
                         if (length > 0) { // there are still some data to be read
                             requestCtx->payload.append(reinterpret_cast<const char*>(data), length);
                             return;
                         }
+
+                        spdlog::trace("{}: HTTP payload: {}", peer, requestCtx->payload);
 
                         if (restconfRequest.type == RestconfRequest::Type::CreateChildren) {
                             WITH_RESTCONF_EXCEPTIONS(processPost, rejectWithError)(requestCtx, timeout);
@@ -1143,10 +1148,11 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 case RestconfRequest::Type::ExecuteInternal: {
                     auto requestCtx = std::make_shared<RequestContext>(req, res, dataFormat, sess, restconfRequest);
 
-                    req.on_data([requestCtx, timeout](const uint8_t* data, std::size_t length) {
+                    req.on_data([requestCtx, timeout, peer=http::peer_from_request(req)](const uint8_t* data, std::size_t length) {
                         if (length > 0) {
                             requestCtx->payload.append(reinterpret_cast<const char*>(data), length);
                         } else {
+                            spdlog::trace("{}: HTTP payload: {}", peer, requestCtx->payload);
                             WITH_RESTCONF_EXCEPTIONS(processActionOrRPC, rejectWithError)(requestCtx, timeout);
                         }
                     });
