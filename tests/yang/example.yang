@@ -27,6 +27,25 @@ module example {
   }
   leaf-list top-level-leaf-list { type int32; }
 
+  container channel-plan {
+    list channel {
+      key "name";
+      leaf name { type string; }
+      leaf lower-frequency {
+        type int32;
+        units "Hz";
+      }
+      leaf upper-frequency {
+        type int32;
+        units "Hz";
+      }
+
+      must "lower-frequency < upper-frequency" {
+        description "The lower frequency must be less than the upper frequency.";
+      }
+    }
+  }
+
   container tlc {
     if-feature f1;
     list list {

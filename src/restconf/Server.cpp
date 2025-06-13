@@ -347,7 +347,7 @@ constexpr auto withRestconfExceptions(T func, U rejectWithError)
             } else if (e.code() == sysrepo::ErrorCode::ItemAlreadyExists) {
                 rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 409, "application", "resource-denied", "Resource already exists.", std::nullopt);
             } else if (e.code() == sysrepo::ErrorCode::ValidationFailed) {
-                bool isAction = requestCtx->sess.getContext().findPath(requestCtx->restconfRequest.path).nodeType() == libyang::NodeType::Action;
+                bool isAction = requestCtx->restconfRequest.path != "/" && requestCtx->sess.getContext().findPath(requestCtx->restconfRequest.path).nodeType() == libyang::NodeType::Action;
                 /*
                  * FIXME: This happens on invalid input data (e.g., missing mandatory nodes) or missing action data node.
                  * The former (invalid input data) should probably be validated by libyang's parseOp but it only parses.
