@@ -19,7 +19,6 @@
 #include <spdlog/sinks/ansicolor_sink.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <docopt.h>
 #include <spdlog/spdlog.h>
 #include <sysrepo-cpp/Session.hpp>
@@ -106,9 +105,14 @@ int main(int argc, char* argv [])
 
     auto conn = sysrepo::Connection{};
     auto server = rousette::restconf::Server{conn, "::1", "10080", timeout};
-    signal(SIGTERM, [](int) {});
-    signal(SIGINT, [](int) {});
-    pause();
+
+    /* FIXME: nghttp2-asio is calling io.run() wrapped in std::async.
+     * In case the handler function throws, the exception is not propagated to the main thread *until* someone calls server.join() which calls future.get() on all io.run() wrappers.
+     * Thankfully, we have only one thread, so we can just call join() right away. Underlying future.get() blocks until io.run() finishes, either gracefully or upon uncaught exception.
+     *
+     * !!! Will not work server uses multiple threads !!!
+     */
+    server.join();
 
     return 0;
 }

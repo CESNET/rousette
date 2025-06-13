@@ -1191,4 +1191,9 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     }
     spdlog::debug("Listening at {} {}", address, port);
 }
+
+void Server::join()
+{
+    server->join();
+}
 }
