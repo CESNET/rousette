@@ -30,6 +30,7 @@ class Server {
 public:
     explicit Server(sysrepo::Connection conn, const std::string& address, const std::string& port, const std::chrono::milliseconds timeout = std::chrono::milliseconds{0});
     ~Server();
+    void join();
 
 private:
     sysrepo::Session m_monitoringSession;
@@ -39,6 +40,9 @@ private:
     std::unique_ptr<sr::OpticalEvents> dwdmEvents;
     using JsonDiffSignal = boost::signals2::signal<void(const std::string& json)>;
     JsonDiffSignal opticsChange;
+    bool joined = false;
+
+    void stop();
 };
 }
 }
