@@ -180,4 +180,28 @@ TEST_CASE("Plain patch")
   }
 }
 )"});
+
+    REQUIRE(patch(RESTCONF_ROOT_DS("running"), {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({
+  "example:channel-plan": {
+    "channel": [
+      {
+        "name": "coriant",
+        "lower-frequency": 199999999,
+        "upper-frequency": 191500000
+      }
+    ]
+  }
+}
+)") == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "operation-failed",
+        "error-message": "Validation failed. Invalid input data."
+      }
+    ]
+  }
+}
+)"});
 }

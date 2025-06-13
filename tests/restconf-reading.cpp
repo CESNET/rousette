@@ -62,6 +62,7 @@ TEST_CASE("reading data")
         // this relies on a NACM rule for anonymous access that filters out "a lot of stuff"
         REQUIRE(get(RESTCONF_DATA_ROOT, {}) == Response{200, jsonHeaders, R"({
   "example:top-level-leaf": "moo",
+  "example:channel-plan": {},
   "example:tlc": {},
   "example:a": {
     "b": {
@@ -119,6 +120,7 @@ TEST_CASE("reading data")
 
         REQUIRE(get(RESTCONF_ROOT_DS("operational"), {}) == Response{200, jsonHeaders, R"({
   "example:top-level-leaf": "moo",
+  "example:channel-plan": {},
   "example:tlc": {},
   "example:a": {
     "b": {
@@ -176,6 +178,7 @@ TEST_CASE("reading data")
 
         REQUIRE(get(RESTCONF_ROOT_DS("running"), {}) == Response{200, jsonHeaders, R"({
   "example:top-level-leaf": "moo",
+  "example:channel-plan": {},
   "example:tlc": {},
   "example:a": {
     "b": {
