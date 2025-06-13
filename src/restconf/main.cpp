@@ -5,13 +5,13 @@
  *
 */
 
-#include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <inttypes.h>
 
 #include "configure.cmake.h" /* Expose HAVE_SYSTEMD */
 
+#include <boost/asio.hpp>
 #ifdef HAVE_SYSTEMD
    #include <spdlog/sinks/systemd_sink.h>
 #endif
@@ -19,7 +19,6 @@
 #include <spdlog/sinks/ansicolor_sink.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <docopt.h>
 #include <spdlog/spdlog.h>
 #include <sysrepo-cpp/Session.hpp>
@@ -106,9 +105,15 @@ int main(int argc, char* argv [])
 
     auto conn = sysrepo::Connection{};
     auto server = rousette::restconf::Server{conn, "::1", "10080", timeout};
-    signal(SIGTERM, [](int) {});
-    signal(SIGINT, [](int) {});
-    pause();
+
+    // allow graceful shutdown
+    boost::asio::signal_set signals(*server.io_services()[0], SIGTERM, SIGINT);
+    signals.async_wait([&](const boost::system::error_code& ec, int) {
+        if (!ec) {
+            server.stop();
+        }
+    });
+    server.join();
 
     return 0;
 }

@@ -827,6 +827,15 @@ bool isYangPatch(const nghttp2::asio_http2::server::request& req)
 
 Server::~Server()
 {
+    stop();
+
+    if (!joined) {
+        server->join();
+    }
+}
+
+void Server::stop()
+{
     // notification to stop has to go through the asio io_context
     for (const auto& service : server->io_services()) {
         boost::asio::deadline_timer t{*service, boost::posix_time::pos_infin};
@@ -836,8 +845,25 @@ Server::~Server()
                 });
         t.cancel();
     }
+}
 
+void Server::join()
+{
+    /* FIXME: nghttp2-asio is calling io.run() wrapped in std::async.
+     * In case the handler function throws, the exception is not propagated to the main thread *until* someone calls server.join() which calls future.get() on all io.run() wrappers.
+     * Thankfully, we have only one thread, so we can just call join() right away. Underlying future.get() blocks until io.run() finishes, either gracefully or upon uncaught exception.
+     *
+     * !!! Will not work server uses multiple threads !!!
+     */
+
+    // main thread waits here
     server->join();
+    joined = true;
+}
+
+std::vector<std::shared_ptr<boost::asio::io_context>> Server::io_services() const
+{
+    return server->io_services();
 }
 
 Server::Server(sysrepo::Connection conn, const std::string& address, const std::string& port, const std::chrono::milliseconds timeout)
@@ -846,6 +872,8 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
+    server->num_threads(1); // we only use one thread for the server, so we can call join() right away
+
     for (const auto& [module, version, features] : {
              std::tuple<std::string, std::string, std::vector<std::string>>{"ietf-restconf", "2017-01-26", {}},
              {"ietf-restconf-monitoring", "2017-01-26", {}},

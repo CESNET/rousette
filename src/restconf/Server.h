@@ -30,6 +30,9 @@ class Server {
 public:
     explicit Server(sysrepo::Connection conn, const std::string& address, const std::string& port, const std::chrono::milliseconds timeout = std::chrono::milliseconds{0});
     ~Server();
+    void join();
+    void stop();
+    std::vector<std::shared_ptr<boost::asio::io_context>> io_services() const;
 
 private:
     sysrepo::Session m_monitoringSession;
@@ -39,6 +42,7 @@ private:
     std::unique_ptr<sr::OpticalEvents> dwdmEvents;
     using JsonDiffSignal = boost::signals2::signal<void(const std::string& json)>;
     JsonDiffSignal opticsChange;
+    bool joined = false; // true if the server has been joined, join twice is an error
 };
 }
 }
