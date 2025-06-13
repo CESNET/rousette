@@ -333,37 +333,43 @@ constexpr auto withRestconfExceptions(T func, U rejectWithError)
     return [=](std::shared_ptr<RequestContext> requestCtx, auto&& ...args)
     {
         try {
-            func(requestCtx, std::forward<decltype(args)>(args)...);
-        } catch (const ErrorResponse& e) {
-            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath);
-        } catch (const libyang::ErrorWithCode& e) {
-            if (e.code() == libyang::ErrorCode::ValidationFailure) {
-                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", "Validation failure: "s + e.what(), std::nullopt);
-            } else {
-                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to libyang exception: "s + e.what(), std::nullopt);
+            try {
+                func(requestCtx, std::forward<decltype(args)>(args)...);
+            } catch (const ErrorResponse& e) {
+                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath);
+            } catch (const libyang::ErrorWithCode& e) {
+                if (e.code() == libyang::ErrorCode::ValidationFailure) {
+                    rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", "Validation failure: "s + e.what(), std::nullopt);
+                } else {
+                    rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to libyang exception: "s + e.what(), std::nullopt);
+                }
+            } catch (const sysrepo::ErrorWithCode& e) {
+                if (e.code() == sysrepo::ErrorCode::Unauthorized) {
+                    rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 403, "application", "access-denied", "Access denied.", std::nullopt);
+                } else if (e.code() == sysrepo::ErrorCode::NotFound) {
+                    rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", e.what(), std::nullopt);
+                } else if (e.code() == sysrepo::ErrorCode::ItemAlreadyExists) {
+                    rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 409, "application", "resource-denied", "Resource already exists.", std::nullopt);
+                } else if (e.code() == sysrepo::ErrorCode::ValidationFailed) {
+                    bool isAction = requestCtx->restconfRequest.path != "/" && requestCtx->sess.getContext().findPath(requestCtx->restconfRequest.path).nodeType() == libyang::NodeType::Action;
+                    /*
+                     * FIXME: This happens on invalid input data (e.g., missing mandatory nodes) or missing action data node.
+                     * The former (invalid input data) should probably be validated by libyang's parseOp but it only parses.
+                     * Is there better way? At least somehow extract logs? We can check if the action node exists before
+                     * sending the RPC but that is racy because two sysrepo operations must be done (query + rpc) and
+                     * operational DS cannot be locked.
+                     */
+                    spdlog::error(e.what());
+                    rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "application", "operation-failed", "Validation failed. Invalid input data"s + (isAction ? " or the action node is not present" : "") + ".", std::nullopt);
+                } else {
+                    rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception: "s + e.what(), std::nullopt);
+                }
             }
-        } catch (const sysrepo::ErrorWithCode& e) {
-            if (e.code() == sysrepo::ErrorCode::Unauthorized) {
-                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 403, "application", "access-denied", "Access denied.", std::nullopt);
-            } else if (e.code() == sysrepo::ErrorCode::NotFound) {
-                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", e.what(), std::nullopt);
-            } else if (e.code() == sysrepo::ErrorCode::ItemAlreadyExists) {
-                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 409, "application", "resource-denied", "Resource already exists.", std::nullopt);
-            } else if (e.code() == sysrepo::ErrorCode::ValidationFailed) {
-                bool isAction = requestCtx->restconfRequest.path != "/" && requestCtx->sess.getContext().findPath(requestCtx->restconfRequest.path).nodeType() == libyang::NodeType::Action;
-                /*
-                 * FIXME: This happens on invalid input data (e.g., missing mandatory nodes) or missing action data node.
-                 * The former (invalid input data) should probably be validated by libyang's parseOp but it only parses.
-                 * Is there better way? At least somehow extract logs? We can check if the action node exists before
-                 * sending the RPC but that is racy because two sysrepo operations must be done (query + rpc) and
-                 * operational DS cannot be locked.
-                 */
-                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "application", "operation-failed",
-                        "Validation failed. Invalid input data"s + (isAction ? " or the action node is not present" : "") + ".", std::nullopt);
-            } else {
-                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed",
-                        "Internal server error due to sysrepo exception: "s + e.what(), std::nullopt);
-            }
+        } catch (const std::exception& e) {
+            spdlog::warn("Unhandled exception: {}", e.what());
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error", std::nullopt);
+        } catch (...) {
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error", std::nullopt);
         }
     };
 }
