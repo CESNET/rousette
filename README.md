@@ -1,4 +1,4 @@
-# An almost-RESTCONF server
+# A RESTCONF server for sysrepo
 
 ![License](https://img.shields.io/github/license/cesnet/rousette)
 [![Gerrit](https://img.shields.io/badge/patches-via%20Gerrit-blue)](https://gerrit.cesnet.cz/q/project:CzechLight/rousette)
