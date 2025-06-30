@@ -837,14 +837,11 @@ Server::~Server()
 void Server::stop()
 {
     // notification to stop has to go through the asio io_context
-    for (const auto& service : server->io_services()) {
-        boost::asio::deadline_timer t{*service, boost::posix_time::pos_infin};
-        t.async_wait([server = this->server.get()](const boost::system::error_code&) {
-                spdlog::trace("Stoping HTTP/2 server");
-                server->stop();
-                });
-        t.cancel();
-    }
+    boost::asio::post(*server->io_services().front(), [server = this->server.get()]() {
+        spdlog::trace("Stoping HTTP/2 server");
+        server->stop();
+    });
+
     shutdownRequested();
 }
 
