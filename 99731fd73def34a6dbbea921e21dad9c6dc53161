@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a043dc04_a6699542",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-07-02T16:25:24Z",
+      "side": 1,
+      "message": "The only thing I was able to get from sanitizers, via clang+tsan run. asan nothing so far\nhttps://paste.nolog.cz/?9d99dac8b75ef0ed#24DUzo5uRt74dBVzoA585P8NErxqPeEfemnrbaJs1SJM",
+      "revId": "99731fd73def34a6dbbea921e21dad9c6dc53161",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
