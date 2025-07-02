@@ -16,6 +16,24 @@
       "message": "the TSAN failure looks legit on a quick glance (and the fact that ASAN/UBSAN also fails is important as well)",
       "revId": "2198fc073cdbe4f7ce2a169758c09f422e9ae073",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "eb26d790_8d4b8cd9",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-07-02T07:12:54Z",
+      "side": 1,
+      "message": "Yup, but I think that was a problem with https://gerrit.cesnet.cz/c/CzechLight/rousette/+/7410 which is now, hopefully, fixed.",
+      "parentUuid": "aac96a5e_41cf6da6",
+      "revId": "2198fc073cdbe4f7ce2a169758c09f422e9ae073",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
