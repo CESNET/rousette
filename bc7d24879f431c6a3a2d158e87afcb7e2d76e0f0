@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "dbed4bf7_e230dd29",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-07-22T18:56:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a171dd10_aa0b878f",
+      "range": {
+        "startLine": 22,
+        "startChar": 49,
+        "endLine": 22,
+        "endChar": 51
+      },
+      "revId": "bc7d24879f431c6a3a2d158e87afcb7e2d76e0f0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "b16c8f8c_80020f00",
@@ -37,6 +61,24 @@
       "writtenOn": "2025-07-22T08:49:44Z",
       "side": 1,
       "message": "I think that the interval has to be configurable, at least from the code, otherwise the tests will \"never\" hit the path where a ping is sent (or you\u0027ll have to write a test that runs for a minute, which is rather ugly).",
+      "revId": "bc7d24879f431c6a3a2d158e87afcb7e2d76e0f0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3c5e922c_29c1d09f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-07-22T18:56:42Z",
+      "side": 1,
+      "message": "agreed and I think the implementation is not correct anyway",
+      "parentUuid": "b16c8f8c_80020f00",
       "revId": "bc7d24879f431c6a3a2d158e87afcb7e2d76e0f0",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
