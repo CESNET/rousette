@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a171dd10_aa0b878f",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-07-22T08:49:44Z",
+      "side": 1,
+      "message": "the code sends it every 55 seconds",
+      "range": {
+        "startLine": 22,
+        "startChar": 49,
+        "endLine": 22,
+        "endChar": 51
+      },
+      "revId": "bc7d24879f431c6a3a2d158e87afcb7e2d76e0f0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b16c8f8c_80020f00",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-07-22T08:49:44Z",
+      "side": 1,
+      "message": "I think that the interval has to be configurable, at least from the code, otherwise the tests will \"never\" hit the path where a ping is sent (or you\u0027ll have to write a test that runs for a minute, which is rather ugly).",
+      "revId": "bc7d24879f431c6a3a2d158e87afcb7e2d76e0f0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
