@@ -64,7 +64,7 @@ void RestconfNotificationWatcher::setDataFormat(const libyang::DataFormat dataFo
     this->dataFormat = dataFormat;
 }
 
-void RestconfNotificationWatcher::operator()(const std::string& msg) const
+void RestconfNotificationWatcher::dataEvent(const std::string& msg) const
 {
     spdlog::trace("Client received data: {}", msg);
     auto notifDataNode = ctx.parseOp(msg,
@@ -78,4 +78,9 @@ void RestconfNotificationWatcher::operator()(const std::string& msg) const
     }
 
     data(*dataRoot->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink));
+}
+
+void RestconfNotificationWatcher::commentEvent(const std::string& msg) const
+{
+    comment(msg);
 }

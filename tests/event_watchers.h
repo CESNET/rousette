@@ -39,8 +39,10 @@ struct RestconfNotificationWatcher {
 
     RestconfNotificationWatcher(const libyang::Context& ctx);
     void setDataFormat(const libyang::DataFormat dataFormat);
-    void operator()(const std::string& msg) const;
+    void dataEvent(const std::string& msg) const;
+    void commentEvent(const std::string& msg) const;
 
+    MAKE_CONST_MOCK1(comment, void(const std::string&));
     MAKE_CONST_MOCK1(data, void(const std::string&));
 };
 
