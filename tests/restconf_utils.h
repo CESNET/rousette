@@ -88,17 +88,23 @@ struct SSEClient {
     std::shared_ptr<ng_client::session> client;
     boost::asio::deadline_timer t;
 
+    enum class ReportIgnoredLines {
+        No,
+        Yes,
+    };
+
     SSEClient(
         boost::asio::io_service& io,
         const std::string& server_address,
         const std::string& server_port,
         std::binary_semaphore& requestSent,
-        const RestconfNotificationWatcher& notification,
+        const SSEEventWatcher& eventWatcher,
         const std::string& uri,
         const std::map<std::string, std::string>& headers,
-        const boost::posix_time::seconds silenceTimeout = boost::posix_time::seconds(1)); // test code; the server should respond "soon"
+        const boost::posix_time::seconds silenceTimeout = boost::posix_time::seconds(1), // test code; the server should respond "soon"
+        const ReportIgnoredLines reportIgnoredLines = ReportIgnoredLines::No);
 
-    static std::vector<std::string> parseEvents(const std::string& msg);
+    static void parseEvents(const std::string& msg, const SSEEventWatcher& eventWatcher, const ReportIgnoredLines reportIgnoredLines);
 };
 
 #define PREPARE_LOOP_WITH_EXCEPTIONS \

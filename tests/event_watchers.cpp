@@ -53,6 +53,16 @@ sysrepo::Subscription datastoreNewStateSubscription(sysrepo::Session& session, D
         sysrepo::SubscribeOptions::DoneOnly);
 }
 
+void SSEEventWatcher::commentEvent(const std::string& msg) const
+{
+    comment(msg);
+}
+
+void SSEEventWatcher::dataEvent(const std::string& msg) const
+{
+    data(msg);
+}
+
 RestconfNotificationWatcher::RestconfNotificationWatcher(const libyang::Context& ctx)
     : ctx(ctx)
     , dataFormat(libyang::DataFormat::JSON)
@@ -64,7 +74,7 @@ void RestconfNotificationWatcher::setDataFormat(const libyang::DataFormat dataFo
     this->dataFormat = dataFormat;
 }
 
-void RestconfNotificationWatcher::operator()(const std::string& msg) const
+void RestconfNotificationWatcher::dataEvent(const std::string& msg) const
 {
     spdlog::trace("Client received data: {}", msg);
     auto notifDataNode = ctx.parseOp(msg,

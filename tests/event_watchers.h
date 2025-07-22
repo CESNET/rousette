@@ -33,15 +33,20 @@ static DatastoreChangesMock testMockForUntrackedModuleWrites;
     ALLOW_CALL(testMockForUntrackedModuleWrites, change(trompeloeil::_)); \
     auto SUBNAME = datastoreChangesSubscription(SESSION, testMockForUntrackedModuleWrites, MODULE);
 
-struct RestconfNotificationWatcher {
+struct SSEEventWatcher {
+    MAKE_CONST_MOCK1(comment, void(const std::string&));
+    MAKE_CONST_MOCK1(data, void(const std::string&));
+    virtual void commentEvent(const std::string& msg) const;
+    virtual void dataEvent(const std::string& msg) const;
+};
+
+struct RestconfNotificationWatcher : public SSEEventWatcher {
     libyang::Context ctx;
     libyang::DataFormat dataFormat;
 
     RestconfNotificationWatcher(const libyang::Context& ctx);
     void setDataFormat(const libyang::DataFormat dataFormat);
-    void operator()(const std::string& msg) const;
-
-    MAKE_CONST_MOCK1(data, void(const std::string&));
+    void dataEvent(const std::string& msg) const override;
 };
 
 #define EXPECT_NOTIFICATION(DATA, SEQ) expectations.emplace_back(NAMED_REQUIRE_CALL(netconfWatcher, data(DATA)).IN_SEQUENCE(SEQ));

@@ -169,10 +169,11 @@ SSEClient::SSEClient(
     const std::string& server_address,
     const std::string& server_port,
     std::binary_semaphore& requestSent,
-    const RestconfNotificationWatcher& notification,
+    const SSEEventWatcher& eventWatcher,
     const std::string& uri,
     const std::map<std::string, std::string>& headers,
-    const boost::posix_time::seconds silenceTimeout)
+    const boost::posix_time::seconds silenceTimeout,
+    const ReportIgnoredLines reportIgnoredLines)
     : client(std::make_shared<ng_client::session>(io, server_address, server_port))
     , t(io, silenceTimeout)
 {
@@ -191,17 +192,15 @@ SSEClient::SSEClient(
         }
     });
 
-    client->on_connect([&, uri, reqHeaders, silenceTimeout, server_address, server_port](auto) {
+    client->on_connect([&, uri, reqHeaders, silenceTimeout, server_address, server_port, reportIgnoredLines](auto) {
         boost::system::error_code ec;
 
         auto req = client->submit(ec, "GET", serverAddressAndPort(server_address, server_port) + uri, "", reqHeaders);
-        req->on_response([&, silenceTimeout](const ng_client::response& res) {
+        req->on_response([&, silenceTimeout, reportIgnoredLines](const ng_client::response& res) {
             requestSent.release();
-            res.on_data([&, silenceTimeout](const uint8_t* data, std::size_t len) {
+            res.on_data([&, silenceTimeout, reportIgnoredLines](const uint8_t* data, std::size_t len) {
                 // not a production-ready code. In real-life condition the data received in one callback might probably be incomplete
-                for (const auto& event : parseEvents(std::string(reinterpret_cast<const char*>(data), len))) {
-                    notification(event);
-                }
+                parseEvents(std::string(reinterpret_cast<const char*>(data), len), eventWatcher, reportIgnoredLines);
                 t.expires_from_now(silenceTimeout);
             });
         });
@@ -218,25 +217,30 @@ SSEClient::SSEClient(
     });
 }
 
-std::vector<std::string> SSEClient::parseEvents(const std::string& msg)
+void SSEClient::parseEvents(const std::string& msg, const SSEEventWatcher& eventWatcher, const ReportIgnoredLines reportIgnoredLines)
 {
-    static const std::string prefix = "data:";
+    static const std::string dataPrefix = "data:";
+    static const std::string ignorePrefix = ":";
 
-    std::vector<std::string> res;
     std::istringstream iss(msg);
     std::string line;
     std::string event;
 
     while (std::getline(iss, line)) {
-        if (line.starts_with(prefix)) {
-            event += line.substr(prefix.size());
-        } else if (line.empty()) {
-            res.emplace_back(std::move(event));
+        if (line.starts_with(ignorePrefix) && reportIgnoredLines == ReportIgnoredLines::Yes) {
+            eventWatcher.commentEvent(line);
+        } else if (line.starts_with(ignorePrefix)) {
+            continue;
+        } else if (line.starts_with(dataPrefix)) {
+            event += line.substr(dataPrefix.size());
+        } else if (line.empty() && !event.empty()) {
+            eventWatcher.dataEvent(event);
             event.clear();
+        } else if (line.empty()) {
+            continue;
         } else {
             CAPTURE(msg);
             FAIL("Unprefixed response");
         }
     }
-    return res;
 }
