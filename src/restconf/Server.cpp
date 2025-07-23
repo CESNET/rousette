@@ -934,8 +934,7 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
     server->handle("/telemetry/optics", [this, keepAlivePingInterval](const auto& req, const auto& res) {
         logRequest(req);
 
-        auto client = std::make_shared<http::EventStream>(req, res, shutdownRequested, opticsChange, keepAlivePingInterval, as_restconf_push_update(dwdmEvents->currentData(), std::chrono::system_clock::now()));
-        client->activate();
+        http::EventStream::create(req, res, shutdownRequested, opticsChange, keepAlivePingInterval, as_restconf_push_update(dwdmEvents->currentData(), std::chrono::system_clock::now()));
     });
 
     server->handle(netconfStreamRoot, [this, conn, keepAlivePingInterval](const auto& req, const auto& res) mutable {
@@ -968,21 +967,16 @@ Server::Server(sysrepo::Connection conn, const std::string& address, const std::
                 stopTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
             }
 
-            // The signal is constructed outside NotificationStream class because it is required to be passed to
-            // NotificationStream's parent (EventStream) constructor where it already must be constructed
-            // Yes, this is a hack.
-            auto client = std::make_shared<NotificationStream>(
+            NotificationStream::create(
                 req,
                 res,
                 shutdownRequested,
-                std::make_shared<rousette::http::EventStream::EventSignal>(),
                 keepAlivePingInterval,
                 sess,
                 streamRequest.type.encoding,
                 xpathFilter,
                 startTime,
                 stopTime);
-            client->activate();
         } catch (const auth::Error& e) {
             processAuthError(req, res, e, [&res]() {
                 res.write_head(401, {TEXT_PLAIN, CORS});

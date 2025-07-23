@@ -31,13 +31,12 @@ public:
     using EventSignal = boost::signals2::signal<void(const std::string& message)>;
     using Termination = boost::signals2::signal<void()>;
 
-    EventStream(const nghttp2::asio_http2::server::request& req,
-                const nghttp2::asio_http2::server::response& res,
-                Termination& terminate,
-                EventSignal& signal,
-                const std::chrono::seconds keepAlivePingInterval,
-                const std::optional<std::string>& initialEvent = std::nullopt);
-    void activate();
+    static std::shared_ptr<EventStream> create(const nghttp2::asio_http2::server::request& req,
+                                               const nghttp2::asio_http2::server::response& res,
+                                               Termination& terminate,
+                                               EventSignal& signal,
+                                               const std::chrono::seconds keepAlivePingInterval,
+                                               const std::optional<std::string>& initialEvent = std::nullopt);
 
 private:
     const nghttp2::asio_http2::server::response& res;
@@ -60,5 +59,14 @@ private:
     ssize_t process(uint8_t* destination, std::size_t len, uint32_t* data_flags);
     void enqueue(const std::string& fieldName, const std::string& what);
     void start_ping();
+
+protected:
+    EventStream(const nghttp2::asio_http2::server::request& req,
+                const nghttp2::asio_http2::server::response& res,
+                Termination& terminate,
+                EventSignal& signal,
+                const std::chrono::seconds keepAlivePingInterval,
+                const std::optional<std::string>& initialEvent = std::nullopt);
+    void activate();
 };
 }

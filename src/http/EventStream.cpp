@@ -173,4 +173,24 @@ void EventStream::start_ping()
         client->start_ping();
     });
 }
+
+/** @brief Create a new EventStream instance and activate it immediately.
+ *
+ * The stream is created with the given parameters and activated as if the activate() method was called.
+ *   ```
+ *   auto a = make_shared<EventStream>(...);
+ *   a->activate();
+ *   ```
+ */
+std::shared_ptr<EventStream> EventStream::create(const nghttp2::asio_http2::server::request& req,
+                                                 const nghttp2::asio_http2::server::response& res,
+                                                 Termination& terminate,
+                                                 EventSignal& signal,
+                                                 const std::chrono::seconds keepAlivePingInterval,
+                                                 const std::optional<std::string>& initialEvent)
+{
+    auto stream = std::shared_ptr<EventStream>(new EventStream(req, res, terminate, signal, keepAlivePingInterval, initialEvent));
+    stream->activate();
+    return stream;
+}
 }
