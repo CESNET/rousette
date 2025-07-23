@@ -183,4 +183,26 @@ libyang::DataNode replaceStreamLocations(const std::optional<std::string>& schem
 
     return node;
 }
+
+/** @brief Create a new NotificationStream instance and activate it immediately.
+ *
+ * The stream is created with the given parameters and activated, which means it starts listening for
+ * NETCONF notifications and sending them to the client.
+ */
+std::shared_ptr<NotificationStream> NotificationStream::create(
+    const nghttp2::asio_http2::server::request& req,
+    const nghttp2::asio_http2::server::response& res,
+    rousette::http::EventStream::Termination& termination,
+    const std::chrono::seconds keepAlivePingInterval,
+    sysrepo::Session sess,
+    libyang::DataFormat dataFormat,
+    const std::optional<std::string>& filter,
+    const std::optional<sysrepo::NotificationTimeStamp>& startTime,
+    const std::optional<sysrepo::NotificationTimeStamp>& stopTime)
+{
+    auto signal = std::make_shared<rousette::http::EventStream::EventSignal>();
+    auto stream = std::shared_ptr<NotificationStream>(new NotificationStream(req, res, termination, signal, keepAlivePingInterval, std::move(sess), dataFormat, filter, startTime, stopTime));
+    stream->activate();
+    return stream;
+}
 }

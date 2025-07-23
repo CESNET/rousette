@@ -34,8 +34,7 @@ int main(int argc [[maybe_unused]], char** argv [[maybe_unused]])
     server.num_threads(4);
 
     server.handle("/events", [&shutdown, &sig](const auto& req, const auto& res) {
-        auto client = std::make_shared<rousette::http::EventStream>(req, res, shutdown, sig, keepAlivePingInterval);
-        client->activate();
+        rousette::http::EventStream::create(req, res, shutdown, sig, keepAlivePingInterval);
     });
 
     server.handle("/", [](const auto& req, const auto& resp) {
