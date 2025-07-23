@@ -39,6 +39,18 @@ class NotificationStream : public rousette::http::EventStream {
     std::optional<sysrepo::Subscription> m_notifSubs;
 
 public:
+    static std::shared_ptr<NotificationStream> create(
+        const nghttp2::asio_http2::server::request& req,
+        const nghttp2::asio_http2::server::response& res,
+        rousette::http::EventStream::Termination& termination,
+        const std::chrono::seconds keepAlivePingInterval,
+        sysrepo::Session sess,
+        libyang::DataFormat dataFormat,
+        const std::optional<std::string>& filter,
+        const std::optional<sysrepo::NotificationTimeStamp>& startTime,
+        const std::optional<sysrepo::NotificationTimeStamp>& stopTime);
+
+protected:
     NotificationStream(
         const nghttp2::asio_http2::server::request& req,
         const nghttp2::asio_http2::server::response& res,
