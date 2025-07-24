@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "50c2056f_9a4e43c7",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 10
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-07-24T09:04:27Z",
+      "side": 1,
+      "message": "I\u0027d love to see a test which actually checks that everything is OK in presence of \"hung up\" connections, but I think that this is tricky to implement. Simply closing the connection won\u0027t work (that\u0027s a different scenario after all), so I guess the only possibility would be to pause the execution of the client\u0027s io_service. Could you take a look at that, please?",
+      "revId": "f8023f0f0d77215685eafe533e419fc6ce21bf91",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "20f08f28_fe63768b",
+        "filename": "src/restconf/Server.h",
+        "patchSetId": 10
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-07-24T09:04:27Z",
+      "side": 1,
+      "message": "This starts to become rather confusing, because this is the *sysrepo* timeout, not the HTTP2 timeout. I\u0027ll fix that in a follow-up commit.",
+      "range": {
+        "startLine": 34,
+        "startChar": 0,
+        "endLine": 35,
+        "endChar": 97
+      },
+      "revId": "f8023f0f0d77215685eafe533e419fc6ce21bf91",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
