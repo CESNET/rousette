@@ -61,6 +61,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "2d389edb_d1f33f66",
+        "filename": "src/http/EventStream.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 172,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-07-28T18:17:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3e0f8952_6aa6c3f9",
+      "range": {
+        "startLine": 172,
+        "startChar": 0,
+        "endLine": 172,
+        "endChar": 2
+      },
+      "revId": "f8023f0f0d77215685eafe533e419fc6ce21bf91",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "20f08f28_fe63768b",
         "filename": "src/restconf/Server.h",
         "patchSetId": 10
