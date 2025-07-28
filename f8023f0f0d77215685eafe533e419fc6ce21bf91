@@ -20,6 +20,47 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "2b1e0df3_3bbc196c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 10
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-07-28T14:27:46Z",
+      "side": 1,
+      "message": "Sorry for asking for something that\u0027s, I think, currently \"impossible\":\n\n- The nghttp2-asio doesn\u0027t implement write timeouts. Any server-side write currently [resets the read timeout](https://github.com/nghttp2/nghttp2-asio/blob/main/lib/asio_client_session_impl.cc#L722). As a result, once we start sending these application-level pings, the C++ wrapper around ASIO will never see a client timeout. This is actually different from how the C++ apps which are bundled with nghttp2 behave; these apps do have separate read and write timeouts.\n\n- The test scenario that I suggested assumed pausing an ASIO event loop. What I missed was the fact that the kernel will still be sending us the ACK packets for each ping that we issue.\n\nSo let\u0027s go back to what we are solving/fixing here: the original issue that\u0027s addressed by this patch is that *a client will disconnect when there are no pending events for a minute*. That\u0027s something which is indeed fixed by this patch; a client will no longer disconnect when there are no notifications.\n\nAre there any safety issues? It *seems* that it\u0027s a little bit dangerous to have code which will feed some data to the client indefinitely, but:\n\n- A malicious actor could simply fake whatever behavior is desirable from the client\u0027s PoV anyway, and \"consume\" these events.\n\n- When the network goes down, we will no longer have a write timeout of 60s, and instead we will have to rely on the TCP layer to tell us \"hey, stop, I\u0027ve lost that fella, you cannot send any more pings that way\". This will work with this patch.\n\nNow, it would be awesome if we could somehow detect that the client has gone by looking at some application level pings. However, this doesn\u0027t seem to be possible because no RESTCONF standard actually mandates that from a client, and popular clients such as curl have no API for enabling the HTTP2-level pings (and the nghttp2-asio doesn\u0027t have any API to react to these pings, or lack thereof, from the server\u0027s code anyway).\n\nSo, this patch only mitigates that auto-close of a long-polling HTTP connection. It\u0027s a pity that we cannot easily test what happens when such a client dies, but hey, that\u0027s life.",
+      "parentUuid": "50c2056f_9a4e43c7",
+      "revId": "f8023f0f0d77215685eafe533e419fc6ce21bf91",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3e0f8952_6aa6c3f9",
+        "filename": "src/http/EventStream.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 172,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-07-28T14:27:46Z",
+      "side": 1,
+      "message": "I am not sure that this is much clearer than simply writing:\n```\nclient-\u003eenqueue(\"\", \"\\n\");\n```\n...which means that I am suggesting to remove that `FIELD_EMPTY` constant, to not accept an `optional\u003cstring\u003e` for the prefix name, and to get rid of that `keep-alive` text because an empty string works just as well.",
+      "range": {
+        "startLine": 172,
+        "startChar": 0,
+        "endLine": 172,
+        "endChar": 2
+      },
+      "revId": "f8023f0f0d77215685eafe533e419fc6ce21bf91",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "20f08f28_fe63768b",
         "filename": "src/restconf/Server.h",
         "patchSetId": 10
