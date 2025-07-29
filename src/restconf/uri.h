@@ -6,6 +6,7 @@
 
 #pragma once
 #include <boost/optional.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/variant.hpp>
 #include <libyang-cpp/Module.hpp>
 #include <libyang-cpp/SchemaNode.hpp>
@@ -205,7 +206,14 @@ struct NetconfStreamRequest {
     NetconfStreamRequest(const libyang::DataFormat& encoding);
 };
 
-using RestconfStreamRequest = NetconfStreamRequest;
+struct SubscribedStreamRequest {
+    boost::uuids::uuid uuid;
+
+    SubscribedStreamRequest();
+    SubscribedStreamRequest(const boost::uuids::uuid& uuid);
+};
+
+using RestconfStreamRequest = std::variant<NetconfStreamRequest, SubscribedStreamRequest>;
 
 RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString = "");
 std::optional<libyang::SchemaNode> asLibyangSchemaNode(const libyang::Context& ctx, const std::vector<PathSegment>& pathSegments);

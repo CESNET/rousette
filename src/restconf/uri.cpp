@@ -8,6 +8,8 @@
 #include <boost/fusion/adapted/struct/adapt_struct.hpp>
 #include <boost/fusion/include/std_pair.hpp>
 #include <boost/spirit/home/x3/support/ast/variant.hpp>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <experimental/iterator>
 #include <libyang-cpp/Enum.hpp>
 #include <map>
@@ -57,12 +59,30 @@ const auto resources = x3::rule<class resources, URIPath>{"resources"} =
     ((x3::lit("/") | x3::eps) /* /restconf/ and /restconf */ >> x3::attr(URIPrefix{URIPrefix::Type::RestconfRoot}) >> x3::attr(std::vector<PathSegment>{}));
 const auto uriGrammar = x3::rule<class grammar, URIPath>{"grammar"} = x3::lit("/restconf") >> resources;
 
+const auto string_to_uuid = [](auto& ctx) {
+    try {
+        _val(ctx) = boost::uuids::string_generator()(_attr(ctx));
+        _pass(ctx) = true;
+    } catch (const std::runtime_error&) {
+        _pass(ctx) = false;
+    }
+};
+
+const auto uuid_impl = x3::rule<class uuid_impl, std::string>{"uuid_impl"} =
+    x3::repeat(8)[x3::xdigit] >> x3::char_('-') >>
+    x3::repeat(4)[x3::xdigit] >> x3::char_('-') >>
+    x3::repeat(4)[x3::xdigit] >> x3::char_('-') >>
+    x3::repeat(4)[x3::xdigit] >> x3::char_('-') >>
+    x3::repeat(12)[x3::xdigit];
+const auto uuid = x3::rule<class uuid, boost::uuids::uuid>{"uuid"} = uuid_impl[string_to_uuid];
+const auto subscribedStream = x3::rule<class subscribedStream, SubscribedStreamRequest>{"subscribedStream"} = x3::lit("/subscribed") >> "/" >> uuid;
 
 const auto netconfStream = x3::rule<class netconfStream, NetconfStreamRequest>{"netconfStream"} =
     x3::lit("/NETCONF") >>
     ((x3::lit("/XML") >> x3::attr(libyang::DataFormat::XML)) |
      (x3::lit("/JSON") >> x3::attr(libyang::DataFormat::JSON)));
-const auto streamUriGrammar = x3::rule<class grammar, NetconfStreamRequest>{"streamsGrammar"} = x3::lit("/streams") >> netconfStream;
+const auto streamUriGrammar = x3::rule<class grammar, std::variant<NetconfStreamRequest, SubscribedStreamRequest>>{"streamsGrammar"} =
+    x3::lit("/streams") >> (netconfStream | subscribedStream);
 
 // clang-format on
 }
@@ -674,6 +694,16 @@ NetconfStreamRequest::NetconfStreamRequest(const libyang::DataFormat& encoding)
 {
 }
 
+SubscribedStreamRequest::SubscribedStreamRequest()
+    : uuid(boost::uuids::nil_uuid())
+{
+}
+
+SubscribedStreamRequest::SubscribedStreamRequest(const boost::uuids::uuid& uuid)
+    : uuid(uuid)
+{
+}
+
 RestconfStreamRequest asRestconfStreamRequest(const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString)
 {
     if (httpMethod != "GET" && httpMethod != "HEAD") {
@@ -685,14 +715,16 @@ RestconfStreamRequest asRestconfStreamRequest(const std::string& httpMethod, con
         throw ErrorResponse(404, "application", "invalid-value", "Invalid stream");
     }
 
-    auto queryParameters = impl::parseQueryParams(uriQueryString);
-    if (!queryParameters) {
-        throw ErrorResponse(400, "protocol", "invalid-value", "Query parameters syntax error");
+    if (auto* request = std::get_if<NetconfStreamRequest>(&type.value())) {
+        auto queryParameters = impl::parseQueryParams(uriQueryString);
+        if (!queryParameters) {
+            throw ErrorResponse(400, "protocol", "invalid-value", "Query parameters syntax error");
+        }
+
+        validateQueryParametersForStream(*queryParameters);
+        request->queryParams = *queryParameters;
     }
 
-    validateQueryParametersForStream(*queryParameters);
-
-    type->queryParams = *queryParameters;
     return *type;
 }
 
