@@ -861,6 +861,7 @@ void Server::stop()
     });
 
     shutdownRequested();
+    m_dynamicSubscriptions.stop();
 }
 
 void Server::join()
@@ -887,11 +888,12 @@ Server::Server(
     const std::string& address,
     const std::string& port,
     const std::chrono::milliseconds timeout,
-    const std::chrono::seconds keepAlivePingInterval)
+    const std::chrono::seconds keepAlivePingInterval,
+    const std::chrono::seconds subNotifInactivityTimeout)
     : m_monitoringSession(conn.sessionStart(sysrepo::Datastore::Operational))
     , nacm(conn)
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
-    , m_dynamicSubscriptions(netconfStreamRoot)
+    , m_dynamicSubscriptions(netconfStreamRoot, *server, subNotifInactivityTimeout)
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
     server->num_threads(1); // we only use one thread for the server, so we can call join() right away
@@ -980,27 +982,38 @@ Server::Server(
 
             auto streamRequest = asRestconfStreamRequest(req.method(), req.uri().path, req.uri().raw_query);
 
-            if (auto it = streamRequest.queryParams.find("filter"); it != streamRequest.queryParams.end()) {
-                xpathFilter = std::get<std::string>(it->second);
-            }
+            if (std::holds_alternative<RestconfStreamRequest::SubscribedStream>(streamRequest.type)) {
+                if (auto sub = m_dynamicSubscriptions.getSubscriptionForUser(std::get<RestconfStreamRequest::SubscribedStream>(streamRequest.type).uuid, sess.getNacmUser())) {
+                    if (!sub->isReadyToAcceptClient()) {
+                        throw ErrorResponse(409, "application", "resource-denied", "There is already another GET request on this subscription.");
+                    }
 
-            if (auto it = streamRequest.queryParams.find("start-time"); it != streamRequest.queryParams.end()) {
-                startTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
-            }
-            if (auto it = streamRequest.queryParams.find("stop-time"); it != streamRequest.queryParams.end()) {
-                stopTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
-            }
+                    DynamicSubscriptionHttpStream::create(req, res, shutdownRequested, keepAlivePingInterval, sub);
+                } else {
+                    throw ErrorResponse(404, "application", "invalid-value", "Subscription not found.");
+                }
+            } else {
+                if (auto it = streamRequest.queryParams.find("filter"); it != streamRequest.queryParams.end()) {
+                    xpathFilter = std::get<std::string>(it->second);
+                }
+                if (auto it = streamRequest.queryParams.find("start-time"); it != streamRequest.queryParams.end()) {
+                    startTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
+                }
+                if (auto it = streamRequest.queryParams.find("stop-time"); it != streamRequest.queryParams.end()) {
+                    stopTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
+                }
 
-            NotificationStream::create(
-                req,
-                res,
-                shutdownRequested,
-                keepAlivePingInterval,
-                sess,
-                streamRequest.type.encoding,
-                xpathFilter,
-                startTime,
-                stopTime);
+                NotificationStream::create(
+                    req,
+                    res,
+                    shutdownRequested,
+                    keepAlivePingInterval,
+                    sess,
+                    std::get<RestconfStreamRequest::NetconfStream>(streamRequest.type).encoding,
+                    xpathFilter,
+                    startTime,
+                    stopTime);
+            }
         } catch (const auth::Error& e) {
             processAuthError(req, res, e, [&res]() {
                 res.write_head(401, {TEXT_PLAIN, CORS});
