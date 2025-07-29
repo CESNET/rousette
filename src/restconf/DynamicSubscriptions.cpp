@@ -12,6 +12,8 @@
 #include <sysrepo-cpp/utils/exception.hpp>
 #include "restconf/DynamicSubscriptions.h"
 #include "restconf/Exceptions.h"
+#include "restconf/utils/io.h"
+#include "restconf/utils/yang.h"
 
 namespace {
 
@@ -119,7 +121,7 @@ void DynamicSubscriptions::terminateSubscription(const uint32_t subId)
 
     const auto& [uuid, subscriptionData] = *it;
     spdlog::debug("{}: termination requested", fmt::streamed(*subscriptionData));
-    subscriptionData->subscription.terminate("ietf-subscribed-notifications:no-such-subscription");
+    subscriptionData->terminate("ietf-subscribed-notifications:no-such-subscription");
     m_subscriptions.erase(uuid);
 }
 
@@ -154,14 +156,54 @@ DynamicSubscriptions::SubscriptionData::SubscriptionData(
     , dataFormat(format)
     , uuid(uuid)
     , user(user)
+    , state(State::Start)
 {
     spdlog::debug("{}: created", fmt::streamed(*this));
 }
 
 DynamicSubscriptions::SubscriptionData::~SubscriptionData()
 {
+    terminate();
+}
+
+void DynamicSubscriptions::SubscriptionData::clientDisconnected()
+{
+    spdlog::debug("{}: client disconnected", fmt::streamed(*this));
+
+    std::lock_guard lock(mutex);
+    if (state == State::Terminating) {
+        return;
+    }
+
+    state = State::Start;
+}
+
+void DynamicSubscriptions::SubscriptionData::clientConnected()
+{
+    spdlog::debug("{}: client connected", fmt::streamed(*this));
+    std::lock_guard lock(mutex);
+    state = State::ReceiverActive;
+}
+
+bool DynamicSubscriptions::SubscriptionData::isReadyToAcceptClient() const
+{
+    std::lock_guard lock(mutex);
+    return state == State::Start;
+}
+
+void DynamicSubscriptions::SubscriptionData::terminate(const std::optional<std::string>& reason)
+{
+    std::lock_guard lock(mutex);
+
+    // already terminating, do nothing
+    if (state == State::Terminating) {
+        return;
+    }
+
+    state = State::Terminating;
+    spdlog::debug("{}: terminating subscription ({})", fmt::streamed(*this), reason.value_or("<no reason>"));
     try {
-        subscription.terminate();
+        subscription.terminate(reason);
     } catch (const sysrepo::ErrorWithCode& e) { // Maybe it was already terminated (stop-time).
         spdlog::warn("Failed to terminate {}: {}", fmt::streamed(*this), e.what());
     }
@@ -173,5 +215,86 @@ std::ostream& operator<<(std::ostream& os, const DynamicSubscriptions::Subscript
               << ", user " << sub.user
               << ", uuid " << boost::uuids::to_string(sub.uuid)
               << ")";
+}
+
+DynamicSubscriptionHttpStream::DynamicSubscriptionHttpStream(
+    const nghttp2::asio_http2::server::request& req,
+    const nghttp2::asio_http2::server::response& res,
+    rousette::http::EventStream::Termination& termination,
+    std::shared_ptr<rousette::http::EventStream::EventSignal> signal,
+    const std::chrono::seconds keepAlivePingInterval,
+    const std::shared_ptr<DynamicSubscriptions::SubscriptionData>& subscriptionData)
+    : EventStream(
+          req,
+          res,
+          termination,
+          *signal,
+          keepAlivePingInterval,
+          std::nullopt /* no initial event */,
+          [this]() { m_subscriptionData->terminate("ietf-subscribed-notifications:no-such-subscription"); },
+          [this]() { m_subscriptionData->clientDisconnected(); })
+    , m_subscriptionData(subscriptionData)
+    , m_signal(signal)
+    , m_stream(res.io_service(), m_subscriptionData->subscription.fd())
+{
+}
+
+DynamicSubscriptionHttpStream::~DynamicSubscriptionHttpStream()
+{
+    // The stream does not own the file descriptor, sysrepo does. It will be closed when the subscription terminates.
+    m_stream.release();
+}
+
+/** @brief Waits for the next notifications and process them */
+void DynamicSubscriptionHttpStream::awaitNextNotification()
+{
+    constexpr auto MAX_EVENTS = 50;
+
+    m_stream.async_wait(boost::asio::posix::stream_descriptor::wait_read, [this](const boost::system::error_code& err) {
+        // Unfortunately wait_read does not return operation_aborted when the file descriptor is closed and poll results in POLLHUP
+        if (err == boost::asio::error::operation_aborted || utils::pipeIsClosedAndNoData(m_subscriptionData->subscription.fd())) {
+            return;
+        }
+
+        size_t eventsProcessed = 0;
+        /* Process all the available notifications, but at most N
+         * In case sysrepo is providing the events fast enough, this loop would still run inside the event loop
+         * and the event responsible for sending the data to the client would not get to be processed.
+         * TODO: Is this enough? What if this async_wait keeps getting called and nothing gets sent?
+         */
+        while (++eventsProcessed < MAX_EVENTS && utils::pipeHasData(m_subscriptionData->subscription.fd())) {
+            std::lock_guard lock(m_subscriptionData->mutex); // sysrepo-cpp's processEvent and terminate is not thread safe
+            m_subscriptionData->subscription.processEvent([&](const std::optional<libyang::DataNode>& notificationTree, const sysrepo::NotificationTimeStamp& time) {
+                (*m_signal)(rousette::restconf::as_restconf_notification(
+                    m_subscriptionData->subscription.getSession().getContext(),
+                    m_subscriptionData->dataFormat,
+                    *notificationTree,
+                    time));
+            });
+        }
+
+        // and wait for more
+        awaitNextNotification();
+    });
+}
+
+void DynamicSubscriptionHttpStream::activate()
+{
+    m_subscriptionData->clientConnected();
+    EventStream::activate();
+    awaitNextNotification();
+}
+
+std::shared_ptr<DynamicSubscriptionHttpStream> DynamicSubscriptionHttpStream::create(
+    const nghttp2::asio_http2::server::request& req,
+    const nghttp2::asio_http2::server::response& res,
+    rousette::http::EventStream::Termination& termination,
+    const std::chrono::seconds keepAlivePingInterval,
+    const std::shared_ptr<DynamicSubscriptions::SubscriptionData>& subscriptionData)
+{
+    auto signal = std::make_shared<rousette::http::EventStream::EventSignal>();
+    auto stream = std::shared_ptr<DynamicSubscriptionHttpStream>(new DynamicSubscriptionHttpStream(req, res, termination, signal, keepAlivePingInterval, subscriptionData));
+    stream->activate();
+    return stream;
 }
 }

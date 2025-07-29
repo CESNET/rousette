@@ -82,11 +82,15 @@ void EventStream::activate()
 
     res.on_close([myself](const auto ec) {
         spdlog::debug("{}: closed ({})", myself->peer, nghttp2_http2_strerror(ec));
-        std::lock_guard lock{myself->mtx};
-        myself->ping.cancel();
-        myself->eventSub.disconnect();
-        myself->terminateSub.disconnect();
-        myself->state = Closed;
+
+        {
+            std::lock_guard lock{myself->mtx};
+            myself->ping.cancel();
+            myself->eventSub.disconnect();
+            myself->terminateSub.disconnect();
+            myself->state = Closed;
+        }
+
         if (myself->onClientDisconnectedCb) {
             myself->onClientDisconnectedCb();
         }
