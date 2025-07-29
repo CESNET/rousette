@@ -12,6 +12,7 @@
 #include <map>
 #include <memory>
 #include <sysrepo-cpp/Subscription.hpp>
+#include "http/EventStream.h"
 
 namespace libyang {
 enum class DataFormat;
@@ -26,6 +27,7 @@ namespace rousette::restconf {
 class DynamicSubscriptions {
 public:
     struct SubscriptionData : public std::enable_shared_from_this<SubscriptionData> {
+        mutable std::mutex mutex;
         sysrepo::DynamicSubscription subscription;
         libyang::DataFormat dataFormat; ///< Encoding of the notification stream
         boost::uuids::uuid uuid; ///< UUID is part of the GET URI, it identifies subscriptions for clients
@@ -34,7 +36,7 @@ public:
         enum class State {
             Start, ///< Subscription is ready to be consumed by a client
             ReceiverActive, ///< Subscription is being consumed by a client
-            Shutdown, ///< Subscription is being terminated by the server shutdown
+            Terminating,
         } state;
 
         SubscriptionData(
@@ -43,6 +45,10 @@ public:
             boost::uuids::uuid uuid,
             const std::string& user);
         ~SubscriptionData();
+        void clientDisconnected();
+        void clientConnected();
+        void terminate(const std::optional<std::string>& reason = std::nullopt);
+        bool isReadyToAcceptClient() const;
     };
 
     DynamicSubscriptions(const std::string& streamRootUri);
@@ -57,5 +63,39 @@ private:
     boost::uuids::random_generator m_uuidGenerator;
 
     void terminateSubscription(const uint32_t subId);
+};
+
+/** @brief Subscribes to sysrepo's subscribed notification and sends the notifications via HTTP/2 Event stream.
+ *
+ * @see rousette::http::EventStream
+ * @see rousette::http::NotificationStream
+ * */
+class DynamicSubscriptionHttpStream : public http::EventStream {
+public:
+    ~DynamicSubscriptionHttpStream();
+
+    static std::shared_ptr<DynamicSubscriptionHttpStream> create(
+        const nghttp2::asio_http2::server::request& req,
+        const nghttp2::asio_http2::server::response& res,
+        rousette::http::EventStream::Termination& termination,
+        const std::chrono::seconds keepAlivePingInterval,
+        const std::shared_ptr<DynamicSubscriptions::SubscriptionData>& subscriptionData);
+
+private:
+    std::shared_ptr<DynamicSubscriptions::SubscriptionData> m_subscriptionData;
+    std::shared_ptr<rousette::http::EventStream::EventSignal> m_signal;
+    boost::asio::posix::stream_descriptor m_stream;
+
+    void awaitNextNotification();
+
+protected:
+    DynamicSubscriptionHttpStream(
+        const nghttp2::asio_http2::server::request& req,
+        const nghttp2::asio_http2::server::response& res,
+        rousette::http::EventStream::Termination& termination,
+        std::shared_ptr<rousette::http::EventStream::EventSignal> signal,
+        const std::chrono::seconds keepAlivePingInterval,
+        const std::shared_ptr<DynamicSubscriptions::SubscriptionData>& subscriptionData);
+    void activate();
 };
 }
