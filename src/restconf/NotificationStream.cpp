@@ -6,12 +6,14 @@
  */
 
 #include <libyang-cpp/Time.hpp>
+#include <nghttp2/asio_http2_server.h>
 #include <sysrepo-cpp/Connection.hpp>
 #include <sysrepo-cpp/Subscription.hpp>
 #include <sysrepo-cpp/utils/exception.hpp>
 #include "http/EventStream.h"
 #include "restconf/Exceptions.h"
 #include "restconf/NotificationStream.h"
+#include "restconf/utils/io.h"
 #include "utils/yang.h"
 
 using namespace std::string_literals;
@@ -202,6 +204,79 @@ std::shared_ptr<NotificationStream> NotificationStream::create(
 {
     auto signal = std::make_shared<rousette::http::EventStream::EventSignal>();
     auto stream = std::shared_ptr<NotificationStream>(new NotificationStream(req, res, termination, signal, keepAlivePingInterval, std::move(sess), dataFormat, filter, startTime, stopTime));
+    stream->activate();
+    return stream;
+}
+
+DynamicSubscriptionHttpStream::DynamicSubscriptionHttpStream(
+    const nghttp2::asio_http2::server::request& req,
+    const nghttp2::asio_http2::server::response& res,
+    rousette::http::EventStream::Termination& termination,
+    std::shared_ptr<rousette::http::EventStream::EventSignal> signal,
+    const std::chrono::seconds keepAlivePingInterval,
+    const std::shared_ptr<DynamicSubscriptions::SubscriptionData>& subscriptionData)
+    : EventStream(req, res, termination, *signal, keepAlivePingInterval)
+    , m_subscriptionData(subscriptionData)
+    , m_signal(signal)
+    , m_stream(res.io_service(), m_subscriptionData->subscription.fd())
+{
+    setOnTerminationCb([this]() {
+        m_subscriptionData->terminate("ietf-subscribed-notifications:no-such-subscription");
+    });
+
+    setOnClientDisconnectedCb([this]() {
+        m_subscriptionData->clientDisconnected();
+    });
+}
+
+DynamicSubscriptionHttpStream::~DynamicSubscriptionHttpStream()
+{
+    // The stream does not own the file descriptor, sysrepo does. It will be closed when the subscription terminates.
+    m_stream.release();
+}
+
+/** @brief Waits for the next notifications and process them */
+void DynamicSubscriptionHttpStream::awaitNextNotification()
+{
+    m_stream.async_wait(boost::asio::posix::stream_descriptor::wait_read, [this](const boost::system::error_code& err) {
+        // Unfortunately wait_read does not return operation_aborted when the file descriptor is closed and poll results in POLLHUP
+        if (err == boost::asio::error::operation_aborted || utils::pipeIsClosedAndNoData(m_subscriptionData->subscription.fd())) {
+            return;
+        }
+
+        // process all the available notifications
+        while (utils::pipeHasData(m_subscriptionData->subscription.fd())) {
+            std::lock_guard lock{m_subscriptionData->mutex};
+            m_subscriptionData->subscription.processEvent([&](const std::optional<libyang::DataNode>& notificationTree, const sysrepo::NotificationTimeStamp& time) {
+                (*m_signal)(rousette::restconf::as_restconf_notification(
+                    m_subscriptionData->subscription.getSession().getContext(),
+                    m_subscriptionData->dataFormat,
+                    *notificationTree,
+                    time));
+            });
+        }
+
+        // and wait for more
+        awaitNextNotification();
+    });
+}
+
+void DynamicSubscriptionHttpStream::activate()
+{
+    m_subscriptionData->clientConnected();
+    EventStream::activate();
+    awaitNextNotification();
+}
+
+std::shared_ptr<DynamicSubscriptionHttpStream> DynamicSubscriptionHttpStream::create(
+    const nghttp2::asio_http2::server::request& req,
+    const nghttp2::asio_http2::server::response& res,
+    rousette::http::EventStream::Termination& termination,
+    const std::chrono::seconds keepAlivePingInterval,
+    const std::shared_ptr<DynamicSubscriptions::SubscriptionData>& subscriptionData)
+{
+    auto signal = std::make_shared<rousette::http::EventStream::EventSignal>();
+    auto stream = std::shared_ptr<DynamicSubscriptionHttpStream>(new DynamicSubscriptionHttpStream(req, res, termination, signal, keepAlivePingInterval, subscriptionData));
     stream->activate();
     return stream;
 }

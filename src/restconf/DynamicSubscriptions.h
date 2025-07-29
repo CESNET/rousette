@@ -20,6 +20,7 @@ namespace rousette::restconf {
 class DynamicSubscriptions {
 public:
     struct SubscriptionData : public std::enable_shared_from_this<SubscriptionData> {
+        std::mutex mutex; ///< Guarding access to sysrepo API
         sysrepo::DynamicSubscription subscription;
         libyang::DataFormat dataFormat; ///< Encoding of the notification stream
         boost::uuids::uuid uuid; ///< UUID is part of the GET URI, it identifies subscriptions for clients
@@ -28,7 +29,7 @@ public:
         enum class State {
             Start, ///< Subscription is ready to be consumed by a client
             ReceiverActive, ///< Subscription is being consumed by a client
-            Shutdown, ///< Subscription is being terminated by the server shutdown
+            Terminating,
         } state;
 
         SubscriptionData(
@@ -37,6 +38,10 @@ public:
             boost::uuids::uuid uuid,
             const std::string& user);
         ~SubscriptionData();
+        void clientDisconnected();
+        void clientConnected();
+        void terminate(const std::optional<std::string>& reason);
+        bool isReadyToAcceptClient() const;
     };
 
     DynamicSubscriptions(const std::string& streamRootUri);

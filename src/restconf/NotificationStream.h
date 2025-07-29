@@ -9,7 +9,9 @@
 #include <optional>
 #include <sysrepo-cpp/Session.hpp>
 #include <sysrepo-cpp/Subscription.hpp>
+#include <sysrepo-cpp/utils/exception.hpp>
 #include "http/EventStream.h"
+#include "restconf/DynamicSubscriptions.h"
 
 namespace libyang {
 enum class DataFormat;
@@ -62,6 +64,40 @@ protected:
         const std::optional<std::string>& filter,
         const std::optional<sysrepo::NotificationTimeStamp>& startTime,
         const std::optional<sysrepo::NotificationTimeStamp>& stopTime);
+    void activate();
+};
+
+/** @brief Subscribes to sysrepo's subscribed notification and sends the notifications via HTTP/2 Event stream.
+ *
+ * @see rousette::http::EventStream
+ * @see rousette::http::NotificationStream
+ * */
+class DynamicSubscriptionHttpStream : public http::EventStream {
+public:
+    ~DynamicSubscriptionHttpStream();
+
+    static std::shared_ptr<DynamicSubscriptionHttpStream> create(
+        const nghttp2::asio_http2::server::request& req,
+        const nghttp2::asio_http2::server::response& res,
+        rousette::http::EventStream::Termination& termination,
+        const std::chrono::seconds keepAlivePingInterval,
+        const std::shared_ptr<DynamicSubscriptions::SubscriptionData>& subscriptionData);
+
+private:
+    std::shared_ptr<DynamicSubscriptions::SubscriptionData> m_subscriptionData;
+    std::shared_ptr<rousette::http::EventStream::EventSignal> m_signal;
+    boost::asio::posix::stream_descriptor m_stream;
+
+    void awaitNextNotification();
+
+protected:
+    DynamicSubscriptionHttpStream(
+        const nghttp2::asio_http2::server::request& req,
+        const nghttp2::asio_http2::server::response& res,
+        rousette::http::EventStream::Termination& termination,
+        std::shared_ptr<rousette::http::EventStream::EventSignal> signal,
+        const std::chrono::seconds keepAlivePingInterval,
+        const std::shared_ptr<DynamicSubscriptions::SubscriptionData>& subscriptionData);
     void activate();
 };
 

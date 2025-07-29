@@ -112,7 +112,7 @@ void DynamicSubscriptions::terminateSubscription(const uint32_t subId)
     for (const auto& [uuid, subscriptionData] : m_subscriptions) { // TODO: Store by both id and uuid in order to search fast by both keys
         if (subscriptionData->subscription.subscriptionId() == subId) {
             spdlog::debug("{}: termination requested", fmt::streamed(*subscriptionData));
-            subscriptionData->subscription.terminate("ietf-subscribed-notifications:no-such-subscription");
+            subscriptionData->terminate("ietf-subscribed-notifications:no-such-subscription");
             m_subscriptions.erase(uuid);
             return;
         }
@@ -146,6 +146,7 @@ DynamicSubscriptions::SubscriptionData::SubscriptionData(
     , dataFormat(format)
     , uuid(uuid)
     , user(user)
+    , state(State::Start)
 {
     spdlog::debug("{}: created", fmt::streamed(*this));
 }
@@ -153,10 +154,42 @@ DynamicSubscriptions::SubscriptionData::SubscriptionData(
 DynamicSubscriptions::SubscriptionData::~SubscriptionData()
 {
     try {
-        subscription.terminate();
+        if (state != State::Terminating) {
+            subscription.terminate();
+        }
     } catch (const sysrepo::ErrorWithCode& e) { // Maybe it was already terminated (stop-time).
         spdlog::warn("Failed to terminate {}: {}", fmt::streamed(*this), e.what());
     }
+}
+
+void DynamicSubscriptions::SubscriptionData::clientDisconnected()
+{
+    spdlog::debug("{}: client disconnected", fmt::streamed(*this));
+
+    if (state == State::Terminating) {
+        return;
+    }
+
+    state = State::Start;
+}
+
+void DynamicSubscriptions::SubscriptionData::clientConnected()
+{
+    spdlog::debug("{}: client connected", fmt::streamed(*this));
+    state = State::ReceiverActive;
+}
+
+bool DynamicSubscriptions::SubscriptionData::isReadyToAcceptClient() const
+{
+    return state == State::Start;
+}
+
+void DynamicSubscriptions::SubscriptionData::terminate(const std::optional<std::string>& reason)
+{
+    spdlog::debug("{}: terminating subscription ({})", fmt::streamed(*this), reason.value_or("<no reason>"));
+    std::lock_guard lock(mutex);
+    state = State::Terminating;
+    subscription.terminate(reason);
 }
 
 std::ostream& operator<<(std::ostream& os, const DynamicSubscriptions::SubscriptionData& sub)
