@@ -6,6 +6,7 @@
  */
 
 #include <libyang-cpp/Time.hpp>
+#include <nghttp2/asio_http2_server.h>
 #include <sysrepo-cpp/Connection.hpp>
 #include <sysrepo-cpp/Subscription.hpp>
 #include <sysrepo-cpp/utils/exception.hpp>
