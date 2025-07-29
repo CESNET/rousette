@@ -1000,27 +1000,40 @@ Server::Server(
 
             auto streamRequest = asRestconfStreamRequest(req.method(), req.uri().path, req.uri().raw_query);
 
-            if (auto it = streamRequest.queryParams.find("filter"); it != streamRequest.queryParams.end()) {
-                xpathFilter = std::get<std::string>(it->second);
-            }
+            if (auto *request = std::get_if<SubscribedStreamRequest>(&streamRequest)) {
+                if (auto sub = m_dynamicSubscriptions.getSubscriptionForUser(request->uuid, sess.getNacmUser())) {
+                    if (!sub->isReadyToAcceptClient()) {
+                        throw ErrorResponse(409, "application", "resource-denied", "There is already another GET request on this subscription.");
+                    }
 
-            if (auto it = streamRequest.queryParams.find("start-time"); it != streamRequest.queryParams.end()) {
-                startTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
-            }
-            if (auto it = streamRequest.queryParams.find("stop-time"); it != streamRequest.queryParams.end()) {
-                stopTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
-            }
+                    DynamicSubscriptionHttpStream::create(req, res, shutdownRequested, keepAlivePingInterval, sub);
+                } else {
+                    throw ErrorResponse(404, "application", "invalid-value", "Subscription not found.");
+                }
+            } else if (auto *request = std::get_if<NetconfStreamRequest>(&streamRequest)) {
+                if (auto it = request->queryParams.find("filter"); it != request->queryParams.end()) {
+                    xpathFilter = std::get<std::string>(it->second);
+                }
+                if (auto it = request->queryParams.find("start-time"); it != request->queryParams.end()) {
+                    startTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
+                }
+                if (auto it = request->queryParams.find("stop-time"); it != request->queryParams.end()) {
+                    stopTime = libyang::fromYangTimeFormat<std::chrono::system_clock>(std::get<std::string>(it->second));
+                }
 
-            NotificationStream::create(
-                req,
-                res,
-                shutdownRequested,
-                keepAlivePingInterval,
-                sess,
-                streamRequest.encoding,
-                xpathFilter,
-                startTime,
-                stopTime);
+                NotificationStream::create(
+                    req,
+                    res,
+                    shutdownRequested,
+                    keepAlivePingInterval,
+                    sess,
+                    request->encoding,
+                    xpathFilter,
+                    startTime,
+                    stopTime);
+            } else {
+                throw ErrorResponse(500, "protocol", "invalid-value", "Invalid request."); // should not happen
+            }
         } catch (const auth::Error& e) {
             processAuthError(req, res, e, [&res]() {
                 res.write_head(401, {TEXT_PLAIN, CORS});
