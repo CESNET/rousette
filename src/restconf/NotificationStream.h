@@ -9,7 +9,9 @@
 #include <optional>
 #include <sysrepo-cpp/Session.hpp>
 #include <sysrepo-cpp/Subscription.hpp>
+#include <sysrepo-cpp/utils/exception.hpp>
 #include "http/EventStream.h"
+#include "restconf/DynamicSubscriptions.h"
 
 namespace libyang {
 enum class DataFormat;
