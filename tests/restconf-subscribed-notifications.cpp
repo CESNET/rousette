@@ -147,6 +147,82 @@ TEST_CASE("RESTCONF subscribed notifications")
 }
 )###"});
         }
+
+        SECTION("User DWDM establishes subscription")
+        {
+            std::pair<std::string, std::string> user = AUTH_DWDM;
+            auto uri = establishSubscription(srSess.getContext(), libyang::DataFormat::JSON, user, std::nullopt);
+
+            std::map<std::string, std::string> headers;
+
+            SECTION("Users who cannot GET")
+            {
+                SECTION("anonymous") { }
+                SECTION("norules") { headers.insert(AUTH_NORULES); }
+                REQUIRE(get(uri, headers) == Response{404, plaintextHeaders, "Subscription not found."});
+            }
+
+            SECTION("Users who can GET")
+            {
+                SECTION("root") { headers.insert(AUTH_ROOT); }
+                SECTION("dwdm") { headers.insert(AUTH_DWDM); }
+                REQUIRE(head(uri, headers) == Response{200, eventStreamHeaders, ""});
+            }
+
+            SECTION("GET on the same subscription concurently")
+            {
+                std::map<std::string, std::string> headers;
+                std::string response;
+                int status;
+
+                SECTION("Allowed users")
+                {
+                    response = "There is already another GET request on this subscription.";
+                    status = 409;
+
+                    SECTION("Same user")
+                    {
+                        headers.insert(AUTH_DWDM);
+                    }
+                    SECTION("Different user")
+                    {
+                        headers.insert(AUTH_ROOT);
+                    }
+                }
+                SECTION("Disallowed user")
+                {
+                    headers.insert(AUTH_NORULES);
+                    response = "Subscription not found.";
+                    status = 404;
+                }
+
+                PREPARE_LOOP_WITH_EXCEPTIONS
+                auto thr = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
+                    WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+                    REQUIRE(get(uri, headers) == Response{status, plaintextHeaders, response});
+                }));
+
+                SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, {AUTH_DWDM});
+                RUN_LOOP_WITH_EXCEPTIONS;
+            }
+
+            SECTION("GET on the same subscription in a row")
+            {
+                int clientRequests = 0;
+
+                for (int i = 0; i < 2; i++) {
+                    PREPARE_LOOP_WITH_EXCEPTIONS
+                    auto thr = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
+                        WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+                        clientRequests += 1;
+                    }));
+
+                    SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, {AUTH_DWDM});
+                    RUN_LOOP_WITH_EXCEPTIONS;
+                    std::this_thread::sleep_for(333ms);
+                }
+            }
+        }
     }
 
     SECTION("Invalid establish-subscription requests")
@@ -223,6 +299,12 @@ TEST_CASE("RESTCONF subscribed notifications")
                     rpcRequestEncoding = libyang::DataFormat::XML;
                 }
             }
+
+            EXPECT_NOTIFICATION(notificationsJSON[0], seq1);
+            EXPECT_NOTIFICATION(notificationsJSON[1], seq1);
+            EXPECT_NOTIFICATION(notificationsJSON[2], seq2);
+            EXPECT_NOTIFICATION(notificationsJSON[3], seq1);
+            EXPECT_NOTIFICATION(notificationsJSON[4], seq1);
         }
 
         SECTION("JSON stream")
@@ -234,6 +316,11 @@ TEST_CASE("RESTCONF subscribed notifications")
                 rpcRequestAuthHeader = std::nullopt;
                 rpcRequestEncoding = libyang::DataFormat::JSON;
                 rpcSubscriptionEncoding = "encode-json";
+
+                EXPECT_NOTIFICATION(notificationsJSON[0], seq1);
+                EXPECT_NOTIFICATION(notificationsJSON[1], seq1);
+                EXPECT_NOTIFICATION(notificationsJSON[3], seq1);
+                EXPECT_NOTIFICATION(notificationsJSON[4], seq1);
             }
 
             SECTION("Content-type with set encode leaf")
@@ -258,10 +345,56 @@ TEST_CASE("RESTCONF subscribed notifications")
                         rpcRequestEncoding = libyang::DataFormat::XML;
                     }
                 }
+
+                EXPECT_NOTIFICATION(notificationsJSON[0], seq1);
+                EXPECT_NOTIFICATION(notificationsJSON[1], seq1);
+                EXPECT_NOTIFICATION(notificationsJSON[2], seq2);
+                EXPECT_NOTIFICATION(notificationsJSON[3], seq1);
+                EXPECT_NOTIFICATION(notificationsJSON[4], seq1);
             }
         }
 
         auto uri = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding);
         REQUIRE(std::regex_match(uri, std::regex("/streams/subscribed/"s + uuidV4Regex)));
+
+        PREPARE_LOOP_WITH_EXCEPTIONS
+
+        // Here's how these two threads work together.
+        //
+        // The main test thread (this one):
+        // - sets up all the expectations
+        // - has an HTTP client which calls/spends the expectations based on the incoming SSE data
+        // - blocks while it runs the ASIO event loop
+        //
+        // The auxiliary thread (the notificationThread):
+        // - waits for the HTTP client having issued its long-lived HTTP GET
+        // - sends a bunch of notifications to sysrepo
+        // - waits for all the expectations getting spent, and then terminates the ASIO event loop cleanly
+
+        std::jthread notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
+            auto notifSession = sysrepo::Connection{}.sessionStart();
+            auto ctx = notifSession.getContext();
+
+            WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+
+            SEND_NOTIFICATION(notificationsJSON[0]);
+            SEND_NOTIFICATION(notificationsJSON[1]);
+            std::this_thread::sleep_for(500ms); // simulate some delays; server might be slow in creating notifications, client should still remain connected
+            SEND_NOTIFICATION(notificationsJSON[2]);
+            SEND_NOTIFICATION(notificationsJSON[3]);
+            std::this_thread::sleep_for(500ms);
+            SEND_NOTIFICATION(notificationsJSON[4]);
+
+            // once the main thread has processed all the notifications, stop the ASIO loop
+            waitForCompletionAndBitMore(seq1);
+            waitForCompletionAndBitMore(seq2);
+        }));
+
+        std::map<std::string, std::string> streamHeaders;
+        if (rpcRequestAuthHeader) {
+            streamHeaders.insert(*rpcRequestAuthHeader);
+        }
+        SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, streamHeaders);
+        RUN_LOOP_WITH_EXCEPTIONS;
     }
 }
