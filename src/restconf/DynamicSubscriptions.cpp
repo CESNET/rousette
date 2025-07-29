@@ -12,6 +12,8 @@
 #include <sysrepo-cpp/utils/exception.hpp>
 #include "restconf/DynamicSubscriptions.h"
 #include "restconf/Exceptions.h"
+#include "restconf/utils/io.h"
+#include "restconf/utils/yang.h"
 
 namespace {
 
@@ -72,13 +74,23 @@ sysrepo::DynamicSubscription getStream(sysrepo::Session& session, const libyang:
 
 namespace rousette::restconf {
 
-DynamicSubscriptions::DynamicSubscriptions(const std::string& streamRootUri)
+DynamicSubscriptions::DynamicSubscriptions(const std::string& streamRootUri, const nghttp2::asio_http2::server::http2& server, const std::chrono::seconds inactivityTimeout)
     : m_restconfStreamUri(streamRootUri)
+    , m_server(server)
     , m_uuidGenerator(boost::uuids::random_generator())
+    , m_inactivityTimeout(inactivityTimeout)
 {
 }
 
 DynamicSubscriptions::~DynamicSubscriptions() = default;
+
+void DynamicSubscriptions::stop()
+{
+    std::lock_guard lock(m_mutex);
+    for (const auto& [uuid, subscriptionData] : m_subscriptions) {
+        subscriptionData->inactivityCancel();
+    }
+}
 
 void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, const libyang::DataFormat requestEncoding, const libyang::DataNode& rpcInput, libyang::DataNode& rpcOutput)
 {
@@ -104,7 +116,11 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
             std::move(*sub),
             dataFormat,
             uuid,
-            *session.getNacmUser());
+            *session.getNacmUser(),
+            *m_server.io_services().at(0),
+            m_inactivityTimeout,
+            [this, subId = sub->subscriptionId()]() { terminateSubscription(subId); });
+        m_subscriptions[uuid]->inactivityStart();
     } catch (const sysrepo::ErrorWithCode& e) {
         throw ErrorResponse(400, "application", "invalid-attribute", e.what());
     }
@@ -117,7 +133,7 @@ void DynamicSubscriptions::terminateSubscription(const uint32_t subId)
     for (const auto& [uuid, subscriptionData] : m_subscriptions) { // TODO: Store by both id and uuid in order to search fast by both keys
         if (subscriptionData->subscription.subscriptionId() == subId) {
             spdlog::debug("{}: termination requested", fmt::streamed(*subscriptionData));
-            subscriptionData->subscription.terminate("ietf-subscribed-notifications:no-such-subscription");
+            subscriptionData->terminate("ietf-subscribed-notifications:no-such-subscription");
             m_subscriptions.erase(uuid);
             return;
         }
@@ -146,11 +162,18 @@ DynamicSubscriptions::SubscriptionData::SubscriptionData(
     sysrepo::DynamicSubscription sub,
     libyang::DataFormat format,
     boost::uuids::uuid uuid,
-    const std::string& user)
+    const std::string& user,
+    boost::asio::io_context& io,
+    std::chrono::seconds inactivityTimeout,
+    std::function<void()> onClientInactiveCallback)
     : subscription(std::move(sub))
     , dataFormat(format)
     , uuid(uuid)
     , user(user)
+    , state(State::Start)
+    , inactivityTimeout(inactivityTimeout)
+    , clientInactiveTimer(io)
+    , onClientInactiveCallback(std::move(onClientInactiveCallback))
 {
     spdlog::debug("{}: created", fmt::streamed(*this));
 }
@@ -158,10 +181,85 @@ DynamicSubscriptions::SubscriptionData::SubscriptionData(
 DynamicSubscriptions::SubscriptionData::~SubscriptionData()
 {
     try {
-        subscription.terminate();
+        terminate();
     } catch (const sysrepo::ErrorWithCode& e) { // Maybe it was already terminated (stop-time).
         spdlog::warn("Failed to terminate {}: {}", fmt::streamed(*this), e.what());
     }
+
+    inactivityCancel();
+}
+
+void DynamicSubscriptions::SubscriptionData::clientDisconnected()
+{
+    spdlog::debug("{}: client disconnected", fmt::streamed(*this));
+
+    {
+        std::lock_guard lock(mutex);
+        if (state == State::Terminating) {
+            return;
+        }
+
+        state = State::Start;
+    }
+
+    inactivityStart();
+}
+
+void DynamicSubscriptions::SubscriptionData::clientConnected()
+{
+    spdlog::debug("{}: client connected", fmt::streamed(*this));
+
+    inactivityCancel();
+
+    std::lock_guard lock(mutex);
+    state = State::ReceiverActive;
+}
+
+bool DynamicSubscriptions::SubscriptionData::isReadyToAcceptClient() const
+{
+    std::lock_guard lock(mutex);
+    return state == State::Start;
+}
+
+void DynamicSubscriptions::SubscriptionData::terminate(const std::optional<std::string>& reason)
+{
+    std::lock_guard lock(mutex);
+
+    // if the subscription is already terminating, do nothing
+    if (state == State::Terminating) {
+        return;
+    }
+
+    spdlog::debug("{}: terminating subscription ({})", fmt::streamed(*this), reason.value_or("<no reason>"));
+    state = State::Terminating;
+    subscription.terminate(reason);
+}
+
+void DynamicSubscriptions::SubscriptionData::inactivityStart()
+{
+    spdlog::trace("{}: starting inactivity timer", fmt::streamed(*this));
+    std::lock_guard lock(mutex);
+    clientInactiveTimer.expires_after(inactivityTimeout);
+    clientInactiveTimer.async_wait([weakThis = weak_from_this()](const boost::system::error_code& err) {
+        auto self = weakThis.lock();
+        if (!self) {
+            return;
+        }
+
+        if (err == boost::asio::error::operation_aborted) {
+            return;
+        }
+
+        spdlog::trace("{}: client inactive, perform inactivity callback", fmt::streamed(*self));
+        self->onClientInactiveCallback();
+    });
+}
+
+void DynamicSubscriptions::SubscriptionData::inactivityCancel()
+{
+    spdlog::trace("{}: cancelling inactivity timer", fmt::streamed(*this));
+    std::lock_guard lock(mutex);
+    clientInactiveTimer.cancel();
 }
 
 std::ostream& operator<<(std::ostream& os, const DynamicSubscriptions::SubscriptionData& sub)
@@ -170,5 +268,78 @@ std::ostream& operator<<(std::ostream& os, const DynamicSubscriptions::Subscript
               << ", user " << sub.user
               << ", uuid " << boost::uuids::to_string(sub.uuid)
               << ")";
+}
+
+DynamicSubscriptionHttpStream::DynamicSubscriptionHttpStream(
+    const nghttp2::asio_http2::server::request& req,
+    const nghttp2::asio_http2::server::response& res,
+    rousette::http::EventStream::Termination& termination,
+    std::shared_ptr<rousette::http::EventStream::EventSignal> signal,
+    const std::chrono::seconds keepAlivePingInterval,
+    const std::shared_ptr<DynamicSubscriptions::SubscriptionData>& subscriptionData)
+    : EventStream(
+          req,
+          res,
+          termination,
+          *signal,
+          keepAlivePingInterval,
+          std::nullopt /* no initial event */,
+          [this]() { m_subscriptionData->terminate("ietf-subscribed-notifications:stream-terminated"); },
+          [this]() { m_subscriptionData->clientDisconnected(); })
+    , m_subscriptionData(subscriptionData)
+    , m_signal(signal)
+    , m_stream(res.io_service(), m_subscriptionData->subscription.fd())
+{
+}
+
+DynamicSubscriptionHttpStream::~DynamicSubscriptionHttpStream()
+{
+    // The stream does not own the file descriptor, sysrepo does. It will be closed when the subscription terminates.
+    m_stream.release();
+}
+
+/** @brief Waits for the next notifications and process them */
+void DynamicSubscriptionHttpStream::awaitNextNotification()
+{
+    m_stream.async_wait(boost::asio::posix::stream_descriptor::wait_read, [this](const boost::system::error_code& err) {
+        // Unfortunately wait_read does not return operation_aborted when the file descriptor is closed and poll results in POLLHUP
+        if (err == boost::asio::error::operation_aborted || utils::pipeIsClosedAndNoData(m_subscriptionData->subscription.fd())) {
+            return;
+        }
+
+        // process all the available notifications
+        while (utils::pipeHasData(m_subscriptionData->subscription.fd())) {
+            m_subscriptionData->subscription.processEvent([&](const std::optional<libyang::DataNode>& notificationTree, const sysrepo::NotificationTimeStamp& time) {
+                (*m_signal)(rousette::restconf::as_restconf_notification(
+                    m_subscriptionData->subscription.getSession().getContext(),
+                    m_subscriptionData->dataFormat,
+                    *notificationTree,
+                    time));
+            });
+        }
+
+        // and wait for more
+        awaitNextNotification();
+    });
+}
+
+void DynamicSubscriptionHttpStream::activate()
+{
+    m_subscriptionData->clientConnected();
+    EventStream::activate();
+    awaitNextNotification();
+}
+
+std::shared_ptr<DynamicSubscriptionHttpStream> DynamicSubscriptionHttpStream::create(
+    const nghttp2::asio_http2::server::request& req,
+    const nghttp2::asio_http2::server::response& res,
+    rousette::http::EventStream::Termination& termination,
+    const std::chrono::seconds keepAlivePingInterval,
+    const std::shared_ptr<DynamicSubscriptions::SubscriptionData>& subscriptionData)
+{
+    auto signal = std::make_shared<rousette::http::EventStream::EventSignal>();
+    auto stream = std::shared_ptr<DynamicSubscriptionHttpStream>(new DynamicSubscriptionHttpStream(req, res, termination, signal, keepAlivePingInterval, subscriptionData));
+    stream->activate();
+    return stream;
 }
 }
