@@ -452,3 +452,37 @@ TEST_CASE("Terminating server under notification load")
     SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, {auth});
     RUN_LOOP_WITH_EXCEPTIONS;
 }
+
+TEST_CASE("RESTCONF subscribed notifications - inactivity")
+{
+    trompeloeil::sequence seq1, seq2;
+    sysrepo::setLogLevelStderr(sysrepo::LogLevel::Information);
+    spdlog::set_level(spdlog::level::trace);
+
+    auto srConn = sysrepo::Connection{};
+    auto srSess = srConn.sessionStart(sysrepo::Datastore::Running);
+    srSess.sendRPC(srSess.getContext().newPath("/ietf-factory-default:factory-reset"));
+
+    RestconfNotificationWatcher netconfWatcher(srConn.sessionStart().getContext());
+
+    auto nacmGuard = manageNacm(srSess);
+    constexpr auto inactivityTimeout = 2s;
+    auto server = rousette::restconf::Server{srConn, SERVER_ADDRESS, SERVER_PORT, 0ms, 55s, inactivityTimeout};
+
+    auto uri = establishSubscription(srSess.getContext(), libyang::DataFormat::JSON, {AUTH_ROOT}, std::nullopt);
+
+    SECTION("Client connects and disconnects")
+    {
+        PREPARE_LOOP_WITH_EXCEPTIONS
+        auto thr = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
+            WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+            std::this_thread::sleep_for(1s);
+        }));
+
+        SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, {AUTH_ROOT});
+        RUN_LOOP_WITH_EXCEPTIONS;
+    }
+
+    std::this_thread::sleep_for(inactivityTimeout + 1500ms);
+    REQUIRE(get(uri, {AUTH_ROOT}) == Response{404, plaintextHeaders, "Subscription not found."});
+}
