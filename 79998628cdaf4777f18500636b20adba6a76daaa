@@ -16,6 +16,29 @@
       "message": "recheck",
       "revId": "79998628cdaf4777f18500636b20adba6a76daaa",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c76f9fca_fc0df90b",
+        "filename": "src/http/EventStream.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-07-31T13:50:26Z",
+      "side": 1,
+      "message": "unless you need to set these on-the-fly, I suggest to pass them via the constructor",
+      "range": {
+        "startLine": 74,
+        "startChar": 0,
+        "endLine": 75,
+        "endChar": 61
+      },
+      "revId": "79998628cdaf4777f18500636b20adba6a76daaa",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
