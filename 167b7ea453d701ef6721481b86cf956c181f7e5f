@@ -16,6 +16,29 @@
       "message": "recheck",
       "revId": "167b7ea453d701ef6721481b86cf956c181f7e5f",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4e3fc86c_e39a3edc",
+        "filename": "src/http/EventStream.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-08-07T10:07:58Z",
+      "side": 1,
+      "message": "could you please explain what you mean here?",
+      "range": {
+        "startLine": 73,
+        "startChar": 0,
+        "endLine": 74,
+        "endChar": 107
+      },
+      "revId": "167b7ea453d701ef6721481b86cf956c181f7e5f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
