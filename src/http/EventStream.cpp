@@ -47,11 +47,11 @@ EventStream::EventStream(const server::request& req,
         }
 
         state = WantToClose;
-        boost::asio::post(this->res.io_service(), [maybeClient = std::weak_ptr<EventStream>{shared_from_this()}]() {
-            if (auto client = maybeClient.lock()) {
-                std::lock_guard lock{client->mtx};
-                if (client->state == WantToClose) { // resume unless somebody closed it before this was picked up by the event loop
-                    client->res.resume();
+        boost::asio::post(this->res.io_service(), [weak = std::weak_ptr<EventStream>{shared_from_this()}]() {
+            if (auto myself = weak.lock()) {
+                std::lock_guard lock{myself->mtx};
+                if (myself->state == WantToClose) { // resume unless somebody closed it before this was picked up by the event loop
+                    myself->res.resume();
                 }
             }
         });
@@ -67,23 +67,23 @@ void EventStream::activate()
 {
     start_ping();
 
-    auto client = shared_from_this();
+    auto myself = shared_from_this();
     res.write_head(200, {
         {"content-type", {"text/event-stream", false}},
         {"access-control-allow-origin", {"*", false}},
     });
 
-    res.on_close([client](const auto ec) {
-        spdlog::debug("{}: closed ({})", client->peer, nghttp2_http2_strerror(ec));
-        std::lock_guard lock{client->mtx};
-        client->ping.cancel();
-        client->eventSub.disconnect();
-        client->terminateSub.disconnect();
-        client->state = Closed;
+    res.on_close([myself](const auto ec) {
+        spdlog::debug("{}: closed ({})", myself->peer, nghttp2_http2_strerror(ec));
+        std::lock_guard lock{myself->mtx};
+        myself->ping.cancel();
+        myself->eventSub.disconnect();
+        myself->terminateSub.disconnect();
+        myself->state = Closed;
     });
 
-    res.end([client](uint8_t* destination, std::size_t len, uint32_t* data_flags) {
-        return client->process(destination, len, data_flags);
+    res.end([myself](uint8_t* destination, std::size_t len, uint32_t* data_flags) {
+        return myself->process(destination, len, data_flags);
     });
 }
 
@@ -156,21 +156,21 @@ void EventStream::enqueue(const std::string& fieldName, const std::string& what)
 void EventStream::start_ping()
 {
     ping.expires_from_now(boost::posix_time::seconds(m_keepAlivePingInterval.count()));
-    ping.async_wait([maybeClient = weak_from_this()](const boost::system::error_code& ec) {
-        auto client = maybeClient.lock();
-        if (!client) {
+    ping.async_wait([weak = weak_from_this()](const boost::system::error_code& ec) {
+        auto myself = weak.lock();
+        if (!myself) {
             spdlog::trace("ping: client already gone");
             return;
         }
 
         if (ec == boost::asio::error::operation_aborted) {
-            spdlog::trace("{}: ping scheduler cancelled", client->peer);
+            spdlog::trace("{}: ping scheduler cancelled", myself->peer);
             return;
         }
 
-        client->enqueue("", "\n");
-        spdlog::trace("{}: keep-alive ping enqueued", client->peer);
-        client->start_ping();
+        myself->enqueue("", "\n");
+        spdlog::trace("{}: keep-alive ping enqueued", myself->peer);
+        myself->start_ping();
     });
 }
 
