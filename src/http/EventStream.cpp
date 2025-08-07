@@ -47,7 +47,7 @@ EventStream::EventStream(const server::request& req,
         }
 
         state = WantToClose;
-        boost::asio::post(this->res.io_service(), [weak = std::weak_ptr<EventStream>{shared_from_this()}]() {
+        boost::asio::post(this->res.io_service(), [weak = weak_from_this()]() {
             if (auto myself = weak.lock()) {
                 std::lock_guard lock{myself->mtx};
                 if (myself->state == WantToClose) { // resume unless somebody closed it before this was picked up by the event loop
