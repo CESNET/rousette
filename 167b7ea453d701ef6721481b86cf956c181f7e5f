@@ -39,6 +39,30 @@
       },
       "revId": "167b7ea453d701ef6721481b86cf956c181f7e5f",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "62988172_0c628ba3",
+        "filename": "src/http/EventStream.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-08-18T16:22:50Z",
+      "side": 1,
+      "message": "TBH I do remember only that if I accidentally created a private subclass of this, it resulted in some crashes.\nI suspect this was because of the bad_weak_ptr exception being thrown in background asio thread, but that seems handled ok now.",
+      "parentUuid": "4e3fc86c_e39a3edc",
+      "range": {
+        "startLine": 73,
+        "startChar": 0,
+        "endLine": 74,
+        "endChar": 107
+      },
+      "revId": "167b7ea453d701ef6721481b86cf956c181f7e5f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
