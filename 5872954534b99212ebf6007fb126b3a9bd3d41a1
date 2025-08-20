@@ -106,6 +106,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "72075601_b79551a9",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-08-20T08:54:19Z",
+      "side": 1,
+      "message": "I was hoping for an error message roughly like *\"this RESTCONF server has no support for foo:json-with-blah which is derived from ietf-subscribed-notifications:encode-json\"*, but yeah, I guess that\u0027s too much work for very little benefit.",
+      "parentUuid": "48b7954f_03cedc87",
+      "range": {
+        "startLine": 89,
+        "startChar": 0,
+        "endLine": 93,
+        "endChar": 44
+      },
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c98c13a0_b9129eba",
@@ -272,6 +296,30 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "a93fb3ab_b1710f94",
+      "range": {
+        "startLine": 325,
+        "startChar": 60,
+        "endLine": 325,
+        "endChar": 70
+      },
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e805fb45_d6047683",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 325,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-08-20T08:54:19Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1dba6be3_9ca1646c",
       "range": {
         "startLine": 325,
         "startChar": 60,
@@ -524,6 +572,30 @@
       "side": 1,
       "message": "Done. But can this really cause any CI failures? we are not waiting for something based on this time.",
       "parentUuid": "d4230940_0828bd70",
+      "range": {
+        "startLine": 276,
+        "startChar": 40,
+        "endLine": 276,
+        "endChar": 45
+      },
+      "revId": "5872954534b99212ebf6007fb126b3a9bd3d41a1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "bac96ec6_fa55a4ed",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-08-20T08:54:19Z",
+      "side": 1,
+      "message": "You\u0027re right, but when you decided that it\u0027s important enough to wait explicitly, I still think that .135s was a bit too short. Just a feeling :).",
+      "parentUuid": "125fc81c_ff90333e",
       "range": {
         "startLine": 276,
         "startChar": 40,

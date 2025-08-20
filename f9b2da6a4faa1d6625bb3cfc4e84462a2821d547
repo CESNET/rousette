@@ -1,0 +1,256 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "77b21311_63da192b",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-08-20T08:54:19Z",
+      "side": 1,
+      "message": "A function which registers a dynamic subscription should not be called getFoo, IMO. Let\u0027s call it, e.g., `makeSubscription`.",
+      "range": {
+        "startLine": 53,
+        "startChar": 29,
+        "endLine": 53,
+        "endChar": 38
+      },
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d3f8593e_f2298cba",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-08-20T08:54:19Z",
+      "side": 1,
+      "message": "nit: I would prefer a single call to findPath(), i.e., please combine this with the error handling that\u0027s done on lines 55-57.",
+      "range": {
+        "startLine": 67,
+        "startChar": 8,
+        "endLine": 67,
+        "endChar": 56
+      },
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4178931d_7d4af009",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-08-20T08:54:19Z",
+      "side": 1,
+      "message": "What is the threading model?\n\n- please explain in the commit message and/or in the class\u0027 inline docs what is the purpose of the mutex\n- please check boost\u0027s docs re mt-safety; the copy that I read said that the functions are reentrant, but that classes require synchronization; here the UUID is being generated with no synchronization",
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4bac8d5e_afbafdd3",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-08-20T08:54:19Z",
+      "side": 1,
+      "message": "this is already checked in `getStream()`, and once this check is removed, I think you can get rid of the `std::optional\u003c\u003e` wrapper above on line 91",
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5d7a339f_374d369e",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 94,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-08-20T08:54:19Z",
+      "side": 1,
+      "message": "nit: I\u0027m not sure it\u0027s worth the effort to split the \"part which extracts some data from the input YANG tree and registers a sysrepo-level subscription\" into an extra function",
+      "range": {
+        "startLine": 94,
+        "startChar": 18,
+        "endLine": 94,
+        "endChar": 27
+      },
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2a33af41_1704ab0c",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-08-20T08:54:19Z",
+      "side": 1,
+      "message": "nit: `std::find_if`?",
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "45aa0444_cb7b6898",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 445,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-08-20T08:54:19Z",
+      "side": 1,
+      "message": "nit: please wrap this line, I find this rather hard to read",
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9ecf32e8_ec87a9ab",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-08-20T08:54:19Z",
+      "side": 1,
+      "message": "I *think* that this should work as well:\n```\nenvelope-\u003einsertChild(*rpcTree.child());\n```",
+      "range": {
+        "startLine": 70,
+        "startChar": 0,
+        "endLine": 73,
+        "endChar": 33
+      },
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8e7ce88a_b6f64745",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-08-20T08:54:19Z",
+      "side": 1,
+      "message": "this doesn\u0027t appear to be used in this patch",
+      "range": {
+        "startLine": 102,
+        "startChar": 4,
+        "endLine": 115,
+        "endChar": 72
+      },
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "70f63a2f_7f7ef6c4",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 128,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-08-20T08:54:19Z",
+      "side": 1,
+      "message": "nit: `SECTION`",
+      "range": {
+        "startLine": 128,
+        "startChar": 31,
+        "endLine": 128,
+        "endChar": 38
+      },
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "35e61ade_d406e8b7",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-08-20T08:54:19Z",
+      "side": 1,
+      "message": "nit: please use a `\\n` here and wrap the code into multiple lines (also everywhere else)",
+      "range": {
+        "startLine": 162,
+        "startChar": 85,
+        "endLine": 162,
+        "endChar": 91
+      },
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "541c1aa9_796802e5",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-08-20T08:54:19Z",
+      "side": 1,
+      "message": "it isn\u0027t only unknown, it\u0027s not supported at all at this time",
+      "range": {
+        "startLine": 184,
+        "startChar": 11,
+        "endLine": 184,
+        "endChar": 18
+      },
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}

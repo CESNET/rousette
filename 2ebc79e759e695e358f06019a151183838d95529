@@ -16,6 +16,52 @@
       "message": "recheck",
       "revId": "2ebc79e759e695e358f06019a151183838d95529",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2b2049d9_b1a4d304",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 28
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-08-20T08:54:19Z",
+      "side": 1,
+      "message": "what about:\n\n\u003e Parses the YANG date-and-time from a given path in the RPC input, if present\n\nIMHO that\u0027s better because there\u0027s no need to document the return type explicitly, while it\u0027s probably a good idea to explain why we need that `optional\u003c\u003e`",
+      "range": {
+        "startLine": 13,
+        "startChar": 11,
+        "endLine": 13,
+        "endChar": 130
+      },
+      "revId": "2ebc79e759e695e358f06019a151183838d95529",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5d4f33ca_2dfd5ae5",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 28
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-08-20T08:54:19Z",
+      "side": 1,
+      "message": "should this be `T`?",
+      "range": {
+        "startLine": 20,
+        "startChar": 14,
+        "endLine": 20,
+        "endChar": 44
+      },
+      "revId": "2ebc79e759e695e358f06019a151183838d95529",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
