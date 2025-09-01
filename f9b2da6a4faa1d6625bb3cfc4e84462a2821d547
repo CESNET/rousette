@@ -430,6 +430,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "3decc77b_c429cee5",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-09-01T12:39:29Z",
+      "side": 1,
+      "message": "Indeed, but I’m asking to replace the Unicode form of this escape with the old school C \\n. It’s the same thing. (And to wrap stuff for readability.)",
+      "parentUuid": "0fe84bdd_77ad48e0",
+      "range": {
+        "startLine": 162,
+        "startChar": 85,
+        "endLine": 162,
+        "endChar": 91
+      },
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "541c1aa9_796802e5",
         "filename": "tests/restconf-subscribed-notifications.cpp",
         "patchSetId": 30
