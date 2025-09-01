@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f5d5005f_62f585fb",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-01T12:34:09Z",
+      "side": 1,
+      "message": "`makeStreamSubscription` sounds a little better for me, done.",
+      "parentUuid": "77b21311_63da192b",
+      "range": {
+        "startLine": 53,
+        "startChar": 29,
+        "endLine": 53,
+        "endChar": 38
+      },
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "d3f8593e_f2298cba",
@@ -37,6 +61,30 @@
       "writtenOn": "2025-08-20T08:54:19Z",
       "side": 1,
       "message": "nit: I would prefer a single call to findPath(), i.e., please combine this with the error handling that\u0027s done on lines 55-57.",
+      "range": {
+        "startLine": 67,
+        "startChar": 8,
+        "endLine": 67,
+        "endChar": 56
+      },
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "38fef705_c1f4df32",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-01T12:34:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d3f8593e_f2298cba",
       "range": {
         "startLine": 67,
         "startChar": 8,
@@ -83,6 +131,24 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "ad7bd663_41d78a7a",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-01T12:34:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4bac8d5e_afbafdd3",
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "5d7a339f_374d369e",
         "filename": "src/restconf/DynamicSubscriptions.cpp",
         "patchSetId": 30
@@ -121,6 +187,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "cd8e3414_7840171e",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-01T12:34:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2a33af41_1704ab0c",
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "45aa0444_cb7b6898",
@@ -138,6 +222,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8b265fd1_0a4d3cfe",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 445,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-01T12:34:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "45aa0444_cb7b6898",
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "9ecf32e8_ec87a9ab",
@@ -151,6 +253,30 @@
       "writtenOn": "2025-08-20T08:54:19Z",
       "side": 1,
       "message": "I *think* that this should work as well:\n```\nenvelope-\u003einsertChild(*rpcTree.child());\n```",
+      "range": {
+        "startLine": 70,
+        "startChar": 0,
+        "endLine": 73,
+        "endChar": 33
+      },
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e7635c82_087e4d0c",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-01T12:34:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9ecf32e8_ec87a9ab",
       "range": {
         "startLine": 70,
         "startChar": 0,
@@ -184,6 +310,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "d354bdd4_324481bd",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-01T12:34:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8e7ce88a_b6f64745",
+      "range": {
+        "startLine": 102,
+        "startChar": 4,
+        "endLine": 115,
+        "endChar": 72
+      },
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "70f63a2f_7f7ef6c4",
@@ -197,6 +347,30 @@
       "writtenOn": "2025-08-20T08:54:19Z",
       "side": 1,
       "message": "nit: `SECTION`",
+      "range": {
+        "startLine": 128,
+        "startChar": 31,
+        "endLine": 128,
+        "endChar": 38
+      },
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "93847e87_0345c353",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 128,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-01T12:34:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "70f63a2f_7f7ef6c4",
       "range": {
         "startLine": 128,
         "startChar": 31,
@@ -232,6 +406,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "0fe84bdd_77ad48e0",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-01T12:34:09Z",
+      "side": 1,
+      "message": "Well, this is what i get from `sysrepo::ErrorWithCode`s `e.what()` call.",
+      "parentUuid": "35e61ade_d406e8b7",
+      "range": {
+        "startLine": 162,
+        "startChar": 85,
+        "endLine": 162,
+        "endChar": 91
+      },
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "541c1aa9_796802e5",
         "filename": "tests/restconf-subscribed-notifications.cpp",
         "patchSetId": 30
@@ -243,6 +441,30 @@
       "writtenOn": "2025-08-20T08:54:19Z",
       "side": 1,
       "message": "it isn\u0027t only unknown, it\u0027s not supported at all at this time",
+      "range": {
+        "startLine": 184,
+        "startChar": 11,
+        "endLine": 184,
+        "endChar": 18
+      },
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1ed79c63_f08eb17f",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-01T12:34:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "541c1aa9_796802e5",
       "range": {
         "startLine": 184,
         "startChar": 11,

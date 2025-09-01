@@ -41,6 +41,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "61ccbda5_43dd4b55",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 28
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-01T12:34:09Z",
+      "side": 1,
+      "message": "Good idea and I think we dont need the @return anymore.",
+      "parentUuid": "2b2049d9_b1a4d304",
+      "range": {
+        "startLine": 13,
+        "startChar": 11,
+        "endLine": 13,
+        "endChar": 130
+      },
+      "revId": "2ebc79e759e695e358f06019a151183838d95529",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "5d4f33ca_2dfd5ae5",
@@ -54,6 +78,30 @@
       "writtenOn": "2025-08-20T08:54:19Z",
       "side": 1,
       "message": "should this be `T`?",
+      "range": {
+        "startLine": 20,
+        "startChar": 14,
+        "endLine": 20,
+        "endChar": 44
+      },
+      "revId": "2ebc79e759e695e358f06019a151183838d95529",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "53663b80_84974504",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 28
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-01T12:34:09Z",
+      "side": 1,
+      "message": "There is actually no need for a template, thanks.",
+      "parentUuid": "5d4f33ca_2dfd5ae5",
       "range": {
         "startLine": 20,
         "startChar": 14,
