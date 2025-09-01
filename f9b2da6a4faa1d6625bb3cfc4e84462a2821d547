@@ -452,6 +452,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "d61e222c_54e111b9",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-09-01T16:17:45Z",
+      "side": 1,
+      "message": "As you pointed out on matrix, this is *not* a C++-level string literal that wraps the expected exception string. This is actually a string message encoded inside a JSON string which is represented as a C++ raw string literal, and `\\n` escapes do not apply here.\n\nFurthermore, the actual JSON as sent on-the-wire does *not* contain a raw ASCII newline either -- the escaping of newlines is done by libyang, and the JSON output (when viewed as an ASCII char sequence) literally contains the backslash, the letter `u`, and then four hex digits. My bad.",
+      "parentUuid": "3decc77b_c429cee5",
+      "range": {
+        "startLine": 162,
+        "startChar": 85,
+        "endLine": 162,
+        "endChar": 91
+      },
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "541c1aa9_796802e5",
