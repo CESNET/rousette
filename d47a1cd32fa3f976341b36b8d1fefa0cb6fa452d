@@ -20,6 +20,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "dcf77e91_1bf42c68",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 246,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-01T17:32:16Z",
+      "side": 1,
+      "message": "Hmm. I can\u0027t get my head around that. The outer lambda (parameter of `async_wait`) perhaps. The inner lambda does not run async, so I dont think.\n\nHowever, I struggle to find a scenario where two threads would invoke the `async_wait` lambda simultaneously.",
+      "parentUuid": "96211b1e_878b22fd",
+      "revId": "d47a1cd32fa3f976341b36b8d1fefa0cb6fa452d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "7b23e177_e027dc60",
         "filename": "src/restconf/DynamicSubscriptions.h",
         "patchSetId": 6
@@ -31,6 +49,24 @@
       "writtenOn": "2025-09-01T11:16:29Z",
       "side": 1,
       "message": "what is this mutex protecting?",
+      "revId": "d47a1cd32fa3f976341b36b8d1fefa0cb6fa452d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9a5513a8_023bbbd9",
+        "filename": "src/restconf/DynamicSubscriptions.h",
+        "patchSetId": 6
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-01T17:32:16Z",
+      "side": 1,
+      "message": "Subscription state. I have added a comment into source.",
+      "parentUuid": "7b23e177_e027dc60",
       "revId": "d47a1cd32fa3f976341b36b8d1fefa0cb6fa452d",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -48,6 +84,30 @@
       "writtenOn": "2025-09-01T11:16:29Z",
       "side": 1,
       "message": "nit: this needs a better name because there are too many \"streams\". I guess this is the pipe FD that you got from sysrepo?",
+      "range": {
+        "startLine": 87,
+        "startChar": 42,
+        "endLine": 87,
+        "endChar": 50
+      },
+      "revId": "d47a1cd32fa3f976341b36b8d1fefa0cb6fa452d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7704d563_a23ce159",
+        "filename": "src/restconf/DynamicSubscriptions.h",
+        "patchSetId": 6
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-01T17:32:16Z",
+      "side": 1,
+      "message": "Well it is not *the* FD, it is a RAII I/O stream wrapper around that FD. Changed to `m_sysrepoNotificationDescriptor`, feel free to disagree.",
+      "parentUuid": "aaa1fee2_d1e2530d",
       "range": {
         "startLine": 87,
         "startChar": 42,
