@@ -1,0 +1,61 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "96211b1e_878b22fd",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 246,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-09-01T11:16:29Z",
+      "side": 1,
+      "message": "Shouldn\u0027t both lambdas which are defined in this method use the mutex to synchronize work/deletion?",
+      "revId": "d47a1cd32fa3f976341b36b8d1fefa0cb6fa452d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7b23e177_e027dc60",
+        "filename": "src/restconf/DynamicSubscriptions.h",
+        "patchSetId": 6
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-09-01T11:16:29Z",
+      "side": 1,
+      "message": "what is this mutex protecting?",
+      "revId": "d47a1cd32fa3f976341b36b8d1fefa0cb6fa452d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "aaa1fee2_d1e2530d",
+        "filename": "src/restconf/DynamicSubscriptions.h",
+        "patchSetId": 6
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-09-01T11:16:29Z",
+      "side": 1,
+      "message": "nit: this needs a better name because there are too many \"streams\". I guess this is the pipe FD that you got from sysrepo?",
+      "range": {
+        "startLine": 87,
+        "startChar": 42,
+        "endLine": 87,
+        "endChar": 50
+      },
+      "revId": "d47a1cd32fa3f976341b36b8d1fefa0cb6fa452d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
