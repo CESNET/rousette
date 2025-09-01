@@ -112,6 +112,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c3ed6178_b6ac80cf",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-01T17:32:16Z",
+      "side": 1,
+      "message": "Yes, you are correct. I added inline comments to both your points.",
+      "parentUuid": "4178931d_7d4af009",
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "4bac8d5e_afbafdd3",
@@ -277,6 +295,30 @@
       "side": 1,
       "message": "Done",
       "parentUuid": "9ecf32e8_ec87a9ab",
+      "range": {
+        "startLine": 70,
+        "startChar": 0,
+        "endLine": 73,
+        "endChar": 33
+      },
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5598b4e0_803443ce",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-01T17:32:16Z",
+      "side": 1,
+      "message": "Well it does not work, it does not connect siblings of `data`",
+      "parentUuid": "e7635c82_087e4d0c",
       "range": {
         "startLine": 70,
         "startChar": 0,
