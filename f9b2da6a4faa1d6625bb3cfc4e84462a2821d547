@@ -329,6 +329,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "10fb835a_9ad5f815",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 30
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-09-02T09:19:39Z",
+      "side": 1,
+      "message": "oops, thanks",
+      "parentUuid": "5598b4e0_803443ce",
+      "range": {
+        "startLine": 70,
+        "startChar": 0,
+        "endLine": 73,
+        "endChar": 33
+      },
+      "revId": "f9b2da6a4faa1d6625bb3cfc4e84462a2821d547",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "8e7ce88a_b6f64745",
