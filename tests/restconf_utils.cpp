@@ -199,8 +199,8 @@ SSEClient::SSEClient(
         req->on_response([&, silenceTimeout, reportIgnoredLines](const ng_client::response& res) {
             requestSent.release();
             res.on_data([&, silenceTimeout, reportIgnoredLines](const uint8_t* data, std::size_t len) {
-                // not a production-ready code. In real-life condition the data received in one callback might probably be incomplete
-                parseEvents(std::string(reinterpret_cast<const char*>(data), len), eventWatcher, reportIgnoredLines);
+                dataBuffer.append(std::string(reinterpret_cast<const char*>(data), len));
+                parseEvents(eventWatcher, reportIgnoredLines);
                 t.expires_from_now(silenceTimeout);
             });
         });
@@ -217,30 +217,39 @@ SSEClient::SSEClient(
     });
 }
 
-void SSEClient::parseEvents(const std::string& msg, const RestconfNotificationWatcher& eventWatcher, const ReportIgnoredLines reportIgnoredLines)
+void SSEClient::parseEvents(const RestconfNotificationWatcher& eventWatcher, const ReportIgnoredLines reportIgnoredLines)
 {
     static const std::string dataPrefix = "data:";
     static const std::string ignorePrefix = ":";
 
-    std::istringstream iss(msg);
-    std::string line;
-    std::string event;
+    std::size_t pos = 0;
+    constexpr auto EVENT_SEPARATOR = "\n\n"; // FIXME: Not a production-ready code; does not deal with all possible newline combinations of CR and LF
 
-    while (std::getline(iss, line)) {
-        if (line.starts_with(ignorePrefix) && reportIgnoredLines == ReportIgnoredLines::Yes) {
-            eventWatcher.commentEvent(line);
-        } else if (line.starts_with(ignorePrefix)) {
-            continue;
-        } else if (line.starts_with(dataPrefix)) {
-            event += line.substr(dataPrefix.size());
-        } else if (line.empty() && !event.empty()) {
-            eventWatcher.dataEvent(event);
-            event.clear();
-        } else if (line.empty()) {
-            continue;
-        } else {
-            CAPTURE(msg);
-            FAIL("Unprefixed response");
+    while ((pos = dataBuffer.find(EVENT_SEPARATOR)) != std::string::npos) {
+        // extract event
+        auto rawEvent = dataBuffer.substr(0, pos + std::char_traits<char>::length(EVENT_SEPARATOR));
+        std::istringstream stream(rawEvent);
+        dataBuffer.erase(0, pos + std::char_traits<char>::length(EVENT_SEPARATOR));
+
+        // split on newlines
+        std::string line;
+        std::string event;
+        while (std::getline(stream, line)) {
+            if (line.starts_with(ignorePrefix) && reportIgnoredLines == ReportIgnoredLines::Yes) {
+                eventWatcher.commentEvent(line);
+            } else if (line.starts_with(ignorePrefix)) {
+                continue;
+            } else if (line.starts_with(dataPrefix)) {
+                event += line.substr(dataPrefix.size());
+            } else if (line.empty() && !event.empty()) {
+                eventWatcher.dataEvent(event);
+                event.clear();
+            } else if (line.empty()) {
+                continue;
+            } else {
+                CAPTURE(rawEvent);
+                FAIL("Unprefixed response");
+            }
         }
     }
 }
