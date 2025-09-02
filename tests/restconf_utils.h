@@ -87,6 +87,7 @@ void setupRealNacm(sysrepo::Session session);
 struct SSEClient {
     std::shared_ptr<ng_client::session> client;
     boost::asio::deadline_timer t;
+    std::string dataBuffer;
 
     enum class ReportIgnoredLines {
         No,
@@ -104,7 +105,7 @@ struct SSEClient {
         const boost::posix_time::seconds silenceTimeout = boost::posix_time::seconds(1), // test code; the server should respond "soon"
         const ReportIgnoredLines reportIgnoredLines = ReportIgnoredLines::No);
 
-    static void parseEvents(const std::string& msg, const RestconfNotificationWatcher& eventWatcher, const ReportIgnoredLines reportIgnoredLines);
+    void parseEvents(const RestconfNotificationWatcher& eventWatcher, const ReportIgnoredLines reportIgnoredLines);
 };
 
 #define PREPARE_LOOP_WITH_EXCEPTIONS \
