@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5516cd3e_322ee7ba",
+        "filename": "tests/restconf_utils.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 227,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-09-03T09:08:19Z",
+      "side": 1,
+      "message": "I guess that not caring about CRs is fine here, it\u0027s a test code. However, I would prefer an inlince comment which says that this is still a non-production code, and that a compliant parser should handle any combination of LF / CR LF / CR.",
+      "range": {
+        "startLine": 227,
+        "startChar": 35,
+        "endLine": 227,
+        "endChar": 39
+      },
+      "revId": "2a8ea265964c452bece609061aaa2f3e45e4ab3f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e311f74f_585ee9e9",
+        "filename": "tests/restconf_utils.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-09-03T09:08:19Z",
+      "side": 1,
+      "message": "nit: if I was writing this, I would put that separator into a const string, and then do a `separator.size()` instead of the `2` and the associated comment.",
+      "range": {
+        "startLine": 229,
+        "startChar": 51,
+        "endLine": 229,
+        "endChar": 63
+      },
+      "revId": "2a8ea265964c452bece609061aaa2f3e45e4ab3f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
