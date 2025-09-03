@@ -26,6 +26,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "663070ac_3050b285",
+        "filename": "tests/restconf_utils.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 227,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-03T09:25:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5516cd3e_322ee7ba",
+      "range": {
+        "startLine": 227,
+        "startChar": 35,
+        "endLine": 227,
+        "endChar": 39
+      },
+      "revId": "2a8ea265964c452bece609061aaa2f3e45e4ab3f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "e311f74f_585ee9e9",
         "filename": "tests/restconf_utils.cpp",
         "patchSetId": 3
@@ -37,6 +61,30 @@
       "writtenOn": "2025-09-03T09:08:19Z",
       "side": 1,
       "message": "nit: if I was writing this, I would put that separator into a const string, and then do a `separator.size()` instead of the `2` and the associated comment.",
+      "range": {
+        "startLine": 229,
+        "startChar": 51,
+        "endLine": 229,
+        "endChar": 63
+      },
+      "revId": "2a8ea265964c452bece609061aaa2f3e45e4ab3f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c39867a4_784ff72a",
+        "filename": "tests/restconf_utils.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-03T09:25:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e311f74f_585ee9e9",
       "range": {
         "startLine": 229,
         "startChar": 51,
