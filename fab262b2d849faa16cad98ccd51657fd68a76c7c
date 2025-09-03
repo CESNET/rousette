@@ -33,6 +33,24 @@
       "message": "nit: this `return` is not needed anymore",
       "revId": "fab262b2d849faa16cad98ccd51657fd68a76c7c",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6da405bf_0b3e31d2",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 32
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-03T08:20:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "841df742_63bb13ca",
+      "revId": "fab262b2d849faa16cad98ccd51657fd68a76c7c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
