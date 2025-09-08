@@ -36,6 +36,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2e4d4493_98df524a",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 246,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-08T07:20:55Z",
+      "side": 1,
+      "message": "As rousette uses single-threaded event loop, I do not believe it could be executed concurrently.",
+      "parentUuid": "dcf77e91_1bf42c68",
+      "revId": "d47a1cd32fa3f976341b36b8d1fefa0cb6fa452d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "7b23e177_e027dc60",
