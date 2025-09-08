@@ -160,7 +160,22 @@ void EventStream::enqueue(const std::string& fieldName, const std::string& what)
     spdlog::trace("{}: new event, ∑ queue size = {}", peer, len);
     queue.push_back(buf);
     state = HasEvents;
-    boost::asio::post(res.io_service(), [&res = this->res]() { res.resume(); });
+    boost::asio::post(res.io_service(), [weak = weak_from_this()]() {
+        auto myself = weak.lock();
+        if (!myself) {
+            spdlog::trace("enqueue: already disconnected");
+            return;
+        }
+
+        std::lock_guard lock{myself->mtx};
+        // if state is Closed, then res.on_close() already finished, which means we must not use res anymore
+        if (myself->state == Closed) {
+            spdlog::trace("{}: enqueue: not resuming, the response's on_close handler already finished", myself->peer);
+            return;
+        }
+
+        myself->res.resume();
+    });
 }
 
 void EventStream::start_ping()
