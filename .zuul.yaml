@@ -6,7 +6,7 @@
     required-projects: &projects
       - CzechLight/dependencies
       - name: github/nghttp2/nghttp2-asio
-        override-checkout: main
+        override-checkout: cesnet/main
     vars:
       zuul_work_dir: "{{ zuul.projects[zuul.project.canonical_hostname + '/CzechLight/rousette'].src_dir }}"
 
