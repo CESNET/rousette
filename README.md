@@ -84,7 +84,8 @@ In practical terms, this means that the NACM access rules for the following XPat
 
 ## Dependencies
 
-- [nghttp2-asio](https://github.com/nghttp2/nghttp2-asio) - asynchronous C++ library for HTTP/2
+- [nghttp2-asio](https://github.com/CESNET/nghttp2-asio) - asynchronous C++ library for HTTP/2
+  - we strongly recommend using [our fork](https://github.com/CESNET/nghttp2-asio) which appears to be better maintained, and which contains important bugfixes which have not been merged upstream yet
 - [sysrepo-cpp](https://github.com/sysrepo/sysrepo-cpp) - object-oriented bindings of the [*sysrepo*](https://github.com/sysrepo/sysrepo) library
 - [libyang-cpp](https://github.com/CESNET/libyang-cpp) - C++ bindings for *libyang*
 - [PAM](http://www.linux-pam.org/) - for authentication
