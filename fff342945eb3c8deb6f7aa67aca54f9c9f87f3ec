@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "af24dd53_3c6bf5f9",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-09-11T22:21:11Z",
+      "side": 1,
+      "message": "recheck due to an apparent object storage outage",
+      "revId": "fff342945eb3c8deb6f7aa67aca54f9c9f87f3ec",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
