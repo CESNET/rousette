@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "17f81bff_492e942e",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 5
+      },
+      "lineNbr": 218,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-29T15:09:23Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6fef68b9_53e94df0",
+      "revId": "fe338b1ca33f583a2339438be7073bb381e863bd",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "a459f034_bd19573c",
@@ -41,6 +59,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "e9b5af0e_c043aa68",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 308,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-29T15:09:23Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a459f034_bd19573c",
+      "range": {
+        "startLine": 308,
+        "startChar": 72,
+        "endLine": 308,
+        "endChar": 77
+      },
+      "revId": "fe338b1ca33f583a2339438be7073bb381e863bd",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "6429cfe5_fb8fdc8a",
@@ -54,6 +96,30 @@
       "writtenOn": "2025-04-08T16:20:31Z",
       "side": 1,
       "message": "I don\u0027t understand this comment; what am I missing?",
+      "range": {
+        "startLine": 317,
+        "startChar": 141,
+        "endLine": 317,
+        "endChar": 178
+      },
+      "revId": "fe338b1ca33f583a2339438be7073bb381e863bd",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5722fcf6_1b89cbfc",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 317,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-29T15:09:23Z",
+      "side": 1,
+      "message": "I tried to clarify the comment, let me know.",
+      "parentUuid": "6429cfe5_fb8fdc8a",
       "range": {
         "startLine": 317,
         "startChar": 141,
