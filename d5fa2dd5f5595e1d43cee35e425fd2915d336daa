@@ -16,6 +16,24 @@
       "message": "this is not an std::optional\u003cstd::variant\u003cstd::monostate,...\u003e\u003e which looks redundant to me",
       "revId": "d5fa2dd5f5595e1d43cee35e425fd2915d336daa",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a444bb78_1d1aefec",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-29T18:15:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "04520455_c74dd99a",
+      "revId": "d5fa2dd5f5595e1d43cee35e425fd2915d336daa",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
