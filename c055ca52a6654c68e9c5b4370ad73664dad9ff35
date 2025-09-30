@@ -41,6 +41,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "28e1a697_f552cc33",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 141,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-30T17:14:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e642df76_5d76209e",
+      "range": {
+        "startLine": 141,
+        "startChar": 73,
+        "endLine": 141,
+        "endChar": 95
+      },
+      "revId": "c055ca52a6654c68e9c5b4370ad73664dad9ff35",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c56bea0a_1f887a26",
@@ -64,6 +88,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4230ff69_b9baa898",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 682,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-30T17:14:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c56bea0a_1f887a26",
+      "range": {
+        "startLine": 682,
+        "startChar": 55,
+        "endLine": 682,
+        "endChar": 147
+      },
+      "revId": "c055ca52a6654c68e9c5b4370ad73664dad9ff35",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "4b95d270_3e5ff907",
@@ -77,6 +125,30 @@
       "writtenOn": "2025-04-08T16:48:50Z",
       "side": 1,
       "message": "I think that these serialization formats have been already tested by the other code, so let\u0027s just stick with, say, JSON/JSON/JSON encoding. No need to test the rest, IMHO, right?",
+      "range": {
+        "startLine": 687,
+        "startChar": 0,
+        "endLine": 737,
+        "endChar": 13
+      },
+      "revId": "c055ca52a6654c68e9c5b4370ad73664dad9ff35",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8fdfff96_0ee66c1e",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 737,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-30T17:14:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4b95d270_3e5ff907",
       "range": {
         "startLine": 687,
         "startChar": 0,
