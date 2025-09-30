@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "5e74b63f_a3123261",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 3
+      },
+      "lineNbr": 221,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-30T17:14:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5abc9184_b99b435f",
+      "revId": "1f9ec309ecac4ce2d14e8c66b4f2877d5cee9b94",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "456243f5_ef218e66",
@@ -31,6 +49,30 @@
       "writtenOn": "2025-04-08T16:38:39Z",
       "side": 1,
       "message": "uint32_t (I also missed this during the first read. At that time I looked at the RFC, saw that it\u0027s an appropriately-sized type, but I failed to check for signedness. And then I read your later change and re-checked the RFC...).",
+      "range": {
+        "startLine": 157,
+        "startChar": 30,
+        "endLine": 157,
+        "endChar": 37
+      },
+      "revId": "1f9ec309ecac4ce2d14e8c66b4f2877d5cee9b94",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d3c15712_b4785802",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-30T17:14:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "456243f5_ef218e66",
       "range": {
         "startLine": 157,
         "startChar": 30,
@@ -64,6 +106,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "294b3121_1f9b56c5",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 158,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-30T17:14:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "57e4b55b_46212961",
+      "range": {
+        "startLine": 158,
+        "startChar": 75,
+        "endLine": 158,
+        "endChar": 78
+      },
+      "revId": "1f9ec309ecac4ce2d14e8c66b4f2877d5cee9b94",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "97a0c904_d32118a5",
@@ -77,6 +143,30 @@
       "writtenOn": "2025-04-08T16:37:08Z",
       "side": 1,
       "message": "since you decided to use that fancy duration_cast in the real code, can you please use it here in the test as well?",
+      "range": {
+        "startLine": 123,
+        "startChar": 88,
+        "endLine": 123,
+        "endChar": 120
+      },
+      "revId": "1f9ec309ecac4ce2d14e8c66b4f2877d5cee9b94",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "72531e45_abd36168",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-09-30T17:14:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "97a0c904_d32118a5",
       "range": {
         "startLine": 123,
         "startChar": 88,
