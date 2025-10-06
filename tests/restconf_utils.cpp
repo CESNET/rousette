@@ -172,10 +172,10 @@ SSEClient::SSEClient(
     const RestconfNotificationWatcher& eventWatcher,
     const std::string& uri,
     const std::map<std::string, std::string>& headers,
-    const boost::posix_time::seconds silenceTimeout,
+    const std::chrono::seconds silenceTimeout,
     const ReportIgnoredLines reportIgnoredLines)
     : client(std::make_shared<ng_client::session>(io, server_address, server_port))
-    , t(io, silenceTimeout)
+    , t(io, std::chrono::seconds(silenceTimeout))
 {
     ng::header_map reqHeaders;
     for (const auto& [name, value] : headers) {
@@ -201,7 +201,7 @@ SSEClient::SSEClient(
             res.on_data([&, silenceTimeout, reportIgnoredLines](const uint8_t* data, std::size_t len) {
                 dataBuffer.append(std::string(reinterpret_cast<const char*>(data), len));
                 parseEvents(eventWatcher, reportIgnoredLines);
-                t.expires_from_now(silenceTimeout);
+                t.expires_after(std::chrono::seconds(silenceTimeout));
             });
         });
 

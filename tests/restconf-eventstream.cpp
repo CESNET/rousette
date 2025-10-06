@@ -101,7 +101,7 @@ TEST_CASE("Event stream tests")
             netconfWatcher,
             "/streams/NETCONF/JSON",
             std::map<std::string, std::string>{AUTH_ROOT},
-            boost::posix_time::seconds{5},
+            std::chrono::seconds{5},
             SSEClient::ReportIgnoredLines::Yes);
 
         RUN_LOOP_WITH_EXCEPTIONS;
