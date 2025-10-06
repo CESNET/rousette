@@ -180,7 +180,7 @@ void EventStream::enqueue(const std::string& fieldName, const std::string& what)
 
 void EventStream::start_ping()
 {
-    ping.expires_from_now(boost::posix_time::seconds(m_keepAlivePingInterval.count()));
+    ping.expires_after(m_keepAlivePingInterval);
     ping.async_wait([weak = weak_from_this()](const boost::system::error_code& ec) {
         auto myself = weak.lock();
         if (!myself) {

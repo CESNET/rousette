@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <boost/asio/deadline_timer.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/signals2.hpp>
 #include <list>
 #include <memory>
@@ -50,7 +50,7 @@ private:
     };
 
     State state = WaitingForEvents;
-    boost::asio::deadline_timer ping;
+    boost::asio::steady_timer ping;
     std::list<std::string> queue;
     mutable std::mutex mtx; // for `state` and `queue`
     boost::signals2::scoped_connection eventSub, terminateSub;
