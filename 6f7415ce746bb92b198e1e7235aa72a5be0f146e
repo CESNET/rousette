@@ -1,0 +1,78 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fa61c8d0_1d5116c4",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 147,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T08:57:50Z",
+      "side": 1,
+      "message": "This entire condition looks very strange to me. I think that as a minimum, the selected part must be removed.\n\nBut I would very much prefer to make the access check a bit more structured, e.g.:\n```\n// All RPCs are already NACM-checked by the caller\nif (isKill) {\n    // NACM layer already takes care of nacm:default-deny-all, nothing to do here\n} else if (subscriptionData-\u003euser !\u003d session.getNacmUser()) {\n    // as per RFC 8639, only the creator can delete subscriptions (an admin must use kill-subscription)\n    throw ...\n}\n```",
+      "range": {
+        "startLine": 147,
+        "startChar": 16,
+        "endLine": 147,
+        "endChar": 73
+      },
+      "revId": "6f7415ce746bb92b198e1e7235aa72a5be0f146e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e3359703_a67d0cc0",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T08:57:50Z",
+      "side": 1,
+      "message": "nit: please add a FIXME for passing additional error info (`rc:yang-data delete-subscription-error-info` from RFC 8639)",
+      "revId": "6f7415ce746bb92b198e1e7235aa72a5be0f146e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a739f31f_dc2bc0dc",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 198,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T08:57:50Z",
+      "side": 1,
+      "message": "could you please refactor this so that it\u0027s implemented like the other overload?",
+      "revId": "6f7415ce746bb92b198e1e7235aa72a5be0f146e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3c09e7f8_a5eacf3a",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 410,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T08:57:50Z",
+      "side": 1,
+      "message": "I think that this really needs a check for two different users (which are both \"regular ones\", not the anonymous one).",
+      "revId": "6f7415ce746bb92b198e1e7235aa72a5be0f146e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
