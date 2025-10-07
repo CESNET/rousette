@@ -1,0 +1,84 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "df24a711_95cb9936",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 10
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T09:05:40Z",
+      "side": 1,
+      "message": "you can remove this",
+      "revId": "cf7c1bc0d315dd190e53320d56e17f9e7a02c817",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ccc9e9e6_0b1f1b2a",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 10
+      },
+      "lineNbr": 220,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T09:05:40Z",
+      "side": 1,
+      "message": "nit: consider line-wrapping this in some extra commit",
+      "revId": "cf7c1bc0d315dd190e53320d56e17f9e7a02c817",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "083dc7f8_6c92b696",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T09:05:40Z",
+      "side": 1,
+      "message": "Please add a test for HTTP requests which set both of these input nodes.",
+      "range": {
+        "startLine": 68,
+        "startChar": 0,
+        "endLine": 74,
+        "endChar": 5
+      },
+      "revId": "cf7c1bc0d315dd190e53320d56e17f9e7a02c817",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "810d720b_009a612c",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 360,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T09:05:40Z",
+      "side": 1,
+      "message": "Please add a comment that this is just an implementation detail of the test code. It\u0027s constructing some \"XML\" bits internally, but what hits the wire is a JSON serialization here. (Right?)",
+      "range": {
+        "startLine": 360,
+        "startChar": 37,
+        "endLine": 360,
+        "endChar": 40
+      },
+      "revId": "cf7c1bc0d315dd190e53320d56e17f9e7a02c817",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
