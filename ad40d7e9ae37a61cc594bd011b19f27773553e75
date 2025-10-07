@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "56b15c31_d93cea42",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 307,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T09:16:03Z",
+      "side": 1,
+      "message": "that checks looks redundant:\n```\ntry {\n    return datastoreFromString(*datastore-\u003eprefix + \":\"s + datastore-\u003eidentifier);\n} catch (std::exception\u0026) {\n    throw ErrorResponse(400, \"application\", \"operation-failed\", \"Unsupported datastore \" + *datastore-\u003eprefix + \":\" + datastore-\u003eidentifier);\n}\n```\n\n(wow, I had a draft comment for six months!)",
+      "range": {
+        "startLine": 303,
+        "startChar": 0,
+        "endLine": 307,
+        "endChar": 141
+      },
+      "revId": "ad40d7e9ae37a61cc594bd011b19f27773553e75",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
