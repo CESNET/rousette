@@ -1,0 +1,135 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f68ccf36_6fd199bb",
+        "filename": "src/http/EventStream.cpp",
+        "patchSetId": 16
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T07:16:13Z",
+      "side": 1,
+      "message": "Thanks for explaining that in the commit message, but this lock adjustment IMHO needs a code commit as well. So, please explain here that the lock cannot be held during the onClientDisconnectedCb because...\n\nAlso, please do that in a separate commit, it looks like a fix of https://gerrit.cesnet.cz/c/CzechLight/rousette/+/8715/5 to me.",
+      "revId": "57ee7eda71ac0fffad7716b45958a95237479e20",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d27caf8f_ffc50583",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 16
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T07:16:13Z",
+      "side": 1,
+      "message": "nit: looks like this file doesn\u0027t have to change in this commit, does it?",
+      "revId": "57ee7eda71ac0fffad7716b45958a95237479e20",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fa0f406a_4c6ab6c2",
+        "filename": "src/restconf/NotificationStream.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T07:16:13Z",
+      "side": 1,
+      "message": "nit: looks like this file doesn\u0027t have to change in this commit, does it?",
+      "revId": "57ee7eda71ac0fffad7716b45958a95237479e20",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ac9fcc68_a5faaf1c",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 16
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T07:16:13Z",
+      "side": 1,
+      "message": "I know that we are not doing this anywhere else, but still -- in the long run, I would like to improve the error messages. Maybe there\u0027s something useful in the exception that could be passed via spirit x3 all the way into a human-readable error message at the HTTP level?",
+      "revId": "57ee7eda71ac0fffad7716b45958a95237479e20",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "27519614_d4c5f8f2",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 16
+      },
+      "lineNbr": 230,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T07:16:13Z",
+      "side": 1,
+      "message": "as a consideration for future refactoring -- I think this is worth a typedef such as, e.g., `RestconfStreamRequest::Type`.",
+      "range": {
+        "startLine": 230,
+        "startChar": 18,
+        "endLine": 230,
+        "endChar": 109
+      },
+      "revId": "57ee7eda71ac0fffad7716b45958a95237479e20",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "23ea8f76_6bd5380a",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 217,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T07:16:13Z",
+      "side": 1,
+      "message": "This data structure implies that both \"NETCONF stream\" as well as the \"subscribed stream\" support some query parameters. Is this correct?\n\n- Are they allowed in the RFC?\n- Is the set of supported parameters same between these two types of streams?\n- Will the parser accept these parameters? Is there something that needs to be done to filter which parameters are allowed?\n- Please add some tests for this.\n- Later patches in this series implement some filtering, but it looks to me like these parameters are taken from the POSTed data payload, not from the URI parameters.",
+      "revId": "57ee7eda71ac0fffad7716b45958a95237479e20",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1c034da0_7270f1fb",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 16
+      },
+      "lineNbr": 217,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T07:16:13Z",
+      "side": 1,
+      "message": "what\u0027s the purpose of this background thread?",
+      "range": {
+        "startLine": 213,
+        "startChar": 0,
+        "endLine": 217,
+        "endChar": 1
+      },
+      "revId": "57ee7eda71ac0fffad7716b45958a95237479e20",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
