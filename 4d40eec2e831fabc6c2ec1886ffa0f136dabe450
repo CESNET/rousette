@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "dc4b724a_69a18579",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T07:16:18Z",
+      "side": 1,
+      "message": "nit: well, a malicious user can \"still\" do that, but that\u0027s by design I\u0027m afraid.",
+      "range": {
+        "startLine": 10,
+        "startChar": 60,
+        "endLine": 11,
+        "endChar": 35
+      },
+      "revId": "4d40eec2e831fabc6c2ec1886ffa0f136dabe450",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}

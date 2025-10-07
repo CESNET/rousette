@@ -1,0 +1,95 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "660ffeeb_5c01ace6",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T07:16:18Z",
+      "side": 1,
+      "message": "This function (and its invocation via `Server::stop`) looks like a bugfix to make a clean shutdown possible. Is it possible to spin it into a separate patch?",
+      "revId": "e73a7541774063830795e937b085e4538becfabe",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6ff4f957_ee34c641",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 205,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T07:16:18Z",
+      "side": 1,
+      "message": "I\u0027m not a big fan of this pattern (do something while a lock is being held, then unlock and call another function which relocks immediately). I cannot come up with a scenario where there\u0027s a clear race condition, but maybe this could be fixed in a systematic way.\n\nRight now it\u0027s only invoked once right after construction (where you don\u0027t have to hold the lock, IMHO), and then from this place. That means that `inactivityStart` doesn\u0027t have to lock the mutex on its own, and you can instead change this function to call that while the lock is still held.",
+      "revId": "e73a7541774063830795e937b085e4538becfabe",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e04cc559_dff8c14c",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 226,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T07:16:18Z",
+      "side": 1,
+      "message": "this should be moved below the `if (state \u003d\u003d State::Terminating)`, IMHO, because otherwise there will be a misleading message in the log.",
+      "revId": "e73a7541774063830795e937b085e4538becfabe",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e964a606_bb838164",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 245,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T07:16:18Z",
+      "side": 1,
+      "message": "Same as `inactivityStart()` -- let\u0027s move the locking to the caller, and document both of these functions that they require the caller to hold the lock, please (and make them private as well).",
+      "revId": "e73a7541774063830795e937b085e4538becfabe",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "54e66cd5_f73d82e7",
+        "filename": "src/restconf/DynamicSubscriptions.h",
+        "patchSetId": 10
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-07T07:16:18Z",
+      "side": 1,
+      "message": "`steady_timer`, because these timeouts should not be afected by wall clock\u0027s adjustments",
+      "range": {
+        "startLine": 47,
+        "startChar": 21,
+        "endLine": 47,
+        "endChar": 33
+      },
+      "revId": "e73a7541774063830795e937b085e4538becfabe",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
