@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2bbae349_07e32994",
+        "filename": "src/http/EventStream.cpp",
+        "patchSetId": 16
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-10-13T20:05:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f68ccf36_6fd199bb",
+      "revId": "57ee7eda71ac0fffad7716b45958a95237479e20",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "d27caf8f_ffc50583",
@@ -35,6 +53,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "e3f3d20f_97aa56d9",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 16
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-10-13T20:05:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d27caf8f_ffc50583",
+      "revId": "57ee7eda71ac0fffad7716b45958a95237479e20",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "fa0f406a_4c6ab6c2",
@@ -48,6 +84,24 @@
       "writtenOn": "2025-10-07T07:16:13Z",
       "side": 1,
       "message": "nit: looks like this file doesn\u0027t have to change in this commit, does it?",
+      "revId": "57ee7eda71ac0fffad7716b45958a95237479e20",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "fbbcb785_76b3f2cf",
+        "filename": "src/restconf/NotificationStream.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-10-13T20:05:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fa0f406a_4c6ab6c2",
       "revId": "57ee7eda71ac0fffad7716b45958a95237479e20",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -105,6 +159,24 @@
       "writtenOn": "2025-10-07T07:16:13Z",
       "side": 1,
       "message": "This data structure implies that both \"NETCONF stream\" as well as the \"subscribed stream\" support some query parameters. Is this correct?\n\n- Are they allowed in the RFC?\n- Is the set of supported parameters same between these two types of streams?\n- Will the parser accept these parameters? Is there something that needs to be done to filter which parameters are allowed?\n- Please add some tests for this.\n- Later patches in this series implement some filtering, but it looks to me like these parameters are taken from the POSTed data payload, not from the URI parameters.",
+      "revId": "57ee7eda71ac0fffad7716b45958a95237479e20",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "237b8c6f_678b7602",
+        "filename": "src/restconf/uri.h",
+        "patchSetId": 16
+      },
+      "lineNbr": 217,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-10-13T20:05:37Z",
+      "side": 1,
+      "message": "Hm, yeah, that is a good point. The subscribed streams do not have query params (RFC8650 does not specify any). I have made this type-safe (usnig previous and this patch)",
+      "parentUuid": "23ea8f76_6bd5380a",
       "revId": "57ee7eda71ac0fffad7716b45958a95237479e20",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
