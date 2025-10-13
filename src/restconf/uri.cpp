@@ -58,11 +58,11 @@ const auto resources = x3::rule<class resources, URIPath>{"resources"} =
 const auto uriGrammar = x3::rule<class grammar, URIPath>{"grammar"} = x3::lit("/restconf") >> resources;
 
 
-const auto netconfStream = x3::rule<class netconfStream, RestconfStreamRequest::NetconfStream>{"netconfStream"} =
+const auto netconfStream = x3::rule<class netconfStream, NetconfStreamRequest>{"netconfStream"} =
     x3::lit("/NETCONF") >>
     ((x3::lit("/XML") >> x3::attr(libyang::DataFormat::XML)) |
      (x3::lit("/JSON") >> x3::attr(libyang::DataFormat::JSON)));
-const auto streamUriGrammar = x3::rule<class grammar, RestconfStreamRequest::NetconfStream>{"streamsGrammar"} = x3::lit("/streams") >> netconfStream;
+const auto streamUriGrammar = x3::rule<class grammar, NetconfStreamRequest>{"streamsGrammar"} = x3::lit("/streams") >> netconfStream;
 
 // clang-format on
 }
@@ -204,9 +204,9 @@ std::optional<queryParams::QueryParams> parseQueryParams(const std::string& quer
     return ret;
 }
 
-std::optional<RestconfStreamRequest::NetconfStream> parseStreamUri(const std::string& uriPath)
+std::optional<RestconfStreamRequest> parseStreamUri(const std::string& uriPath)
 {
-    std::optional<RestconfStreamRequest::NetconfStream> ret;
+    std::optional<RestconfStreamRequest> ret;
 
     if (!x3::parse(std::begin(uriPath), std::end(uriPath), streamUriGrammar >> x3::eoi, ret)) {
         return std::nullopt;
@@ -668,8 +668,8 @@ std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> asYangMod
     return std::nullopt;
 }
 
-RestconfStreamRequest::NetconfStream::NetconfStream() = default;
-RestconfStreamRequest::NetconfStream::NetconfStream(const libyang::DataFormat& encoding)
+NetconfStreamRequest::NetconfStreamRequest() = default;
+NetconfStreamRequest::NetconfStreamRequest(const libyang::DataFormat& encoding)
     : encoding(encoding)
 {
 }
@@ -692,7 +692,8 @@ RestconfStreamRequest asRestconfStreamRequest(const std::string& httpMethod, con
 
     validateQueryParametersForStream(*queryParameters);
 
-    return {*type, *queryParameters};
+    type->queryParams = *queryParameters;
+    return *type;
 }
 
 /** @brief Returns a set of allowed HTTP methods for given URI. Usable for the 'allow' header */
