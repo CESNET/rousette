@@ -1082,15 +1082,15 @@ TEST_CASE("URI path parser")
         using rousette::restconf::RestconfStreamRequest;
 
         {
-            auto [type, queryParams] = asRestconfStreamRequest("GET", "/streams/NETCONF/XML", "");
-            REQUIRE(type.encoding == libyang::DataFormat::XML);
-            REQUIRE(queryParams.empty());
+            auto req = asRestconfStreamRequest("GET", "/streams/NETCONF/XML", "");
+            REQUIRE(req.encoding == libyang::DataFormat::XML);
+            REQUIRE(req.queryParams.empty());
         }
 
         {
-            auto [type, queryParams] = asRestconfStreamRequest("GET", "/streams/NETCONF/JSON", "");
-            REQUIRE(type.encoding == libyang::DataFormat::JSON);
-            REQUIRE(queryParams.empty());
+            auto req = asRestconfStreamRequest("GET", "/streams/NETCONF/JSON", "");
+            REQUIRE(req.encoding == libyang::DataFormat::JSON);
+            REQUIRE(req.queryParams.empty());
         }
 
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF", ""),
