@@ -1017,7 +1017,7 @@ Server::Server(
                 shutdownRequested,
                 keepAlivePingInterval,
                 sess,
-                streamRequest.type.encoding,
+                streamRequest.encoding,
                 xpathFilter,
                 startTime,
                 stopTime);
