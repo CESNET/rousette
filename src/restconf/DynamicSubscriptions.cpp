@@ -74,9 +74,11 @@ sysrepo::DynamicSubscription makeStreamSubscription(sysrepo::Session& session, c
 
 namespace rousette::restconf {
 
-DynamicSubscriptions::DynamicSubscriptions(const std::string& streamRootUri)
+DynamicSubscriptions::DynamicSubscriptions(const std::string& streamRootUri, const nghttp2::asio_http2::server::http2& server, const std::chrono::seconds inactivityTimeout)
     : m_restconfStreamUri(streamRootUri)
+    , m_server(server)
     , m_uuidGenerator(boost::uuids::random_generator())
+    , m_inactivityTimeout(inactivityTimeout)
 {
 }
 
@@ -86,9 +88,7 @@ void DynamicSubscriptions::stop()
 {
     std::lock_guard lock(m_mutex);
     for (const auto& [uuid, subscriptionData] : m_subscriptions) {
-        // We are already terminating and will destroy via destructor, calls to terminate() will do nothing
-        std::lock_guard lock(subscriptionData->mutex);
-        subscriptionData->state = SubscriptionData::State::Terminating;
+        subscriptionData->stop();
     }
 }
 
@@ -110,7 +110,10 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
             std::move(sub),
             dataFormat,
             uuid,
-            *session.getNacmUser());
+            *session.getNacmUser(),
+            *m_server.io_services().at(0),
+            m_inactivityTimeout,
+            [this, subId = sub.subscriptionId()]() { terminateSubscription(subId); });
     } catch (const sysrepo::ErrorWithCode& e) {
         throw ErrorResponse(400, "application", "invalid-attribute", e.what());
     }
@@ -161,18 +164,29 @@ DynamicSubscriptions::SubscriptionData::SubscriptionData(
     sysrepo::DynamicSubscription sub,
     libyang::DataFormat format,
     boost::uuids::uuid uuid,
-    const std::string& user)
+    const std::string& user,
+    boost::asio::io_context& io,
+    std::chrono::seconds inactivityTimeout,
+    std::function<void()> onClientInactiveCallback)
     : subscription(std::move(sub))
     , dataFormat(format)
     , uuid(uuid)
     , user(user)
     , state(State::Start)
+    , inactivityTimeout(inactivityTimeout)
+    , clientInactiveTimer(io)
+    , onClientInactiveCallback(std::move(onClientInactiveCallback))
 {
     spdlog::debug("{}: created", fmt::streamed(*this));
+
+    std::lock_guard lock(mutex);
+    inactivityStart();
 }
 
 DynamicSubscriptions::SubscriptionData::~SubscriptionData()
 {
+    std::lock_guard lock(mutex);
+    inactivityCancel();
     terminate();
 }
 
@@ -186,12 +200,14 @@ void DynamicSubscriptions::SubscriptionData::clientDisconnected()
     }
 
     state = State::Start;
+    inactivityStart();
 }
 
 void DynamicSubscriptions::SubscriptionData::clientConnected()
 {
     spdlog::debug("{}: client connected", fmt::streamed(*this));
     std::lock_guard lock(mutex);
+    inactivityCancel();
     state = State::ReceiverActive;
 }
 
@@ -201,10 +217,37 @@ bool DynamicSubscriptions::SubscriptionData::isReadyToAcceptClient() const
     return state == State::Start;
 }
 
+/** @pre The mutex must be locked by the caller. */
+void DynamicSubscriptions::SubscriptionData::inactivityStart()
+{
+    if (state == State::Terminating) {
+        return;
+    }
+
+    spdlog::trace("{}: starting inactivity timer", fmt::streamed(*this));
+
+    clientInactiveTimer.expires_after(inactivityTimeout);
+    clientInactiveTimer.async_wait([weakThis = weak_from_this()](const boost::system::error_code& err) {
+        auto self = weakThis.lock();
+        if (!self || err == boost::asio::error::operation_aborted) {
+            return;
+        }
+
+        spdlog::trace("{}: client inactive, perform inactivity callback", fmt::streamed(*self));
+        self->onClientInactiveCallback();
+    });
+}
+
+/** @pre The mutex must be locked by the caller. */
+void DynamicSubscriptions::SubscriptionData::inactivityCancel()
+{
+    spdlog::trace("{}: cancelling inactivity timer", fmt::streamed(*this));
+    clientInactiveTimer.cancel();
+}
+
+/** @pre The mutex must be locked by the caller. */
 void DynamicSubscriptions::SubscriptionData::terminate(const std::optional<std::string>& reason)
 {
-    std::lock_guard lock(mutex);
-
     // already terminating, do nothing
     if (state == State::Terminating) {
         return;
@@ -217,6 +260,14 @@ void DynamicSubscriptions::SubscriptionData::terminate(const std::optional<std::
     } catch (const sysrepo::ErrorWithCode& e) { // Maybe it was already terminated (stop-time).
         spdlog::warn("Failed to terminate {}: {}", fmt::streamed(*this), e.what());
     }
+}
+
+void DynamicSubscriptions::SubscriptionData::stop()
+{
+    std::lock_guard lock(mutex);
+    inactivityCancel();
+    // We are already terminating and will destroy via destructor, calls to terminate() will do nothing
+    state = SubscriptionData::State::Terminating;
 }
 
 std::ostream& operator<<(std::ostream& os, const DynamicSubscriptions::SubscriptionData& sub)
@@ -241,7 +292,10 @@ DynamicSubscriptionHttpStream::DynamicSubscriptionHttpStream(
           *signal,
           keepAlivePingInterval,
           std::nullopt /* no initial event */,
-          [this]() { m_subscriptionData->terminate("ietf-subscribed-notifications:no-such-subscription"); },
+          [this]() {
+              std::lock_guard lock(m_subscriptionData->mutex);
+              m_subscriptionData->terminate("ietf-subscribed-notifications:no-such-subscription");
+          },
           [this]() { m_subscriptionData->clientDisconnected(); })
     , m_subscriptionData(subscriptionData)
     , m_signal(signal)
