@@ -202,6 +202,30 @@
       },
       "revId": "57ee7eda71ac0fffad7716b45958a95237479e20",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "fe06ac93_110681f5",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 16
+      },
+      "lineNbr": 217,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-10-14T08:43:17Z",
+      "side": 1,
+      "message": "That is some kind of a leftover from a previous version of the test. Removed and redesigned",
+      "parentUuid": "1c034da0_7270f1fb",
+      "range": {
+        "startLine": 213,
+        "startChar": 0,
+        "endLine": 217,
+        "endChar": 1
+      },
+      "revId": "57ee7eda71ac0fffad7716b45958a95237479e20",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
