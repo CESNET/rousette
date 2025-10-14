@@ -33,7 +33,8 @@ public:
                     const std::string& address,
                     const std::string& port,
                     const std::chrono::milliseconds timeout = std::chrono::milliseconds{0},
-                    const std::chrono::seconds keepAlivePingInterval = std::chrono::seconds{55});
+                    const std::chrono::seconds keepAlivePingInterval = std::chrono::seconds{55},
+                    const std::chrono::seconds subNotifInactivityTimeout = std::chrono::seconds{60});
     ~Server();
     void join();
     void stop();
