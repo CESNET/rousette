@@ -20,6 +20,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "ad74757d_5fc575ad",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-10-14T11:02:38Z",
+      "side": 1,
+      "message": "It is not, this is merely a \"cleanup\" function for the timers. If the timers are not disabled, they would keep the subscription object alive until they expire.\n\nI renamed the stop function(s) to stopTimer(s).",
+      "parentUuid": "660ffeeb_5c01ace6",
+      "revId": "e73a7541774063830795e937b085e4538becfabe",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "6ff4f957_ee34c641",
         "filename": "src/restconf/DynamicSubscriptions.cpp",
         "patchSetId": 10
@@ -31,6 +49,24 @@
       "writtenOn": "2025-10-07T07:16:18Z",
       "side": 1,
       "message": "I\u0027m not a big fan of this pattern (do something while a lock is being held, then unlock and call another function which relocks immediately). I cannot come up with a scenario where there\u0027s a clear race condition, but maybe this could be fixed in a systematic way.\n\nRight now it\u0027s only invoked once right after construction (where you don\u0027t have to hold the lock, IMHO), and then from this place. That means that `inactivityStart` doesn\u0027t have to lock the mutex on its own, and you can instead change this function to call that while the lock is still held.",
+      "revId": "e73a7541774063830795e937b085e4538becfabe",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c15e4d1b_d33cae8b",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 205,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-10-14T11:02:38Z",
+      "side": 1,
+      "message": "Agreed, it took a little more refactoring but done.",
+      "parentUuid": "6ff4f957_ee34c641",
       "revId": "e73a7541774063830795e937b085e4538becfabe",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -52,6 +88,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f1647268_78ec32c7",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 226,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-10-14T11:02:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e04cc559_dff8c14c",
+      "revId": "e73a7541774063830795e937b085e4538becfabe",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e964a606_bb838164",
@@ -69,6 +123,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "910d0a60_ff1b279d",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 245,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-10-14T11:02:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e964a606_bb838164",
+      "revId": "e73a7541774063830795e937b085e4538becfabe",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "54e66cd5_f73d82e7",
@@ -82,6 +154,30 @@
       "writtenOn": "2025-10-07T07:16:18Z",
       "side": 1,
       "message": "`steady_timer`, because these timeouts should not be afected by wall clock\u0027s adjustments",
+      "range": {
+        "startLine": 47,
+        "startChar": 21,
+        "endLine": 47,
+        "endChar": 33
+      },
+      "revId": "e73a7541774063830795e937b085e4538becfabe",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7e6ab50f_125585bd",
+        "filename": "src/restconf/DynamicSubscriptions.h",
+        "patchSetId": 10
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-10-14T11:02:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "54e66cd5_f73d82e7",
       "range": {
         "startLine": 47,
         "startChar": 21,
