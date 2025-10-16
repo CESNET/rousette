@@ -26,6 +26,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "82ef6744_37875e77",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 147,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-10-16T08:17:01Z",
+      "side": 1,
+      "message": "I think it is correct. This has nothing to do with NACM.\nThis condition checks that if `delete-subscription` was invoked by the `root` and it is trying to delete a subscription *not created by the `root`* it cannot be done.",
+      "parentUuid": "fa61c8d0_1d5116c4",
+      "range": {
+        "startLine": 147,
+        "startChar": 16,
+        "endLine": 147,
+        "endChar": 73
+      },
+      "revId": "6f7415ce746bb92b198e1e7235aa72a5be0f146e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "e3359703_a67d0cc0",
         "filename": "src/restconf/DynamicSubscriptions.cpp",
         "patchSetId": 7
@@ -37,6 +61,24 @@
       "writtenOn": "2025-10-07T08:57:50Z",
       "side": 1,
       "message": "nit: please add a FIXME for passing additional error info (`rc:yang-data delete-subscription-error-info` from RFC 8639)",
+      "revId": "6f7415ce746bb92b198e1e7235aa72a5be0f146e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4d6492a4_b0791f34",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-10-16T08:17:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e3359703_a67d0cc0",
       "revId": "6f7415ce746bb92b198e1e7235aa72a5be0f146e",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -58,6 +100,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f5671267_a1976efd",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 198,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-10-16T08:17:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a739f31f_dc2bc0dc",
+      "revId": "6f7415ce746bb92b198e1e7235aa72a5be0f146e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3c09e7f8_a5eacf3a",
@@ -71,6 +131,24 @@
       "writtenOn": "2025-10-07T08:57:50Z",
       "side": 1,
       "message": "I think that this really needs a check for two different users (which are both \"regular ones\", not the anonymous one).",
+      "revId": "6f7415ce746bb92b198e1e7235aa72a5be0f146e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a52a90ff_cfbfab27",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 410,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-10-16T08:17:01Z",
+      "side": 1,
+      "message": "I am not sure I follow what you mean, subscription is created by the `dwdm` user and third SECTION checks that `norules` user cannot delete it. Is that not what you mean?",
+      "parentUuid": "3c09e7f8_a5eacf3a",
       "revId": "6f7415ce746bb92b198e1e7235aa72a5be0f146e",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
