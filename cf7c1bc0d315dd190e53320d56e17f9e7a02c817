@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "463db1cc_38995b3d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 10
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-10-16T08:17:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "df24a711_95cb9936",
+      "revId": "cf7c1bc0d315dd190e53320d56e17f9e7a02c817",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "ccc9e9e6_0b1f1b2a",
@@ -35,6 +53,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "71ef0a41_28b32568",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 10
+      },
+      "lineNbr": 220,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-10-16T08:17:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ccc9e9e6_0b1f1b2a",
+      "revId": "cf7c1bc0d315dd190e53320d56e17f9e7a02c817",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "083dc7f8_6c92b696",
@@ -48,6 +84,30 @@
       "writtenOn": "2025-10-07T09:05:40Z",
       "side": 1,
       "message": "Please add a test for HTTP requests which set both of these input nodes.",
+      "range": {
+        "startLine": 68,
+        "startChar": 0,
+        "endLine": 74,
+        "endChar": 5
+      },
+      "revId": "cf7c1bc0d315dd190e53320d56e17f9e7a02c817",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4eba7f52_9e865d66",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-10-16T08:17:01Z",
+      "side": 1,
+      "message": "This is not possible as both are different cases of a YANG choice statement (https://www.rfc-editor.org/rfc/rfc8639#page-13 filter-spec) so it fails to parse\n\n\n(It is clearly seen from the diagram, but the YANG model uses a choice statement without any case statements. I did not know that such thing is possible, took me a while).",
+      "parentUuid": "083dc7f8_6c92b696",
       "range": {
         "startLine": 68,
         "startChar": 0,
