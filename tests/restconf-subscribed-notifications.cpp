@@ -172,6 +172,25 @@ TEST_CASE("RESTCONF subscribed notifications")
   "ietf-restconf:errors": {
     "error": [
       {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-path": "/ietf-subscribed-notifications:establish-subscription/stream-filter-name",
+        "error-message": "Invalid leafref value \"xyz\" - no target instance \"/sn:filters/sn:stream-filter/sn:name\" with the same value."
+      }
+    ]
+  }
+}
+)###"});
+
+        srSess.switchDatastore(sysrepo::Datastore::Running);
+        srSess.setItem("/ietf-subscribed-notifications:filters/stream-filter[name='xyz']/stream-xpath-filter", "/example:eventA");
+        srSess.applyChanges();
+
+        REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription", {CONTENT_TYPE_JSON}, R"###({ "ietf-subscribed-notifications:input": { "stream": "NETCONF", "stream-filter-name": "xyz" } })###")
+                == Response{400, jsonHeaders, R"###({
+  "ietf-restconf:errors": {
+    "error": [
+      {
         "error-type": "application",
         "error-tag": "invalid-attribute",
         "error-message": "Stream filtering is not supported"
