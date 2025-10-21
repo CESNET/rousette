@@ -110,6 +110,7 @@ TEST_CASE("reading data")
       ]
     }
   },
+  "ietf-subscribed-notifications:filters": {},
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -168,6 +169,7 @@ TEST_CASE("reading data")
       ]
     }
   },
+  "ietf-subscribed-notifications:filters": {},
   "ietf-system:system": {
     "contact": "contact",
     "hostname": "hostname",
@@ -195,7 +197,8 @@ TEST_CASE("reading data")
   "example:config-nonconfig": {
     "config-node": "foo-config-true"
   },
-  "example:ordered-lists": {}
+  "example:ordered-lists": {},
+  "ietf-subscribed-notifications:filters": {}
 }
 )"});
     }
