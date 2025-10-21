@@ -438,7 +438,7 @@ libyang::CreatedNodes createEditForPutAndPatch(libyang::Context& ctx, const std:
     return {editNode, replacementNode};
 }
 
-std::optional<libyang::DataNode> processInternalRPC(sysrepo::Session& sess, const libyang::DataNode& rpcInput, const libyang::DataFormat requestEncoding, DynamicSubscriptions& dynamicSubscriptions)
+std::optional<libyang::DataNode> processInternalRPC(sysrepo::Session& sess, libyang::DataNode& rpcInput, const libyang::DataFormat requestEncoding, DynamicSubscriptions& dynamicSubscriptions)
 {
     using InternalRPCHandler = std::function<void(sysrepo::Session&, const libyang::DataFormat, const libyang::DataNode&, libyang::DataNode&)>;
     const std::map<std::string, InternalRPCHandler> handlers{
@@ -456,6 +456,33 @@ std::optional<libyang::DataNode> processInternalRPC(sysrepo::Session& sess, cons
     auto [parent, rpcNode] = sess.getContext().newPath2(rpcPath, std::nullopt);
     if (!sess.checkNacmOperation(*rpcNode)) {
         throw ErrorResponse(403, "application", "access-denied", "Access denied.", rpcNode->path());
+    }
+
+    // Input validation. We are currently only validating against the ietf-subscribed-notifications data (the RPCs reference data from that module)
+    // sess.switchDatastore(sysrepo::Datastore::Running);
+    // auto data = sess.getData("/ietf-subscribed-notifications:filters");
+
+    auto sess2 = sysrepo::Connection{}.sessionStart(sysrepo::Datastore::Running);
+    auto data = sess2.getData("/ietf-subscribed-notifications:filters");
+
+    try {
+        spdlog::error("************************");
+        if (data.has_value())
+            spdlog::error("... {}", *data->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings));
+        else
+            spdlog::error("... <no data>");
+        libyang::validateOp(rpcInput, data, libyang::OperationType::RpcRestconf);
+    } catch (const libyang::ErrorWithCode& exc) {
+        const auto errors = sess.getContext().getErrors();
+
+        if (!errors.empty()) {
+            const auto& error = errors.back();
+            throw ErrorResponse(400, "protocol", "invalid-value", error.message, error.dataPath.value_or(rpcInput.path()));
+        } else {
+            // Fallback if no detailed error is available
+            throw ErrorResponse(400, "protocol", "invalid-value", "Input validation failed"s, rpcInput.path());
+        }
+
     }
 
     if (auto it = handlers.find(rpcPath); it != handlers.end()) {

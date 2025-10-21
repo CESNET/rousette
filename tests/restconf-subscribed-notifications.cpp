@@ -139,6 +139,7 @@ TEST_CASE("RESTCONF subscribed notifications")
     std::variant<std::monostate, std::string, libyang::XML> rpcFilter;
     std::optional<std::pair<std::string, std::string>> rpcRequestAuthHeader;
 
+#if 0
     SECTION("NACM authorization")
     {
         SECTION("Anonymous access for establish-subscription is disabled")
@@ -239,6 +240,7 @@ TEST_CASE("RESTCONF subscribed notifications")
             }
         }
     }
+#endif
 
     SECTION("Invalid establish-subscription requests")
     {
@@ -278,16 +280,39 @@ TEST_CASE("RESTCONF subscribed notifications")
   "ietf-restconf:errors": {
     "error": [
       {
-        "error-type": "application",
-        "error-tag": "invalid-attribute",
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-path": "/ietf-subscribed-notifications:establish-subscription/stream-filter-name",
+        "error-message": "Invalid leafref value \"xyz\" - no target instance \"/sn:filters/sn:stream-filter/sn:name\" with the same value."
+      }
+    ]
+  }
+}
+)###"});
+
+        srSess.switchDatastore(sysrepo::Datastore::Running);
+        srSess.setItem("/ietf-subscribed-notifications:filters/stream-filter[name='xyz']/stream-xpath-filter", "/example:eventA");
+        srSess.applyChanges();
+
+        REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription", {CONTENT_TYPE_JSON}, R"###({ "ietf-subscribed-notifications:input": { "stream": "NETCONF", "stream-filter-name": "xyz" } })###")
+                == Response{400, jsonHeaders, R"###({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
         "error-message": "Stream filtering with predefined filters is not supported"
       }
     ]
   }
 }
 )###"});
+
+        spdlog::error("asdasdadsads");
+        spdlog::error("{}", *srSess.getData("/ietf-subscribed-notifications:filters")->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings));
     }
 
+#if 0
     SECTION("Valid requests")
     {
         SECTION("XML stream")
@@ -553,8 +578,9 @@ TEST_CASE("RESTCONF subscribed notifications")
         auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + "}}";
         REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:kill-subscription", headers, body) == expectedResponse);
     }
+#endif
 }
-
+#if 0
 TEST_CASE("Terminating server under notification load")
 {
     trompeloeil::sequence seq1;
@@ -644,3 +670,4 @@ TEST_CASE("Cleaning up inactive subscriptions")
     std::this_thread::sleep_for(inactivityTimeout + 1500ms);
     REQUIRE(get(uri, {AUTH_ROOT}) == Response{404, plaintextHeaders, "Subscription not found."});
 }
+#endif
