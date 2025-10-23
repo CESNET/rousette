@@ -487,7 +487,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx, const std::c
     auto [parent, rpcNode] = ctx.newPath2(requestCtx->restconfRequest.path);
 
     if (!requestCtx->payload.empty()) {
-        rpcNode->parseOp(requestCtx->payload, *requestCtx->dataFormat.request, libyang::OperationType::RpcRestconf);
+        rpcNode->parseOp(requestCtx->payload, *requestCtx->dataFormat.request, libyang::OperationType::RpcRestconf, libyang::ParseOptions::Strict);
     }
 
     std::optional<libyang::DataNode> rpcReply;

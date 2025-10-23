@@ -8,6 +8,7 @@
 static const auto SERVER_PORT = "10084";
 #include <nghttp2/asio_http2.h>
 #include <spdlog/spdlog.h>
+#include <sysrepo-cpp/utils/utils.hpp>
 #include "restconf/Server.h"
 #include "tests/aux-utils.h"
 #include "tests/event_watchers.h"
@@ -33,6 +34,7 @@ std::map<std::string, std::string> nodesToMap(libyang::DataNode node)
 TEST_CASE("invoking actions and rpcs")
 {
     spdlog::set_level(spdlog::level::trace);
+    sysrepo::setGlobalContextOptions(sysrepo::ContextFlags::LibYangPrivParsed | sysrepo::ContextFlags::NoPrinted, sysrepo::GlobalContextEffect::Immediate);
     auto srConn = sysrepo::Connection{};
     auto srSess = srConn.sessionStart(sysrepo::Datastore::Running);
     SUBSCRIBE_MODULE(sub1, srSess, "example");

@@ -29,6 +29,7 @@ TEST_CASE("Event stream tests")
 
     std::vector<std::unique_ptr<trompeloeil::expectation>> expectations;
 
+    sysrepo::setGlobalContextOptions(sysrepo::ContextFlags::LibYangPrivParsed | sysrepo::ContextFlags::NoPrinted, sysrepo::GlobalContextEffect::Immediate);
     auto srConn = sysrepo::Connection{};
     auto srSess = srConn.sessionStart(sysrepo::Datastore::Running);
     srSess.sendRPC(srSess.getContext().newPath("/ietf-factory-default:factory-reset"));
