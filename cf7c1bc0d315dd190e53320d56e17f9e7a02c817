@@ -118,6 +118,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "0bbe03ee_bcb29040",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-10-23T13:43:41Z",
+      "side": 1,
+      "message": "And it indeed was possible, because we didn\u0027t validate inputs.\n\nFixed in https://gerrit.cesnet.cz/c/CzechLight/rousette/+/8988 which also adds the test",
+      "parentUuid": "4eba7f52_9e865d66",
+      "range": {
+        "startLine": 68,
+        "startChar": 0,
+        "endLine": 74,
+        "endChar": 5
+      },
+      "revId": "cf7c1bc0d315dd190e53320d56e17f9e7a02c817",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "810d720b_009a612c",
@@ -131,6 +155,30 @@
       "writtenOn": "2025-10-07T09:05:40Z",
       "side": 1,
       "message": "Please add a comment that this is just an implementation detail of the test code. It\u0027s constructing some \"XML\" bits internally, but what hits the wire is a JSON serialization here. (Right?)",
+      "range": {
+        "startLine": 360,
+        "startChar": 37,
+        "endLine": 360,
+        "endChar": 40
+      },
+      "revId": "cf7c1bc0d315dd190e53320d56e17f9e7a02c817",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c9740259_7cfb33a5",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 360,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-10-23T13:43:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "810d720b_009a612c",
       "range": {
         "startLine": 360,
         "startChar": 37,
