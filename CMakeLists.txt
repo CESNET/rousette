@@ -74,9 +74,9 @@ find_package(PkgConfig)
 pkg_check_modules(nghttp2 REQUIRED IMPORTED_TARGET libnghttp2_asio>=0.0.90 libnghttp2) # To compile under boost 1.87 you have to patch nghttp2-asio using https://github.com/nghttp2/nghttp2-asio/issues/23
 find_package(Boost 1.66 REQUIRED CONFIG COMPONENTS system thread)
 
-pkg_check_modules(SYSREPO REQUIRED sysrepo>=3.6.5 IMPORTED_TARGET)
-pkg_check_modules(SYSREPO-CPP REQUIRED IMPORTED_TARGET sysrepo-cpp>=6)
-pkg_check_modules(LIBYANG-CPP REQUIRED IMPORTED_TARGET libyang-cpp>=4)
+pkg_check_modules(SYSREPO REQUIRED sysrepo IMPORTED_TARGET)
+pkg_check_modules(SYSREPO-CPP REQUIRED IMPORTED_TARGET sysrepo-cpp>=7)
+pkg_check_modules(LIBYANG-CPP REQUIRED IMPORTED_TARGET libyang-cpp>=5)
 pkg_check_modules(SYSTEMD IMPORTED_TARGET libsystemd)
 pkg_check_modules(PAM REQUIRED IMPORTED_TARGET pam)
 pkg_check_modules(DOCOPT REQUIRED IMPORTED_TARGET docopt)

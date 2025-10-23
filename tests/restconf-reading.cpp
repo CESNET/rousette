@@ -10,12 +10,14 @@ static const auto SERVER_PORT = "10081";
 #include "tests/aux-utils.h"
 #include <nghttp2/asio_http2.h>
 #include <spdlog/spdlog.h>
+#include <sysrepo-cpp/utils/utils.hpp>
 #include "restconf/Server.h"
 #include "tests/event_watchers.h"
 
 TEST_CASE("reading data")
 {
     spdlog::set_level(spdlog::level::trace);
+    sysrepo::setGlobalContextOptions(sysrepo::ContextFlags::LibYangPrivParsed | sysrepo::ContextFlags::NoPrinted, sysrepo::GlobalContextEffect::Immediate);
     auto srConn = sysrepo::Connection{};
     auto srSess = srConn.sessionStart(sysrepo::Datastore::Running);
     srSess.sendRPC(srSess.getContext().newPath("/ietf-factory-default:factory-reset"));
@@ -794,7 +796,7 @@ TEST_CASE("reading data")
       "c": {
         "enabled": true,
         "@enabled": {
-          "ietf-netconf-with-defaults:default": true
+          "default:default": true
         }
       }
     },
@@ -803,7 +805,7 @@ TEST_CASE("reading data")
       "c": {
         "enabled": true,
         "@enabled": {
-          "ietf-netconf-with-defaults:default": true
+          "default:default": true
         }
       }
     }
@@ -868,7 +870,7 @@ TEST_CASE("reading data")
       "c": {
         "enabled": true,
         "@enabled": {
-          "ietf-netconf-with-defaults:default": true
+          "default:default": true
         }
       }
     },
@@ -877,7 +879,7 @@ TEST_CASE("reading data")
       "c": {
         "enabled": true,
         "@enabled": {
-          "ietf-netconf-with-defaults:default": true
+          "default:default": true
         }
       }
     }
@@ -932,7 +934,7 @@ TEST_CASE("reading data")
       "c": {
         "enabled": true,
         "@enabled": {
-          "ietf-netconf-with-defaults:default": true
+          "default:default": true
         }
       }
     }

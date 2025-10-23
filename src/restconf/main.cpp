@@ -22,6 +22,7 @@
 #include <docopt.h>
 #include <spdlog/spdlog.h>
 #include <sysrepo-cpp/Session.hpp>
+#include <sysrepo-cpp/utils/utils.hpp>
 #include "restconf/Server.h"
 static const char usage[] =
   R"(Rousette - RESTCONF server
@@ -102,6 +103,9 @@ int main(int argc, char* argv [])
     if (!std::setlocale(LC_CTYPE, "C.UTF-8")) {
         throw std::runtime_error("Could not set locale C.UTF-8");
     }
+
+    // schema access is required
+    sysrepo::setGlobalContextOptions(sysrepo::ContextFlags::LibYangPrivParsed | sysrepo::ContextFlags::NoPrinted, sysrepo::GlobalContextEffect::Immediate);
 
     auto conn = sysrepo::Connection{};
     auto server = rousette::restconf::Server{conn, "::1", "10080", timeout};
