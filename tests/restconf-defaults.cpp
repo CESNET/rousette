@@ -9,6 +9,7 @@
 static const auto SERVER_PORT = "10087";
 #include <nghttp2/asio_http2.h>
 #include <spdlog/spdlog.h>
+#include <sysrepo-cpp/utils/utils.hpp>
 #include "restconf/Server.h"
 #include "tests/aux-utils.h"
 #include "tests/event_watchers.h"
@@ -18,6 +19,7 @@ TEST_CASE("default handling")
     trompeloeil::sequence seq1;
 
     spdlog::set_level(spdlog::level::trace);
+    sysrepo::setGlobalContextOptions(sysrepo::ContextFlags::LibYangPrivParsed | sysrepo::ContextFlags::NoPrinted, sysrepo::GlobalContextEffect::Immediate);
     auto srConn = sysrepo::Connection{};
     auto srSess = srConn.sessionStart(sysrepo::Datastore::Running);
     auto nacmGuard = manageNacm(srSess);
