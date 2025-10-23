@@ -10,11 +10,13 @@ static const auto SERVER_PORT = "10082";
 #include "tests/aux-utils.h"
 #include <nghttp2/asio_http2.h>
 #include <spdlog/spdlog.h>
+#include <sysrepo-cpp/utils/utils.hpp>
 #include "restconf/Server.h"
 
 TEST_CASE("NACM")
 {
     spdlog::set_level(spdlog::level::trace);
+    sysrepo::setGlobalContextOptions(sysrepo::ContextFlags::LibYangPrivParsed | sysrepo::ContextFlags::NoPrinted);
     auto srConn = sysrepo::Connection{};
     auto srSess = srConn.sessionStart(sysrepo::Datastore::Running);
     auto nacmGuard = manageNacm(srSess);

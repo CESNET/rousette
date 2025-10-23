@@ -9,12 +9,14 @@
 static const auto SERVER_PORT = "10085";
 #include <nghttp2/asio_http2.h>
 #include <spdlog/spdlog.h>
+#include <sysrepo-cpp/utils/utils.hpp>
 #include "restconf/Server.h"
 #include "tests/aux-utils.h"
 
 TEST_CASE("obtaining YANG schemas")
 {
     spdlog::set_level(spdlog::level::trace);
+    sysrepo::setGlobalContextOptions(sysrepo::ContextFlags::LibYangPrivParsed | sysrepo::ContextFlags::NoPrinted);
     auto srConn = sysrepo::Connection{};
     auto srSess = srConn.sessionStart(sysrepo::Datastore::Running);
     srSess.sendRPC(srSess.getContext().newPath("/ietf-factory-default:factory-reset"));

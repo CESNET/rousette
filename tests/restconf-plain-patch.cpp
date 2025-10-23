@@ -8,6 +8,7 @@
 static const auto SERVER_PORT = "10089";
 #include <nghttp2/asio_http2.h>
 #include <spdlog/spdlog.h>
+#include <sysrepo-cpp/utils/utils.hpp>
 #include "restconf/Server.h"
 #include "tests/aux-utils.h"
 #include "tests/event_watchers.h"
@@ -16,6 +17,7 @@ static const auto SERVER_PORT = "10089";
 TEST_CASE("Plain patch")
 {
     spdlog::set_level(spdlog::level::trace);
+    sysrepo::setGlobalContextOptions(sysrepo::ContextFlags::LibYangPrivParsed | sysrepo::ContextFlags::NoPrinted);
     auto srConn = sysrepo::Connection{};
     auto srSess = srConn.sessionStart(sysrepo::Datastore::Running);
     auto nacmGuard = manageNacm(srSess);
