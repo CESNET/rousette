@@ -74,6 +74,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "518ccf75_2076f01d",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 147,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-11-06T09:35:05Z",
+      "side": 1,
+      "message": "We talked about this during the call, and I misunderstood the code:\n\n- kill-subscriptionis NACM-checked already\n- for a regular user, access to some other user\u0027s dynamic subs is already checked via `getSubscriptionForUser`\n\nSo, please just make this clearer in the docs that this is *not* a safety check. It\u0027s \"just\" a check to enforce a rule from the RFC which says that a root cannot `delete-subscription` a somebody else\u0027s one. The comment *does* say that already, but the wording could be improved, IMHO.",
+      "parentUuid": "82ef6744_37875e77",
+      "range": {
+        "startLine": 147,
+        "startChar": 16,
+        "endLine": 147,
+        "endChar": 73
+      },
+      "revId": "6f7415ce746bb92b198e1e7235aa72a5be0f146e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "e3359703_a67d0cc0",
         "filename": "src/restconf/DynamicSubscriptions.cpp",
         "patchSetId": 7
@@ -190,6 +214,24 @@
       "writtenOn": "2025-11-06T09:34:28Z",
       "side": 1,
       "message": "Add a test that root cannot delete (must kill, but kill is tested below)",
+      "parentUuid": "a52a90ff_cfbfab27",
+      "revId": "6f7415ce746bb92b198e1e7235aa72a5be0f146e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e77555ea_404338c7",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 410,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-11-06T09:35:05Z",
+      "side": 1,
+      "message": "Right, it turns out that the `norules` user is a regular one. I somehow assumed that it\u0027s an anonymous user, while it is actually a regular one. Thanks!",
       "parentUuid": "a52a90ff_cfbfab27",
       "revId": "6f7415ce746bb92b198e1e7235aa72a5be0f146e",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
