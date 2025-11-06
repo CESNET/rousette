@@ -50,6 +50,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "277e1b5e_4deae5bd",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 147,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-11-06T09:34:28Z",
+      "side": 1,
+      "message": "On today call we discussed this and the code is a little messy -\u003e it is not clear what is checked where (NACM, disabling deleting other user\u0027s subscr). Add comments for that or restructd code",
+      "parentUuid": "82ef6744_37875e77",
+      "range": {
+        "startLine": 147,
+        "startChar": 16,
+        "endLine": 147,
+        "endChar": 73
+      },
+      "revId": "6f7415ce746bb92b198e1e7235aa72a5be0f146e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "e3359703_a67d0cc0",
         "filename": "src/restconf/DynamicSubscriptions.cpp",
         "patchSetId": 7
@@ -149,6 +173,24 @@
       "side": 1,
       "message": "I am not sure I follow what you mean, subscription is created by the `dwdm` user and third SECTION checks that `norules` user cannot delete it. Is that not what you mean?",
       "parentUuid": "3c09e7f8_a5eacf3a",
+      "revId": "6f7415ce746bb92b198e1e7235aa72a5be0f146e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "31021ed4_ee877af0",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 410,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-11-06T09:34:28Z",
+      "side": 1,
+      "message": "Add a test that root cannot delete (must kill, but kill is tested below)",
+      "parentUuid": "a52a90ff_cfbfab27",
       "revId": "6f7415ce746bb92b198e1e7235aa72a5be0f146e",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
