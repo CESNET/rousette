@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a5cb1eee_1c6ac702",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 19
+      },
+      "lineNbr": 984,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-11-06T09:37:29Z",
+      "side": 1,
+      "message": "nice",
+      "range": {
+        "startLine": 984,
+        "startChar": 37,
+        "endLine": 984,
+        "endChar": 43
+      },
+      "revId": "1cacb34d347b5bc56963ab789eb770f031dc90d0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
