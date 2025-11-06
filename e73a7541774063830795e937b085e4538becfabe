@@ -38,6 +38,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "6342f514_3e4d27ac",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-11-06T09:23:10Z",
+      "side": 1,
+      "message": "On todays call we discussed that stopTimer does not only stop the timer but also changes the state. And that part should probably be moved into separate commit.",
+      "parentUuid": "ad74757d_5fc575ad",
+      "revId": "e73a7541774063830795e937b085e4538becfabe",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "6ff4f957_ee34c641",
         "filename": "src/restconf/DynamicSubscriptions.cpp",
         "patchSetId": 10
