@@ -881,6 +881,7 @@ void Server::stop()
     });
 
     shutdownRequested();
+    m_dynamicSubscriptions.stop();
 }
 
 void Server::join()
