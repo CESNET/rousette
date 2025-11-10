@@ -96,6 +96,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "5880c8d5_5b821ac7",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 147,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-11-10T19:58:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "518ccf75_2076f01d",
+      "range": {
+        "startLine": 147,
+        "startChar": 16,
+        "endLine": 147,
+        "endChar": 73
+      },
+      "revId": "6f7415ce746bb92b198e1e7235aa72a5be0f146e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e3359703_a67d0cc0",
