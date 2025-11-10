@@ -82,6 +82,16 @@ DynamicSubscriptions::DynamicSubscriptions(const std::string& streamRootUri)
 
 DynamicSubscriptions::~DynamicSubscriptions() = default;
 
+void DynamicSubscriptions::stop()
+{
+    std::lock_guard lock(m_mutex);
+    for (const auto& [uuid, subscriptionData] : m_subscriptions) {
+        // We are already terminating and will destroy via destructor, calls to terminate() will do nothing
+        std::lock_guard lock(subscriptionData->mutex);
+        subscriptionData->state = SubscriptionData::State::Terminating;
+    }
+}
+
 void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, const libyang::DataFormat requestEncoding, const libyang::DataNode& rpcInput, libyang::DataNode& rpcOutput)
 {
     // Generate a new UUID associated with the subscription. The UUID will be used as a part of the URI so that the URI is not predictable (RFC 8650, section 5)
