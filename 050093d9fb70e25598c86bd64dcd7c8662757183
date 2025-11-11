@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "41117a9b_e7731251",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 455,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-11-11T16:57:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "32a97075_9875d702",
+      "range": {
+        "startLine": 455,
+        "startChar": 45,
+        "endLine": 455,
+        "endChar": 52
+      },
+      "revId": "050093d9fb70e25598c86bd64dcd7c8662757183",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "33645f67_e945db79",
@@ -41,6 +65,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "e89b89ce_afa1bc7d",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 460,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-11-11T16:57:13Z",
+      "side": 1,
+      "message": "Good idea, done",
+      "parentUuid": "33645f67_e945db79",
+      "revId": "050093d9fb70e25598c86bd64dcd7c8662757183",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "816860af_17e0e670",
@@ -54,6 +96,30 @@
       "writtenOn": "2025-11-11T13:23:35Z",
       "side": 1,
       "message": "What is this used for? I see that the RPC-validating code fetches that info, but when that info is not readable, why is that a problem for a test (also modified below) which checks data reads?\n\n\nThe change is probably a good one (testing with plausible scenarios etc), but I would prefer an explanation for why it\u0027s done like this.",
+      "range": {
+        "startLine": 159,
+        "startChar": 0,
+        "endLine": 162,
+        "endChar": 137
+      },
+      "revId": "050093d9fb70e25598c86bd64dcd7c8662757183",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "973f9554_23e3a38c",
+        "filename": "tests/restconf_utils.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-11-11T16:57:13Z",
+      "side": 1,
+      "message": "This is indeed useless in this patch. I used this for testing in one of the previous versions. I will move it to the correct patches.",
+      "parentUuid": "816860af_17e0e670",
       "range": {
         "startLine": 159,
         "startChar": 0,
