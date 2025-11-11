@@ -16,6 +16,24 @@
       "message": "Comment why this is needed (sse client needs something that it sets, and it is unused here)",
       "revId": "4ad7df4a28f426b86f1c509fd8277a7c951a966d",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "dc694789_44c5e91a",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 22
+      },
+      "lineNbr": 211,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-11-11T11:40:21Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "28b03e4d_0bf75cd7",
+      "revId": "4ad7df4a28f426b86f1c509fd8277a7c951a966d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
