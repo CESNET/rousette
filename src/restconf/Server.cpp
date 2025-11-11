@@ -446,9 +446,9 @@ std::optional<libyang::DataNode> processInternalRPC(sysrepo::Session& sess, cons
     const auto rpcPath = rpcInput.path();
 
     // Is the user authorized to call the operation?
-    auto [parent, rpcNode] = sess.getContext().newPath2(rpcPath, std::nullopt);
-    if (!sess.checkNacmOperation(*rpcNode)) {
-        throw ErrorResponse(403, "application", "access-denied", "Access denied.", rpcNode->path());
+    auto rpcNode = sess.getContext().newPath2(rpcPath, std::nullopt);
+    if (!sess.checkNacmOperation(*rpcNode.createdNode)) {
+        throw ErrorResponse(403, "application", "access-denied", "Access denied.", rpcNode.createdNode->path());
     }
 
     if (auto it = handlers.find(rpcPath); it != handlers.end()) {
