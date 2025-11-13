@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "3a5f1642_b91f432d",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-11-13T10:37:42Z",
+      "side": 1,
+      "message": "It is indeed unreachable. I tested manually and added a test. Further, i fixed the datatype which is u32, not u64.",
+      "parentUuid": "eadc9686_67023f9b",
+      "revId": "4a0b6dbc958b90b0774b6dd075e64429f4e44456",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e4d32013_33824dec",
@@ -31,6 +49,24 @@
       "writtenOn": "2025-11-13T10:06:50Z",
       "side": 1,
       "message": "nit: duplicate debug logging with code two lines before",
+      "revId": "4a0b6dbc958b90b0774b6dd075e64429f4e44456",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "98f1c0a4_931e5120",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 149,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-11-13T10:37:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e4d32013_33824dec",
       "revId": "4a0b6dbc958b90b0774b6dd075e64429f4e44456",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
