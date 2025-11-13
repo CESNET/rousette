@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "eadc9686_67023f9b",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-11-13T10:06:50Z",
+      "side": 1,
+      "message": "is this reachable? that leaf is mandatory, and we\u0027re now validating the RPC input",
+      "revId": "4a0b6dbc958b90b0774b6dd075e64429f4e44456",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e4d32013_33824dec",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 14
+      },
+      "lineNbr": 149,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-11-13T10:06:50Z",
+      "side": 1,
+      "message": "nit: duplicate debug logging with code two lines before",
+      "revId": "4a0b6dbc958b90b0774b6dd075e64429f4e44456",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
