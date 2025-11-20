@@ -112,7 +112,7 @@ std::string as_restconf_notification(const libyang::Context& ctx, libyang::DataF
     envelope->insertChild(*eventTime);
     envelope->insertChild(notification);
 
-    auto res = *envelope->printStr(dataFormat, libyang::PrintFlags::WithSiblings | libyang::PrintFlags::KeepEmptyCont);
+    auto res = *envelope->printStr(dataFormat, libyang::PrintFlags::Siblings | libyang::PrintFlags::EmptyContainers);
 
     // notification node comes from sysrepo and sysrepo will free this; if not unlinked then envelope destructor would try to free this as well
     notification.unlink();

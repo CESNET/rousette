@@ -23,7 +23,7 @@ void datastoreChanges(auto session, auto& dsChangesMock, auto path)
 
 void datastoreNewState(auto session, auto& dsChangesMock, auto path)
 {
-    dsChangesMock.contentAfterChange(session.getData(path)->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings));
+    dsChangesMock.contentAfterChange(session.getData(path)->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Siblings));
 }
 }
 
