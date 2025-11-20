@@ -111,7 +111,7 @@ void rejectWithErrorImpl(libyang::Context ctx, const libyang::DataFormat& dataFo
     }
 
     res.write_head(code, headers);
-    res.end(*parent.printStr(dataFormat, libyang::PrintFlags::WithSiblings));
+    res.end(*parent.printStr(dataFormat, libyang::PrintFlags::Siblings));
 }
 
 void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath)
@@ -543,7 +543,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx, const std::c
                                         contentType(requestCtx->dataFormat.response),
                                         CORS,
                                     });
-    requestCtx->res.end(*envelope->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::WithSiblings | libyang::PrintFlags::KeepEmptyCont));
+    requestCtx->res.end(*envelope->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::Siblings | libyang::PrintFlags::EmptyContainers));
 }
 
 void processPost(std::shared_ptr<RequestContext> requestCtx, const std::chrono::milliseconds timeout)
@@ -709,7 +709,7 @@ void processYangPatch(std::shared_ptr<RequestContext> requestCtx, const std::chr
     yangPatchStatus->newExtPath(yangPatchStatusExt, "/ietf-yang-patch:yang-patch-status/ok", std::nullopt);
 
     requestCtx->res.write_head(200, {contentType(requestCtx->dataFormat.response), CORS});
-    requestCtx->res.end(*yangPatchStatus->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::WithSiblings));
+    requestCtx->res.end(*yangPatchStatus->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::Siblings));
 }
 
 void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx, const std::chrono::milliseconds timeout)
@@ -842,7 +842,7 @@ libyang::PrintFlags libyangPrintFlags(const libyang::DataNode& dataNode, const s
     } catch(const libyang::Error& e) {
     }
 
-    libyang::PrintFlags ret = libyang::PrintFlags::WithSiblings | libyang::PrintFlags::KeepEmptyCont;
+    libyang::PrintFlags ret = libyang::PrintFlags::Siblings | libyang::PrintFlags::EmptyContainers;
 
     if (!withDefaults && node && (node->schema().nodeType() == libyang::NodeType::Leaf || node->schema().nodeType() == libyang::NodeType::Leaflist) && node->asTerm().isImplicitDefault()) {
         return ret | libyang::PrintFlags::WithDefaultsAll;
@@ -1116,7 +1116,7 @@ Server::Server(
                 case RestconfRequest::Type::ListRPC:
                     res.write_head(200, {contentType(dataFormat.response), CORS});
                     res.end(*apiResource(sess.getContext(), restconfRequest.type, dataFormat.response)
-                                 .printStr(dataFormat.response, libyang::PrintFlags::WithSiblings | libyang::PrintFlags::KeepEmptyCont));
+                                 .printStr(dataFormat.response, libyang::PrintFlags::Siblings | libyang::PrintFlags::EmptyContainers));
                     break;
 
                 case RestconfRequest::Type::GetData: {

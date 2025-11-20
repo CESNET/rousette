@@ -92,7 +92,7 @@ EstablishSubscriptionResult establishSubscription(
     data->unlinkWithSiblings();
     envelope->insertChild(*data);
 
-    auto body = *envelope->printStr(rpcEncoding, libyang::PrintFlags::WithSiblings);
+    auto body = *envelope->printStr(rpcEncoding, libyang::PrintFlags::Siblings);
     auto resp = post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription", requestHeaders, body);
     REQUIRE(resp.equalStatusCodeAndHeaders(Response{200, expectedHeaders, ""}));
 

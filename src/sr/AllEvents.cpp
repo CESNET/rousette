@@ -110,10 +110,10 @@ sysrepo::ErrorCode AllEvents::onChange(sysrepo::Session session, const std::stri
                 break;
             }
         };
-        auto json = *copy.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings | libyang::PrintFlags::KeepEmptyCont);
+        auto json = *copy.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Siblings | libyang::PrintFlags::EmptyContainers);
         spdlog::info("JSON: {}", json);
         spdlog::warn("FULL JSON: {}",
-                *session.getData('/' + module + ":*")->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::WithSiblings));
+                *session.getData('/' + module + ":*")->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Siblings));
         change(module, json);
     }
 
