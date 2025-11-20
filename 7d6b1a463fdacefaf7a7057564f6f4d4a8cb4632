@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2c15bd94_4ca6e18a",
+        "filename": "src/restconf/utils/sysrepo.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-11-20T13:56:59Z",
+      "side": 1,
+      "message": "I was wondering if there\u0027s a reason for throwing a non-RESTCONF exception, only to be translated to another exception later on. So, I checked how it\u0027s used in the follow-up patches, and in there it seems that it\u0027s only called with a value that comes from a leaf which is an identityref.\n\nNow, a \"malicious user\" :) might install a YANG module which derives from `ds:datastore` and has some funny value, which will pass subsequent YANG-level validation. But I\u0027ll put my comments to that other patch.",
+      "revId": "7d6b1a463fdacefaf7a7057564f6f4d4a8cb4632",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
