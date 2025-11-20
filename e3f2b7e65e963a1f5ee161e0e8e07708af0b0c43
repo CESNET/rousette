@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "bd7e0c6a_9e9e60af",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-11-20T16:11:07Z",
+      "side": 1,
+      "message": "recheck to see if the TSAN failure is persistent",
+      "revId": "e3f2b7e65e963a1f5ee161e0e8e07708af0b0c43",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
