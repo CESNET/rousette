@@ -16,6 +16,23 @@
       "message": "recheck to see if the TSAN failure is persistent",
       "revId": "e3f2b7e65e963a1f5ee161e0e8e07708af0b0c43",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ad827cd2_19c9b458",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-11-21T09:02:55Z",
+      "side": 1,
+      "message": "overriding the ARM build",
+      "revId": "e3f2b7e65e963a1f5ee161e0e8e07708af0b0c43",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
