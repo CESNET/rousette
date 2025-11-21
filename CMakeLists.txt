@@ -125,14 +125,6 @@ target_link_libraries(rousette-restconf PUBLIC rousette-http rousette-sysrepo ro
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/auth/NacmIdentities.h.in ${CMAKE_CURRENT_BINARY_DIR}/NacmIdentities.h @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-add_executable(clock-demo src/clock.cpp)
-target_link_libraries(clock-demo rousette-http Boost::system Threads::Threads)
-
-add_executable(watch-operational-ds
-    src/events.cpp
-)
-target_link_libraries(watch-operational-ds PUBLIC rousette-sysrepo)
-
 add_executable(rousette src/restconf/main.cpp)
 target_link_libraries(rousette PUBLIC rousette-restconf PkgConfig::DOCOPT)
 if(SYSTEMD_FOUND)
@@ -140,7 +132,6 @@ if(SYSTEMD_FOUND)
 endif()
 
 install(TARGETS
-    # clock-demo
     # watch-operational-ds
     rousette
     RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/)
