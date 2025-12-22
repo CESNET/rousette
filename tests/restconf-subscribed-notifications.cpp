@@ -49,8 +49,10 @@ struct EstablishSubscriptionResult {
     std::optional<sysrepo::NotificationTimeStamp> replayStartTimeRevision;
 };
 
-using XPath = std::string;
-using Filter = std::variant<std::monostate, XPath, libyang::XML>;
+struct FilterXPath {
+    std::string xpath;
+};
+using Filter = std::variant<std::monostate, FilterXPath, libyang::XML>;
 
 struct SubscribedNotifications {
     std::string stream;
@@ -107,8 +109,8 @@ EstablishSubscriptionResult establishSubscription(
         const auto& sn = std::get<SubscribedNotifications>(params);
         rpcTree.newPath("stream", sn.stream);
 
-        if (std::holds_alternative<XPath>(sn.filter)) {
-            rpcTree.newPath("stream-xpath-filter", std::get<XPath>(sn.filter));
+        if (std::holds_alternative<FilterXPath>(sn.filter)) {
+            rpcTree.newPath("stream-xpath-filter", std::get<FilterXPath>(sn.filter).xpath);
         } else if (std::holds_alternative<libyang::XML>(sn.filter)) {
             rpcTree.newPath2("stream-subtree-filter", std::get<libyang::XML>(sn.filter));
         }
@@ -122,8 +124,8 @@ EstablishSubscriptionResult establishSubscription(
         rpcTree.newPath("ietf-yang-push:datastore", datastoreToString(yp.datastore));
         rpcTree.newPath("ietf-yang-push:on-change", std::nullopt);
 
-        if (std::holds_alternative<XPath>(yp.filter)) {
-            rpcTree.newPath("ietf-yang-push:datastore-xpath-filter", std::get<XPath>(yp.filter));
+        if (std::holds_alternative<FilterXPath>(yp.filter)) {
+            rpcTree.newPath("ietf-yang-push:datastore-xpath-filter", std::get<FilterXPath>(yp.filter).xpath);
         } else if (std::holds_alternative<libyang::XML>(yp.filter)) {
             rpcTree.newPath2("ietf-yang-push:datastore-subtree-filter", std::get<libyang::XML>(yp.filter));
         }
@@ -147,8 +149,8 @@ EstablishSubscriptionResult establishSubscription(
         rpcTree.newPath("ietf-yang-push:datastore", datastoreToString(yp.datastore));
         rpcTree.newPath("ietf-yang-push:periodic/period", std::to_string(periodCentiseconds.count()));
 
-        if (std::holds_alternative<XPath>(yp.filter)) {
-            rpcTree.newPath("ietf-yang-push:datastore-xpath-filter", std::get<XPath>(yp.filter));
+        if (std::holds_alternative<FilterXPath>(yp.filter)) {
+            rpcTree.newPath("ietf-yang-push:datastore-xpath-filter", std::get<FilterXPath>(yp.filter).xpath);
         } else if (std::holds_alternative<libyang::XML>(yp.filter)) {
             rpcTree.newPath2("ietf-yang-push:datastore-subtree-filter", std::get<libyang::XML>(yp.filter));
         }
@@ -500,7 +502,7 @@ TEST_CASE("RESTCONF subscribed notifications")
             {
                 rpcRequestAuthHeader = AUTH_ROOT;
                 rpcRequestEncoding = libyang::DataFormat::JSON;
-                subNotif.filter = XPath{"/example:eventA | /example:eventB"};
+                subNotif.filter = FilterXPath{"/example:eventA | /example:eventB"};
                 rpcSubscriptionEncoding = "encode-json";
                 EXPECT_NOTIFICATION(notificationsJSON[0], seq1);
                 EXPECT_NOTIFICATION(notificationsJSON[1], seq1);
@@ -837,7 +839,7 @@ TEST_CASE("RESTCONF subscribed notifications")
         {
             SECTION("XPath filter")
             {
-                yp.filter = XPath{"/example:top-level-list"};
+                yp.filter = FilterXPath{"/example:top-level-list"};
             }
 
             SECTION("Subtree filter is set")
@@ -956,7 +958,7 @@ TEST_CASE("RESTCONF subscribed notifications")
         {
             SECTION("XPath filter")
             {
-                yp.filter = XPath{"/example:top-level-leaf"};
+                yp.filter = FilterXPath{"/example:top-level-leaf"};
             }
 
             SECTION("Subtree filter is set")
