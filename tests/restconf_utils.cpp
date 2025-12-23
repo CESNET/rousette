@@ -160,6 +160,10 @@ void setupRealNacm(sysrepo::Session session)
     session.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='17']/action", "permit");
     session.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='17']/access-operations", "read");
     session.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='17']/path", "/ietf-subscribed-notifications:filters");
+    session.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='18']/module-name", "ietf-yang-push");
+    session.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='18']/action", "permit");
+    session.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='18']/access-operations", "read");
+    session.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='18']/path", "/ietf-subscribed-notifications:filters");
     session.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='99']/module-name", "*");
     session.setItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='99']/action", "deny");
     session.setItem("/ietf-netconf-acm:nacm/rule-list[name='dwdm rule']/group[.='optics']", "");
