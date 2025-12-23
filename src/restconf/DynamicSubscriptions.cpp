@@ -18,6 +18,12 @@
 
 namespace {
 
+
+constexpr auto streamFilter = "/ietf-subscribed-notifications:filters/stream-filter";
+constexpr auto streamFilterKey = "name";
+constexpr auto selectionFilter = "/ietf-subscribed-notifications:filters/ietf-yang-push:selection-filter";
+constexpr auto selectionFilterKey = "filter-id";
+
 /** @brief Parses the YANG date-and-time attribute from the RPC input, if present
  *
  * @param rpcInput The RPC input node.
@@ -71,9 +77,16 @@ sysrepo::YangPushChange yangPushChange(const std::string& str)
 /** @brief Creates a filter for the subscription.
  *
  * Filters for YANG Push and for subscribed notifications are specified in the same way,
- * only in a different YANG node.
+ * only in a different YANG node. The same holds for filter resolution.
  * */
-std::optional<std::variant<std::string, libyang::DataNodeAny>> createFilter(const libyang::DataNode& rpcInput, const std::string& xpathFilterPath, const std::string& subtreeFilterPath)
+std::optional<std::variant<std::string, libyang::DataNodeAny>> createFilter(
+    sysrepo::Session& session,
+    const libyang::DataNode& rpcInput,
+    const std::string& filterListPath,
+    const std::string& filterListKey,
+    const std::string& xpathFilterPath,
+    const std::string& subtreeFilterPath,
+    const std::string& filterNamePath)
 {
     if (auto node = rpcInput.findPath(xpathFilterPath)) {
         return node->asTerm().valueStr();
@@ -81,6 +94,32 @@ std::optional<std::variant<std::string, libyang::DataNodeAny>> createFilter(cons
 
     if (auto node = rpcInput.findPath(subtreeFilterPath)) {
         return node->asAny();
+    }
+
+    // resolve filter from ietf-subscribed-notifications:filters
+    if (auto node = rpcInput.findPath(filterNamePath)) {
+        rousette::restconf::ScopedDatastoreSwitch dsSwitch(session, sysrepo::Datastore::Operational);
+
+        const auto xpath = fmt::format("{}[{}='{}']", filterListPath, filterListKey, node->asTerm().valueStr());
+        spdlog::error("QUERY = {}", xpath);
+        spdlog::error("DATA = {}", *session.getData("/ietf-subscribed-notifications:filters")->printStr(libyang::DataFormat::XML, libyang::PrintFlags::Siblings));
+        auto data = session.getData(xpath);
+        if (!data) {
+            throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Name '" + node->asTerm().valueStr() + "' does not refer to an existing filter/selection.");
+        }
+
+        auto filterNode = data->findPath(xpath);
+        if (!filterNode) {
+            throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Name '" + node->asTerm().valueStr() + "' does not refer to an existing filter/selection.");
+        }
+
+        if (auto node = filterNode->findPath(xpathFilterPath)) {
+            return node->asTerm().valueStr();
+        }
+
+        if (auto node = filterNode->findPath(subtreeFilterPath)) {
+            return node->asAny();
+        }
     }
 
     return std::nullopt;
@@ -110,12 +149,6 @@ sysrepo::DynamicSubscription makeStreamSubscription(sysrepo::Session& session, c
         throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Stream is required");
     }
 
-    if (rpcInput.findPath("stream-filter-name")) {
-        /* TODO: This requires support for modifying subscriptions first; a change of entry in filters container must change all
-         * subscriptions using this stream-filter, see for instance https://datatracker.ietf.org/doc/html/rfc8639.html#section-2.7.2 */
-        throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Stream filtering with predefined filters is not supported");
-    }
-
     auto stopTime = optionalTime(rpcInput, "stop-time");
 
     std::optional<sysrepo::NotificationTimeStamp> replayStartTime;
@@ -124,7 +157,7 @@ sysrepo::DynamicSubscription makeStreamSubscription(sysrepo::Session& session, c
     }
 
     auto sub = session.subscribeNotifications(
-        createFilter(rpcInput, "stream-xpath-filter", "stream-subtree-filter"),
+        createFilter(session, rpcInput, streamFilter, streamFilterKey, "stream-xpath-filter", "stream-subtree-filter", "stream-filter-name"),
         streamNode->asTerm().valueStr(),
         stopTime,
         replayStartTime);
@@ -167,7 +200,7 @@ sysrepo::DynamicSubscription makeYangPushOnChangeSubscription(sysrepo::Session& 
 
     rousette::restconf::ScopedDatastoreSwitch dsSwitch(session, datastore);
     return session.yangPushOnChange(
-        createFilter(rpcInput, "ietf-yang-push:datastore-xpath-filter", "ietf-yang-push:datastore-subtree-filter"),
+        createFilter(session, rpcInput, selectionFilter, selectionFilterKey, "ietf-yang-push:datastore-xpath-filter", "ietf-yang-push:datastore-subtree-filter", "ietf-yang-push:selection-filter-ref"),
         createInterval<std::centi>(rpcInput, "ietf-yang-push:on-change/dampening-period"),
         syncOnStart,
         excludedChanges,
@@ -200,7 +233,7 @@ sysrepo::DynamicSubscription makeYangPushPeriodicSubscription(sysrepo::Session& 
 
     rousette::restconf::ScopedDatastoreSwitch dsSwitch(session, datastore);
     return session.yangPushPeriodic(
-        createFilter(rpcInput, "ietf-yang-push:datastore-xpath-filter", "ietf-yang-push:datastore-subtree-filter"),
+        createFilter(session, rpcInput, selectionFilter, selectionFilterKey, "ietf-yang-push:datastore-xpath-filter", "ietf-yang-push:datastore-subtree-filter", "ietf-yang-push:selection-filter-ref"),
         *period,
         anchorTime,
         stopTime);
