@@ -12,6 +12,7 @@
 #include <spdlog/spdlog.h>
 #include <sysrepo-cpp/utils/utils.hpp>
 #include "restconf/Server.h"
+#include "restconf/utils/sysrepo.h"
 #include "tests/aux-utils.h"
 #include "tests/event_watchers.h"
 #include "tests/pretty_printers.h"
@@ -42,6 +43,19 @@ std::string datastoreToString(sysrepo::Datastore ds)
     }
 }
 
+void createNamedSubtreeFilter(sysrepo::Session& session, const std::string& path, const std::string& xmlContent)
+{
+    rousette::restconf::ScopedDatastoreSwitch dsSwitch(session, sysrepo::Datastore::Operational);
+    session.switchDatastore(sysrepo::Datastore::Operational);
+    auto createdNodes = session.getContext().newPath2(path, libyang::XML{xmlContent});
+    session.editBatch(*createdNodes.createdParent, sysrepo::DefaultOperation::Merge);
+    session.applyChanges();
+}
+#define CREATE_SUBTREE_STREAM_FILTER(SESS, NAME, XML) \
+    createNamedSubtreeFilter(SESS, "/ietf-subscribed-notifications:filters/stream-filter[name='" NAME "']/stream-subtree-filter", XML)
+#define CREATE_SUBTREE_SELECTION_FILTER(SESS, NAME, XML) \
+    createNamedSubtreeFilter(SESS, "/ietf-subscribed-notifications:filters/ietf-yang-push:selection-filter[filter-id='" NAME "']/datastore-subtree-filter", XML)
+
 struct EstablishSubscriptionResult {
     uint32_t id;
     std::string url;
@@ -51,7 +65,10 @@ struct EstablishSubscriptionResult {
 struct FilterXPath {
     std::string xpath;
 };
-using Filter = std::variant<std::monostate, FilterXPath, libyang::XML>;
+struct FilterName {
+    std::string name;
+};
+using Filter = std::variant<std::monostate, FilterXPath, libyang::XML, FilterName>;
 
 struct SubscribedNotifications {
     std::string stream;
@@ -117,6 +134,8 @@ EstablishSubscriptionResult establishSubscription(
             rpcTree.newPath("stream-xpath-filter", std::get<FilterXPath>(sn.filter).xpath);
         } else if (std::holds_alternative<libyang::XML>(sn.filter)) {
             rpcTree.newPath2("stream-subtree-filter", std::get<libyang::XML>(sn.filter));
+        } else if (std::holds_alternative<FilterName>(sn.filter)) {
+            rpcTree.newPath("stream-filter-name", std::get<FilterName>(sn.filter).name);
         }
 
         if (sn.replayStartTime) {
@@ -132,6 +151,8 @@ EstablishSubscriptionResult establishSubscription(
             rpcTree.newPath("ietf-yang-push:datastore-xpath-filter", std::get<FilterXPath>(yp.filter).xpath);
         } else if (std::holds_alternative<libyang::XML>(yp.filter)) {
             rpcTree.newPath2("ietf-yang-push:datastore-subtree-filter", std::get<libyang::XML>(yp.filter));
+        } else if (std::holds_alternative<FilterName>(yp.filter)) {
+            rpcTree.newPath("ietf-yang-push:selection-filter-ref", std::get<FilterName>(yp.filter).name);
         }
 
         if (yp.syncOnStart) {
@@ -157,6 +178,8 @@ EstablishSubscriptionResult establishSubscription(
             rpcTree.newPath("ietf-yang-push:datastore-xpath-filter", std::get<FilterXPath>(yp.filter).xpath);
         } else if (std::holds_alternative<libyang::XML>(yp.filter)) {
             rpcTree.newPath2("ietf-yang-push:datastore-subtree-filter", std::get<libyang::XML>(yp.filter));
+        } else if (std::holds_alternative<FilterName>(yp.filter)) {
+            rpcTree.newPath("ietf-yang-push:selection-filter-ref", std::get<FilterName>(yp.filter).name);
         }
 
         if (yp.anchorTime) {
@@ -402,23 +425,6 @@ TEST_CASE("RESTCONF subscribed notifications")
 }
 )###"});
 
-        srSess.switchDatastore(sysrepo::Datastore::Operational);
-        srSess.setItem("/ietf-subscribed-notifications:filters/stream-filter[name='xyz']/stream-xpath-filter", "/example:eventA");
-        srSess.applyChanges();
-        REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription", {FORWARDED, CONTENT_TYPE_JSON}, R"###({ "ietf-subscribed-notifications:input": { "stream": "NETCONF", "stream-filter-name": "xyz" } })###")
-                == Response{400, jsonHeaders, R"###({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "invalid-attribute",
-        "error-message": "Stream filtering with predefined filters is not supported"
-      }
-    ]
-  }
-}
-)###"});
-
         // replay-start-time > stop-time
         REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription",
                      {FORWARDED, CONTENT_TYPE_JSON},
@@ -530,7 +536,15 @@ TEST_CASE("RESTCONF subscribed notifications")
             {
                 rpcRequestAuthHeader = AUTH_ROOT;
                 rpcRequestEncoding = libyang::DataFormat::JSON;
-                subNotif.filter = FilterXPath{"/example:eventA | /example:eventB"};
+                SECTION("Stream filter name")
+                {
+                    CREATE_SUBTREE_STREAM_FILTER(srSess, "filter-a", "<eventA xmlns='http://example.tld/example' /> <eventB xmlns='http://example.tld/example' />");
+                    subNotif.filter = FilterName{"filter-a"};
+                }
+                SECTION("Directly")
+                {
+                    subNotif.filter = FilterXPath{"/example:eventA | /example:eventB"};
+                }
                 rpcSubscriptionEncoding = "encode-json";
                 EXPECT_NOTIFICATION(notificationsJSON[0], seq1);
                 EXPECT_NOTIFICATION(notificationsJSON[1], seq1);
@@ -541,8 +555,16 @@ TEST_CASE("RESTCONF subscribed notifications")
             {
                 rpcRequestAuthHeader = AUTH_ROOT;
                 rpcRequestEncoding = libyang::DataFormat::JSON;
-                // Constructing the filter as XML is only an implementation detail. The tree is then constructed as JSON in establishSubscription
-                subNotif.filter = libyang::XML{"<eventA xmlns='http://example.tld/example' />"};
+                SECTION("Stream filter name")
+                {
+                    CREATE_SUBTREE_STREAM_FILTER(srSess, "filter-b", "<eventA xmlns='http://example.tld/example' />");
+                    subNotif.filter = FilterName{"filter-b"};
+                }
+                SECTION("Directly")
+                {
+                    // Constructing the filter as XML is only an implementation detail. The tree is then constructed as JSON in establishSubscription
+                    subNotif.filter = libyang::XML{"<eventA xmlns='http://example.tld/example' />"};
+                }
                 rpcSubscriptionEncoding = "encode-json";
                 EXPECT_NOTIFICATION(notificationsJSON[0], seq1);
                 EXPECT_NOTIFICATION(notificationsJSON[3], seq1);
@@ -867,12 +889,28 @@ TEST_CASE("RESTCONF subscribed notifications")
         {
             SECTION("XPath filter")
             {
-                yp.filter = FilterXPath{"/example:top-level-list"};
+                SECTION("Through selection-filter-ref")
+                {
+                    CREATE_SUBTREE_SELECTION_FILTER(srSess, "abc", "<top-level-list xmlns='http://example.tld/example' />");
+                    yp.filter = FilterName{"abc"};
+                }
+                SECTION("Directly")
+                {
+                    yp.filter = FilterXPath{"/example:top-level-list"};
+                }
             }
 
             SECTION("Subtree filter is set")
             {
-                yp.filter = libyang::XML{"<top-level-list xmlns='http://example.tld/example' />"};
+                SECTION("Through selection-filter-ref")
+                {
+                    CREATE_SUBTREE_SELECTION_FILTER(srSess, "def", "<top-level-list xmlns='http://example.tld/example' />");
+                    yp.filter = FilterName{"def"};
+                }
+                SECTION("Directly")
+                {
+                    yp.filter = libyang::XML{"<top-level-list xmlns='http://example.tld/example' />"};
+                }
             }
 
             EXPECT_YP_UPDATE(R"({"ietf-yang-push:push-change-update":{"datastore-changes":{"yang-patch":{"edit":[{"edit-id":"edit-1","operation":"create","target":"/example:top-level-list[name='key1']","value":{"example:top-level-list":[{"name":"key1"}]}}]}}}})");
@@ -986,12 +1024,28 @@ TEST_CASE("RESTCONF subscribed notifications")
         {
             SECTION("XPath filter")
             {
-                yp.filter = FilterXPath{"/example:top-level-leaf"};
+                SECTION("Through selection-filter-ref")
+                {
+                    CREATE_SUBTREE_SELECTION_FILTER(srSess, "abc", "<top-level-leaf xmlns='http://example.tld/example' />");
+                    yp.filter = FilterName{"abc"};
+                }
+                SECTION("Directly")
+                {
+                    yp.filter = FilterXPath{"/example:top-level-leaf"};
+                }
             }
 
             SECTION("Subtree filter is set")
             {
-                yp.filter = libyang::XML{"<top-level-leaf xmlns='http://example.tld/example' />"};
+                SECTION("Through selection-filter-ref")
+                {
+                    CREATE_SUBTREE_SELECTION_FILTER(srSess, "def", "<top-level-leaf xmlns='http://example.tld/example' />");
+                    yp.filter = FilterName{"def"};
+                }
+                SECTION("Directly")
+                {
+                    yp.filter = libyang::XML{"<top-level-leaf xmlns='http://example.tld/example' />"};
+                }
             }
 
             EXPECT_YP_PERIODIC_UPDATE(R"({"ietf-yang-push:push-update":{"datastore-contents":{}}})");
