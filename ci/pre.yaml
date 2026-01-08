@@ -1,19 +1,17 @@
 - hosts: all
   tasks:
-    - name: install nghttp2
+    - name: install deps
       package:
-        name: libnghttp2-devel
+        name: "{{ item }}"
         state: present
       become: true
-
-    - name: install pam_wrapper
-      package:
-        name: pam_wrapper
-        state: present
-      become: true
-
-    - name: install docopt-cpp
-      package:
-        name: docopt-cpp-devel
-        state: present
-      become: true
+      loop:
+        - pcre2-devel
+        - xxhash-devel
+        - libcurl-devel
+        - openssl-perl
+        - pam-devel
+        - docopt-cpp-devel
+        # rousette-specific bits
+        - libnghttp2-devel
+        - pam_wrapper
