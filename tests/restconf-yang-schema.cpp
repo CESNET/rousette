@@ -47,7 +47,7 @@ TEST_CASE("obtaining YANG schemas")
 }
 )"});
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-yang-library:yang-library/module-set=complete/import-only-module=ietf-inet-types,2013-07-15", {AUTH_ROOT, FORWARDED}) == Response{200, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-yang-library:yang-library/module-set=complete/import-only-module=ietf-inet-types,2025-12-22", {AUTH_ROOT, FORWARDED}) == Response{200, jsonHeaders, R"({
   "ietf-yang-library:yang-library": {
     "module-set": [
       {
@@ -55,10 +55,10 @@ TEST_CASE("obtaining YANG schemas")
         "import-only-module": [
           {
             "name": "ietf-inet-types",
-            "revision": "2013-07-15",
+            "revision": "2025-12-22",
             "namespace": "urn:ietf:params:xml:ns:yang:ietf-inet-types",
             "location": [
-              "http://example.net/yang/ietf-inet-types@2013-07-15"
+              "http://example.net/yang/ietf-inet-types@2025-12-22"
             ]
           }
         ]
@@ -107,9 +107,9 @@ TEST_CASE("obtaining YANG schemas")
             auto sub = srSess.onOperGet(
                 "ietf-yang-library", [](auto, auto, auto, auto, auto, auto, auto& parent) {
                     REQUIRE(!!parent);
-                    parent->newPath("location", "hello1");
-                    parent->newPath("location", "hello2");
-                    parent->newPath("location", "hello3");
+                    parent->newPath("location", "hello:1");
+                    parent->newPath("location", "hello:2");
+                    parent->newPath("location", "hello:3");
                     return sysrepo::ErrorCode::Ok;
                 },
                 "/ietf-yang-library:yang-library/module-set/module/location");
@@ -125,9 +125,9 @@ TEST_CASE("obtaining YANG schemas")
             }
 
             REQUIRE(dataFromSysrepo == std::map<std::string, std::string>({
-                        {"/ietf-yang-library:yang-library/module-set[name='complete']/module[name='ietf-yang-library']/location[1]", "hello1"},
-                        {"/ietf-yang-library:yang-library/module-set[name='complete']/module[name='ietf-yang-library']/location[2]", "hello2"},
-                        {"/ietf-yang-library:yang-library/module-set[name='complete']/module[name='ietf-yang-library']/location[3]", "hello3"},
+                        {"/ietf-yang-library:yang-library/module-set[name='complete']/module[name='ietf-yang-library']/location[1]", "hello:1"},
+                        {"/ietf-yang-library:yang-library/module-set[name='complete']/module[name='ietf-yang-library']/location[2]", "hello:2"},
+                        {"/ietf-yang-library:yang-library/module-set[name='complete']/module[name='ietf-yang-library']/location[3]", "hello:3"},
                     }));
 
             // but all of this does not affect the restconf data
@@ -435,7 +435,7 @@ TEST_CASE("obtaining YANG schemas")
         "module": [
           {
             "name": "root-mod",
-            "namespace": "rm",
+            "namespace": "example:rm",
             "location": [
               "http://example.net/yang/root-mod"
             ],
@@ -462,7 +462,7 @@ TEST_CASE("obtaining YANG schemas")
         "name": "root-mod",
         "revision": "",
         "schema": "http://example.net/yang/root-mod",
-        "namespace": "rm",
+        "namespace": "example:rm",
         "conformance-type": "implement",
         "submodule": [
           {

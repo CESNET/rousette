@@ -1,5 +1,5 @@
 module imp-mod {
-  namespace "im";
+  namespace "example:im";
   prefix "im";
   include imp-submod;
   identity foo;
