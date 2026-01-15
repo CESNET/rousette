@@ -71,9 +71,9 @@ public:
     ~DynamicSubscriptions();
     std::shared_ptr<SubscriptionData> getSubscriptionForUser(const boost::uuids::uuid& uuid, const std::optional<std::string>& user);
     std::shared_ptr<SubscriptionData> getSubscriptionForUser(const uint32_t subId, const std::optional<std::string>& user);
-    void establishSubscription(sysrepo::Session& session, const libyang::DataFormat requestEncoding, const libyang::DataNode& rpcInput, libyang::DataNode& rpcOutput);
+    void establishSubscription(sysrepo::Session& session, const std::optional<std::string>& requestSchemeAndHost, const libyang::DataFormat requestEncoding, const libyang::DataNode& rpcInput, libyang::DataNode& rpcOutput);
     void stop();
-    void deleteSubscription(sysrepo::Session& session, const libyang::DataFormat, const libyang::DataNode& rpcInput, libyang::DataNode&);
+    void deleteSubscription(sysrepo::Session& session, const std::optional<std::string>& requestSchemeAndHost, libyang::DataFormat, const libyang::DataNode& rpcInput, libyang::DataNode&);
 
 private:
     std::mutex m_mutex; ///< Lock for shared data (subscriptions storage and uuid generator)
