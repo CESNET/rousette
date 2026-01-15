@@ -133,7 +133,7 @@ ProtoAndHost parseForwardedHeader(const std::string& headerValue)
 {
     namespace x3 = boost::spirit::x3;
 
-    const auto token = x3::rule<class token, std::string>{"token"} = +(x3::alnum | x3::char_("-") | x3::char_("."));
+    const auto token = x3::rule<class token, std::string>{"token"} = +(x3::alnum | x3::char_("-") | x3::char_(".") | x3::char_("[") | x3::char_("]") | x3::char_(":"));
     const auto quotedString = x3::rule<class quotedString, std::string>{"quotedString"} = '"' >> *('\\' >> x3::char_ | ~x3::char_('"')) >> '"';
     const auto value = x3::rule<class value, std::string>{"value"} = token | quotedString;
 
