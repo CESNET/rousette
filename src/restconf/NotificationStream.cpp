@@ -19,6 +19,7 @@ using namespace std::string_literals;
 namespace {
 
 const auto streamListXPath = "/ietf-restconf-monitoring:restconf-state/streams/stream"s;
+const auto rousetteURIScheme = "x-cesnet-rousette://";
 
 void subscribe(
     std::optional<sysrepo::Subscription>& sub,
@@ -154,8 +155,8 @@ void notificationStreamList(sysrepo::Session& session, std::optional<libyang::Da
     } else {
         parent->newPath(prefix + "/description", "Default NETCONF notification stream");
     }
-    parent->newPath(prefix + "/access[encoding='xml']/location", streamsPrefix + "NETCONF/XML");
-    parent->newPath(prefix + "/access[encoding='json']/location", streamsPrefix + "NETCONF/JSON");
+    parent->newPath(prefix + "/access[encoding='xml']/location", rousetteURIScheme + streamsPrefix + "NETCONF/XML");
+    parent->newPath(prefix + "/access[encoding='json']/location", rousetteURIScheme + streamsPrefix + "NETCONF/JSON");
 
     if (replayInfo.enabled) {
         parent->newPath(prefix + "/replay-support", "true");
@@ -168,17 +169,25 @@ void notificationStreamList(sysrepo::Session& session, std::optional<libyang::Da
 
 libyang::DataNode replaceStreamLocations(const std::optional<std::string>& schemeAndHost, libyang::DataNode& node)
 {
-    // if we were unable to parse scheme and hosts, end without doing any changes
-    // this will, however, result in locations like "/streams/NETCONF/XML"
-    if (!schemeAndHost) {
-        return node;
+    std::vector<libyang::DataNode> streamAccessNodes;
+    for(const auto& e : node.findXPath(streamListXPath + "/access")) {
+        streamAccessNodes.emplace_back(e);
     }
 
-    auto accessNodes = node.findXPath(streamListXPath + "/access");
+    for (const auto& n : streamAccessNodes) {
+        auto locationNode = n.findPath("location");
 
-    for (const auto& n : accessNodes) {
-        std::string val = n.findPath("location")->asTerm().valueStr();
-        n.newPath("location", *schemeAndHost + val, libyang::CreationOptions::Update);
+        // if no scheme and host provided erase the location node entirely
+        if (!schemeAndHost) {
+            locationNode->unlink();
+            continue;
+        }
+
+        std::string val = locationNode->asTerm().valueStr();
+        n.newPath("location",
+                  // remove the temporary rousetteURI prefix from the value and prepend the actual scheme and host
+                  *schemeAndHost + val.erase(0, std::string{rousetteURIScheme}.length()),
+                  libyang::CreationOptions::Update);
     }
 
     return node;

@@ -98,12 +98,10 @@ TEST_CASE("reading data")
           "description": "Default NETCONF notification stream",
           "access": [
             {
-              "encoding": "xml",
-              "location": "/streams/NETCONF/XML"
+              "encoding": "xml"
             },
             {
-              "encoding": "json",
-              "location": "/streams/NETCONF/JSON"
+              "encoding": "json"
             }
           ]
         }
@@ -157,12 +155,10 @@ TEST_CASE("reading data")
           "description": "Default NETCONF notification stream",
           "access": [
             {
-              "encoding": "xml",
-              "location": "/streams/NETCONF/XML"
+              "encoding": "xml"
             },
             {
-              "encoding": "json",
-              "location": "/streams/NETCONF/JSON"
+              "encoding": "json"
             }
           ]
         }
