@@ -49,6 +49,7 @@ EstablishSubscriptionResult establishSubscription(
     if (rpcRequestAuthHeader) {
         requestHeaders.insert(*rpcRequestAuthHeader);
     }
+    requestHeaders.emplace("forward", "proto=http;host=[::1]:10080");
 
     std::optional<libyang::DataNode> envelope;
     auto rpcTree = ctx.newPath("/ietf-subscribed-notifications:establish-subscription");
@@ -105,6 +106,11 @@ EstablishSubscriptionResult establishSubscription(
     auto urlNode = reply.findPath("ietf-restconf-subscribed-notifications:uri", libyang::InputOutputNodes::Output);
     REQUIRE(urlNode);
 
+    // We are hardcoding forwarded header to this value and the rest of the code expects to connect to SERVER_ADDRESS and SERVER_PORT
+    // i.e., remove the scheme and host part from the URI
+    REQUIRE(std::regex_match(urlNode->asTerm().valueStr(), std::regex(R"(http://\[::1\]:10080/streams/subscribed/)"s + uuidV4Regex)));
+    auto url = urlNode->asTerm().valueStr().erase(0, std::string{"http://[::1]:10080"}.length());
+
     std::optional<sysrepo::NotificationTimeStamp> replayStartTimeRevision;
     if (auto node = reply.findPath("ietf-subscribed-notifications:replay-start-time-revision", libyang::InputOutputNodes::Output)) {
         replayStartTimeRevision = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(node->asTerm().valueStr());
@@ -112,7 +118,7 @@ EstablishSubscriptionResult establishSubscription(
 
     return {
         std::get<uint32_t>(idNode->asTerm().value()),
-        urlNode->asTerm().valueStr(),
+        url,
         replayStartTimeRevision
     };
 }
@@ -169,7 +175,7 @@ TEST_CASE("RESTCONF subscribed notifications")
             srSess.deleteItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='16']");
             srSess.applyChanges();
 
-            REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription", {CONTENT_TYPE_JSON}, R"###({ "ietf-subscribed-notifications:input": { "stream": "NETCONF" } })###")
+            REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription", {FORWARDED, CONTENT_TYPE_JSON}, R"###({ "ietf-subscribed-notifications:input": { "stream": "NETCONF" } })###")
                     == Response{403, jsonHeaders, R"###({
   "ietf-restconf:errors": {
     "error": [
