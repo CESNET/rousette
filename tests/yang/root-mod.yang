@@ -1,5 +1,5 @@
 module root-mod {
-  namespace "rm";
+  namespace "example:rm";
   prefix "rm";
   import imp-mod {
     prefix "im";
