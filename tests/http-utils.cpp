@@ -83,6 +83,7 @@ TEST_CASE("Get Host from forwarded")
     REQUIRE(rousette::http::parseForwardedHeader("for=192.0.2.60;by=203.0.113.43;host=192.0.2.1") == ProtoAndHost{std::nullopt, "192.0.2.1"s});
     REQUIRE(rousette::http::parseForwardedHeader("for=192.0.2.60;proto=http;by=203.0.113.43;host=\"::1\"") == ProtoAndHost{"http", "::1"s});
     REQUIRE(rousette::http::parseForwardedHeader("for=192.0.2.60;proto=https;by=203.0.113.43;host=\"::1\", proto=http;host=192.0.2.1;for=192.0.2.61") == ProtoAndHost{"https"s, "::1"s});
+    REQUIRE(rousette::http::parseForwardedHeader("for=192.0.2.60;by=203.0.113.43;host=[2001:db8::666]") == ProtoAndHost{std::nullopt, "[2001:db8::666]"s});
     REQUIRE(rousette::http::parseForwardedHeader("host=proto=https") == ProtoAndHost{});
     REQUIRE(rousette::http::parseForwardedHeader("") == ProtoAndHost{});
 }
