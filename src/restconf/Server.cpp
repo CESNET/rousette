@@ -438,11 +438,11 @@ libyang::CreatedNodes createEditForPutAndPatch(libyang::Context& ctx, const std:
     return {editNode, replacementNode};
 }
 
-std::optional<libyang::DataNode> processInternalRPC(sysrepo::Session& sess, libyang::DataNode& rpcInput, const libyang::DataFormat requestEncoding, DynamicSubscriptions& dynamicSubscriptions)
+std::optional<libyang::DataNode> processInternalRPC(sysrepo::Session& sess, libyang::DataNode& rpcInput, const std::optional<std::string>& schemeAndHost, const libyang::DataFormat requestEncoding, DynamicSubscriptions& dynamicSubscriptions)
 {
     struct InternalRPCHandler {
         std::optional<std::string> validationDataXPath; ///< XPath to data used for RPC input validation
-        std::function<void(sysrepo::Session&, const libyang::DataFormat, const libyang::DataNode&, libyang::DataNode&)> rpcHandler; // The function that processes the RPC
+        std::function<void(sysrepo::Session&, const std::optional<std::string>&, const libyang::DataFormat, const libyang::DataNode&, libyang::DataNode&)> rpcHandler; // The function that processes the RPC
     };
     const std::map<std::string, InternalRPCHandler> handlers{
         {"/ietf-subscribed-notifications:establish-subscription",
@@ -485,7 +485,7 @@ std::optional<libyang::DataNode> processInternalRPC(sysrepo::Session& sess, liby
     }
 
     auto [parent, rpcOutput] = sess.getContext().newPath2(rpcPath, std::nullopt);
-    handlerIt->second.rpcHandler(sess, requestEncoding, rpcInput, *rpcOutput);
+    handlerIt->second.rpcHandler(sess, schemeAndHost, requestEncoding, rpcInput, *rpcOutput);
     return *parent;
 }
 
@@ -523,7 +523,8 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx, const std::c
     if (requestCtx->restconfRequest.type == RestconfRequest::Type::Execute) {
         rpcReply = requestCtx->sess.sendRPC(*rpcNode, timeout);
     } else if (requestCtx->restconfRequest.type == RestconfRequest::Type::ExecuteInternal) {
-        rpcReply = processInternalRPC(requestCtx->sess, *rpcNode, *requestCtx->dataFormat.request, dynamicSubscriptions);
+        auto schemeAndHost = http::parseUrlPrefix(requestCtx->req.header());
+        rpcReply = processInternalRPC(requestCtx->sess, *rpcNode, schemeAndHost, *requestCtx->dataFormat.request, dynamicSubscriptions);
     }
 
     if (!rpcReply || rpcReply->immediateChildren().empty()) {

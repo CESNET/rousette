@@ -49,6 +49,7 @@ EstablishSubscriptionResult establishSubscription(
     if (rpcRequestAuthHeader) {
         requestHeaders.insert(*rpcRequestAuthHeader);
     }
+    requestHeaders.emplace("forward", "proto=http;host=[::1]:10080");
 
     std::optional<libyang::DataNode> envelope;
     auto rpcTree = ctx.newPath("/ietf-subscribed-notifications:establish-subscription");
@@ -105,6 +106,11 @@ EstablishSubscriptionResult establishSubscription(
     auto urlNode = reply.findPath("ietf-restconf-subscribed-notifications:uri", libyang::InputOutputNodes::Output);
     REQUIRE(urlNode);
 
+    // We are hardcoding forwarded header to this value and the rest of the code expects to connect to SERVER_ADDRESS and SERVER_PORT
+    // i.e., remove the scheme and host part from the URI
+    REQUIRE(std::regex_match(urlNode->asTerm().valueStr(), std::regex(R"(http://\[::1\]:10080/streams/subscribed/)"s + uuidV4Regex)));
+    auto url = urlNode->asTerm().valueStr().erase(0, std::string{"http://[::1]:10080"}.length());
+
     std::optional<sysrepo::NotificationTimeStamp> replayStartTimeRevision;
     if (auto node = reply.findPath("ietf-subscribed-notifications:replay-start-time-revision", libyang::InputOutputNodes::Output)) {
         replayStartTimeRevision = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(node->asTerm().valueStr());
@@ -112,7 +118,7 @@ EstablishSubscriptionResult establishSubscription(
 
     return {
         std::get<uint32_t>(idNode->asTerm().value()),
-        urlNode->asTerm().valueStr(),
+        url,
         replayStartTimeRevision
     };
 }
@@ -169,7 +175,7 @@ TEST_CASE("RESTCONF subscribed notifications")
             srSess.deleteItem("/ietf-netconf-acm:nacm/rule-list[name='anon rule']/rule[name='16']");
             srSess.applyChanges();
 
-            REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription", {CONTENT_TYPE_JSON}, R"###({ "ietf-subscribed-notifications:input": { "stream": "NETCONF" } })###")
+            REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription", {FORWARDED, CONTENT_TYPE_JSON}, R"###({ "ietf-subscribed-notifications:input": { "stream": "NETCONF" } })###")
                     == Response{403, jsonHeaders, R"###({
   "ietf-restconf:errors": {
     "error": [
@@ -261,7 +267,7 @@ TEST_CASE("RESTCONF subscribed notifications")
     SECTION("Invalid establish-subscription requests")
     {
         // stop-time in the past
-        REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription", {CONTENT_TYPE_JSON}, R"###({ "ietf-subscribed-notifications:input": { "stream": "NETCONF", "stop-time": "1999-09-09T09:09:09Z" } })###")
+        REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription", {FORWARDED, CONTENT_TYPE_JSON}, R"###({ "ietf-subscribed-notifications:input": { "stream": "NETCONF", "stop-time": "1999-09-09T09:09:09Z" } })###")
                 == Response{400, jsonHeaders, R"###({
   "ietf-restconf:errors": {
     "error": [
@@ -276,7 +282,7 @@ TEST_CASE("RESTCONF subscribed notifications")
 )###"});
 
         // invalid stream
-        REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription", {CONTENT_TYPE_JSON}, R"###({ "ietf-subscribed-notifications:input": { "stream": "ajsdhauisds" } })###")
+        REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription", {FORWARDED, CONTENT_TYPE_JSON}, R"###({ "ietf-subscribed-notifications:input": { "stream": "ajsdhauisds" } })###")
                 == Response{400, jsonHeaders, R"###({
   "ietf-restconf:errors": {
     "error": [
@@ -291,7 +297,7 @@ TEST_CASE("RESTCONF subscribed notifications")
 )###"});
 
         // stream-filter-name is unsupported, but leafref validation triggers first
-        REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription", {CONTENT_TYPE_JSON}, R"###({ "ietf-subscribed-notifications:input": { "stream": "NETCONF", "stream-filter-name": "xyz" } })###")
+        REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription", {FORWARDED, CONTENT_TYPE_JSON}, R"###({ "ietf-subscribed-notifications:input": { "stream": "NETCONF", "stream-filter-name": "xyz" } })###")
                 == Response{400, jsonHeaders, R"###({
   "ietf-restconf:errors": {
     "error": [
@@ -309,7 +315,7 @@ TEST_CASE("RESTCONF subscribed notifications")
         srSess.switchDatastore(sysrepo::Datastore::Operational);
         srSess.setItem("/ietf-subscribed-notifications:filters/stream-filter[name='xyz']/stream-xpath-filter", "/example:eventA");
         srSess.applyChanges();
-        REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription", {CONTENT_TYPE_JSON}, R"###({ "ietf-subscribed-notifications:input": { "stream": "NETCONF", "stream-filter-name": "xyz" } })###")
+        REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription", {FORWARDED, CONTENT_TYPE_JSON}, R"###({ "ietf-subscribed-notifications:input": { "stream": "NETCONF", "stream-filter-name": "xyz" } })###")
                 == Response{400, jsonHeaders, R"###({
   "ietf-restconf:errors": {
     "error": [
@@ -325,7 +331,7 @@ TEST_CASE("RESTCONF subscribed notifications")
 
         // replay-start-time > stop-time
         REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription",
-                     {CONTENT_TYPE_JSON},
+                     {FORWARDED, CONTENT_TYPE_JSON},
                      R"###({ "ietf-subscribed-notifications:input": { "stream": "NETCONF", "replay-start-time": "2000-11-11T11:22:33Z", "stop-time": "2000-01-01T00:00:00Z" } })###")
                 == Response{400, jsonHeaders, R"###({
   "ietf-restconf:errors": {
@@ -334,6 +340,23 @@ TEST_CASE("RESTCONF subscribed notifications")
         "error-type": "application",
         "error-tag": "invalid-attribute",
         "error-message": "Couldn't create notification subscription: SR_ERR_INVAL_ARG\u000A Specified \"stop-time\" is earlier than \"start-time\". (SR_ERR_INVAL_ARG)"
+      }
+    ]
+  }
+}
+)###"});
+
+        // the forwarded header is missing here
+        REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription",
+                     {CONTENT_TYPE_JSON, AUTH_ROOT},
+                     R"###({ "ietf-subscribed-notifications:input": { "stream": "NETCONF" } })###")
+                == Response{400, jsonHeaders, R"###({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-message": "Request scheme and host information is required to establish subscription."
       }
     ]
   }

@@ -117,8 +117,12 @@ void DynamicSubscriptions::stop()
     }
 }
 
-void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, const libyang::DataFormat requestEncoding, const libyang::DataNode& rpcInput, libyang::DataNode& rpcOutput)
+void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, const std::optional<std::string>& requestSchemeAndHost, const libyang::DataFormat requestEncoding, const libyang::DataNode& rpcInput, libyang::DataNode& rpcOutput)
 {
+    if (!requestSchemeAndHost) {
+        throw ErrorResponse(400, "application", "invalid-value", "Request scheme and host information is required to establish subscription.");
+    }
+
     // Generate a new UUID associated with the subscription. The UUID will be used as a part of the URI so that the URI is not predictable (RFC 8650, section 5)
     auto uuid = makeUUID();
 
@@ -128,7 +132,7 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
         auto sub = makeStreamSubscription(session, rpcInput, rpcOutput);
 
         rpcOutput.newPath("id", std::to_string(sub.subscriptionId()), libyang::CreationOptions::Output);
-        rpcOutput.newPath("ietf-restconf-subscribed-notifications:uri", m_restconfStreamUri + "subscribed/" + boost::uuids::to_string(uuid), libyang::CreationOptions::Output);
+        rpcOutput.newPath("ietf-restconf-subscribed-notifications:uri", *requestSchemeAndHost + m_restconfStreamUri + "subscribed/" + boost::uuids::to_string(uuid), libyang::CreationOptions::Output);
 
         std::lock_guard lock(m_mutex);
         m_subscriptions[uuid] = std::make_shared<SubscriptionData>(
@@ -144,7 +148,7 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
     }
 }
 
-void DynamicSubscriptions::deleteSubscription(sysrepo::Session& session, const libyang::DataFormat, const libyang::DataNode& rpcInput, libyang::DataNode&)
+void DynamicSubscriptions::deleteSubscription(sysrepo::Session& session, const std::optional<std::string>&, const libyang::DataFormat, const libyang::DataNode& rpcInput, libyang::DataNode&)
 {
     const auto isKill = rpcInput.findPath("/ietf-subscribed-notifications:kill-subscription") != std::nullopt;
     const auto subId = std::get<uint32_t>(rpcInput.findPath("id")->asTerm().value());
