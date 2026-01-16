@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d20251d8_706e09bc",
+        "filename": "src/restconf/NotificationStream.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-01-16T17:33:50Z",
+      "side": 1,
+      "message": "I think that the minimal part which still fits the pattern (and RFC 3986) is just `x-cesnet-rousette:`, i.e., with an empty [authority](https://datatracker.ietf.org/doc/html/rfc3986#section-3.2) section, so I changed that.",
+      "revId": "004c98632262661afc47f00a5228efcf85cdeb22",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
