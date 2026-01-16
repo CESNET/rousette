@@ -16,6 +16,24 @@
       "message": "could you please also put a test for this into `tests/http-utils.cpp`?",
       "revId": "714161d06f1b132e8a736851d7357d55706a82d4",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a95c9b43_befc3677",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-01-16T17:28:27Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ac337842_d2f77259",
+      "revId": "714161d06f1b132e8a736851d7357d55706a82d4",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
