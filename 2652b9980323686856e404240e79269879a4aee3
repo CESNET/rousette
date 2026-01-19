@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3f71fe0f_b0be70fe",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-01-19T09:36:08Z",
+      "side": 1,
+      "message": "If this is false, then a later call to libyang\u0027s data node creation will fail because the \"raw path value\" won\u0027t pass the pattern validation of the `uri`. Please also add a test for this.",
+      "revId": "2652b9980323686856e404240e79269879a4aee3",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
