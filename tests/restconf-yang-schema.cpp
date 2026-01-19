@@ -47,7 +47,7 @@ TEST_CASE("obtaining YANG schemas")
 }
 )"});
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-yang-library:yang-library/module-set=complete/import-only-module=ietf-inet-types,2013-07-15", {AUTH_ROOT, FORWARDED}) == Response{200, jsonHeaders, R"({
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-yang-library:yang-library/module-set=complete/import-only-module=ietf-inet-types,2025-12-22", {AUTH_ROOT, FORWARDED}) == Response{200, jsonHeaders, R"({
   "ietf-yang-library:yang-library": {
     "module-set": [
       {
@@ -55,10 +55,10 @@ TEST_CASE("obtaining YANG schemas")
         "import-only-module": [
           {
             "name": "ietf-inet-types",
-            "revision": "2013-07-15",
+            "revision": "2025-12-22",
             "namespace": "urn:ietf:params:xml:ns:yang:ietf-inet-types",
             "location": [
-              "http://example.net/yang/ietf-inet-types@2013-07-15"
+              "http://example.net/yang/ietf-inet-types@2025-12-22"
             ]
           }
         ]
