@@ -93,6 +93,30 @@
       },
       "revId": "de922fd08168205816e78bf7d2ada4ebc4d3254b",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4e166f64_83afe126",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 112,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-01-19T11:46:35Z",
+      "side": 1,
+      "message": "nice, I like this version even more",
+      "parentUuid": "429c2691_5b2d0438",
+      "range": {
+        "startLine": 109,
+        "startChar": 0,
+        "endLine": 112,
+        "endChar": 97
+      },
+      "revId": "de922fd08168205816e78bf7d2ada4ebc4d3254b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
