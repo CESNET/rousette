@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "241f7338_7e0e9429",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-01-19T11:15:37Z",
+      "side": 1,
+      "message": "nit: I\u0027d prefer a `[[maybe_unused]]` along with a named argument",
+      "range": {
+        "startLine": 151,
+        "startChar": 73,
+        "endLine": 151,
+        "endChar": 106
+      },
+      "revId": "de922fd08168205816e78bf7d2ada4ebc4d3254b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2513d210_74e17187",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 112,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-01-19T11:15:37Z",
+      "side": 1,
+      "message": "Right, the rest of the code (especially that part which sends our requests) hardcodes the scheme/host/port triplet, that makes sense, and it means that you have to return just the path here.\n\nI don\u0027t like the fact that this is hardcoded, though. Why not simply check via something like:\n```c++\nauto prefix \u003d \"http://[\"s + SERVER_ADDRESS + \"]:\" + SERVER_PORT;\nauto url \u003d urlNode-\u003easTerm().valueStr();\nREQUIRE(url.starts_with(prefix));\nurl \u003d url.substr(0, prefix.length());\n```\n\nThere\u0027s no need to mess with regexes (and the ipv6 literal escaping) here.",
+      "range": {
+        "startLine": 109,
+        "startChar": 0,
+        "endLine": 112,
+        "endChar": 97
+      },
+      "revId": "de922fd08168205816e78bf7d2ada4ebc4d3254b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
