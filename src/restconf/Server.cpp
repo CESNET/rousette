@@ -636,7 +636,7 @@ void processYangPatchEdit(const std::shared_ptr<RequestContext>& requestCtx, con
     auto target = childLeafValue(editContainer, "target");
     auto operation = childLeafValue(editContainer, "operation");
 
-    auto [singleEdit, replacementNode] = createEditForPutAndPatch(ctx, requestCtx->req.uri().raw_path + target, yangPatchValueAsJSON(editContainer), libyang::DataFormat::JSON);
+    auto [singleEdit, replacementNode] = createEditForPutAndPatch(ctx, uriJoin(requestCtx->req.uri().raw_path, target), yangPatchValueAsJSON(editContainer), libyang::DataFormat::JSON);
     validateInputMetaAttributes(ctx, *singleEdit);
 
     // insert and move are not defined in RFC6241. sec 7.3 and sysrepo does not support them directly

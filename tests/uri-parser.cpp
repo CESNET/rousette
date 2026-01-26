@@ -1186,4 +1186,13 @@ TEST_CASE("URI path parser")
             REQUIRE(rousette::restconf::allowedHttpMethodsForUri(ctx, uri) == expected);
         }
     }
+
+    SECTION("Utils")
+    {
+        REQUIRE(rousette::restconf::uriJoin("/restconf/data", "/example:mod") == "/restconf/data/example:mod");
+        REQUIRE(rousette::restconf::uriJoin("/restconf/data", "example:mod") == "/restconf/data/example:mod");
+        REQUIRE(rousette::restconf::uriJoin("/restconf/data/", "/example:mod") == "/restconf/data/example:mod");
+        REQUIRE(rousette::restconf::uriJoin("/restconf/data/", "example:mod") == "/restconf/data/example:mod");
+        REQUIRE_THROWS_WITH_AS(rousette::restconf::uriJoin("/restconf/data", ""), "Parameters must be non-empty", std::invalid_argument);
+    }
 }

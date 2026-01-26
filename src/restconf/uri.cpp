@@ -804,4 +804,21 @@ std::string fieldsToXPath(const libyang::Context& ctx, const std::string& prefix
 
     return boost::algorithm::join(paths, " | ");
 }
+
+std::string uriJoin(const std::string& a, const std::string& b)
+{
+    if (a.empty() || b.empty()) {
+        throw std::invalid_argument("Parameters must be non-empty");
+    }
+
+    if (a.back() == '/' && b.front() == '/') {
+        return a + b.substr(1);
+    }
+
+    if (a.back() != '/' && b.front() != '/') {
+        return a + '/' + b;
+    }
+
+    return a + b;
+}
 }
