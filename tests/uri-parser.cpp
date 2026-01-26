@@ -1186,4 +1186,17 @@ TEST_CASE("URI path parser")
             REQUIRE(rousette::restconf::allowedHttpMethodsForUri(ctx, uri) == expected);
         }
     }
+
+    SECTION("Utils")
+    {
+        REQUIRE(rousette::restconf::uriJoin("/restconf/data", "/example:mod") == "/restconf/data/example:mod");
+        REQUIRE(rousette::restconf::uriJoin("/restconf/data", "example:mod") == "/restconf/data/example:mod");
+        REQUIRE(rousette::restconf::uriJoin("/restconf/data/", "/example:mod") == "/restconf/data/example:mod");
+        REQUIRE(rousette::restconf::uriJoin("/restconf/data/", "example:mod") == "/restconf/data/example:mod");
+        REQUIRE(rousette::restconf::uriJoin("/restconf/data/", "") == "/restconf/data/");
+        REQUIRE(rousette::restconf::uriJoin("/restconf/data", "") == "/restconf/data");
+        REQUIRE(rousette::restconf::uriJoin("", "/restconf/data") == "/restconf/data");
+        REQUIRE(rousette::restconf::uriJoin("", "restconf/data") == "restconf/data");
+        REQUIRE(rousette::restconf::uriJoin("", "") == "");
+    }
 }

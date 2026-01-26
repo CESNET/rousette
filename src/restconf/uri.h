@@ -224,4 +224,5 @@ RestconfStreamRequest asRestconfStreamRequest(const std::string& httpMethod, con
 std::set<std::string> allowedHttpMethodsForUri(const libyang::Context& ctx, const std::string& uriPath);
 
 std::string fieldsToXPath(const libyang::Context& ctx, const std::string& prefix, const queryParams::fields::Expr& expr);
+std::string uriJoin(const std::string& a, const std::string& b);
 }
