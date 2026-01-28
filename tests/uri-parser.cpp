@@ -19,6 +19,8 @@
 
 using namespace std::string_literals;
 
+#define QUERY_PARAMS_SYNTAX_ERROR(CODE) REQUIRE_THROWS_WITH_AS(CODE, R"((400, "protocol", "invalid-value", "Query parameters syntax error"))", rousette::restconf::ErrorResponse)
+
 namespace {
 std::string serializeErrorResponse(int code, const std::string& errorType, const std::string& errorTag, const std::string& errorMessage)
 {
@@ -265,7 +267,7 @@ TEST_CASE("URI path parser")
              }) {
 
             CAPTURE(uriPath);
-            REQUIRE(!rousette::restconf::impl::parseUriPath(uriPath));
+            REQUIRE_THROWS_WITH_AS(rousette::restconf::impl::parseUriPath(uriPath), R"((400, "application", "operation-failed", "Syntax error"))", rousette::restconf::ErrorResponse);
         }
     }
 
@@ -316,7 +318,6 @@ TEST_CASE("URI path parser")
                         CAPTURE(httpMethod);
                         CAPTURE(expectedRequestType);
                         CAPTURE(uriPath);
-                        REQUIRE(rousette::restconf::impl::parseUriPath(uriPath));
                         auto [requestType, datastore, path, queryParams] = rousette::restconf::asRestconfRequest(ctx, httpMethod, uriPath);
                         REQUIRE(requestType == expectedRequestType);
                         REQUIRE(path == expectedLyPath);
@@ -789,57 +790,57 @@ TEST_CASE("URI path parser")
             REQUIRE(parseQueryParams("depth=unbounded") == QueryParams{{"depth", UnboundedDepth{}}});
             REQUIRE(parseQueryParams("depth=1&depth=unbounded") == QueryParams{{"depth", 1u}, {"depth", UnboundedDepth{}}});
             REQUIRE(parseQueryParams("depth=unbounded&depth=123") == QueryParams{{"depth", UnboundedDepth{}}, {"depth", 123u}});
-            REQUIRE(parseQueryParams("a=b") == std::nullopt);
-            REQUIRE(parseQueryParams("Depth=1") == std::nullopt);
-            REQUIRE(parseQueryParams("depth=-1") == std::nullopt);
-            REQUIRE(parseQueryParams("depth=0") == std::nullopt);
-            REQUIRE(parseQueryParams("depth=65536") == std::nullopt);
-            REQUIRE(parseQueryParams("depth=") == std::nullopt);
-            REQUIRE(parseQueryParams("depth=foo") == std::nullopt);
-            REQUIRE(parseQueryParams("=") == std::nullopt);
-            REQUIRE(parseQueryParams("&") == std::nullopt);
-            REQUIRE(parseQueryParams("depth=1&") == std::nullopt);
-            REQUIRE(parseQueryParams("a&b=a") == std::nullopt);
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("a=b"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("Depth=1"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("depth=-1"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("depth=0"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("depth=65536"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("depth="));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("depth=foo"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("="));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("&"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("depth=1&"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("a&b=a"));
             REQUIRE(parseQueryParams("with-defaults=report-all") == QueryParams{{"with-defaults", withDefaults::ReportAll{}}});
             REQUIRE(parseQueryParams("with-defaults=trim") == QueryParams{{"with-defaults", withDefaults::Trim{}}});
             REQUIRE(parseQueryParams("with-defaults=explicit") == QueryParams{{"with-defaults", withDefaults::Explicit{}}});
             REQUIRE(parseQueryParams("with-defaults=report-all-tagged") == QueryParams{{"with-defaults", withDefaults::ReportAllTagged{}}});
             REQUIRE(parseQueryParams("depth=3&with-defaults=report-all") == QueryParams{{"depth", 3u}, {"with-defaults", withDefaults::ReportAll{}}});
-            REQUIRE(parseQueryParams("with-defaults=") == std::nullopt);
-            REQUIRE(parseQueryParams("with-defaults=report") == std::nullopt);
-            REQUIRE(parseQueryParams("with_defaults=ahoj") == std::nullopt);
-            REQUIRE(parseQueryParams("with-defaults=report_all") == std::nullopt);
-            REQUIRE(parseQueryParams("with-defaults=depth=3") == std::nullopt);
-            REQUIRE(parseQueryParams("with-defaults=&depth=3") == std::nullopt);
-            REQUIRE(parseQueryParams("with-defaults=trim;depth=3") == std::nullopt);
-            REQUIRE(parseQueryParams("with-defaults=trim=depth=3") == std::nullopt);
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults="));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults=report"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with_defaults=ahoj"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults=report_all"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults=depth=3"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults=&depth=3"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults=trim;depth=3"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults=trim=depth=3"));
             REQUIRE(parseQueryParams("content=all&content=nonconfig&content=config") == QueryParams{{"content", content::AllNodes{}}, {"content", content::OnlyNonConfigNodes{}}, {"content", content::OnlyConfigNodes{}}});
-            REQUIRE(parseQueryParams("content=ahoj") == std::nullopt);
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("content=ahoj"));
             REQUIRE(parseQueryParams("insert=first") == QueryParams{{"insert", insert::First{}}});
             REQUIRE(parseQueryParams("insert=last") == QueryParams{{"insert", insert::Last{}}});
-            REQUIRE(parseQueryParams("insert=foo") == std::nullopt);
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("insert=foo"));
             REQUIRE(parseQueryParams("depth=4&insert=last&with-defaults=trim") == QueryParams{{"depth", 4u}, {"insert", insert::Last{}}, {"with-defaults", withDefaults::Trim{}}});
             REQUIRE(parseQueryParams("insert=before") == QueryParams{{"insert", insert::Before{}}});
             REQUIRE(parseQueryParams("insert=after") == QueryParams{{"insert", insert::After{}}});
-            REQUIRE(parseQueryParams("insert=uwu") == std::nullopt);
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("insert=uwu"));
             REQUIRE(parseQueryParams("filter=asd") == QueryParams{{"filter", "asd"s}});
             REQUIRE(parseQueryParams("filter=/") == QueryParams{{"filter", "/"s}});
-            REQUIRE(parseQueryParams("filter=") == std::nullopt);
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("filter="));
             REQUIRE(parseQueryParams("filter=/example:mod[name='GigabitEthernet0/0']") == QueryParams{{"filter", "/example:mod[name='GigabitEthernet0/0']"s}});
             REQUIRE(parseQueryParams("filter=/example:mod/statistics[errors>0]") == QueryParams{{"filter", "/example:mod/statistics[errors>0]"s}});
             REQUIRE(parseQueryParams("filter=/example:mod/statistics[errors>0]&depth=1") == QueryParams{{"filter", "/example:mod/statistics[errors>0]"s}, {"depth", 1u}});
-            REQUIRE(parseQueryParams("filter=/example:mod/statistics[errors>0]&") == std::nullopt);
-            REQUIRE(parseQueryParams("filter=/example:mod[name='&amp;']") == std::nullopt);
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("filter=/example:mod/statistics[errors>0]&"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("filter=/example:mod[name='&amp;']"));
             REQUIRE(parseQueryParams("filter=/example:mod[name='%26']&depth=1") == QueryParams{{"filter", "/example:mod[name='&']"s}, {"depth", 1u}});
             REQUIRE(parseQueryParams("start-time=2023-01-01T00:00:00.23232Z") == QueryParams{{"start-time", "2023-01-01T00:00:00.23232Z"}});
             REQUIRE(parseQueryParams("start-time=2023-01-01T12:30:00+01:00") == QueryParams{{"start-time", "2023-01-01T12:30:00+01:00"}});
             REQUIRE(parseQueryParams("start-time=2023-01-01T23:59:59.123-05:00") == QueryParams{{"start-time", "2023-01-01T23:59:59.123-05:00"}});
             REQUIRE(parseQueryParams("stop-time=2023-02-28T12:00:00.1+09:00") == QueryParams{{"stop-time", "2023-02-28T12:00:00.1+09:00"}});
             REQUIRE(parseQueryParams("stop-time=2023-05-20T18:30:00+05:30") == QueryParams{{"stop-time", "2023-05-20T18:30:00+05:30"}});
-            REQUIRE(parseQueryParams("stop-time=2023-05-20E18:30:00+05:30") == std::nullopt);
-            REQUIRE(parseQueryParams("stop-time=2023-05-20T18:30:00") == std::nullopt);
-            REQUIRE(parseQueryParams("stop-time=20230520T18:30:00Z") == std::nullopt);
-            REQUIRE(parseQueryParams("stop-time=2023-05-a0T18:30:00+05:30") == std::nullopt);
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("stop-time=2023-05-20E18:30:00+05:30"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("stop-time=2023-05-20T18:30:00"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("stop-time=20230520T18:30:00Z"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("stop-time=2023-05-a0T18:30:00+05:30"));
             REQUIRE(parseQueryParams("fields=mod:leaf") == QueryParams{{"fields", fields::SemiExpr{fields::ParenExpr{fields::SlashExpr{{"mod", "leaf"}}}}}});
             REQUIRE(parseQueryParams("fields=b(c;d);e(f)") == QueryParams{{"fields",
                     fields::SemiExpr{
@@ -868,9 +869,9 @@ TEST_CASE("URI path parser")
                         }
                     }
             }});
-            REQUIRE(parseQueryParams("fields=(xyz)") == std::nullopt);
-            REQUIRE(parseQueryParams("fields=a;(xyz)") == std::nullopt);
-            REQUIRE(parseQueryParams("fields=") == std::nullopt);
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("fields=(xyz)"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("fields=a;(xyz)"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("fields="));
 
             for (const auto& [prefix, fields, xpath] : {
                      std::tuple<std::string, std::string, std::string>{"/example:a", "b", "/example:a/b"},
@@ -886,17 +887,15 @@ TEST_CASE("URI path parser")
                 CAPTURE(fields);
                 CAPTURE(xpath);
                 auto qp = parseQueryParams("fields=" + fields);
-                REQUIRE(qp);
-                REQUIRE(qp->count("fields") == 1);
-                auto fieldExpr = qp->find("fields")->second;
+                REQUIRE(qp.count("fields") == 1);
+                auto fieldExpr = qp.find("fields")->second;
                 REQUIRE(std::holds_alternative<fields::Expr>(fieldExpr));
                 REQUIRE(rousette::restconf::fieldsToXPath(ctx, prefix, std::get<fields::Expr>(fieldExpr)) == xpath);
             }
 
             auto qp = parseQueryParams("fields=xxx/xyz(a;b)");
-            REQUIRE(qp);
             REQUIRE_THROWS_WITH_AS(
-                    rousette::restconf::fieldsToXPath(ctx, "/example:a", std::get<fields::Expr>(qp->find("fields")->second)),
+                    rousette::restconf::fieldsToXPath(ctx, "/example:a", std::get<fields::Expr>(qp.find("fields")->second)),
                         serializeErrorResponse(400, "application", "operation-failed", "Can't find schema node for '/example:a/xxx/xyz/a'").c_str(),
                         rousette::restconf::ErrorResponse);
         }

@@ -54,9 +54,9 @@ struct YangModule {
     bool operator==(const YangModule&) const = default;
 };
 
-std::optional<URIPath> parseUriPath(const std::string& uriPath);
+URIPath parseUriPath(const std::string& uriPath);
 std::optional<YangModule> parseModuleWithRevision(const std::string& uriPath);
-std::optional<queryParams::QueryParams> parseQueryParams(const std::string& queryString);
+queryParams::QueryParams parseQueryParams(const std::string& queryString);
 }
 }
 
