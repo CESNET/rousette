@@ -1,0 +1,61 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4df854fa_9f2d3a24",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-01-28T09:10:41Z",
+      "side": 1,
+      "message": "good job diagnosing this!",
+      "revId": "0121f823c97d0d166c50e6b3bfb35bf524f99ba0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cac3b8ee_e53ed9e3",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 639,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-01-28T09:10:41Z",
+      "side": 1,
+      "message": "nit: this is now just a wee bit long, please wrap it :)",
+      "revId": "0121f823c97d0d166c50e6b3bfb35bf524f99ba0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e3ec7856_45d84737",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 811,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-01-28T09:10:41Z",
+      "side": 1,
+      "message": "Let\u0027s be more specific here, e.g. `Cannot join two empty URLs`. I think that this will make debugging a bit easier because that error message points to what exactly is wrong.\n\nAlso, *why* we cannot actually join two empty paths? If the only reason is \"so that `front()` and `back()` doesn\u0027t throw\", then maybe use `starts_with()` \u0026 `ends_with()`?",
+      "range": {
+        "startLine": 811,
+        "startChar": 37,
+        "endLine": 811,
+        "endChar": 65
+      },
+      "revId": "0121f823c97d0d166c50e6b3bfb35bf524f99ba0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
