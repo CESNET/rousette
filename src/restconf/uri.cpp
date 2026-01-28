@@ -188,14 +188,14 @@ const auto queryParamGrammar = x3::rule<class grammar, queryParams::QueryParams>
 // clang-format on
 }
 
-std::optional<URIPath> parseUriPath(const std::string& uriPath)
+URIPath parseUriPath(const std::string& uriPath)
 {
     URIPath out;
     auto iter = std::begin(uriPath);
     auto end = std::end(uriPath);
 
     if (!x3::parse(iter, end, uriGrammar >> x3::eoi, out)) {
-        return std::nullopt;
+        throw ErrorResponse(400, "application", "operation-failed", "Syntax error");
     }
 
     return out;
@@ -214,23 +214,23 @@ std::optional<impl::YangModule> parseModuleWithRevision(const std::string& uriPa
     return parsed;
 }
 
-std::optional<queryParams::QueryParams> parseQueryParams(const std::string& queryString)
+queryParams::QueryParams parseQueryParams(const std::string& queryString)
 {
-    std::optional<queryParams::QueryParams> ret;
+    queryParams::QueryParams ret;
 
     if (!x3::parse(std::begin(queryString), std::end(queryString), queryParamGrammar >> x3::eoi, ret)) {
-        return std::nullopt;
+        throw ErrorResponse(400, "protocol", "invalid-value", "Query parameters syntax error");
     }
 
     return ret;
 }
 
-std::optional<RestconfStreamRequest> parseStreamUri(const std::string& uriPath)
+RestconfStreamRequest parseStreamUri(const std::string& uriPath)
 {
-    std::optional<RestconfStreamRequest> ret;
+    RestconfStreamRequest ret;
 
     if (!x3::parse(std::begin(uriPath), std::end(uriPath), streamUriGrammar >> x3::eoi, ret)) {
-        return std::nullopt;
+        throw ErrorResponse(404, "application", "invalid-value", "Invalid stream");
     }
 
     return ret;
@@ -558,12 +558,7 @@ std::optional<libyang::SchemaNode> asLibyangSchemaNode(const libyang::Context& c
 
 std::vector<PathSegment> asPathSegments(const std::string& uriPath)
 {
-    auto uri = impl::parseUriPath(uriPath);
-    if (!uri) {
-        throw ErrorResponse(400, "application", "operation-failed", "Syntax error");
-    }
-
-    return uri->segments;
+    return impl::parseUriPath(uriPath).segments;
 }
 
 /** @brief Checks if the RPC with this schema path should be handled internally by the RESTCONF server */
@@ -593,40 +588,34 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
     }
 
     auto uri = impl::parseUriPath(uriPath);
-    if (!uri) {
-        throw ErrorResponse(400, "application", "operation-failed", "Syntax error");
-    }
 
     auto queryParameters = impl::parseQueryParams(uriQueryString);
-    if (!queryParameters) {
-        throw ErrorResponse(400, "protocol", "invalid-value", "Query parameters syntax error");
-    }
-    validateQueryParameters(*queryParameters, httpMethod);
+    validateQueryParameters(queryParameters, httpMethod);
 
-    auto [lyPath, schemaNode] = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
-    validateMethodForNode(httpMethod, uri->prefix, schemaNode);
+    auto [lyPath, schemaNode] = asLibyangPath(ctx, uri.segments.begin(), uri.segments.end());
+    validateMethodForNode(httpMethod, uri.prefix, schemaNode);
 
-    auto path = uri->segments.empty() ? "/" : lyPath;
+    auto path = uri.segments.empty() ? "/" : lyPath;
     RestconfRequest::Type type;
 
     if (httpMethod == "OPTIONS") {
         return {RestconfRequest::Type::OptionsQuery, boost::none, ""s, {}};
-    } else if (uri->prefix.resourceType == impl::URIPrefix::Type::RestconfRoot) {
-        return {RestconfRequest::Type::RestconfRoot, boost::none, ""s, *queryParameters};
-    } else if (uri->prefix.resourceType == impl::URIPrefix::Type::YangLibraryVersion) {
-        return {RestconfRequest::Type::YangLibraryVersion, boost::none, ""s, *queryParameters};
-    } else if (uri->prefix.resourceType == impl::URIPrefix::Type::BasicRestconfOperations && !schemaNode) {
-        return {RestconfRequest::Type::ListRPC, boost::none, ""s, *queryParameters};
+    } else if (uri.prefix.resourceType == impl::URIPrefix::Type::RestconfRoot) {
+        return {RestconfRequest::Type::RestconfRoot, boost::none, ""s, queryParameters};
+    } else if (uri.prefix.resourceType == impl::URIPrefix::Type::YangLibraryVersion) {
+        return {RestconfRequest::Type::YangLibraryVersion, boost::none, ""s, queryParameters};
+    } else if (uri.prefix.resourceType == impl::URIPrefix::Type::BasicRestconfOperations && !schemaNode) {
+        return {RestconfRequest::Type::ListRPC, boost::none, ""s, queryParameters};
     } else if ((httpMethod == "GET" || httpMethod == "HEAD")) {
         type = RestconfRequest::Type::GetData;
-        path = uri->segments.empty() ? "/*" : path;
+        path = uri.segments.empty() ? "/*" : path;
     } else if (httpMethod == "PUT") {
         type = RestconfRequest::Type::CreateOrReplaceThisNode;
     } else if (httpMethod == "DELETE" && schemaNode) {
         type = RestconfRequest::Type::DeleteNode;
     } else if (httpMethod == "POST" && schemaNode && (schemaNode->nodeType() == libyang::NodeType::Action || schemaNode->nodeType() == libyang::NodeType::RPC)) {
         type = isInternalRPCPath(schemaNode->path()) ? RestconfRequest::Type::ExecuteInternal : RestconfRequest::Type::Execute;
-    } else if (httpMethod == "POST" && (uri->prefix.resourceType == impl::URIPrefix::Type::BasicRestconfData || uri->prefix.resourceType == impl::URIPrefix::Type::NMDADatastore)) {
+    } else if (httpMethod == "POST" && (uri.prefix.resourceType == impl::URIPrefix::Type::BasicRestconfData || uri.prefix.resourceType == impl::URIPrefix::Type::NMDADatastore)) {
         type = RestconfRequest::Type::CreateChildren;
     } else if (httpMethod == "PATCH") {
         type = RestconfRequest::Type::MergeData;
@@ -634,7 +623,7 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
         throw std::logic_error("Unhandled request "s + httpMethod + " " + uriPath);
     }
 
-    return {type, uri->prefix.datastore, path, *queryParameters};
+    return {type, uri.prefix.datastore, path, queryParameters};
 }
 
 /** @brief Transforms URI path into a libyang path to the parent node (or empty if this path was a root node) and PathSegment describing the last path segment.
@@ -646,20 +635,16 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
 std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& ctx, const std::string& uriPath)
 {
     auto uri = impl::parseUriPath(uriPath);
-    if (!uri) {
-        throw ErrorResponse(400, "application", "operation-failed", "Syntax error");
-    }
-    if (uri->segments.empty()) {
+    if (uri.segments.empty()) {
         throw ErrorResponse(400, "application", "operation-failed", "Cannot split the datastore resource URI");
     }
 
-
-    auto lastSegment = uri->segments.back();
-    auto [parentLyPath, schemaNodeParent] = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end() - 1);
+    auto lastSegment = uri.segments.back();
+    auto [parentLyPath, schemaNodeParent] = asLibyangPath(ctx, uri.segments.begin(), uri.segments.end() - 1);
 
     // we know that the path is valid so we can get last segment module from the returned SchemaNode
     if (!lastSegment.apiIdent.prefix) {
-        auto [fullLyPath, schemaNode] = asLibyangPath(ctx, uri->segments.begin(), uri->segments.end());
+        auto [fullLyPath, schemaNode] = asLibyangPath(ctx, uri.segments.begin(), uri.segments.end());
         lastSegment.apiIdent.prefix = std::string(schemaNode->module().name());
     }
 
@@ -668,13 +653,12 @@ std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& c
 
 std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> asYangModule(const libyang::Context& ctx, const std::string& uriPath)
 {
-    if (auto parsedModule = impl::parseModuleWithRevision(uriPath)) {
-        // Converting between boost::optional and std::optional is not trivial
-        if (parsedModule->revision) {
-            return getModuleOrSubmodule(ctx, parsedModule->name, *parsedModule->revision);
-        } else {
-            return getModuleOrSubmodule(ctx, parsedModule->name, std::nullopt);
-        }
+    auto parsedModule = impl::parseModuleWithRevision(uriPath);
+    // Converting between boost::optional and std::optional is not trivial
+    if (parsedModule->revision) {
+        return getModuleOrSubmodule(ctx, parsedModule->name, *parsedModule->revision);
+    } else {
+        return getModuleOrSubmodule(ctx, parsedModule->name, std::nullopt);
     }
     return std::nullopt;
 }
@@ -702,21 +686,14 @@ RestconfStreamRequest asRestconfStreamRequest(const std::string& httpMethod, con
     }
 
     auto type = impl::parseStreamUri(uriPath);
-    if (!type) {
-        throw ErrorResponse(404, "application", "invalid-value", "Invalid stream");
-    }
 
-    if (auto* request = std::get_if<NetconfStreamRequest>(&type.value())) {
+    if (auto* request = std::get_if<NetconfStreamRequest>(&type)) {
         auto queryParameters = impl::parseQueryParams(uriQueryString);
-        if (!queryParameters) {
-            throw ErrorResponse(400, "protocol", "invalid-value", "Query parameters syntax error");
-        }
-
-        validateQueryParametersForStream(*queryParameters);
-        request->queryParams = *queryParameters;
+        validateQueryParametersForStream(queryParameters);
+        request->queryParams = queryParameters;
     }
 
-    return *type;
+    return type;
 }
 
 /** @brief Returns a set of allowed HTTP methods for given URI. Usable for the 'allow' header */
