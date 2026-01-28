@@ -35,6 +35,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "5667ce28_17a676fb",
+        "filename": "src/restconf/Server.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 639,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-01-28T10:06:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cac3b8ee_e53ed9e3",
+      "revId": "0121f823c97d0d166c50e6b3bfb35bf524f99ba0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e3ec7856_45d84737",
@@ -48,6 +66,30 @@
       "writtenOn": "2026-01-28T09:10:41Z",
       "side": 1,
       "message": "Let\u0027s be more specific here, e.g. `Cannot join two empty URLs`. I think that this will make debugging a bit easier because that error message points to what exactly is wrong.\n\nAlso, *why* we cannot actually join two empty paths? If the only reason is \"so that `front()` and `back()` doesn\u0027t throw\", then maybe use `starts_with()` \u0026 `ends_with()`?",
+      "range": {
+        "startLine": 811,
+        "startChar": 37,
+        "endLine": 811,
+        "endChar": 65
+      },
+      "revId": "0121f823c97d0d166c50e6b3bfb35bf524f99ba0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "206ddf43_34ee927b",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 811,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-01-28T10:06:43Z",
+      "side": 1,
+      "message": "My thinking was that \"we dont need this now, if this happens, something went wrong\". But that is probably a nonsense.\nChanged and added tests.",
+      "parentUuid": "e3ec7856_45d84737",
       "range": {
         "startLine": 811,
         "startChar": 37,
