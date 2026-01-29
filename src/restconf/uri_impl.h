@@ -66,7 +66,7 @@ BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::impl::YangModule, name, revision);
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::PathSegment, apiIdent, keys);
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::ApiIdentifier, prefix, identifier);
 
-BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::NetconfStreamRequest, encoding);
+BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::NotificationStreamRequest, stream, encoding);
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::SubscribedStreamRequest, uuid);
 
 BOOST_FUSION_ADAPT_STRUCT(rousette::restconf::queryParams::fields::ParenExpr, lhs, rhs);

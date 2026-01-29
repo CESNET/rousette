@@ -1042,11 +1042,11 @@ TEST_CASE("URI path parser")
 
             SECTION("filter")
             {
-                using rousette::restconf::NetconfStreamRequest;
+                using rousette::restconf::NotificationStreamRequest;
 
                 auto resp = asRestconfStreamRequest("GET", "/streams/NETCONF/XML", "filter=/asd");
-                REQUIRE(std::holds_alternative<NetconfStreamRequest>(resp));
-                REQUIRE(std::get<NetconfStreamRequest>(resp).queryParams == QueryParams({{"filter", "/asd"s}}));
+                REQUIRE(std::holds_alternative<NotificationStreamRequest>(resp));
+                REQUIRE(std::get<NotificationStreamRequest>(resp).queryParams == QueryParams({{"filter", "/asd"s}}));
 
                 REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "GET", "/restconf/data/example:ordered-lists", "filter=something"),
                                        serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'filter' can be used only with streams").c_str(),
@@ -1055,11 +1055,11 @@ TEST_CASE("URI path parser")
 
             SECTION("start-time")
             {
-                using rousette::restconf::NetconfStreamRequest;
+                using rousette::restconf::NotificationStreamRequest;
 
                 auto resp = asRestconfStreamRequest("GET", "/streams/NETCONF/XML", "start-time=2024-01-01T01:01:01Z");
-                REQUIRE(std::holds_alternative<NetconfStreamRequest>(resp));
-                REQUIRE(std::get<NetconfStreamRequest>(resp).queryParams == QueryParams({{"start-time", "2024-01-01T01:01:01Z"s}}));
+                REQUIRE(std::holds_alternative<NotificationStreamRequest>(resp));
+                REQUIRE(std::get<NotificationStreamRequest>(resp).queryParams == QueryParams({{"start-time", "2024-01-01T01:01:01Z"s}}));
 
                 REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "GET", "/restconf/data/example:ordered-lists", "start-time=2024-01-01T01:01:01Z"),
                                        serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'start-time' can be used only with streams").c_str(),
@@ -1068,11 +1068,11 @@ TEST_CASE("URI path parser")
 
             SECTION("stop-time")
             {
-                using rousette::restconf::NetconfStreamRequest;
+                using rousette::restconf::NotificationStreamRequest;
 
                 auto resp = asRestconfStreamRequest("GET", "/streams/NETCONF/XML", "stop-time=2024-01-01T01:01:01Z");
-                REQUIRE(std::holds_alternative<NetconfStreamRequest>(resp));
-                REQUIRE(std::get<NetconfStreamRequest>(resp).queryParams == QueryParams({{"stop-time", "2024-01-01T01:01:01Z"s}}));
+                REQUIRE(std::holds_alternative<NotificationStreamRequest>(resp));
+                REQUIRE(std::get<NotificationStreamRequest>(resp).queryParams == QueryParams({{"stop-time", "2024-01-01T01:01:01Z"s}}));
 
                 REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "GET", "/restconf/data/example:ordered-lists", "stop-time=2024-01-01T01:01:01Z"),
                                        serializeErrorResponse(400, "protocol", "invalid-value", "Query parameter 'stop-time' can be used only with streams").c_str(),
@@ -1088,21 +1088,31 @@ TEST_CASE("URI path parser")
     SECTION("Streams")
     {
         using rousette::restconf::asRestconfStreamRequest;
-        using rousette::restconf::NetconfStreamRequest;
+        using rousette::restconf::NotificationStreamRequest;
         using rousette::restconf::SubscribedStreamRequest;
 
         {
             auto req = asRestconfStreamRequest("GET", "/streams/NETCONF/XML", "");
-            REQUIRE(std::holds_alternative<NetconfStreamRequest>(req));
-            REQUIRE(std::get<NetconfStreamRequest>(req).encoding == libyang::DataFormat::XML);
-            REQUIRE(std::get<NetconfStreamRequest>(req).queryParams.empty());
+            REQUIRE(std::holds_alternative<NotificationStreamRequest>(req));
+            REQUIRE(std::get<NotificationStreamRequest>(req).stream == "NETCONF");
+            REQUIRE(std::get<NotificationStreamRequest>(req).encoding == libyang::DataFormat::XML);
+            REQUIRE(std::get<NotificationStreamRequest>(req).queryParams.empty());
         }
 
         {
             auto req = asRestconfStreamRequest("GET", "/streams/NETCONF/JSON", "");
-            REQUIRE(std::holds_alternative<NetconfStreamRequest>(req));
-            REQUIRE(std::get<NetconfStreamRequest>(req).encoding == libyang::DataFormat::JSON);
-            REQUIRE(std::get<NetconfStreamRequest>(req).queryParams.empty());
+            REQUIRE(std::holds_alternative<NotificationStreamRequest>(req));
+            REQUIRE(std::get<NotificationStreamRequest>(req).stream == "NETCONF");
+            REQUIRE(std::get<NotificationStreamRequest>(req).encoding == libyang::DataFormat::JSON);
+            REQUIRE(std::get<NotificationStreamRequest>(req).queryParams.empty());
+        }
+
+        {
+            auto req = asRestconfStreamRequest("GET", "/streams/AHAhaha/JSON", "");
+            REQUIRE(std::holds_alternative<NotificationStreamRequest>(req));
+            REQUIRE(std::get<NotificationStreamRequest>(req).stream == "AHAhaha");
+            REQUIRE(std::get<NotificationStreamRequest>(req).encoding == libyang::DataFormat::JSON);
+            REQUIRE(std::get<NotificationStreamRequest>(req).queryParams.empty());
         }
 
         {
@@ -1112,22 +1122,22 @@ TEST_CASE("URI path parser")
         }
 
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF", ""),
-                serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
+                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error").c_str(),
                 rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/restconf/data", ""),
-                serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
+                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error").c_str(),
                 rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF/xml", ""),
-                serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
+                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error").c_str(),
                 rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF/XM", ""),
-                serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
+                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error").c_str(),
                 rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/subscribed", ""),
-                serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
+                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error").c_str(),
                 rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/subscribed/123-456-789", ""),
-                serializeErrorResponse(404, "application", "invalid-value", "Invalid stream").c_str(),
+                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error").c_str(),
                 rousette::restconf::ErrorResponse);
 
 

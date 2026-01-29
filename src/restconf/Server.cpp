@@ -1023,7 +1023,11 @@ Server::Server(
                 } else {
                     throw ErrorResponse(404, "application", "invalid-value", "Subscription not found.");
                 }
-            } else if (auto *request = std::get_if<NetconfStreamRequest>(&streamRequest)) {
+            } else if (auto *request = std::get_if<NotificationStreamRequest>(&streamRequest)) {
+                if (request->stream != "NETCONF") {
+                    throw ErrorResponse(404, "application", "invalid-value", "Stream not found");
+                }
+
                 if (auto it = request->queryParams.find("filter"); it != request->queryParams.end()) {
                     xpathFilter = std::get<std::string>(it->second);
                 }

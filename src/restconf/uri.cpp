@@ -78,12 +78,12 @@ const auto uuid_impl = x3::rule<class uuid_impl, std::string>{"uuid_impl"} =
 const auto uuid = x3::rule<class uuid, boost::uuids::uuid>{"uuid"} = uuid_impl[string_to_uuid];
 const auto subscribedStream = x3::rule<class subscribedStream, SubscribedStreamRequest>{"subscribedStream"} = x3::lit("/subscribed") >> "/" >> uuid;
 
-const auto netconfStream = x3::rule<class netconfStream, NetconfStreamRequest>{"netconfStream"} =
-    x3::lit("/NETCONF") >>
+const auto notificationStream = x3::rule<class notificationStream, NotificationStreamRequest>{"notificationStream"} =
+    x3::lit("/") >> identifier >>
     ((x3::lit("/XML") >> x3::attr(libyang::DataFormat::XML)) |
      (x3::lit("/JSON") >> x3::attr(libyang::DataFormat::JSON)));
-const auto streamUriGrammar = x3::rule<class grammar, std::variant<NetconfStreamRequest, SubscribedStreamRequest>>{"streamsGrammar"} =
-    x3::lit("/streams") >> (netconfStream | subscribedStream);
+const auto streamUriGrammar = x3::rule<class grammar, std::variant<NotificationStreamRequest, SubscribedStreamRequest>>{"streamsGrammar"} =
+    x3::lit("/streams") >> (notificationStream | subscribedStream);
 
 // clang-format on
 }
@@ -230,7 +230,7 @@ RestconfStreamRequest parseStreamUri(const std::string& uriPath)
     RestconfStreamRequest ret;
 
     if (!x3::parse(std::begin(uriPath), std::end(uriPath), streamUriGrammar >> x3::eoi, ret)) {
-        throw ErrorResponse(404, "application", "invalid-value", "Invalid stream");
+        throw ErrorResponse(400, "protocol", "invalid-value", "Syntax error");
     }
 
     return ret;
@@ -663,8 +663,8 @@ std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> asYangMod
     return std::nullopt;
 }
 
-NetconfStreamRequest::NetconfStreamRequest() = default;
-NetconfStreamRequest::NetconfStreamRequest(const libyang::DataFormat& encoding)
+NotificationStreamRequest::NotificationStreamRequest() = default;
+NotificationStreamRequest::NotificationStreamRequest(const libyang::DataFormat& encoding)
     : encoding(encoding)
 {
 }
@@ -687,7 +687,7 @@ RestconfStreamRequest asRestconfStreamRequest(const std::string& httpMethod, con
 
     auto type = impl::parseStreamUri(uriPath);
 
-    if (auto* request = std::get_if<NetconfStreamRequest>(&type)) {
+    if (auto* request = std::get_if<NotificationStreamRequest>(&type)) {
         auto queryParameters = impl::parseQueryParams(uriQueryString);
         validateQueryParametersForStream(queryParameters);
         request->queryParams = queryParameters;

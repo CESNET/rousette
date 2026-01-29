@@ -53,7 +53,7 @@ TEST_CASE("NETCONF notification streams")
 
     RestconfNotificationWatcher netconfWatcher(srConn.sessionStart().getContext());
 
-    SECTION("NETCONF streams")
+    SECTION("Notification streams")
     {
         std::string uri;
         std::map<std::string, std::string> headers;
@@ -158,9 +158,14 @@ TEST_CASE("NETCONF notification streams")
 
     SECTION("Invalid URLs")
     {
-        REQUIRE(get("/streams/NETCONF/", {}) == Response{404, plaintextHeaders, "Invalid stream"});
-        REQUIRE(get("/streams/NETCONF/", {AUTH_ROOT}) == Response{404, plaintextHeaders, "Invalid stream"});
-        REQUIRE(get("/streams/NETCONF/bla", {}) == Response{404, plaintextHeaders, "Invalid stream"});
+        REQUIRE(get("/streams/NETCONF/", {}) == Response{400, plaintextHeaders, "Syntax error"});
+        REQUIRE(get("/streams/NETCONF/", {AUTH_ROOT}) == Response{400, plaintextHeaders, "Syntax error"});
+        REQUIRE(get("/streams/NETCONF/bla", {}) == Response{400, plaintextHeaders, "Syntax error"});
+    }
+
+    SECTION("Unknown streams")
+    {
+        REQUIRE(get("/streams/bla/JSON", {}) == Response{404, plaintextHeaders, "Stream not found"});
     }
 
     SECTION("Invalid parameters")

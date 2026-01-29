@@ -198,12 +198,13 @@ struct RestconfRequest {
     RestconfRequest(Type type, const boost::optional<ApiIdentifier>& datastore, const std::string& path, const queryParams::QueryParams& queryParams);
 };
 
-struct NetconfStreamRequest {
+struct NotificationStreamRequest {
+    std::string stream;
     libyang::DataFormat encoding;
     queryParams::QueryParams queryParams;
 
-    NetconfStreamRequest();
-    NetconfStreamRequest(const libyang::DataFormat& encoding);
+    NotificationStreamRequest();
+    NotificationStreamRequest(const libyang::DataFormat& encoding);
 };
 
 struct SubscribedStreamRequest {
@@ -213,7 +214,7 @@ struct SubscribedStreamRequest {
     SubscribedStreamRequest(const boost::uuids::uuid& uuid);
 };
 
-using RestconfStreamRequest = std::variant<NetconfStreamRequest, SubscribedStreamRequest>;
+using RestconfStreamRequest = std::variant<NotificationStreamRequest, SubscribedStreamRequest>;
 
 RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString = "");
 std::optional<libyang::SchemaNode> asLibyangSchemaNode(const libyang::Context& ctx, const std::vector<PathSegment>& pathSegments);
