@@ -51,14 +51,16 @@ const auto fullyQualifiedListInstance = x3::rule<class keyList, PathSegment>{"li
 
 const auto uriPath = x3::rule<class uriPath, std::vector<PathSegment>>{"uriPath"} = -x3::lit("/") >> -(fullyQualifiedListInstance >> -("/" >> listInstance % "/")); // RFC 8040, sec 3.5.3
 const auto nmdaDatastore = x3::rule<class nmdaDatastore, URIPrefix>{"nmdaDatastore"} = x3::attr(URIPrefix::Type::NMDADatastore) >> "/" >> fullyQualifiedApiIdentifier;
-const auto resources = x3::rule<class resources, URIPath>{"resources"} =
-    (x3::lit("/data") >> x3::attr(URIPrefix{URIPrefix::Type::BasicRestconfData}) >> uriPath) |
-    (x3::lit("/ds") >> nmdaDatastore >> uriPath) |
-    (x3::lit("/operations") >> x3::attr(URIPrefix{URIPrefix::Type::BasicRestconfOperations}) >> uriPath) |
-    // restconf and /restconf/yang-library-version do not expect any uriPath but we need to construct correct URIPath instance. Use the x3::attr call to create empty vector<PathSegment>
-    (x3::lit("/yang-library-version") >> x3::attr(URIPrefix{URIPrefix::Type::YangLibraryVersion}) >> x3::attr(std::vector<PathSegment>{}) >> -x3::lit("/")) |
+const auto otherResources = x3::rule<class resources, URIPath>{"otherResources"} = x3::lit("/") >>
+    ((x3::lit("data") >> x3::attr(URIPrefix{URIPrefix::Type::BasicRestconfData}) >> uriPath) |
+     (x3::lit("ds") >> nmdaDatastore >> uriPath) |
+     (x3::lit("operations") >> x3::attr(URIPrefix{URIPrefix::Type::BasicRestconfOperations}) >> uriPath) |
+     // restconf and /restconf/yang-library-version do not expect any uriPath but we need to construct correct URIPath instance. Use the x3::attr call to create empty vector<PathSegment>
+     (x3::lit("yang-library-version") >> x3::attr(URIPrefix{URIPrefix::Type::YangLibraryVersion}) >> x3::attr(std::vector<PathSegment>{}) >> -x3::lit("/")));
+const auto restconfResource = x3::rule<class restconfResource, URIPath>{"restconfResource"} =
     ((x3::lit("/") | x3::eps) /* /restconf/ and /restconf */ >> x3::attr(URIPrefix{URIPrefix::Type::RestconfRoot}) >> x3::attr(std::vector<PathSegment>{}));
-const auto uriGrammar = x3::rule<class grammar, URIPath>{"grammar"} = x3::lit("/restconf") >> resources;
+const auto resources = x3::rule<class resources, URIPath>{"resources"} = otherResources | restconfResource;
+const auto uriGrammar = x3::rule<class grammar, URIPath>{"grammar"} = x3::lit("/") >> x3::lit("restconf") >> resources;
 
 const auto string_to_uuid = [](auto& ctx) {
     try {
