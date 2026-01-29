@@ -195,7 +195,7 @@ URIPath parseUriPath(const std::string& uriPath)
     auto end = std::end(uriPath);
 
     if (!x3::parse(iter, end, uriGrammar >> x3::eoi, out)) {
-        throw ErrorResponse(400, "application", "operation-failed", "Syntax error");
+        throw ErrorResponse(400, "protocol", "invalid-value", "Syntax error");
     }
 
     return out;
@@ -208,7 +208,7 @@ impl::YangModule parseModuleWithRevision(const std::string& uriPath)
     auto end = std::end(uriPath);
 
     if (!x3::parse(iter, end, yangSchemaUriGrammar >> x3::eoi, parsed)) {
-        throw ErrorResponse(400, "application", "operation-failed", "Syntax error");
+        throw ErrorResponse(400, "protocol", "invalid-value", "Syntax error");
     }
 
     return parsed;
@@ -219,7 +219,7 @@ queryParams::QueryParams parseQueryParams(const std::string& queryString)
     queryParams::QueryParams ret;
 
     if (!x3::parse(std::begin(queryString), std::end(queryString), queryParamGrammar >> x3::eoi, ret)) {
-        throw ErrorResponse(400, "protocol", "invalid-value", "Query parameters syntax error");
+        throw ErrorResponse(400, "protocol", "invalid-value", "Syntax error");
     }
 
     return ret;

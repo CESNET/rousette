@@ -19,7 +19,7 @@
 
 using namespace std::string_literals;
 
-#define QUERY_PARAMS_SYNTAX_ERROR(CODE) REQUIRE_THROWS_WITH_AS(CODE, R"((400, "protocol", "invalid-value", "Query parameters syntax error"))", rousette::restconf::ErrorResponse)
+#define QUERY_PARAMS_SYNTAX_ERROR(CODE) REQUIRE_THROWS_WITH_AS(CODE, R"((400, "protocol", "invalid-value", "Syntax error"))", rousette::restconf::ErrorResponse)
 
 namespace {
 std::string serializeErrorResponse(int code, const std::string& errorType, const std::string& errorTag, const std::string& errorMessage)
@@ -267,7 +267,7 @@ TEST_CASE("URI path parser")
              }) {
 
             CAPTURE(uriPath);
-            REQUIRE_THROWS_WITH_AS(rousette::restconf::impl::parseUriPath(uriPath), R"((400, "application", "operation-failed", "Syntax error"))", rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_WITH_AS(rousette::restconf::impl::parseUriPath(uriPath), R"((400, "protocol", "invalid-value", "Syntax error"))", rousette::restconf::ErrorResponse);
         }
     }
 
@@ -460,6 +460,8 @@ TEST_CASE("URI path parser")
                 {
                     uriPath = "/restconf/data///!/@akjsaosdasdlasd";
                     expectedErrorMessage = "Syntax error";
+                    expectedErrorType = "protocol";
+                    expectedErrorTag = "invalid-value";
                 }
 
                 SECTION("Nonexistent modules and nodes")
@@ -692,7 +694,7 @@ TEST_CASE("URI path parser")
                      "/yang/@1234",
                  }) {
                 CAPTURE(uriPath);
-                REQUIRE_THROWS_WITH_AS(rousette::restconf::impl::parseModuleWithRevision(uriPath), R"((400, "application", "operation-failed", "Syntax error"))", rousette::restconf::ErrorResponse);
+                REQUIRE_THROWS_WITH_AS(rousette::restconf::impl::parseModuleWithRevision(uriPath), R"((400, "protocol", "invalid-value", "Syntax error"))", rousette::restconf::ErrorResponse);
             }
         }
 
@@ -1080,7 +1082,7 @@ TEST_CASE("URI path parser")
             }
 
             REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "GET", "/restconf/data/example:tlc", "hello=world"),
-                                   serializeErrorResponse(400, "protocol", "invalid-value", "Query parameters syntax error").c_str(),
+                                   serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error").c_str(),
                                    rousette::restconf::ErrorResponse);
         }
     }
