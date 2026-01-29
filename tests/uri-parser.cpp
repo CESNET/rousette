@@ -692,7 +692,7 @@ TEST_CASE("URI path parser")
                      "/yang/@1234",
                  }) {
                 CAPTURE(uriPath);
-                REQUIRE(!rousette::restconf::impl::parseModuleWithRevision(uriPath));
+                REQUIRE_THROWS_WITH_AS(rousette::restconf::impl::parseModuleWithRevision(uriPath), R"((400, "application", "operation-failed", "Syntax error"))", rousette::restconf::ErrorResponse);
             }
         }
 

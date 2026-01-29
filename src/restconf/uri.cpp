@@ -201,14 +201,14 @@ URIPath parseUriPath(const std::string& uriPath)
     return out;
 }
 
-std::optional<impl::YangModule> parseModuleWithRevision(const std::string& uriPath)
+impl::YangModule parseModuleWithRevision(const std::string& uriPath)
 {
     impl::YangModule parsed;
     auto iter = std::begin(uriPath);
     auto end = std::end(uriPath);
 
     if (!x3::parse(iter, end, yangSchemaUriGrammar >> x3::eoi, parsed)) {
-        return std::nullopt;
+        throw ErrorResponse(400, "application", "operation-failed", "Syntax error");
     }
 
     return parsed;
@@ -653,13 +653,12 @@ std::pair<std::string, PathSegment> asLibyangPathSplit(const libyang::Context& c
 
 std::optional<std::variant<libyang::Module, libyang::SubmoduleParsed>> asYangModule(const libyang::Context& ctx, const std::string& uriPath)
 {
-    if (auto parsedModule = impl::parseModuleWithRevision(uriPath)) {
-        // Converting between boost::optional and std::optional is not trivial
-        if (parsedModule->revision) {
-            return getModuleOrSubmodule(ctx, parsedModule->name, *parsedModule->revision);
-        } else {
-            return getModuleOrSubmodule(ctx, parsedModule->name, std::nullopt);
-        }
+    auto parsedModule = impl::parseModuleWithRevision(uriPath);
+    // Converting between boost::optional and std::optional is not trivial
+    if (parsedModule.revision) {
+        return getModuleOrSubmodule(ctx, parsedModule.name, *parsedModule.revision);
+    } else {
+        return getModuleOrSubmodule(ctx, parsedModule.name, std::nullopt);
     }
     return std::nullopt;
 }

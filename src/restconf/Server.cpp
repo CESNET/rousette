@@ -1096,6 +1096,16 @@ Server::Server(
                 res.write_head(401, {TEXT_PLAIN, CORS});
                 res.end("Access denied.");
             });
+        } catch (const ErrorResponse& e) {
+            // RFC does not specify how the errors should look like so let's just report the HTTP code and print the error message
+            nghttp2::asio_http2::header_map headers = {TEXT_PLAIN, CORS};
+
+            if (e.code == 405) {
+                headers.emplace(decltype(headers)::value_type ALLOW_GET_HEAD_OPTIONS);
+            }
+
+            res.write_head(e.code, headers);
+            res.end(e.errorMessage);
         }
     });
 
