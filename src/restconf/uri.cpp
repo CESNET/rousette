@@ -188,52 +188,40 @@ const auto queryParamGrammar = x3::rule<class grammar, queryParams::QueryParams>
 // clang-format on
 }
 
-URIPath parseUriPath(const std::string& uriPath)
+namespace {
+template <class Attribute, class Grammar>
+Attribute parse(const std::string& input, const Grammar& g)
 {
-    URIPath out;
-    auto iter = std::begin(uriPath);
-    auto end = std::end(uriPath);
+    Attribute out;
+    auto iter = std::begin(input);
+    auto end = std::end(input);
 
-    if (!x3::parse(iter, end, uriGrammar >> x3::eoi, out)) {
+    if (!x3::parse(iter, end, g >> x3::eoi, out)) {
         throw ErrorResponse(400, "protocol", "invalid-value", "Syntax error");
     }
 
     return out;
 }
-
-impl::YangModule parseModuleWithRevision(const std::string& uriPath)
-{
-    impl::YangModule parsed;
-    auto iter = std::begin(uriPath);
-    auto end = std::end(uriPath);
-
-    if (!x3::parse(iter, end, yangSchemaUriGrammar >> x3::eoi, parsed)) {
-        throw ErrorResponse(400, "protocol", "invalid-value", "Syntax error");
-    }
-
-    return parsed;
 }
 
-queryParams::QueryParams parseQueryParams(const std::string& queryString)
+URIPath parseUriPath(const std::string& input)
 {
-    queryParams::QueryParams ret;
-
-    if (!x3::parse(std::begin(queryString), std::end(queryString), queryParamGrammar >> x3::eoi, ret)) {
-        throw ErrorResponse(400, "protocol", "invalid-value", "Syntax error");
-    }
-
-    return ret;
+    return parse<URIPath>(input, uriGrammar);
 }
 
-RestconfStreamRequest parseStreamUri(const std::string& uriPath)
+impl::YangModule parseModuleWithRevision(const std::string& input)
 {
-    RestconfStreamRequest ret;
+    return parse<impl::YangModule>(input, yangSchemaUriGrammar);
+}
 
-    if (!x3::parse(std::begin(uriPath), std::end(uriPath), streamUriGrammar >> x3::eoi, ret)) {
-        throw ErrorResponse(400, "protocol", "invalid-value", "Syntax error");
-    }
+queryParams::QueryParams parseQueryParams(const std::string& input)
+{
+    return parse<queryParams::QueryParams>(input, queryParamGrammar);
+}
 
-    return ret;
+std::variant<NotificationStreamRequest, SubscribedStreamRequest> parseStreamUri(const std::string& input)
+{
+    return parse<std::variant<NotificationStreamRequest, SubscribedStreamRequest>>(input, streamUriGrammar);
 }
 
 URIPrefix::URIPrefix()
