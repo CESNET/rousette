@@ -35,7 +35,8 @@ auto add = [](auto& ctx) {
     char c = std::tolower(_attr(ctx));
     _val(ctx) = _val(ctx) * 16 + (c >= 'a' ? c - 'a' + 10 : c - '0');
 };
-const auto percentEncodedChar = x3::rule<class percentEncodedChar, unsigned>{"percentEncodedChar"} = x3::lit('%')[set_zero] > x3::xdigit[add] > x3::xdigit[add];
+const auto hexbyte = x3::rule<class hexbyte, unsigned>{"twoHexDigits"} = x3::eps[set_zero] >> x3::xdigit[add] >> x3::xdigit[add];
+const auto percentEncodedChar = x3::rule<class percentEncodedChar, unsigned>{"percentEncodedChar"} = x3::lit('%') > hexbyte;
 
 /* reserved characters according to RFC 3986, sec. 2.2 with '%' added. The '%' character is not specified as reserved but it effectively is because
  * "Percent sign serves as the indicator for percent-encoded octets, it must be percent-encoded (...)" [RFC 3986, sec. 2.4]. */
