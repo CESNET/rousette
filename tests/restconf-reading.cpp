@@ -12,7 +12,10 @@ static const auto SERVER_PORT = "10081";
 #include <spdlog/spdlog.h>
 #include <sysrepo-cpp/utils/utils.hpp>
 #include "restconf/Server.h"
+#include "tests/configure.cmake.h"
 #include "tests/event_watchers.h"
+
+using namespace std::string_literals;
 
 TEST_CASE("reading data")
 {
@@ -1187,5 +1190,58 @@ TEST_CASE("reading data")
   }
 }
 )"});
+    }
+
+    SECTION(".well-known")
+    {
+        auto resp = get("/.well-known/host-meta", {});
+        REQUIRE(resp.statusCode == 200);
+        REQUIRE(resp.headers.count("content-type") == 1);
+        REQUIRE(resp.headers.find("content-type")->second.value == "application/xrd+xml");
+        auto blob = resp.data;
+
+        // The following abomination is a desperate developer's attempt at parsing non-YANG XML without bringing in
+        // an libxml2 dependency to a project -- just to test for one fraking character. Behold, this ain't pretty.
+        auto wrapped = R"(<errors xmlns="urn:ietf:params:xml:ns:yang:ietf-restconf">
+        <error>
+          <error-type>protocol</error-type>
+          <error-tag>bleh</error-tag>
+          <error-info>)"s
+        + blob
+        + R"(</error-info>
+        </error>
+        </errors>)";
+
+        auto ctx = libyang::Context{std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "yang",
+                                    libyang::ContextOptions::NoYangLibrary | libyang::ContextOptions::DisableSearchCwd};
+        auto ext = ctx.loadModule("ietf-restconf").extensionInstance("yang-errors");
+        auto root = ctx.parseExtData(ext, wrapped, libyang::DataFormat::XML);
+        REQUIRE(!!root);
+        const auto payload = root->findXPath("/ietf-restconf:errors/error/error-info");
+        REQUIRE(payload.size() == 1);
+        auto any = payload.front().asAny();
+        const auto val = any.releaseValue();
+        REQUIRE(!!val);
+        REQUIRE(std::holds_alternative<libyang::DataNode>(*val));
+        const auto xrd = std::get<libyang::DataNode>(*val);
+        REQUIRE(xrd.isOpaque());
+        REQUIRE(xrd.asOpaque().name().name == "XRD");
+        REQUIRE(xrd.asOpaque().name().moduleOrNamespace == "http://docs.oasis-open.org/ns/xri/xrd-1.0");
+        const auto children = xrd.immediateChildren();
+        REQUIRE(std::distance(children.begin(), children.end()) == 1);
+        REQUIRE(children.begin()->isOpaque());
+        REQUIRE(children.begin()->asOpaque().name().name == "Link");
+        const auto attrs = children.begin()->asOpaque().attributes();
+        REQUIRE(std::distance(attrs.begin(), attrs.end()) == 2);
+        auto it = attrs.begin();
+        REQUIRE(!it->name().moduleOrNamespace);
+        REQUIRE(!it->name().prefix);
+        REQUIRE(it->name().name == "rel");
+        REQUIRE(it->valueStr() == "restconf");
+        ++it;
+        REQUIRE(!it->name().moduleOrNamespace);
+        REQUIRE(!it->name().prefix);
+        REQUIRE(it->name().name == "href");
+        REQUIRE(it->valueStr() == "/restconf/");
     }
 }
