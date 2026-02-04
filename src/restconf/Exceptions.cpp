@@ -28,8 +28,9 @@ UriSyntaxError::UriSyntaxError()
 {
 }
 
-UriSyntaxError::UriSyntaxError([[maybe_unused]] const unsigned& position, [[maybe_unused]] const std::string& expectedToken)
-    : ErrorResponse(400, "protocol", "invalid-value", "Syntax error")
+UriSyntaxError::UriSyntaxError(const unsigned& position, const std::string& expectedToken)
+    : ErrorResponse(400, "protocol", "invalid-value", "Syntax error at position " + std::to_string(position) + ", expected token: " + expectedToken)
 {
+    // TODO: add error-info nodes with position and expected token
 }
 }
