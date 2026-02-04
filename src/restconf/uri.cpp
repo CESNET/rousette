@@ -8,6 +8,7 @@
 #include <boost/fusion/adapted/struct/adapt_struct.hpp>
 #include <boost/fusion/include/std_pair.hpp>
 #include <boost/spirit/home/x3/support/ast/variant.hpp>
+#include <boost/spirit/home/x3/support/utility/error_reporting.hpp>
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <experimental/iterator>
@@ -198,12 +199,17 @@ Attribute parse(const std::string& input, const Grammar& g)
     auto iter = std::begin(input);
     auto end = std::end(input);
 
+    std::ostringstream oss;
     try {
-        if (!x3::parse(iter, end, g > x3::eoi, out)) {
+        boost::spirit::x3::error_handler<decltype(iter)> error_handler(iter, end, oss);
+
+        auto parser = x3::with<x3::error_handler_tag>(std::ref(error_handler))[g > x3::eoi];
+        if (!x3::parse(iter, end, parser, out)) {
             throw UriSyntaxError();
         }
-    } catch (const boost::spirit::x3::expectation_failure<decltype(iter)>& e) {
-        throw UriSyntaxError();
+    } catch (const boost::spirit::x3::expectation_failure<decltype(iter)>& ex) {
+        auto pos = std::distance(std::begin(input), ex.where());
+        throw UriSyntaxError(pos, x3::which(ex));
     }
 
     return out;
