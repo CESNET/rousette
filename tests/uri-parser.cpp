@@ -19,7 +19,7 @@
 
 using namespace std::string_literals;
 
-#define QUERY_PARAMS_SYNTAX_ERROR(CODE) REQUIRE_THROWS_WITH_AS(CODE, R"((400, "protocol", "invalid-value", "Syntax error"))", rousette::restconf::ErrorResponse)
+#define QUERY_PARAMS_SYNTAX_ERROR(CODE) REQUIRE_THROWS_WITH_AS(CODE, R"((400, "protocol", "invalid-value", "Syntax error in URI querystring"))", rousette::restconf::ErrorResponse)
 
 namespace {
 std::string serializeErrorResponse(int code, const std::string& errorType, const std::string& errorTag, const std::string& errorMessage)
@@ -267,7 +267,7 @@ TEST_CASE("URI path parser")
              }) {
 
             CAPTURE(uriPath);
-            REQUIRE_THROWS_WITH_AS(rousette::restconf::impl::parseUriPath(uriPath), R"((400, "protocol", "invalid-value", "Syntax error"))", rousette::restconf::ErrorResponse);
+            REQUIRE_THROWS_WITH_AS(rousette::restconf::impl::parseUriPath(uriPath), R"((400, "protocol", "invalid-value", "Syntax error in URI path"))", rousette::restconf::ErrorResponse);
         }
     }
 
@@ -459,7 +459,7 @@ TEST_CASE("URI path parser")
                 SECTION("Unparseable URI")
                 {
                     uriPath = "/restconf/data///!/@akjsaosdasdlasd";
-                    expectedErrorMessage = "Syntax error";
+                    expectedErrorMessage = "Syntax error in URI path";
                     expectedErrorType = "protocol";
                     expectedErrorTag = "invalid-value";
                 }
@@ -694,7 +694,7 @@ TEST_CASE("URI path parser")
                      "/yang/@1234",
                  }) {
                 CAPTURE(uriPath);
-                REQUIRE_THROWS_WITH_AS(rousette::restconf::impl::parseModuleWithRevision(uriPath), R"((400, "protocol", "invalid-value", "Syntax error"))", rousette::restconf::ErrorResponse);
+                REQUIRE_THROWS_WITH_AS(rousette::restconf::impl::parseModuleWithRevision(uriPath), R"((400, "protocol", "invalid-value", "Syntax error in URI path"))", rousette::restconf::ErrorResponse);
             }
         }
 
@@ -1082,7 +1082,7 @@ TEST_CASE("URI path parser")
             }
 
             REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "GET", "/restconf/data/example:tlc", "hello=world"),
-                                   serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error").c_str(),
+                                   serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI querystring").c_str(),
                                    rousette::restconf::ErrorResponse);
         }
     }
@@ -1124,22 +1124,22 @@ TEST_CASE("URI path parser")
         }
 
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF", ""),
-                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error").c_str(),
+                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path").c_str(),
                 rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/restconf/data", ""),
-                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error").c_str(),
+                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path").c_str(),
                 rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF/xml", ""),
-                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error").c_str(),
+                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path").c_str(),
                 rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF/XM", ""),
-                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error").c_str(),
+                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path").c_str(),
                 rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/subscribed", ""),
-                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error").c_str(),
+                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path").c_str(),
                 rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/subscribed/123-456-789", ""),
-                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error").c_str(),
+                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path").c_str(),
                 rousette::restconf::ErrorResponse);
 
 

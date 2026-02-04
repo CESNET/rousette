@@ -191,7 +191,7 @@ const auto queryParamGrammar = x3::rule<class queryParamGrammar, queryParams::Qu
 }
 
 namespace {
-template <class Attribute, class Grammar>
+template <class Attribute, class SyntaxErrorException, class Grammar>
 Attribute parse(const std::string& input, const Grammar& g)
 {
     Attribute out;
@@ -200,10 +200,10 @@ Attribute parse(const std::string& input, const Grammar& g)
 
     try {
         if (!x3::parse(iter, end, g > x3::eoi, out)) {
-            throw ErrorResponse(400, "protocol", "invalid-value", "Syntax error");
+            throw SyntaxErrorException();
         }
     } catch (const boost::spirit::x3::expectation_failure<decltype(iter)>& e) {
-        throw ErrorResponse(400, "protocol", "invalid-value", "Syntax error");
+        throw SyntaxErrorException();
     }
 
     return out;
@@ -212,22 +212,22 @@ Attribute parse(const std::string& input, const Grammar& g)
 
 URIPath parseUriPath(const std::string& input)
 {
-    return parse<URIPath>(input, restconfGrammar);
+    return parse<URIPath, UriPathSyntaxError>(input, restconfGrammar);
 }
 
 impl::YangModule parseModuleWithRevision(const std::string& input)
 {
-    return parse<impl::YangModule>(input, yangSchemaGrammar);
+    return parse<impl::YangModule, UriPathSyntaxError>(input, yangSchemaGrammar);
 }
 
 queryParams::QueryParams parseQueryParams(const std::string& input)
 {
-    return parse<queryParams::QueryParams>(input, queryParamGrammar);
+    return parse<queryParams::QueryParams, UriQueryStringSyntaxError>(input, queryParamGrammar);
 }
 
 std::variant<NotificationStreamRequest, SubscribedStreamRequest> parseStreamUri(const std::string& input)
 {
-    return parse<std::variant<NotificationStreamRequest, SubscribedStreamRequest>>(input, streamGrammar);
+    return parse<std::variant<NotificationStreamRequest, SubscribedStreamRequest>, UriPathSyntaxError>(input, streamGrammar);
 }
 
 URIPrefix::URIPrefix()
