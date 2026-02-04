@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8d970e68_25f9f137",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 222,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-02-04T09:19:52Z",
+      "side": 0,
+      "message": "I take it that this small \"regression\" will be fixed by the full-blown error reporting, and that this is needed for the next patch so that there won\u0027t be any change in the test content. Which is a reasonable thing to do, thanks.",
+      "range": {
+        "startLine": 222,
+        "startChar": 63,
+        "endLine": 222,
+        "endChar": 79
+      },
+      "revId": "af2f6c1b9d41c82e9a4c7ba70b0ff1310b171703",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
