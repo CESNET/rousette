@@ -19,7 +19,14 @@
 
 using namespace std::string_literals;
 
-#define QUERY_PARAMS_SYNTAX_ERROR(CODE) REQUIRE_THROWS_WITH_AS(CODE, R"((400, "protocol", "invalid-value", "Syntax error in URI querystring"))", rousette::restconf::ErrorResponse)
+#define QUERY_PARAMS_SYNTAX_ERROR(CODE, OFFSET, EXPECTEDTOKEN)                                                                                               \
+    REQUIRE_THROWS_WITH_AS(CODE,                                                                                                                             \
+                           serializeErrorResponse(400,                                                                                                       \
+                                                  "protocol",                                                                                                \
+                                                  "invalid-value",                                                                                           \
+                                                  "Syntax error in URI querystring at position "s + std::to_string(OFFSET) + ": expected "s + EXPECTEDTOKEN) \
+                               .c_str(),                                                                                                                     \
+                           rousette::restconf::ErrorResponse)
 
 namespace {
 std::string serializeErrorResponse(int code, const std::string& errorType, const std::string& errorTag, const std::string& errorMessage)
@@ -225,49 +232,52 @@ TEST_CASE("URI path parser")
 
     SECTION("Invalid URIs")
     {
-        for (const std::string uriPath : {
-                 "/restconf/foo",
-                 "/restconf/foo/foo:bar",
-                 "/restconf/data/foo",
-                 "/restconf/data/foo:",
-                 "/restconf/data/:bar",
-                 "/restconf/data/333:666",
-                 "/restconf/data/foo:bar/lst==",
-                 "/restconf/data/foo:bar/lst==key",
-                 "/restconf/data/foo:bar/=key",
-                 "/restconf/data/foo:bar/lst=key1,,,,=",
-                 "/restconf/data/foo:bar/X=Y=instance-value",
-                 "/restconf/data/foo:bar/:baz",
-                 "/restconf/data/foo:list=A%xyZ",
-                 "/restconf/data/foo:list=A%0zZ",
-                 "/restconf/data/foo:list=A%%1Z",
-                 "/restconf/data/foo:list=A%%25Z",
-                 "/restconf/data/foo:list=A%2",
-                 "/restconf/data/foo:list=A%2,",
-                 "/restconf/data/foo:bar/list1=%%",
-                 "/restconf/data/foo:bar/list1=module:smth",
-                 "/restconf/data/foo:bar/",
-                 "/restconf/data/ foo : bar",
-                 "/rest conf/data / foo:bar",
-                 "/restconf/da ta/foo:bar",
-                 "/restconf/data / foo:bar = key1",
-                 "/restconf/data / foo:bar =key1",
-                 "/restconf/ data",
-                 "/restconf /data",
-                 "/restconf  data",
+        for (const auto& [uriPath, position, expectedToken] : {
+                 std::tuple<std::string, unsigned, std::string>{"/restconf/foo", 10, "RESTCONF resource"},
+                 {"/restconf/foo/foo:bar", 10, "RESTCONF resource"},
+                 {"/restconf/data/foo", 18, "':'"},
+                 {"/restconf/data/foo:", 19, "identifier"},
+                 {"/restconf/data/:bar", 15, "resource path"},
+                 {"/restconf/data/333:666", 15, "resource path"},
+                 {"/restconf/data/foo:bar/lst==", 27, "valid key value"},
+                 {"/restconf/data/foo:bar/lst==key", 27, "valid key value"},
+                 {"/restconf/data/foo:bar/=key", 23, "identifier"},
+                 {"/restconf/data/foo:bar/lst=key1,,,,=", 35, "valid key value"},
+                 {"/restconf/data/foo:bar/X=Y=instance-value", 26, "valid key value"},
+                 {"/restconf/data/foo:bar/:baz", 23, "identifier"},
+                 {"/restconf/data/foo:list=A%xyZ", 26, "two hex digits"},
+                 {"/restconf/data/foo:list=A%0zZ", 26, "two hex digits"},
+                 {"/restconf/data/foo:list=A%%1Z", 26, "two hex digits"},
+                 {"/restconf/data/foo:list=A%%25Z", 26, "two hex digits"},
+                 {"/restconf/data/foo:list=A%2", 26, "two hex digits"},
+                 {"/restconf/data/foo:list=A%2,", 26, "two hex digits"},
+                 {"/restconf/data/foo:bar/list1=%%", 30, "two hex digits"},
+                 {"/restconf/data/foo:bar/list1=module:smth", 35, "eoi"},
+                 {"/restconf/data/foo:bar/", 23, "identifier"},
+                 {"/restconf/data/ foo : bar", 15, "resource path"},
+                 {"/rest conf/data / foo:bar", 1, "\"restconf\""},
+                 {"/restconf/da ta/foo:bar", 10, "RESTCONF resource"},
+                 {"/restconf/data / foo:bar = key1", 14, "uriPath"},
+                 {"/restconf/data / foo:bar =key1", 14, "uriPath"},
+                 {"/restconf/ data", 10, "RESTCONF resource"},
+                 {"/restconf /data", 9, "RESTCONF resource"},
+                 {"/restconf  data", 9, "RESTCONF resource"},
 
-                 "/restconf/ds",
-                 "/restconf/ds/operational",
-                 "/restconf/ds/ietf-datastores",
-                 "/restconf/ds/ietf-datastores:",
-                 "/restconf/ds/ietf-datastores:operational/foo:bar/",
+                 {"/restconf/ds", 12, "'/'"},
+                 {"/restconf/ds/operational", 24, "':'"},
+                 {"/restconf/ds/ietf-datastores", 28, "':'"},
+                 {"/restconf/ds/ietf-datastores:", 29, "identifier"},
+                 {"/restconf/ds/ietf-datastores:operational/foo:bar/", 49, "identifier"},
 
-                 "/restconf/yang-library",
-                 "/restconf/yang-library-version/foo:list",
+                 {"/restconf/yang-library", 10, "RESTCONF resource"},
+                 {"/restconf/yang-library-version/foo:list", 31, "eoi"},
              }) {
 
             CAPTURE(uriPath);
-            REQUIRE_THROWS_WITH_AS(rousette::restconf::impl::parseUriPath(uriPath), R"((400, "protocol", "invalid-value", "Syntax error in URI path"))", rousette::restconf::ErrorResponse);
+            const auto errMessage = std::format("Syntax error in URI path at position {}: expected {}", position, expectedToken);
+            REQUIRE_THROWS_WITH_AS(rousette::restconf::impl::parseUriPath(uriPath),
+                                   serializeErrorResponse(400, "protocol", "invalid-value", errMessage).c_str(),
+                                   rousette::restconf::UriSyntaxError);
         }
     }
 
@@ -459,7 +469,7 @@ TEST_CASE("URI path parser")
                 SECTION("Unparseable URI")
                 {
                     uriPath = "/restconf/data///!/@akjsaosdasdlasd";
-                    expectedErrorMessage = "Syntax error in URI path";
+                    expectedErrorMessage = "Syntax error in URI path at position 15: expected resource path";
                     expectedErrorType = "protocol";
                     expectedErrorTag = "invalid-value";
                 }
@@ -678,23 +688,26 @@ TEST_CASE("URI path parser")
                 REQUIRE(rousette::restconf::impl::parseModuleWithRevision(uriPath) == expected);
             }
 
-            for (const std::string uriPath : {
-                     "/yang",
-                     "/yang/",
-                     "/yang/module@a",
-                     "/yang/.yang",
-                     "/yang/1.yang",
-                     "/yang/module@aaaa-bb-cc",
-                     "yang/module@2024-02-27", /* intentional missing leading slash */
-                     "/yang/module@1234-123-12",
-                     "/yang/module@1234-12",
-                     "/yang/module@123-12-12",
-                     "/yang/module@1234",
-                     "/yang/@2020-02-02",
-                     "/yang/@1234",
+            for (const auto& [uriPath, position, expectedToken] : {
+                     std::tuple<std::string, unsigned, std::string>{"/yang", 5, "'/'"},
+                     {"/yang/", 6, "moduleName"},
+                     {"/yang/module@a", 13, "revision"},
+                     {"/yang/.yang", 6, "moduleName"},
+                     {"/yang/1.yang", 6, "moduleName"},
+                     {"/yang/module@aaaa-bb-cc", 13, "revision"},
+                     {"yang/module@2024-02-27" /* intentional missing leading slash */, 0, "\"/\""},
+                     {"/yang/module@1234-123-12", 20, "'-'"},
+                     {"/yang/module@1234-12", 20, "'-'"},
+                     {"/yang/module@123-12-12", 13, "revision"},
+                     {"/yang/module@1234", 17, "'-'"},
+                     {"/yang/@2020-02-02", 6, "moduleName"},
+                     {"/yang/@1234", 6, "moduleName"},
                  }) {
                 CAPTURE(uriPath);
-                REQUIRE_THROWS_WITH_AS(rousette::restconf::impl::parseModuleWithRevision(uriPath), R"((400, "protocol", "invalid-value", "Syntax error in URI path"))", rousette::restconf::ErrorResponse);
+                const auto errMessage = std::format("Syntax error in URI path at position {}: expected {}", position, expectedToken);
+                REQUIRE_THROWS_WITH_AS(rousette::restconf::impl::parseModuleWithRevision(uriPath),
+                                       serializeErrorResponse(400, "protocol", "invalid-value", errMessage).c_str(),
+                                       rousette::restconf::UriSyntaxError);
             }
         }
 
@@ -792,57 +805,57 @@ TEST_CASE("URI path parser")
             REQUIRE(parseQueryParams("depth=unbounded") == QueryParams{{"depth", UnboundedDepth{}}});
             REQUIRE(parseQueryParams("depth=1&depth=unbounded") == QueryParams{{"depth", 1u}, {"depth", UnboundedDepth{}}});
             REQUIRE(parseQueryParams("depth=unbounded&depth=123") == QueryParams{{"depth", UnboundedDepth{}}, {"depth", 123u}});
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("a=b"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("Depth=1"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("depth=-1"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("depth=0"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("depth=65536"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("depth="));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("depth=foo"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("="));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("&"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("depth=1&"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("a&b=a"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("a=b"), 0, "query parameter");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("Depth=1"), 0, "query parameter");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("depth=-1"), 6, "1-65535 or 'unbounded'");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("depth=0"), 6, "1-65535 or 'unbounded'");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("depth=65536"), 6, "1-65535 or 'unbounded'");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("depth="), 6, "1-65535 or 'unbounded'");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("depth=foo"), 6, "1-65535 or 'unbounded'");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("="), 0, "query parameter");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("&"), 0, "query parameter");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("depth=1&"), 8, "query parameter");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("a&b=a"), 0, "query parameter");
             REQUIRE(parseQueryParams("with-defaults=report-all") == QueryParams{{"with-defaults", withDefaults::ReportAll{}}});
             REQUIRE(parseQueryParams("with-defaults=trim") == QueryParams{{"with-defaults", withDefaults::Trim{}}});
             REQUIRE(parseQueryParams("with-defaults=explicit") == QueryParams{{"with-defaults", withDefaults::Explicit{}}});
             REQUIRE(parseQueryParams("with-defaults=report-all-tagged") == QueryParams{{"with-defaults", withDefaults::ReportAllTagged{}}});
             REQUIRE(parseQueryParams("depth=3&with-defaults=report-all") == QueryParams{{"depth", 3u}, {"with-defaults", withDefaults::ReportAll{}}});
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults="));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults=report"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with_defaults=ahoj"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults=report_all"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults=depth=3"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults=&depth=3"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults=trim;depth=3"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults=trim=depth=3"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults="), 14, "'trim', 'explicit', 'report-all' or 'report-all-tagged'");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults=report"), 14, "'trim', 'explicit', 'report-all' or 'report-all-tagged'");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with_defaults=ahoj"), 0, "query parameter");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults=report_all"), 14, "'trim', 'explicit', 'report-all' or 'report-all-tagged'");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults=depth=3"), 14, "'trim', 'explicit', 'report-all' or 'report-all-tagged'");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults=&depth=3"), 14, "'trim', 'explicit', 'report-all' or 'report-all-tagged'");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults=trim;depth=3"), 18, "eoi");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("with-defaults=trim=depth=3"), 18, "eoi");
             REQUIRE(parseQueryParams("content=all&content=nonconfig&content=config") == QueryParams{{"content", content::AllNodes{}}, {"content", content::OnlyNonConfigNodes{}}, {"content", content::OnlyConfigNodes{}}});
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("content=ahoj"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("content=ahoj"), 8, "'all', 'nonconfig' or 'config'");
             REQUIRE(parseQueryParams("insert=first") == QueryParams{{"insert", insert::First{}}});
             REQUIRE(parseQueryParams("insert=last") == QueryParams{{"insert", insert::Last{}}});
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("insert=foo"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("insert=foo"), 7, "'first', 'last', 'after' or 'before'");
             REQUIRE(parseQueryParams("depth=4&insert=last&with-defaults=trim") == QueryParams{{"depth", 4u}, {"insert", insert::Last{}}, {"with-defaults", withDefaults::Trim{}}});
             REQUIRE(parseQueryParams("insert=before") == QueryParams{{"insert", insert::Before{}}});
             REQUIRE(parseQueryParams("insert=after") == QueryParams{{"insert", insert::After{}}});
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("insert=uwu"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("insert=uwu"), 7, "'first', 'last', 'after' or 'before'");
             REQUIRE(parseQueryParams("filter=asd") == QueryParams{{"filter", "asd"s}});
             REQUIRE(parseQueryParams("filter=/") == QueryParams{{"filter", "/"s}});
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("filter="));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("filter="), 7, "filter");
             REQUIRE(parseQueryParams("filter=/example:mod[name='GigabitEthernet0/0']") == QueryParams{{"filter", "/example:mod[name='GigabitEthernet0/0']"s}});
             REQUIRE(parseQueryParams("filter=/example:mod/statistics[errors>0]") == QueryParams{{"filter", "/example:mod/statistics[errors>0]"s}});
             REQUIRE(parseQueryParams("filter=/example:mod/statistics[errors>0]&depth=1") == QueryParams{{"filter", "/example:mod/statistics[errors>0]"s}, {"depth", 1u}});
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("filter=/example:mod/statistics[errors>0]&"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("filter=/example:mod[name='&amp;']"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("filter=/example:mod/statistics[errors>0]&"), 41, "query parameter");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("filter=/example:mod[name='&amp;']"), 27, "query parameter");
             REQUIRE(parseQueryParams("filter=/example:mod[name='%26']&depth=1") == QueryParams{{"filter", "/example:mod[name='&']"s}, {"depth", 1u}});
             REQUIRE(parseQueryParams("start-time=2023-01-01T00:00:00.23232Z") == QueryParams{{"start-time", "2023-01-01T00:00:00.23232Z"}});
             REQUIRE(parseQueryParams("start-time=2023-01-01T12:30:00+01:00") == QueryParams{{"start-time", "2023-01-01T12:30:00+01:00"}});
             REQUIRE(parseQueryParams("start-time=2023-01-01T23:59:59.123-05:00") == QueryParams{{"start-time", "2023-01-01T23:59:59.123-05:00"}});
             REQUIRE(parseQueryParams("stop-time=2023-02-28T12:00:00.1+09:00") == QueryParams{{"stop-time", "2023-02-28T12:00:00.1+09:00"}});
             REQUIRE(parseQueryParams("stop-time=2023-05-20T18:30:00+05:30") == QueryParams{{"stop-time", "2023-05-20T18:30:00+05:30"}});
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("stop-time=2023-05-20E18:30:00+05:30"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("stop-time=2023-05-20T18:30:00"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("stop-time=20230520T18:30:00Z"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("stop-time=2023-05-a0T18:30:00+05:30"));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("stop-time=2023-05-20E18:30:00+05:30"), 20, "'T'");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("stop-time=2023-05-20T18:30:00"), 29, "timezone");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("stop-time=20230520T18:30:00Z"), 14, "'-'");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("stop-time=2023-05-a0T18:30:00+05:30"), 18, "day");
             REQUIRE(parseQueryParams("fields=mod:leaf") == QueryParams{{"fields", fields::SemiExpr{fields::ParenExpr{fields::SlashExpr{{"mod", "leaf"}}}}}});
             REQUIRE(parseQueryParams("fields=b(c;d);e(f)") == QueryParams{{"fields",
                     fields::SemiExpr{
@@ -871,9 +884,9 @@ TEST_CASE("URI path parser")
                         }
                     }
             }});
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("fields=(xyz)"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("fields=a;(xyz)"));
-            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("fields="));
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("fields=(xyz)"), 7, "identifier");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("fields=a;(xyz)"), 9, "identifier");
+            QUERY_PARAMS_SYNTAX_ERROR(parseQueryParams("fields="), 7, "identifier");
 
             for (const auto& [prefix, fields, xpath] : {
                      std::tuple<std::string, std::string, std::string>{"/example:a", "b", "/example:a/b"},
@@ -1082,7 +1095,7 @@ TEST_CASE("URI path parser")
             }
 
             REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "GET", "/restconf/data/example:tlc", "hello=world"),
-                                   serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI querystring").c_str(),
+                                   serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI querystring at position 0: expected query parameter").c_str(),
                                    rousette::restconf::ErrorResponse);
         }
     }
@@ -1124,30 +1137,30 @@ TEST_CASE("URI path parser")
         }
 
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF", ""),
-                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path").c_str(),
-                rousette::restconf::ErrorResponse);
+                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path at position 16: expected \"/\"").c_str(),
+                               rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/restconf/data", ""),
-                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path").c_str(),
-                rousette::restconf::ErrorResponse);
+                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path at position 1: expected \"streams\"").c_str(),
+                               rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF/xml", ""),
-                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path").c_str(),
-                rousette::restconf::ErrorResponse);
+                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path at position 17: expected stream format ('XML' or 'JSON')").c_str(),
+                               rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF/XM", ""),
-                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path").c_str(),
-                rousette::restconf::ErrorResponse);
+                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path at position 17: expected stream format ('XML' or 'JSON')").c_str(),
+                               rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/subscribed", ""),
-                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path").c_str(),
-                rousette::restconf::ErrorResponse);
+                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path at position 19: expected \"/\"").c_str(),
+                               rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/subscribed/123-456-789", ""),
-                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path").c_str(),
-                rousette::restconf::ErrorResponse);
+                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path at position 20: expected UUID").c_str(),
+                               rousette::restconf::ErrorResponse);
 
 
         for (const auto& httpMethod : {"OPTIONS", "PATCH", "DELETE", "POST", "PUT"}) {
             CAPTURE(httpMethod);
             REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest(httpMethod, "/streams/NETCONF", ""),
-                    serializeErrorResponse(405, "application", "operation-not-supported", "Method not allowed.").c_str(),
-                    rousette::restconf::ErrorResponse);
+                                   serializeErrorResponse(405, "application", "operation-not-supported", "Method not allowed.").c_str(),
+                                   rousette::restconf::ErrorResponse);
         }
     }
 
