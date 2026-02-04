@@ -8,6 +8,7 @@
 #include <boost/fusion/adapted/struct/adapt_struct.hpp>
 #include <boost/fusion/include/std_pair.hpp>
 #include <boost/spirit/home/x3/support/ast/variant.hpp>
+#include <boost/spirit/home/x3/support/utility/error_reporting.hpp>
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <experimental/iterator>
@@ -101,7 +102,7 @@ namespace x3 = boost::spirit::x3;
 
 const auto moduleName = x3::rule<class apiIdentifier, std::string>{"moduleName"} = (x3::alpha | x3::char_('_')) > *(x3::alnum | x3::char_('_') | x3::char_('-') | x3::char_('.'));
 const auto revision = x3::rule<class revision, std::string>{"revision"} = x3::repeat(4, x3::inf)[x3::digit] > x3::char_("-") > x3::repeat(2)[x3::digit] > x3::char_("-") > x3::repeat(2)[x3::digit];
-const auto yangSchemaGrammar = x3::rule<class yangSchemaGrammar, impl::YangModule>{"yangSchemaGrammar"} = x3::lit("/") > x3::lit("yang") > "/" > moduleName > -(x3::lit("@") > revision > -x3::lit(".yang"));
+const auto yangSchemaGrammar = x3::rule<class yangSchemaGrammar, impl::YangModule>{"yangSchemaGrammar"} = x3::eps > x3::lit("/") > x3::lit("yang") > "/" > moduleName > -(x3::lit("@") > revision > -x3::lit(".yang"));
 
 // clang-format on
 }
@@ -215,16 +216,23 @@ namespace {
 template <class Attribute, class SyntaxErrorException, class Grammar>
 Attribute parse(const std::string& input, const Grammar& g)
 {
+    namespace x3 = boost::spirit::x3;
+
     Attribute out;
     auto iter = std::begin(input);
     auto end = std::end(input);
 
+    std::ostringstream oss;
     try {
-        if (!x3::parse(iter, end, g > x3::eoi, out)) {
+        x3::error_handler<decltype(iter)> error_handler(iter, end, oss);
+
+        auto parser = x3::with<x3::error_handler_tag>(std::ref(error_handler))[g > x3::eoi];
+        if (!x3::parse(iter, end, parser, out)) {
             throw SyntaxErrorException();
         }
     } catch (const boost::spirit::x3::expectation_failure<decltype(iter)>& e) {
-        throw SyntaxErrorException();
+        auto offset = std::distance(std::begin(input), e.where());
+        throw SyntaxErrorException(offset, e.which());
     }
 
     return out;

@@ -158,9 +158,9 @@ TEST_CASE("NETCONF notification streams")
 
     SECTION("Invalid URLs")
     {
-        REQUIRE(get("/streams/NETCONF/", {}) == Response{400, plaintextHeaders, "Syntax error in URI path"});
-        REQUIRE(get("/streams/NETCONF/", {AUTH_ROOT}) == Response{400, plaintextHeaders, "Syntax error in URI path"});
-        REQUIRE(get("/streams/NETCONF/bla", {}) == Response{400, plaintextHeaders, "Syntax error in URI path"});
+        REQUIRE(get("/streams/NETCONF/", {}) == Response{400, plaintextHeaders, "Syntax error in URI path at position 17: expected stream format ('XML' or 'JSON')"});
+        REQUIRE(get("/streams/NETCONF/", {AUTH_ROOT}) == Response{400, plaintextHeaders, "Syntax error in URI path at position 17: expected stream format ('XML' or 'JSON')"});
+        REQUIRE(get("/streams/NETCONF/bla", {}) == Response{400, plaintextHeaders, "Syntax error in URI path at position 17: expected stream format ('XML' or 'JSON')"});
     }
 
     SECTION("Unknown streams")
@@ -171,7 +171,7 @@ TEST_CASE("NETCONF notification streams")
     SECTION("Invalid parameters")
     {
         REQUIRE(get("/streams/NETCONF/XML?filter=.878", {}) == Response{400, plaintextHeaders, "Couldn't create notification subscription: SR_ERR_INVAL_ARG\n XPath \".878\" does not select any notifications. (SR_ERR_INVAL_ARG)"});
-        REQUIRE(get("/streams/NETCONF/XML?filter=", {}) == Response{400, plaintextHeaders, "Syntax error in URI querystring"});
+        REQUIRE(get("/streams/NETCONF/XML?filter=", {}) == Response{400, plaintextHeaders, "Syntax error in URI querystring at position 7: expected filter"});
 
         REQUIRE(get("/streams/NETCONF/XML?start-time=2000-01-01T00:00:00+00:00&stop-time=1990-01-01T00:00:00+00:00", {}) == Response{400, plaintextHeaders, "stop-time must be greater than start-time"});
         REQUIRE(get("/streams/NETCONF/XML?stop-time=1990-01-01T00:00:00+00:00", {}) == Response{400, plaintextHeaders, "stop-time must be used with start-time"});
