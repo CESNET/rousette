@@ -985,7 +985,7 @@ Server::Server(
                        contentType("application/xrd+xml"),
                        CORS,
                    });
-        res.end("<XRD xmlns='http://docs.oasis-open.org/ns/xri/xrd-1.0'><Link rel='restconf' href='"s + restconfRoot + "'></XRD>"s);
+        res.end("<XRD xmlns='http://docs.oasis-open.org/ns/xri/xrd-1.0'><Link rel='restconf' href='"s + restconfRoot + "' /></XRD>"s);
     });
 
     server->handle("/telemetry/optics", [this, keepAlivePingInterval](const auto& req, const auto& res) {

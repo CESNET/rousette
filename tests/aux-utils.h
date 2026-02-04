@@ -67,6 +67,11 @@ const ng::header_map eventStreamHeaders{
     {"content-type", {"text/event-stream", false}},
 };
 
+const ng::header_map xrdXmlHeaders{
+    {"access-control-allow-origin", {"*", false}},
+    {"content-type", {"application/xrd+xml", false}},
+};
+
 #define ACCESS_CONTROL_ALLOW_ORIGIN {"access-control-allow-origin", "*"}
 #define ACCEPT_PATCH {"accept-patch", "application/yang-data+json, application/yang-data+xml, application/yang-patch+xml, application/yang-patch+json"}
 

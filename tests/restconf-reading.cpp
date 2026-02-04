@@ -47,6 +47,16 @@ TEST_CASE("reading data")
     // setup real-like NACM
     setupRealNacm(srSess);
 
+
+    DOCTEST_SUBCASE(".well-known")
+    {
+        REQUIRE(get("/.well-known/host-meta", {}) == Response{
+                    200,
+                    xrdXmlHeaders,
+                    R"(<XRD xmlns='http://docs.oasis-open.org/ns/xri/xrd-1.0'><Link rel='restconf' href='/restconf/' /></XRD>)",
+                });
+    }
+
     DOCTEST_SUBCASE("API resource")
     {
         REQUIRE(get("/restconf/", {}) == Response{200, jsonHeaders, R"({
