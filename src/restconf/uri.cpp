@@ -200,10 +200,10 @@ Attribute parse(const std::string& input, const Grammar& g)
 
     try {
         if (!x3::parse(iter, end, g > x3::eoi, out)) {
-            throw ErrorResponse(400, "protocol", "invalid-value", "Syntax error");
+            throw UriSyntaxError();
         }
     } catch (const boost::spirit::x3::expectation_failure<decltype(iter)>& e) {
-        throw ErrorResponse(400, "protocol", "invalid-value", "Syntax error");
+        throw UriSyntaxError();
     }
 
     return out;

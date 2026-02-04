@@ -1,7 +1,8 @@
 /*
- * Copyright (C) 2016-2023 CESNET, https://photonics.cesnet.cz/
+ * Copyright (C) 2016-2025 CESNET, https://photonics.cesnet.cz/
  *
  * Written by Jan Kundrát <jan.kundrat@cesnet.cz>
+ * Written by Tomáš Pecka <tomas.pecka@cesnet.cz>
  *
 */
 
@@ -18,18 +19,12 @@ struct ErrorResponse : public std::exception {
     std::string errorMessage;
     std::optional<std::string> errorPath;
 
-    ErrorResponse(int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath = std::nullopt)
-        : code(code)
-        , errorTag(errorTag)
-        , errorType(errorType)
-        , errorMessage(errorMessage)
-        , errorPath(errorPath)
-    {
-    }
+    ErrorResponse(int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath = std::nullopt);
+    const char* what() const noexcept override;
+};
 
-    const char* what() const noexcept override
-    {
-        return errorMessage.c_str();
-    }
+struct UriSyntaxError : public ErrorResponse {
+    UriSyntaxError();
+    UriSyntaxError(const std::optional<unsigned>& position, const std::optional<std::string>& expectedToken);
 };
 }

@@ -111,6 +111,7 @@ target_link_libraries(rousette-auth PUBLIC spdlog::spdlog PkgConfig::SYSREPO-CPP
 
 add_library(rousette-restconf STATIC
     src/restconf/DynamicSubscriptions.cpp
+    src/restconf/Exceptions.cpp
     src/restconf/NotificationStream.cpp
     src/restconf/Server.cpp
     src/restconf/YangSchemaLocations.cpp
