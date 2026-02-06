@@ -80,12 +80,12 @@ const auto uuid_impl = x3::rule<class uuid_impl, std::string>{"uuid_impl"} =
 const auto uuid = x3::rule<class uuid, boost::uuids::uuid>{"uuid"} = uuid_impl[string_to_uuid];
 const auto subscribedStream = x3::rule<class subscribedStream, SubscribedStreamRequest>{"subscribedStream"} = x3::lit("subscribed") > x3::lit("/") > uuid;
 
-const auto notificationStream = x3::rule<class notificationStream, NotificationStreamRequest>{"notificationStream"} =
-    identifier > x3::lit("/") >
-    ((x3::lit("XML") > x3::attr(libyang::DataFormat::XML)) |
-     (x3::lit("JSON") > x3::attr(libyang::DataFormat::JSON)));
+const auto xmlStream = x3::rule<class xmlStream, libyang::DataFormat>{"xmlStream"} = x3::lit("XML") > x3::attr(libyang::DataFormat::XML);
+const auto jsonStream = x3::rule<class jsonStream, libyang::DataFormat>{"jsonStream"} = x3::lit("JSON") > x3::attr(libyang::DataFormat::JSON);
+const auto streamFormat = x3::rule<class streamFormat, libyang::DataFormat>{"streamFormat"} = (xmlStream | jsonStream);
+const auto notificationStream = x3::rule<class notificationStream, NotificationStreamRequest>{"notificationStream"} = identifier > x3::lit("/") > streamFormat;
 const auto streamGrammar = x3::rule<class streamGrammar, std::variant<NotificationStreamRequest, SubscribedStreamRequest>>{"streamGrammar"} =
-    x3::lit("/") > x3::lit("streams") > x3::lit("/") > (subscribedStream | notificationStream );
+    x3::lit("/") > x3::lit("streams") > x3::lit("/") > (subscribedStream | notificationStream);
 
 // clang-format on
 }
