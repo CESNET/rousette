@@ -122,7 +122,7 @@ struct withDefaultsTable : x3::symbols<queryParams::QueryParamValue> {
             ("report-all", queryParams::withDefaults::ReportAll{})
             ("report-all-tagged", queryParams::withDefaults::ReportAllTagged{});
     }
-} const withDefaultsParam;
+} const withDefaultsTable_;
 
 struct contentTable : x3::symbols<queryParams::QueryParamValue> {
     contentTable()
@@ -132,7 +132,7 @@ struct contentTable : x3::symbols<queryParams::QueryParamValue> {
             ("nonconfig", queryParams::content::OnlyNonConfigNodes{})
             ("config", queryParams::content::OnlyConfigNodes{});
     }
-} const contentParam;
+} const contentTable_;
 
 struct insertTable: x3::symbols<queryParams::QueryParamValue> {
     insertTable()
@@ -143,7 +143,7 @@ struct insertTable: x3::symbols<queryParams::QueryParamValue> {
         ("after", queryParams::insert::After{})
         ("before", queryParams::insert::Before{});
     }
-} const insertParam;
+} const insertTable_;
 
 /* This grammar is implemented a little bit differently than the RFC states. The ABNF from RFC is:
  *
@@ -173,8 +173,11 @@ const auto dateAndTime = x3::rule<class dateAndTime, std::string>{"dateAndTime"}
     x3::repeat(2)[x3::digit] > x3::char_(':') > x3::repeat(2)[x3::digit] > x3::char_(':') > x3::repeat(2)[x3::digit] > -(x3::char_('.') > +x3::digit) >
     (x3::char_('Z') | (-(x3::char_('+')|x3::char_('-')) > x3::repeat(2)[x3::digit] > x3::char_(':') > x3::repeat(2)[x3::digit]));
 const auto filter = x3::rule<class filter, std::string>{"filter"} = +(percentEncodedChar | (x3::char_ - '&'));
-const auto depthParam = x3::rule<class depthParam, queryParams::QueryParamValue>{"depthParam"} = x3::uint_[validDepthValues] | (x3::string("unbounded") > x3::attr(queryParams::UnboundedDepth{}));
-const auto queryParamPair = x3::rule<class queryParamPair, std::pair<std::string, queryParams::QueryParamValue>>{"queryParamPair"} =
+const auto depthParam = x3::rule<class depthParam, queryParams::QueryParamValue>{"1-65535 or 'unbounded'"} = x3::uint_[validDepthValues] | (x3::string("unbounded") > x3::attr(queryParams::UnboundedDepth{}));
+const auto insertParam = x3::rule<class insertParam, queryParams::QueryParamValue>{"'first', 'last', 'after' or 'before'"} = insertTable_;
+const auto contentParam = x3::rule<class insertParam, queryParams::QueryParamValue>{"'all', 'nonconfig' or 'config'"} = contentTable_;
+const auto withDefaultsParam = x3::rule<class withDefaultsParam, queryParams::QueryParamValue>{"'trim', 'explicit', 'report-all' or 'report-all-tagged'"} = withDefaultsTable_;
+const auto queryParamPair = x3::rule<class queryParamPair, std::pair<std::string, queryParams::QueryParamValue>>{"query parameter"} =
         (x3::string("depth") > "=" > depthParam) |
         (x3::string("with-defaults") > "=" > withDefaultsParam) |
         (x3::string("content") > "=" > contentParam) |
@@ -185,7 +188,10 @@ const auto queryParamPair = x3::rule<class queryParamPair, std::pair<std::string
         (x3::string("stop-time") > "=" > dateAndTime) |
         (x3::string("fields") > "=" > fieldsExpr);
 
-const auto queryParamGrammar = x3::rule<class queryParamGrammar, queryParams::QueryParams>{"queryParamGrammar"} = queryParamPair % "&" | x3::eps;
+const auto queryParamEmpty = x3::rule<class queryParamEmpty, queryParams::QueryParams>{"empty"} = &x3::eoi > x3::attr(queryParams::QueryParams{});
+const auto queryParamList = x3::rule<class queryParamList, queryParams::QueryParams>{"query parameter list"} = queryParamPair >> *("&" > queryParamPair);
+const auto queryParamMaybeEmpty = x3::rule<class queryParamMaybeEmpty, queryParams::QueryParams>{"query parameter"} = queryParamEmpty | queryParamList;
+const auto queryParamGrammar = x3::rule<class queryParamGrammar, queryParams::QueryParams>{"query parameters"} = x3::eps > queryParamMaybeEmpty;
 
 // clang-format on
 }
