@@ -167,11 +167,22 @@ const auto fieldsSlash_def = apiIdentifier > -(x3::lit("/") > fieldsSlash);
 const auto fieldsExpr_def = fieldsSemi;
 BOOST_SPIRIT_DEFINE(fieldsParen, fieldsExpr, fieldsSlash, fieldsSemi);
 
-// early sanity check, this timestamp will be parsed by libyang::fromYangTimeFormat anyways
-const auto dateAndTime = x3::rule<class dateAndTime, std::string>{"dateAndTime"} =
-    x3::repeat(4)[x3::digit] > x3::char_('-') > x3::repeat(2)[x3::digit] > x3::char_('-') > x3::repeat(2)[x3::digit] > x3::char_('T') >
-    x3::repeat(2)[x3::digit] > x3::char_(':') > x3::repeat(2)[x3::digit] > x3::char_(':') > x3::repeat(2)[x3::digit] > -(x3::char_('.') > +x3::digit) >
-    (x3::char_('Z') | (-(x3::char_('+')|x3::char_('-')) > x3::repeat(2)[x3::digit] > x3::char_(':') > x3::repeat(2)[x3::digit]));
+// early sanity check, the timestamp will be parsed by libyang::fromYangTimeFormat anyways
+const auto twoDigits = x3::rule<class twoDigits, std::string>{"twoDigits"} = x3::digit > x3::digit;
+const auto minute = x3::rule<class minute, std::string>{"minute"} = twoDigits;
+const auto hour = x3::rule<class hour, std::string>{"hour"} = twoDigits;
+const auto second = x3::rule<class second, std::string>{"second"} = twoDigits;
+const auto day = x3::rule<class day, std::string>{"day"} = twoDigits;
+const auto month = x3::rule<class month, std::string>{"month"} = twoDigits;
+const auto year = x3::rule<class year, std::string>{"year"} = x3::digit > x3::digit > x3::digit > x3::digit;
+const auto date = x3::rule<class date, std::string>{"YYYY-MM-DD"} = year > x3::char_('-') > month > x3::char_('-') > day;
+const auto timeHHMM = x3::rule<class timeHHMM, std::string>{"HH:mm"} = hour > x3::char_(':') > minute;
+const auto time = x3::rule<class time, std::string>{"HH:mm:SS"} = timeHHMM > x3::char_(':') > second;
+const auto timeMs = x3::rule<class timeMs, std::string>{"timeMs"} = x3::char_('.') > +x3::digit;
+const auto tzZulu = x3::rule<class tzZulu, std::string>{"tzZulu"} = x3::string("Z");
+const auto tzOffset = x3::rule<class tzOffset, std::string>{"tzOffset"} = (x3::char_('+') | x3::char_('-')) > timeHHMM;
+const auto timezone = x3::rule<class timezone, std::string>{"timezone"} = tzZulu | tzOffset;
+const auto dateAndTime = x3::rule<class dateAndTime, std::string>{"dateAndTime"} = date > x3::char_('T') > time >> -timeMs > timezone;
 const auto filter = x3::rule<class filter, std::string>{"filter"} = +(percentEncodedChar | (x3::char_ - '&'));
 const auto depthParam = x3::rule<class depthParam, queryParams::QueryParamValue>{"1-65535 or 'unbounded'"} = x3::uint_[validDepthValues] | (x3::string("unbounded") > x3::attr(queryParams::UnboundedDepth{}));
 const auto insertParam = x3::rule<class insertParam, queryParams::QueryParamValue>{"'first', 'last', 'after' or 'before'"} = insertTable_;
