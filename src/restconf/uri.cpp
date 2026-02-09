@@ -35,32 +35,36 @@ auto add = [](auto& ctx) {
     char c = std::tolower(_attr(ctx));
     _val(ctx) = _val(ctx) * 16 + (c >= 'a' ? c - 'a' + 10 : c - '0');
 };
-const auto hexbyte = x3::rule<class hexbyte, unsigned>{"twoHexDigits"} = x3::eps[set_zero] >> x3::xdigit[add] >> x3::xdigit[add];
-const auto percentEncodedChar = x3::rule<class percentEncodedChar, unsigned>{"percentEncodedChar"} = x3::lit('%') > hexbyte;
+const auto hexbyte = x3::rule<class hexbyte, unsigned>{"two hex digits"} = x3::eps[set_zero] >> x3::xdigit[add] >> x3::xdigit[add];
+const auto percentEncodedChar = x3::rule<class percentEncodedChar, unsigned>{"percent-encoded character"} = x3::lit('%') > hexbyte;
 
 /* reserved characters according to RFC 3986, sec. 2.2 with '%' added. The '%' character is not specified as reserved but it effectively is because
  * "Percent sign serves as the indicator for percent-encoded octets, it must be percent-encoded (...)" [RFC 3986, sec. 2.4]. */
 const auto reservedChars = x3::lit(':') | '/' | '?' | '#' | '[' | ']' | '@' | '!' | '$' | '&' | '\'' | '(' | ')' | '*' | '+' | ',' | ',' | ';' | '=' | '%';
-const auto percentEncodedString = x3::rule<class percentEncodedString, std::string>{"percentEncodedString"} = *(percentEncodedChar | (x3::char_ - reservedChars));
+const auto percentEncodedString = x3::rule<class percentEncodedString, std::string>{"percent-encoded string"} = +(percentEncodedChar | (x3::char_ - reservedChars));
 
-const auto keyList = x3::rule<class keyList, std::vector<std::string>>{"keyList"} = percentEncodedString % ',';
+const auto keyList = x3::rule<class keyList, std::vector<std::string>>{"list key values"} = (percentEncodedString | (x3::eps > x3::attr(std::string("")))) % ',';
+const auto noStrayEquals = x3::rule<class noStrayEquals>{"valid key value"} = !x3::lit('=');
 const auto identifier = x3::rule<class identifier, std::string>{"identifier"} = (x3::alpha | x3::char_('_')) > *(x3::alnum | x3::char_('_') | x3::char_('-') | x3::char_('.'));
-const auto apiIdentifier = x3::rule<class apiIdentifier, ApiIdentifier>{"apiIdentifier"} = -(identifier >> ':') > identifier;
-const auto listInstance = x3::rule<class listInstance, PathSegment>{"listInstance"} = apiIdentifier > -('=' > keyList);
-const auto fullyQualifiedApiIdentifier = x3::rule<class fullyQualifiedApiIdentifier, ApiIdentifier>{"fullyQualifiedApiIdentifier"} = identifier > ':' > identifier;
-const auto fullyQualifiedListInstance = x3::rule<class fullyQualifiedListInstance, PathSegment>{"fullyQualifiedListInstance"} = fullyQualifiedApiIdentifier > -('=' > keyList);
+const auto apiIdentifier = x3::rule<class apiIdentifier, ApiIdentifier>{"api identifier"} = -(identifier >> ':') > identifier;
+const auto listInstance = x3::rule<class listInstance, PathSegment>{"path segment"} = apiIdentifier > -('=' > keyList > noStrayEquals);
+const auto fullyQualifiedApiIdentifier = x3::rule<class fullyQualifiedApiIdentifier, ApiIdentifier>{"module-qualified identifier (module:name)"} = identifier > ':' > identifier;
+const auto fullyQualifiedListInstance = x3::rule<class fullyQualifiedListInstance, PathSegment>{"module-qualified path segment (module:name)"} = fullyQualifiedApiIdentifier > -('=' > keyList > noStrayEquals);
 
-const auto uriPath = x3::rule<class uriPath, std::vector<PathSegment>>{"uriPath"} = -x3::lit("/") > -(fullyQualifiedListInstance > -("/" > listInstance % "/")); // RFC 8040, sec 3.5.3
-const auto nmdaDatastore = x3::rule<class nmdaDatastore, URIPrefix>{"nmdaDatastore"} = x3::attr(URIPrefix::Type::NMDADatastore) > "/" > fullyQualifiedApiIdentifier;
-const auto resource = x3::rule<class otherResources, URIPath>{"resource"} =
+const auto uriPathContent = x3::rule<class uriPathContent, std::vector<PathSegment>>{"uriPathContent"} = fullyQualifiedListInstance > -("/" > listInstance % "/"); // RFC 8040, sec 3.5.3
+const auto uriEmpty = x3::rule<class uriEmpty, std::vector<PathSegment>>{"uriEmpty"} = (&x3::eoi) > x3::attr(std::vector<PathSegment>{});
+const auto uriPathMaybeEmpty = x3::rule<class uriPathMaybeEmpty, std::vector<PathSegment>>{"resource path"} = uriEmpty | uriPathContent;
+const auto uriPath = x3::rule<class uriPath, std::vector<PathSegment>>{"uriPath"} = uriEmpty | (x3::lit("/") > uriPathMaybeEmpty);
+const auto nmdaDatastore = x3::rule<class nmdaDatastore, URIPrefix>{"NMDA datastore identifier"} = x3::attr(URIPrefix::Type::NMDADatastore) > "/" > fullyQualifiedApiIdentifier;
+const auto resource = x3::rule<class otherResources, URIPath>{"RESTCONF resource"} =
     (x3::eoi > x3::attr(URIPrefix{URIPrefix::Type::RestconfRoot}) > x3::attr(std::vector<PathSegment>{})) |
     (x3::lit("data") > x3::attr(URIPrefix{URIPrefix::Type::BasicRestconfData}) > uriPath) |
     (x3::lit("ds") > nmdaDatastore > uriPath) |
     (x3::lit("operations") > x3::attr(URIPrefix{URIPrefix::Type::BasicRestconfOperations}) > uriPath) |
     // restconf and /restconf/yang-library-version do not expect any uriPath but we need to construct correct URIPath instance. Use the x3::attr call to create empty vector<PathSegment>
     (x3::lit("yang-library-version") > x3::attr(URIPrefix{URIPrefix::Type::YangLibraryVersion}) > x3::attr(std::vector<PathSegment>{}) > -x3::lit("/"));
-const auto resources = x3::rule<class resources, URIPath>{"resources"} = (x3::lit("/") > resource) | (x3::eoi > x3::attr(URIPrefix{URIPrefix::Type::RestconfRoot}) > x3::attr(std::vector<PathSegment>{}));
-const auto restconfGrammar = x3::rule<class restconfGrammar, URIPath>{"restconfGrammar"} = x3::lit("/") > x3::lit("restconf") > resources;
+const auto resources = x3::rule<class resources, URIPath>{"RESTCONF resource"} = (x3::lit("/") > resource) | (x3::eoi > x3::attr(URIPrefix{URIPrefix::Type::RestconfRoot}) > x3::attr(std::vector<PathSegment>{}));
+const auto restconfGrammar = x3::rule<class restconfGrammar, URIPath>{"RESTCONF URI"} = x3::lit("/") > x3::lit("restconf") > resources;
 
 const auto string_to_uuid = [](auto& ctx) {
     try {
