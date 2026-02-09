@@ -75,20 +75,20 @@ const auto string_to_uuid = [](auto& ctx) {
     }
 };
 
-const auto uuid_impl = x3::rule<class uuid_impl, std::string>{"uuid_impl"} =
+const auto uuid_impl = x3::rule<class uuid_impl, std::string>{"UUID (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)"} =
     x3::repeat(8)[x3::xdigit] > x3::char_('-') >
     x3::repeat(4)[x3::xdigit] > x3::char_('-') >
     x3::repeat(4)[x3::xdigit] > x3::char_('-') >
     x3::repeat(4)[x3::xdigit] > x3::char_('-') >
     x3::repeat(12)[x3::xdigit];
-const auto uuid = x3::rule<class uuid, boost::uuids::uuid>{"uuid"} = uuid_impl[string_to_uuid];
-const auto subscribedStream = x3::rule<class subscribedStream, SubscribedStreamRequest>{"subscribedStream"} = x3::lit("subscribed") > x3::lit("/") > uuid;
+const auto uuid = x3::rule<class uuid, boost::uuids::uuid>{"UUID"} = uuid_impl[string_to_uuid];
+const auto subscribedStream = x3::rule<class subscribedStream, SubscribedStreamRequest>{"subscribed stream"} = x3::lit("subscribed") > x3::lit("/") > uuid;
 
-const auto xmlStream = x3::rule<class xmlStream, libyang::DataFormat>{"xmlStream"} = x3::lit("XML") > x3::attr(libyang::DataFormat::XML);
-const auto jsonStream = x3::rule<class jsonStream, libyang::DataFormat>{"jsonStream"} = x3::lit("JSON") > x3::attr(libyang::DataFormat::JSON);
-const auto streamFormat = x3::rule<class streamFormat, libyang::DataFormat>{"streamFormat"} = (xmlStream | jsonStream);
-const auto notificationStream = x3::rule<class notificationStream, NotificationStreamRequest>{"notificationStream"} = identifier > x3::lit("/") > streamFormat;
-const auto streamGrammar = x3::rule<class streamGrammar, std::variant<NotificationStreamRequest, SubscribedStreamRequest>>{"streamGrammar"} =
+const auto xmlStream = x3::rule<class xmlStream, libyang::DataFormat>{"'XML'"} = x3::lit("XML") > x3::attr(libyang::DataFormat::XML);
+const auto jsonStream = x3::rule<class jsonStream, libyang::DataFormat>{"'JSON'"} = x3::lit("JSON") > x3::attr(libyang::DataFormat::JSON);
+const auto streamFormat = x3::rule<class streamFormat, libyang::DataFormat>{"stream format ('XML' or 'JSON')"} = (xmlStream | jsonStream);
+const auto notificationStream = x3::rule<class notificationStream, NotificationStreamRequest>{"notification stream"} = identifier > x3::lit("/") > streamFormat;
+const auto streamGrammar = x3::rule<class streamGrammar, std::variant<NotificationStreamRequest, SubscribedStreamRequest>>{"stream URI"} =
     x3::lit("/") > x3::lit("streams") > x3::lit("/") > (subscribedStream | notificationStream);
 
 // clang-format on
