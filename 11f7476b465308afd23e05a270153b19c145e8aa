@@ -16,6 +16,29 @@
       "message": "recheck",
       "revId": "11f7476b465308afd23e05a270153b19c145e8aa",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ca556ffb_a3accaa5",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 176,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-02-12T09:00:18Z",
+      "side": 1,
+      "message": "I\u0027m torn between saying \"this is awesome because it will present a nice error message to a humble developer\", with no overhead and without any complex setup, and \"this is not the proper identification of a token in the parser\" :). I guess the first options won for me.",
+      "range": {
+        "startLine": 176,
+        "startChar": 82,
+        "endLine": 176,
+        "endChar": 104
+      },
+      "revId": "11f7476b465308afd23e05a270153b19c145e8aa",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
