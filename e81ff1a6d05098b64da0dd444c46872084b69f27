@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "497081d5_2525b74f",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 847,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-02-13T10:13:09Z",
+      "side": 0,
+      "message": "sorry, I accidentally ran clang-format on the file.\nFixed here and in (almost) all other places.",
+      "parentUuid": "3c19a471_3665a812",
+      "revId": "e81ff1a6d05098b64da0dd444c46872084b69f27",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "9674f27d_84131ee4",
@@ -31,6 +49,24 @@
       "writtenOn": "2026-02-12T09:11:22Z",
       "side": 0,
       "message": "...and also here.",
+      "revId": "e81ff1a6d05098b64da0dd444c46872084b69f27",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ba6a1366_56bda9b8",
+        "filename": "tests/uri-parser.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 963,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-02-13T10:13:09Z",
+      "side": 0,
+      "message": "Done",
+      "parentUuid": "9674f27d_84131ee4",
       "revId": "e81ff1a6d05098b64da0dd444c46872084b69f27",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }

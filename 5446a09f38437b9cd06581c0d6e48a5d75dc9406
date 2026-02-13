@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "facd3a74_4b80d411",
+        "filename": "src/restconf/uri.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-02-13T10:13:09Z",
+      "side": 1,
+      "message": "Moved into separate commit with verbose commit message :-)",
+      "parentUuid": "cd27dfcb_d3173281",
+      "range": {
+        "startLine": 105,
+        "startChar": 106,
+        "endLine": 105,
+        "endChar": 113
+      },
+      "revId": "5446a09f38437b9cd06581c0d6e48a5d75dc9406",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "66061c97_d36b803a",
@@ -37,6 +61,30 @@
       "writtenOn": "2026-02-12T09:11:22Z",
       "side": 1,
       "message": "This will require some exception rewriting so that we always give the index for the entire URL \"part\" (i.e., relative to the first `/`, not to the start of this query parameter in this context). Will you please implement that in a follow-up commit?",
+      "range": {
+        "startLine": 174,
+        "startChar": 127,
+        "endLine": 174,
+        "endChar": 137
+      },
+      "revId": "5446a09f38437b9cd06581c0d6e48a5d75dc9406",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "28ab5c7f_acb0a746",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 174,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-02-13T10:13:09Z",
+      "side": 1,
+      "message": "It says in \"querystring\", this is actually a preparation for the restconf-error handler, that can say something like {where:querystring, offset: 7}.\nBut of course we can recompute that to the beginning of whole URI.",
+      "parentUuid": "66061c97_d36b803a",
       "range": {
         "startLine": 174,
         "startChar": 127,
