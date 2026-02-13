@@ -101,7 +101,7 @@ namespace x3 = boost::spirit::x3;
 
 const auto moduleName = x3::rule<class apiIdentifier, std::string>{"moduleName"} = (x3::alpha | x3::char_('_')) > *(x3::alnum | x3::char_('_') | x3::char_('-') | x3::char_('.'));
 const auto revision = x3::rule<class revision, std::string>{"revision"} = x3::repeat(4, x3::inf)[x3::digit] > x3::char_("-") > x3::repeat(2)[x3::digit] > x3::char_("-") > x3::repeat(2)[x3::digit];
-const auto yangSchemaGrammar = x3::rule<class yangSchemaGrammar, impl::YangModule>{"yangSchemaGrammar"} = x3::lit("/") > x3::lit("yang") > "/" > moduleName > -(x3::lit("@") > revision > -x3::lit(".yang"));
+const auto yangSchemaGrammar = x3::rule<class yangSchemaGrammar, impl::YangModule>{"yangSchemaGrammar"} = x3::eps > x3::lit("/") > x3::lit("yang") > "/" > moduleName > -(x3::lit("@") > revision > -x3::lit(".yang"));
 
 // clang-format on
 }
