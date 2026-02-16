@@ -56,7 +56,7 @@ struct YangModule {
 
 URIPath parseUriPath(const std::string& input);
 YangModule parseModuleWithRevision(const std::string& input);
-queryParams::QueryParams parseQueryParams(const std::string& input);
+queryParams::QueryParams parseQueryParams(const std::string& input, const unsigned positionOffset = 0);
 }
 }
 

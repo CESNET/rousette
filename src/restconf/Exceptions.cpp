@@ -4,9 +4,30 @@
  * Written by Jan Kundrát <jan.kundrat@cesnet.cz>
  * Written by Tomáš Pecka <tomas.pecka@cesnet.cz>
  *
-*/
+ */
 
 #include "restconf/Exceptions.h"
+
+namespace {
+std::string constructErrorMessage(const std::string& uriSegment)
+{
+    return "Syntax error in URI (" + uriSegment + ")";
+}
+
+/** @brief Constructs an error message for a syntax error in a URI segment, including the position and expected token if provided.
+ *  @param uriSegment The segment of the URI where the error occurred (e.g., "path" or "querystring").
+ *  @param position The position in the URI segment where the error was detected.
+ *  @param positionInPath An optional offset to add to the position for more accurate error reporting.
+ *         Useful for URLs with querystrings in order to report the position in the entire URI rather than just the querystring segment.
+ *  @param expectedToken A description of the expected token that was not found at the error position.
+ * */
+std::string constructErrorMessage(const std::string& uriSegment,
+                                  const unsigned& position,
+                                  const std::string& expectedToken)
+{
+    return constructErrorMessage(uriSegment) + " at position " + std::to_string(position) + ": expected " + expectedToken;
+}
+}
 
 namespace rousette::restconf {
 ErrorResponse::ErrorResponse(int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath)
@@ -24,17 +45,14 @@ const char* ErrorResponse::what() const noexcept
 }
 
 UriSyntaxError::UriSyntaxError(const std::string& uriSegment)
-    : ErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI " + uriSegment)
+    : ErrorResponse(400, "protocol", "invalid-value", constructErrorMessage(uriSegment))
 {
 }
 
 UriSyntaxError::UriSyntaxError(const std::string& uriSegment,
                                const unsigned& position,
                                const std::string& expectedToken)
-    : ErrorResponse(400,
-                    "protocol",
-                    "invalid-value",
-                    "Syntax error in URI " + uriSegment + " at position " + std::to_string(position) + ": expected " + expectedToken)
+    : ErrorResponse(400, "protocol", "invalid-value", constructErrorMessage(uriSegment, position, expectedToken))
 {
 }
 
@@ -48,13 +66,13 @@ UriPathSyntaxError::UriPathSyntaxError(const unsigned& position, const std::stri
 {
 }
 
-UriQueryStringSyntaxError::UriQueryStringSyntaxError()
-    : UriSyntaxError("querystring")
+UriQuerySyntaxError::UriQuerySyntaxError()
+    : UriSyntaxError("query")
 {
 }
 
-UriQueryStringSyntaxError::UriQueryStringSyntaxError(const unsigned& position, const std::string& expectedToken)
-    : UriSyntaxError("querystring", position, expectedToken)
+UriQuerySyntaxError::UriQuerySyntaxError(const unsigned& position, const std::string& expectedToken)
+    : UriSyntaxError("query", position, expectedToken)
 {
 }
 }

@@ -213,8 +213,16 @@ const auto queryParamGrammar = x3::rule<class queryParamGrammar, queryParams::Qu
 }
 
 namespace {
+
+/** @brief Parses input
+ * @tparam Type of the result
+ * @param input String to parse
+ * @param g Boost.Spirit grammar to use for parsing
+ * @param positionOffset If specified, it is used as an offset for the error position in the SyntaxErrorException.
+ *                       This is useful when we want to parse only e.g. querystring, and report offset in the whole path.
+ */
 template <class Attribute, class SyntaxErrorException, class Grammar>
-Attribute parse(const std::string& input, const Grammar& g)
+Attribute parse(const std::string& input, const Grammar& g, const unsigned positionOffset = 0)
 {
     namespace x3 = boost::spirit::x3;
 
@@ -231,8 +239,8 @@ Attribute parse(const std::string& input, const Grammar& g)
             throw SyntaxErrorException();
         }
     } catch (const boost::spirit::x3::expectation_failure<decltype(iter)>& e) {
-        auto offset = std::distance(std::begin(input), e.where());
-        throw SyntaxErrorException(offset, e.which());
+        auto inputOffset = std::distance(std::begin(input), e.where());
+        throw SyntaxErrorException(inputOffset + positionOffset, e.which());
     }
 
     return out;
@@ -249,9 +257,9 @@ impl::YangModule parseModuleWithRevision(const std::string& input)
     return parse<impl::YangModule, UriPathSyntaxError>(input, yangSchemaGrammar);
 }
 
-queryParams::QueryParams parseQueryParams(const std::string& input)
+queryParams::QueryParams parseQueryParams(const std::string& querystring, const unsigned pathLength)
 {
-    return parse<queryParams::QueryParams, UriQueryStringSyntaxError>(input, queryParamGrammar);
+    return parse<queryParams::QueryParams, UriQuerySyntaxError>(querystring, queryParamGrammar, pathLength);
 }
 
 std::variant<NotificationStreamRequest, SubscribedStreamRequest> parseStreamUri(const std::string& input)
@@ -612,7 +620,7 @@ RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string
 
     auto uri = impl::parseUriPath(uriPath);
 
-    auto queryParameters = impl::parseQueryParams(uriQueryString);
+    auto queryParameters = impl::parseQueryParams(uriQueryString, uriPath.size() + 1 /* '?' */);
     validateQueryParameters(queryParameters, httpMethod);
 
     auto [lyPath, schemaNode] = asLibyangPath(ctx, uri.segments.begin(), uri.segments.end());
@@ -711,7 +719,7 @@ RestconfStreamRequest asRestconfStreamRequest(const std::string& httpMethod, con
     auto type = impl::parseStreamUri(uriPath);
 
     if (auto* request = std::get_if<NotificationStreamRequest>(&type)) {
-        auto queryParameters = impl::parseQueryParams(uriQueryString);
+        auto queryParameters = impl::parseQueryParams(uriQueryString, uriPath.size() + 1 /* '?' */);
         validateQueryParametersForStream(queryParameters);
         request->queryParams = queryParameters;
     }

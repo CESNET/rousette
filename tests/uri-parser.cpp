@@ -24,7 +24,7 @@ using namespace std::string_literals;
                            serializeErrorResponse(400,                                                                                                       \
                                                   "protocol",                                                                                                \
                                                   "invalid-value",                                                                                           \
-                                                  "Syntax error in URI querystring at position "s + std::to_string(OFFSET) + ": expected "s + EXPECTEDTOKEN) \
+                                                  "Syntax error in URI (query) at position "s + std::to_string(OFFSET) + ": expected "s + EXPECTEDTOKEN) \
                                .c_str(),                                                                                                                     \
                            rousette::restconf::ErrorResponse)
 
@@ -274,7 +274,7 @@ TEST_CASE("URI path parser")
              }) {
 
             CAPTURE(uriPath);
-            const auto errMessage = std::format("Syntax error in URI path at position {}: expected {}", position, expectedToken);
+            const auto errMessage = std::format("Syntax error in URI (path) at position {}: expected {}", position, expectedToken);
             REQUIRE_THROWS_WITH_AS(rousette::restconf::impl::parseUriPath(uriPath),
                                    serializeErrorResponse(400, "protocol", "invalid-value", errMessage).c_str(),
                                    rousette::restconf::UriSyntaxError);
@@ -469,7 +469,7 @@ TEST_CASE("URI path parser")
                 SECTION("Unparseable URI")
                 {
                     uriPath = "/restconf/data///!/@akjsaosdasdlasd";
-                    expectedErrorMessage = "Syntax error in URI path at position 15: expected resource path";
+                    expectedErrorMessage = "Syntax error in URI (path) at position 15: expected resource path";
                     expectedErrorType = "protocol";
                     expectedErrorTag = "invalid-value";
                 }
@@ -704,7 +704,7 @@ TEST_CASE("URI path parser")
                      {"/yang/@1234", 6, "moduleName"},
                  }) {
                 CAPTURE(uriPath);
-                const auto errMessage = std::format("Syntax error in URI path at position {}: expected {}", position, expectedToken);
+                const auto errMessage = std::format("Syntax error in URI (path) at position {}: expected {}", position, expectedToken);
                 REQUIRE_THROWS_WITH_AS(rousette::restconf::impl::parseModuleWithRevision(uriPath),
                                        serializeErrorResponse(400, "protocol", "invalid-value", errMessage).c_str(),
                                        rousette::restconf::UriSyntaxError);
@@ -1095,7 +1095,7 @@ TEST_CASE("URI path parser")
             }
 
             REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "GET", "/restconf/data/example:tlc", "hello=world"),
-                                   serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI querystring at position 0: expected query parameter").c_str(),
+                                   serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI (query) at position 27: expected query parameter").c_str(),
                                    rousette::restconf::ErrorResponse);
         }
     }
@@ -1137,22 +1137,22 @@ TEST_CASE("URI path parser")
         }
 
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF", ""),
-                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path at position 16: expected \"/\"").c_str(),
+                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI (path) at position 16: expected \"/\"").c_str(),
                                rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/restconf/data", ""),
-                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path at position 1: expected \"streams\"").c_str(),
+                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI (path) at position 1: expected \"streams\"").c_str(),
                                rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF/xml", ""),
-                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path at position 17: expected stream format ('XML' or 'JSON')").c_str(),
+                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI (path) at position 17: expected stream format ('XML' or 'JSON')").c_str(),
                                rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF/XM", ""),
-                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path at position 17: expected stream format ('XML' or 'JSON')").c_str(),
+                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI (path) at position 17: expected stream format ('XML' or 'JSON')").c_str(),
                                rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/subscribed", ""),
-                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path at position 19: expected \"/\"").c_str(),
+                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI (path) at position 19: expected \"/\"").c_str(),
                                rousette::restconf::ErrorResponse);
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/subscribed/123-456-789", ""),
-                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI path at position 20: expected UUID").c_str(),
+                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI (path) at position 20: expected UUID").c_str(),
                                rousette::restconf::ErrorResponse);
 
 

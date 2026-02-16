@@ -188,7 +188,7 @@ TEST_CASE("obtaining YANG schemas")
                 SECTION("wrong revision in uri")
                 {
                     REQUIRE(get(YANG_ROOT "/ietf-system@1999-12-13", {AUTH_ROOT}) == Response{404, plaintextHeaders, "YANG schema not found"});
-                    REQUIRE(get(YANG_ROOT "/ietf-system@abcd-ef-gh", {AUTH_ROOT}) == Response{400, plaintextHeaders, "Syntax error in URI path at position 18: expected revision"});
+                    REQUIRE(get(YANG_ROOT "/ietf-system@abcd-ef-gh", {AUTH_ROOT}) == Response{400, plaintextHeaders, "Syntax error in URI (path) at position 18: expected revision"});
                     REQUIRE(head(YANG_ROOT "/ietf-system@abcd-ef-gh", {AUTH_ROOT}) == Response{400, plaintextHeaders, ""});
                 }
                 SECTION("auth failure")
