@@ -97,6 +97,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "8e41fc4e_a7348728",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 174,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-02-16T10:28:46Z",
+      "side": 1,
+      "message": "Done as https://gerrit.cesnet.cz/c/CzechLight/rousette/+/9122/1",
+      "parentUuid": "28ab5c7f_acb0a746",
+      "range": {
+        "startLine": 174,
+        "startChar": 127,
+        "endLine": 174,
+        "endChar": 137
+      },
+      "revId": "5446a09f38437b9cd06581c0d6e48a5d75dc9406",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "e312ccbb_c8f966ab",
         "filename": "tests/uri-parser.cpp",
         "patchSetId": 5
