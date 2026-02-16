@@ -26,16 +26,19 @@ struct ErrorResponse : public std::exception {
 struct UriSyntaxError : public ErrorResponse {
 protected:
     UriSyntaxError(const std::string& uriSegment);
-    UriSyntaxError(const std::string& uriSegment, const unsigned& position, const std::string& expectedToken);
+    UriSyntaxError(const std::string& uriSegment,
+                   const unsigned& position,
+                   const unsigned& positionOffset,
+                   const std::string& expectedToken);
 };
 
 struct UriPathSyntaxError : public UriSyntaxError {
     UriPathSyntaxError();
-    UriPathSyntaxError(const unsigned& position, const std::string& expectedToken);
+    UriPathSyntaxError(const unsigned& position, const unsigned& positionOffset, const std::string& expectedToken);
 };
 
 struct UriQueryStringSyntaxError : public UriSyntaxError {
     UriQueryStringSyntaxError();
-    UriQueryStringSyntaxError(const unsigned& position, const std::string& expectedToken);
+    UriQueryStringSyntaxError(const unsigned& position, const unsigned& positionOffset, const std::string& expectedToken);
 };
 }

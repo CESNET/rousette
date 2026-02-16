@@ -1095,7 +1095,7 @@ TEST_CASE("URI path parser")
             }
 
             REQUIRE_THROWS_WITH_AS(asRestconfRequest(ctx, "GET", "/restconf/data/example:tlc", "hello=world"),
-                                   serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI querystring at position 0: expected query parameter").c_str(),
+                                   serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI querystring at position 0 (position in whole URI: 27): expected query parameter").c_str(),
                                    rousette::restconf::ErrorResponse);
         }
     }
