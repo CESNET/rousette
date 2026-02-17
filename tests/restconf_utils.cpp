@@ -49,6 +49,31 @@ bool Response::operator==(const Response& o) const
     return equalStatusCodeAndHeaders(o) && data == o.data;
 }
 
+JsonResponse::JsonResponse(int statusCode, const Response::Headers& headers, nlohmann::json body)
+    : JsonResponse(statusCode, Response::transformHeaders(headers), std::move(body))
+{
+}
+
+JsonResponse::JsonResponse(int statusCode, const ng::header_map& headers, nlohmann::json body)
+    : statusCode(statusCode)
+    , headers(headers)
+    , body(std::move(body))
+{
+}
+
+bool operator==(const Response& response, const JsonResponse& expected)
+{
+    Response temp{expected.statusCode, expected.headers, {}};
+    if (!response.equalStatusCodeAndHeaders(temp)) {
+        return false;
+    }
+    try {
+        return nlohmann::json::parse(response.data) == expected.body;
+    } catch (const nlohmann::json::exception&) {
+        return false;
+    }
+}
+
 ng::header_map Response::transformHeaders(const Response::Headers& headers)
 {
     ng::header_map res;

@@ -98,6 +98,7 @@ In practical terms, this means that the NACM access rules for the following XPat
 - optionally for built-in tests, [Doctest](https://github.com/doctest/doctest/) as a C++ unit test framework
 - optionally for built-in tests, [trompeloeil](https://github.com/rollbear/trompeloeil) for mock objects in C++
 - optionally for built-in tests, [`pam_matrix` and `pam_wrapper`](https://cwrap.org/pam_wrapper.html) for PAM mocking
+- optionally for built-in tests, [`nlohmann/json`](https://json.nlohmann.me/) - JSON for Modern C++
 
 ## Building
 

@@ -9,6 +9,7 @@
 #pragma once
 #include "trompeloeil_doctest.h"
 #include <nghttp2/asio_http2_client.h>
+#include <nlohmann/json.hpp>
 #include <semaphore>
 #include "event_watchers.h"
 #include "UniqueResource.h"
@@ -33,6 +34,17 @@ struct Response {
     bool operator==(const Response& o) const;
     static ng::header_map transformHeaders(const Headers& headers);
 };
+
+struct JsonResponse {
+    int statusCode;
+    ng::header_map headers;
+    nlohmann::json body;
+
+    JsonResponse(int statusCode, const Response::Headers& headers, nlohmann::json body);
+    JsonResponse(int statusCode, const ng::header_map& headers, nlohmann::json body);
+};
+
+bool operator==(const Response& response, const JsonResponse& expected);
 
 namespace doctest {
 
@@ -62,6 +74,22 @@ struct StringMaker<Response> {
             << std::to_string(o.statusCode) << ", "
             << StringMaker<decltype(o.headers)>::convert(o.headers) << ",\n"
             << "\"" << o.data << "\",\n"
+            << "}";
+
+        return oss.str().c_str();
+    }
+};
+
+template <>
+struct StringMaker<JsonResponse> {
+    static String convert(const JsonResponse& o)
+    {
+        std::ostringstream oss;
+
+        oss << "{"
+            << std::to_string(o.statusCode) << ", "
+            << StringMaker<ng::header_map>::convert(o.headers) << ",\n"
+            << o.body.dump(2) << ",\n"
             << "}";
 
         return oss.str().c_str();
