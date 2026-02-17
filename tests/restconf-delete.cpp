@@ -12,7 +12,6 @@ static const auto SERVER_PORT = "10086";
 #include "restconf/Server.h"
 #include "tests/aux-utils.h"
 #include "tests/event_watchers.h"
-#include "tests/pretty_printers.h"
 
 TEST_CASE("deleting data")
 {
@@ -54,36 +53,12 @@ TEST_CASE("deleting data")
 
     SECTION("anonymous deletes disabled by NACM")
     {
-        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:top-level-leaf", {}) == Response{403, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "access-denied",
-        "error-path": "/example:top-level-leaf",
-        "error-message": "Access denied."
-      }
-    ]
-  }
-}
-)"});
+        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:top-level-leaf", {}) == jsonError(403, "application", "access-denied", "Access denied.", "/example:top-level-leaf"));
     }
 
     SECTION("deleting not present non-mandatory nodes")
     {
-        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:tlc/status", {AUTH_ROOT}) == Response{404, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "data-missing",
-        "error-path": "/example:tlc/status",
-        "error-message": "Data is missing."
-      }
-    ]
-  }
-}
-)"});
+        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:tlc/status", {AUTH_ROOT}) == jsonError(404, "application", "data-missing", "Data is missing.", "/example:tlc/status"));
     }
 
     SECTION("leafs")
@@ -110,32 +85,9 @@ TEST_CASE("deleting data")
             DELETED("/example:top-level-list[name='key1']/name", "key1"));
         REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:top-level-list=key1", {AUTH_ROOT}) == Response{204, noContentTypeHeaders, ""});
 
-        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:top-level-list=ThisKeyDoesNotExist", {AUTH_ROOT}) == Response{404, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "data-missing",
-        "error-path": "/example:top-level-list[name='ThisKeyDoesNotExist']",
-        "error-message": "Data is missing."
-      }
-    ]
-  }
-}
-)"});
+        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:top-level-list=ThisKeyDoesNotExist", {AUTH_ROOT}) == jsonError(404, "application", "data-missing", "Data is missing.", "/example:top-level-list[name='ThisKeyDoesNotExist']"));
 
-        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:top-level-list", {AUTH_ROOT}) == Response{400, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "operation-failed",
-        "error-message": "List '/example:top-level-list' requires 1 keys"
-      }
-    ]
-  }
-}
-)"});
+        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:top-level-list", {AUTH_ROOT}) == jsonError(400, "application", "operation-failed", "List '/example:top-level-list' requires 1 keys"));
     }
 
     SECTION("leaf-lists")
@@ -143,32 +95,9 @@ TEST_CASE("deleting data")
         EXPECT_CHANGE(DELETED("/example:top-level-leaf-list[.='2']", "2"));
         REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:top-level-leaf-list=2", {AUTH_ROOT}) == Response{204, noContentTypeHeaders, ""});
 
-        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:top-level-leaf-list=666", {AUTH_ROOT}) == Response{404, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "data-missing",
-        "error-path": "/example:top-level-leaf-list[.='666']",
-        "error-message": "Data is missing."
-      }
-    ]
-  }
-}
-)"});
+        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:top-level-leaf-list=666", {AUTH_ROOT}) == jsonError(404, "application", "data-missing", "Data is missing.", "/example:top-level-leaf-list[.='666']"));
 
-        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:top-level-leaf-list", {AUTH_ROOT}) == Response{400, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "operation-failed",
-        "error-message": "Leaf-list '/example:top-level-leaf-list' requires exactly one key"
-      }
-    ]
-  }
-}
-)"});
+        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:top-level-leaf-list", {AUTH_ROOT}) == jsonError(400, "application", "operation-failed", "Leaf-list '/example:top-level-leaf-list' requires exactly one key"));
     }
 
     SECTION("NMDA")
@@ -182,93 +111,23 @@ TEST_CASE("deleting data")
     SECTION("RPC nodes")
     {
         // empty allow header because the rpc is requested using /restconf/data and not /restconf/operations prefix
-        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:test-rpc", {AUTH_ROOT}) == Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", ""}}, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "protocol",
-        "error-tag": "operation-not-supported",
-        "error-message": "'/example:test-rpc' is an RPC/Action node"
-      }
-    ]
-  }
-}
-)"});
+        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:test-rpc", {AUTH_ROOT}) == jsonError(405, "protocol", "operation-not-supported", "'/example:test-rpc' is an RPC/Action node", std::nullopt, Response::Headers{{"allow", ""}}));
 
-        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:test-rpc/input/i", {AUTH_ROOT}) == Response{400, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "operation-failed",
-        "error-message": "'/example:test-rpc' is an RPC/Action node, any child of it can't be requested"
-      }
-    ]
-  }
-}
-)"});
+        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:test-rpc/input/i", {AUTH_ROOT}) == jsonError(400, "application", "operation-failed", "'/example:test-rpc' is an RPC/Action node, any child of it can't be requested"));
     }
 
     SECTION("NACM 403 vs 404")
     {
         // User only has read permission, 403 makes sense
-        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example-delete:immutable=existing-key", {}) == Response{403, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "access-denied",
-        "error-path": "/example-delete:immutable[name='existing-key']",
-        "error-message": "Access denied."
-      }
-    ]
-  }
-}
-)"});
+        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example-delete:immutable=existing-key", {}) == jsonError(403, "application", "access-denied", "Access denied.", "/example-delete:immutable[name='existing-key']"));
 
         // User has read permission but the node is not present, 404 makes sense
-        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example-delete:immutable=non-existing-key", {}) == Response{404, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "data-missing",
-        "error-path": "/example-delete:immutable[name='non-existing-key']",
-        "error-message": "Data is missing."
-      }
-    ]
-  }
-}
-)"});
+        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example-delete:immutable=non-existing-key", {}) == jsonError(404, "application", "data-missing", "Data is missing.", "/example-delete:immutable[name='non-existing-key']"));
 
         // User does not know that this node actually exist
-        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example-delete:secret=existing-key", {}) == Response{403, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "access-denied",
-        "error-path": "/example-delete:secret[name='existing-key']",
-        "error-message": "Access denied."
-      }
-    ]
-  }
-}
-)"});
+        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example-delete:secret=existing-key", {}) == jsonError(403, "application", "access-denied", "Access denied.", "/example-delete:secret[name='existing-key']"));
 
         // FIXME: User does not know that this node actually does not exist but sysrepo does report data is missing error here. See https://github.com/sysrepo/sysrepo/issues/3283
-        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example-delete:secret=non-existing-key", {}) == Response{404, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "data-missing",
-        "error-path": "/example-delete:secret[name='non-existing-key']",
-        "error-message": "Data is missing."
-      }
-    ]
-  }
-}
-)"});
+        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example-delete:secret=non-existing-key", {}) == jsonError(404, "application", "data-missing", "Data is missing.", "/example-delete:secret[name='non-existing-key']"));
     }
 }

@@ -104,3 +104,32 @@ Response httpDelete(auto uri, const std::map<std::string, std::string>& headers,
 {
     return clientRequest(SERVER_ADDRESS, SERVER_PORT, "DELETE", uri, "", headers, timeout);
 }
+
+inline JsonResponse jsonError(
+    const int statusCode,
+    const std::string& errorType,
+    const std::string& errorTag,
+    const std::string& errorMessage,
+    const std::optional<std::string>& errorPath = std::nullopt,
+    const Response::Headers additionalHeaders = {})
+{
+    using json = nlohmann::json;
+
+    auto headers = jsonHeaders;
+    headers.merge(Response::transformHeaders(additionalHeaders));
+
+    json errorObj = {
+        {"error-type", errorType},
+        {"error-tag", errorTag},
+        {"error-message", errorMessage},
+    };
+    if (errorPath) {
+        errorObj["error-path"] = *errorPath;
+    }
+
+    return JsonResponse{
+        statusCode,
+        headers,
+        json{{"ietf-restconf:errors", {{"error", json::array({errorObj})}}}},
+    };
+}
