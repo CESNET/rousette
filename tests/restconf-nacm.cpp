@@ -15,6 +15,28 @@ static const auto SERVER_PORT = "10082";
 
 TEST_CASE("NACM")
 {
+    using json = nlohmann::json;
+
+    const auto systemBasic = json{
+        {"contact", "contact"},
+        {"hostname", "hostname"},
+        {"location", "location"},
+    };
+
+    auto systemFull = systemBasic;
+    systemFull["clock"] = {{"timezone-utc-offset", 2}};
+    systemFull["dns-resolver"] = {{"options", json::object()}};
+    systemFull["radius"] = {
+        {"server", json::array({{
+                       {"name", "a"},
+                       {"udp", {
+                                   {"address", "1.1.1.1"},
+                                   {"shared-secret", "shared-secret"},
+                               }},
+                   }})},
+        {"options", json::object()},
+    };
+
     spdlog::set_level(spdlog::level::trace);
     sysrepo::setGlobalContextOptions(sysrepo::ContextFlags::LibYangPrivParsed | sysrepo::ContextFlags::NoPrinted, sysrepo::GlobalContextEffect::Immediate);
     auto srConn = sysrepo::Connection{};
@@ -38,18 +60,7 @@ TEST_CASE("NACM")
     DOCTEST_SUBCASE("no rules")
     {
         // anonymous access doesn't work without magic NACM rules
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system", {}) == Response{401, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "protocol",
-        "error-tag": "access-denied",
-        "error-message": "Access denied."
-      }
-    ]
-  }
-}
-)"});
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system", {}) == jsonError(401, "protocol", "access-denied", "Access denied."));
     }
 
     DOCTEST_SUBCASE("Invalid NACM configurations")
@@ -153,44 +164,12 @@ TEST_CASE("NACM")
             srSess.applyChanges();
         }
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system", {}) == Response{401, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "protocol",
-        "error-tag": "access-denied",
-        "error-message": "Access denied."
-      }
-    ]
-  }
-}
-)"});
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
-  "ietf-system:system": {
-    "contact": "contact",
-    "hostname": "hostname",
-    "location": "location",
-    "clock": {
-      "timezone-utc-offset": 2
-    },
-    "dns-resolver": {
-      "options": {}
-    },
-    "radius": {
-      "server": [
-        {
-          "name": "a",
-          "udp": {
-            "address": "1.1.1.1",
-            "shared-secret": "shared-secret"
-          }
-        }
-      ],
-      "options": {}
-    }
-  }
-}
-)"});
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system", {}) == jsonError(401, "protocol", "access-denied", "Access denied."));
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system", {AUTH_DWDM}) == JsonResponse{
+                    200,
+                    Response::Headers{},
+                    json{{"ietf-system:system", systemFull}},
+                });
     }
 
     DOCTEST_SUBCASE("standard NACM rules")
@@ -198,80 +177,15 @@ TEST_CASE("NACM")
         // setup real-like NACM
         setupRealNacm(srSess);
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system", {}) == Response{200, jsonHeaders, R"({
-  "ietf-system:system": {
-    "contact": "contact",
-    "hostname": "hostname",
-    "location": "location"
-  }
-}
-)"});
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system", {}) == JsonResponse{200, Response::Headers{}, json{{"ietf-system:system", systemBasic}}});
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-interfaces:idk", {}) == Response{400, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "operation-failed",
-        "error-message": "Couldn't find schema node: /ietf-interfaces:idk"
-      }
-    ]
-  }
-}
-)"});
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-interfaces:idk", {}) == jsonError(400, "application", "operation-failed", "Couldn't find schema node: /ietf-interfaces:idk"));
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/clock", {}) == Response{404, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "invalid-value",
-        "error-message": "No data from sysrepo."
-      }
-    ]
-  }
-}
-)"});
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/clock", {}) == jsonError(404, "application", "invalid-value", "No data from sysrepo."));
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/clock/timezone-utc-offset", {}) == Response{404, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "invalid-value",
-        "error-message": "No data from sysrepo."
-      }
-    ]
-  }
-}
-)"});
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/clock/timezone-utc-offset", {}) == jsonError(404, "application", "invalid-value", "No data from sysrepo."));
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
-  "ietf-system:system": {
-    "contact": "contact",
-    "hostname": "hostname",
-    "location": "location",
-    "clock": {
-      "timezone-utc-offset": 2
-    },
-    "dns-resolver": {
-      "options": {}
-    },
-    "radius": {
-      "server": [
-        {
-          "name": "a",
-          "udp": {
-            "address": "1.1.1.1",
-            "shared-secret": "shared-secret"
-          }
-        }
-      ],
-      "options": {}
-    }
-  }
-}
-)"});
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system", {AUTH_DWDM}) == JsonResponse{200, Response::Headers{}, json{{"ietf-system:system", systemFull}}});
 
         {
             // wrong password: the server should delay its response, so let the client wait "long enough"
@@ -279,18 +193,7 @@ TEST_CASE("NACM")
             REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system",
                         {AUTH_WRONG_PASSWORD},
                         boost::posix_time::seconds(5))
-                    == Response{401, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "protocol",
-        "error-tag": "access-denied",
-        "error-message": "Access denied."
-      }
-    ]
-  }
-}
-)"});
+                    == jsonError(401, "protocol", "access-denied", "Access denied."));
             auto processingMS = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
             REQUIRE(processingMS <= 5'000);
             REQUIRE(processingMS >= 1'500);
@@ -308,55 +211,55 @@ TEST_CASE("NACM")
             REQUIRE(processingMS <= 500);
         }
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-interfaces:idk", {AUTH_DWDM}) == Response{400, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "operation-failed",
-        "error-message": "Couldn't find schema node: /ietf-interfaces:idk"
-      }
-    ]
-  }
-}
-)"});
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-interfaces:idk", {AUTH_DWDM}) == jsonError(400, "application", "operation-failed", "Couldn't find schema node: /ietf-interfaces:idk"));
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/clock", {AUTH_DWDM}) == Response{200, jsonHeaders, R"({
-  "ietf-system:system": {
-    "clock": {
-      "timezone-utc-offset": 2
-    }
-  }
-}
-)"});
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/clock", {AUTH_DWDM}) == JsonResponse{
+                    200,
+                    Response::Headers{},
+                    json{
+                        {
+                            "ietf-system:system",
+                            {
+                                {
+                                    "clock",
+                                    {
+                                        {"timezone-utc-offset", 2},
+                                    },
+                                },
+                            },
+                        },
+                    },
+                });
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/radius/server", {AUTH_NORULES}) == Response{400, jsonHeaders, R"({
-  "ietf-restconf:errors": {
-    "error": [
-      {
-        "error-type": "application",
-        "error-tag": "operation-failed",
-        "error-message": "List '/ietf-system:system/radius/server' requires 1 keys"
-      }
-    ]
-  }
-}
-)"});
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/radius/server", {AUTH_NORULES}) == jsonError(400, "application", "operation-failed", "List '/ietf-system:system/radius/server' requires 1 keys"));
 
-        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/radius/server=a", {AUTH_NORULES}) == Response{200, jsonHeaders, R"({
-  "ietf-system:system": {
-    "radius": {
-      "server": [
-        {
-          "name": "a",
-          "udp": {
-            "address": "1.1.1.1"
-          }
-        }
-      ]
-    }
-  }
-}
-)"});
+        REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system/radius/server=a", {AUTH_NORULES}) == JsonResponse{
+                    200,
+                    Response::Headers{},
+                    json{
+                        {
+                            "ietf-system:system",
+                            {
+                                {
+                                    "radius",
+                                    {
+                                        {
+                                            "server",
+                                            json::array({{
+                                                {"name", "a"},
+                                                {
+                                                    "udp",
+                                                    {
+                                                        {"address", "1.1.1.1"},
+                                                    },
+                                                },
+                                            }}),
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                });
     }
 }
