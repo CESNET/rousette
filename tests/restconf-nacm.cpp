@@ -6,7 +6,6 @@
  *
  */
 
-static const auto SERVER_PORT = "10082";
 #include "tests/aux-utils.h"
 #include <nghttp2/asio_http2.h>
 #include <spdlog/spdlog.h>

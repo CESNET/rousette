@@ -5,7 +5,6 @@
  *
  */
 
-static const auto SERVER_PORT = "10083";
 #include <nghttp2/asio_http2.h>
 #include <spdlog/spdlog.h>
 #include <sysrepo-cpp/utils/utils.hpp>

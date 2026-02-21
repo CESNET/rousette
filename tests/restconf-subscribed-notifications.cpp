@@ -6,7 +6,6 @@
  */
 
 #include "trompeloeil_doctest.h"
-static const auto SERVER_PORT = "10092";
 #include <libyang-cpp/Time.hpp>
 #include <nghttp2/asio_http2.h>
 #include <regex>
