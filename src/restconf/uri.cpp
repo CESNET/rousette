@@ -8,6 +8,7 @@
 #include <boost/fusion/adapted/struct/adapt_struct.hpp>
 #include <boost/fusion/include/std_pair.hpp>
 #include <boost/spirit/home/x3/support/ast/variant.hpp>
+#include <boost/spirit/home/x3/support/utility/error_reporting.hpp>
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <experimental/iterator>
@@ -35,32 +36,36 @@ auto add = [](auto& ctx) {
     char c = std::tolower(_attr(ctx));
     _val(ctx) = _val(ctx) * 16 + (c >= 'a' ? c - 'a' + 10 : c - '0');
 };
-const auto percentEncodedChar = x3::rule<class percentEncodedChar, unsigned>{"percentEncodedChar"} = x3::lit('%')[set_zero] >> x3::xdigit[add] >> x3::xdigit[add];
+const auto hexbyte = x3::rule<class hexbyte, unsigned>{"two hex digits"} = x3::eps[set_zero] >> x3::xdigit[add] >> x3::xdigit[add];
+const auto percentEncodedChar = x3::rule<class percentEncodedChar, unsigned>{"percent-encoded character"} = x3::lit('%') > hexbyte;
 
 /* reserved characters according to RFC 3986, sec. 2.2 with '%' added. The '%' character is not specified as reserved but it effectively is because
  * "Percent sign serves as the indicator for percent-encoded octets, it must be percent-encoded (...)" [RFC 3986, sec. 2.4]. */
 const auto reservedChars = x3::lit(':') | '/' | '?' | '#' | '[' | ']' | '@' | '!' | '$' | '&' | '\'' | '(' | ')' | '*' | '+' | ',' | ',' | ';' | '=' | '%';
-const auto percentEncodedString = x3::rule<class percentEncodedString, std::string>{"percentEncodedString"} = *(percentEncodedChar | (x3::char_ - reservedChars));
+const auto percentEncodedString = x3::rule<class percentEncodedString, std::string>{"percent-encoded string"} = +(percentEncodedChar | (x3::char_ - reservedChars));
 
-const auto keyList = x3::rule<class keyList, std::vector<std::string>>{"keyList"} = percentEncodedString % ',';
-const auto identifier = x3::rule<class identifier, std::string>{"identifier"} = (x3::alpha | x3::char_('_')) >> *(x3::alnum | x3::char_('_') | x3::char_('-') | x3::char_('.'));
-const auto apiIdentifier = x3::rule<class apiIdentifier, ApiIdentifier>{"apiIdentifier"} = -(identifier >> ':') >> identifier;
-const auto listInstance = x3::rule<class listInstance, PathSegment>{"listInstance"} = apiIdentifier >> -('=' >> keyList);
-const auto fullyQualifiedApiIdentifier = x3::rule<class fullyQualifiedApiIdentifier, ApiIdentifier>{"fullyQualifiedApiIdentifier"} = identifier >> ':' >> identifier;
-const auto fullyQualifiedListInstance = x3::rule<class fullyQualifiedListInstance, PathSegment>{"fullyQualifiedListInstance"} = fullyQualifiedApiIdentifier >> -('=' >> keyList);
+const auto keyList = x3::rule<class keyList, std::vector<std::string>>{"list key values"} = (percentEncodedString | (x3::eps > x3::attr(std::string("")))) % ',';
+const auto noStrayEquals = x3::rule<class noStrayEquals>{"valid key value"} = !x3::lit('=');
+const auto identifier = x3::rule<class identifier, std::string>{"identifier"} = (x3::alpha | x3::char_('_')) > *(x3::alnum | x3::char_('_') | x3::char_('-') | x3::char_('.'));
+const auto apiIdentifier = x3::rule<class apiIdentifier, ApiIdentifier>{"api identifier"} = -(identifier >> ':') > identifier;
+const auto listInstance = x3::rule<class listInstance, PathSegment>{"path segment"} = apiIdentifier > -('=' > keyList > noStrayEquals);
+const auto fullyQualifiedApiIdentifier = x3::rule<class fullyQualifiedApiIdentifier, ApiIdentifier>{"module-qualified identifier (module:name)"} = identifier > ':' > identifier;
+const auto fullyQualifiedListInstance = x3::rule<class fullyQualifiedListInstance, PathSegment>{"module-qualified path segment (module:name)"} = fullyQualifiedApiIdentifier > -('=' > keyList > noStrayEquals);
 
-const auto uriPath = x3::rule<class uriPath, std::vector<PathSegment>>{"uriPath"} = -x3::lit("/") >> -(fullyQualifiedListInstance >> -("/" >> listInstance % "/")); // RFC 8040, sec 3.5.3
-const auto nmdaDatastore = x3::rule<class nmdaDatastore, URIPrefix>{"nmdaDatastore"} = x3::attr(URIPrefix::Type::NMDADatastore) >> "/" >> fullyQualifiedApiIdentifier;
-const auto otherResources = x3::rule<class otherResources, URIPath>{"otherResources"} = x3::lit("/") >>
-    ((x3::lit("data") >> x3::attr(URIPrefix{URIPrefix::Type::BasicRestconfData}) >> uriPath) |
-     (x3::lit("ds") >> nmdaDatastore >> uriPath) |
-     (x3::lit("operations") >> x3::attr(URIPrefix{URIPrefix::Type::BasicRestconfOperations}) >> uriPath) |
-     // restconf and /restconf/yang-library-version do not expect any uriPath but we need to construct correct URIPath instance. Use the x3::attr call to create empty vector<PathSegment>
-     (x3::lit("yang-library-version") >> x3::attr(URIPrefix{URIPrefix::Type::YangLibraryVersion}) >> x3::attr(std::vector<PathSegment>{}) >> -x3::lit("/")));
-const auto restconfResource = x3::rule<class restconfResource, URIPath>{"restconfResource"} =
-    ((x3::lit("/") | x3::eps) /* /restconf/ and /restconf */ >> x3::attr(URIPrefix{URIPrefix::Type::RestconfRoot}) >> x3::attr(std::vector<PathSegment>{}));
-const auto resources = x3::rule<class resources, URIPath>{"resources"} = otherResources | restconfResource;
-const auto restconfGrammar = x3::rule<class restconfGrammar, URIPath>{"restconfGrammar"} = x3::lit("/") >> x3::lit("restconf") >> resources;
+const auto uriPathContent = x3::rule<class uriPathContent, std::vector<PathSegment>>{"uriPathContent"} = fullyQualifiedListInstance > -("/" > listInstance % "/"); // RFC 8040, sec 3.5.3
+const auto uriEmpty = x3::rule<class uriEmpty, std::vector<PathSegment>>{"uriEmpty"} = (&x3::eoi) > x3::attr(std::vector<PathSegment>{});
+const auto uriPathMaybeEmpty = x3::rule<class uriPathMaybeEmpty, std::vector<PathSegment>>{"resource path"} = uriEmpty | uriPathContent;
+const auto uriPath = x3::rule<class uriPath, std::vector<PathSegment>>{"uriPath"} = uriEmpty | (x3::lit("/") > uriPathMaybeEmpty);
+const auto nmdaDatastore = x3::rule<class nmdaDatastore, URIPrefix>{"NMDA datastore identifier"} = x3::attr(URIPrefix::Type::NMDADatastore) > "/" > fullyQualifiedApiIdentifier;
+const auto resource = x3::rule<class otherResources, URIPath>{"RESTCONF resource"} =
+    (x3::eoi > x3::attr(URIPrefix{URIPrefix::Type::RestconfRoot}) > x3::attr(std::vector<PathSegment>{})) |
+    (x3::lit("data") > x3::attr(URIPrefix{URIPrefix::Type::BasicRestconfData}) > uriPath) |
+    (x3::lit("ds") > nmdaDatastore > uriPath) |
+    (x3::lit("operations") > x3::attr(URIPrefix{URIPrefix::Type::BasicRestconfOperations}) > uriPath) |
+    // restconf and /restconf/yang-library-version do not expect any uriPath but we need to construct correct URIPath instance. Use the x3::attr call to create empty vector<PathSegment>
+    (x3::lit("yang-library-version") > x3::attr(URIPrefix{URIPrefix::Type::YangLibraryVersion}) > x3::attr(std::vector<PathSegment>{}) > -x3::lit("/"));
+const auto resources = x3::rule<class resources, URIPath>{"RESTCONF resource"} = (x3::lit("/") > resource) | (x3::eoi > x3::attr(URIPrefix{URIPrefix::Type::RestconfRoot}) > x3::attr(std::vector<PathSegment>{}));
+const auto restconfGrammar = x3::rule<class restconfGrammar, URIPath>{"RESTCONF URI"} = x3::lit("/") > x3::lit("restconf") > resources;
 
 const auto string_to_uuid = [](auto& ctx) {
     try {
@@ -71,21 +76,21 @@ const auto string_to_uuid = [](auto& ctx) {
     }
 };
 
-const auto uuid_impl = x3::rule<class uuid_impl, std::string>{"uuid_impl"} =
-    x3::repeat(8)[x3::xdigit] >> x3::char_('-') >>
-    x3::repeat(4)[x3::xdigit] >> x3::char_('-') >>
-    x3::repeat(4)[x3::xdigit] >> x3::char_('-') >>
-    x3::repeat(4)[x3::xdigit] >> x3::char_('-') >>
+const auto uuid_impl = x3::rule<class uuid_impl, std::string>{"UUID (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)"} =
+    x3::repeat(8)[x3::xdigit] > x3::char_('-') >
+    x3::repeat(4)[x3::xdigit] > x3::char_('-') >
+    x3::repeat(4)[x3::xdigit] > x3::char_('-') >
+    x3::repeat(4)[x3::xdigit] > x3::char_('-') >
     x3::repeat(12)[x3::xdigit];
-const auto uuid = x3::rule<class uuid, boost::uuids::uuid>{"uuid"} = uuid_impl[string_to_uuid];
-const auto subscribedStream = x3::rule<class subscribedStream, SubscribedStreamRequest>{"subscribedStream"} = x3::lit("/subscribed") >> "/" >> uuid;
+const auto uuid = x3::rule<class uuid, boost::uuids::uuid>{"UUID"} = uuid_impl[string_to_uuid];
+const auto subscribedStream = x3::rule<class subscribedStream, SubscribedStreamRequest>{"subscribed stream"} = x3::lit("subscribed") > x3::lit("/") > uuid;
 
-const auto notificationStream = x3::rule<class notificationStream, NotificationStreamRequest>{"notificationStream"} =
-    x3::lit("/") >> identifier >>
-    ((x3::lit("/XML") >> x3::attr(libyang::DataFormat::XML)) |
-     (x3::lit("/JSON") >> x3::attr(libyang::DataFormat::JSON)));
-const auto streamGrammar = x3::rule<class streamGrammar, std::variant<NotificationStreamRequest, SubscribedStreamRequest>>{"streamGrammar"} =
-    x3::lit("/streams") >> (notificationStream | subscribedStream);
+const auto xmlStream = x3::rule<class xmlStream, libyang::DataFormat>{"'XML'"} = x3::lit("XML") > x3::attr(libyang::DataFormat::XML);
+const auto jsonStream = x3::rule<class jsonStream, libyang::DataFormat>{"'JSON'"} = x3::lit("JSON") > x3::attr(libyang::DataFormat::JSON);
+const auto streamFormat = x3::rule<class streamFormat, libyang::DataFormat>{"stream format ('XML' or 'JSON')"} = (xmlStream | jsonStream);
+const auto notificationStream = x3::rule<class notificationStream, NotificationStreamRequest>{"notification stream"} = identifier > x3::lit("/") > streamFormat;
+const auto streamGrammar = x3::rule<class streamGrammar, std::variant<NotificationStreamRequest, SubscribedStreamRequest>>{"stream URI"} =
+    x3::lit("/") > x3::lit("streams") > x3::lit("/") > (subscribedStream | notificationStream);
 
 // clang-format on
 }
@@ -95,9 +100,9 @@ namespace x3 = boost::spirit::x3;
 
 // clang-format off
 
-const auto moduleName = x3::rule<class apiIdentifier, std::string>{"moduleName"} = (x3::alpha | x3::char_('_')) >> *(x3::alnum | x3::char_('_') | x3::char_('-') | x3::char_('.'));
-const auto revision = x3::rule<class revision, std::string>{"revision"} = x3::repeat(4, x3::inf)[x3::digit] >> x3::char_("-") >> x3::repeat(2)[x3::digit] >> x3::char_("-") >> x3::repeat(2)[x3::digit];
-const auto yangSchemaGrammar = x3::rule<class yangSchemaGrammar, impl::YangModule>{"yangSchemaGrammar"} = x3::lit("/") >> x3::lit("yang") >> "/" >> moduleName >> -(x3::lit("@") >> revision >> -x3::lit(".yang"));
+const auto moduleName = x3::rule<class apiIdentifier, std::string>{"moduleName"} = (x3::alpha | x3::char_('_')) > *(x3::alnum | x3::char_('_') | x3::char_('-') | x3::char_('.'));
+const auto revision = x3::rule<class revision, std::string>{"revision"} = x3::repeat(4, x3::inf)[x3::digit] > x3::char_("-") > x3::repeat(2)[x3::digit] > x3::char_("-") > x3::repeat(2)[x3::digit];
+const auto yangSchemaGrammar = x3::rule<class yangSchemaGrammar, impl::YangModule>{"yangSchemaGrammar"} = x3::eps > x3::lit("/") > x3::lit("yang") > "/" > moduleName > -(x3::lit("@") > revision > -x3::lit(".yang"));
 
 // clang-format on
 }
@@ -122,7 +127,7 @@ struct withDefaultsTable : x3::symbols<queryParams::QueryParamValue> {
             ("report-all", queryParams::withDefaults::ReportAll{})
             ("report-all-tagged", queryParams::withDefaults::ReportAllTagged{});
     }
-} const withDefaultsParam;
+} const withDefaultsTable_;
 
 struct contentTable : x3::symbols<queryParams::QueryParamValue> {
     contentTable()
@@ -132,7 +137,7 @@ struct contentTable : x3::symbols<queryParams::QueryParamValue> {
             ("nonconfig", queryParams::content::OnlyNonConfigNodes{})
             ("config", queryParams::content::OnlyConfigNodes{});
     }
-} const contentParam;
+} const contentTable_;
 
 struct insertTable: x3::symbols<queryParams::QueryParamValue> {
     insertTable()
@@ -143,7 +148,7 @@ struct insertTable: x3::symbols<queryParams::QueryParamValue> {
         ("after", queryParams::insert::After{})
         ("before", queryParams::insert::Before{});
     }
-} const insertParam;
+} const insertTable_;
 
 /* This grammar is implemented a little bit differently than the RFC states. The ABNF from RFC is:
  *
@@ -161,45 +166,73 @@ const auto fieldsSemi = x3::rule<class fieldsSemiExpr, queryParams::fields::Semi
 const auto fieldsSlash = x3::rule<class fieldsSlashExpr, queryParams::fields::SlashExpr>{"fieldsSlash"};
 const auto fieldsParen = x3::rule<class fieldsParen, queryParams::fields::ParenExpr>{"fieldsParen"};
 
-const auto fieldsSemi_def = fieldsParen >> -(x3::lit(";") >> fieldsSemi);
-const auto fieldsParen_def = fieldsSlash >> -(x3::lit("(") >> fieldsExpr >> x3::lit(")"));
-const auto fieldsSlash_def = apiIdentifier >> -(x3::lit("/") >> fieldsSlash);
+const auto fieldsSemi_def = fieldsParen > -(x3::lit(";") > fieldsSemi);
+const auto fieldsParen_def = fieldsSlash > -(x3::lit("(") > fieldsExpr > x3::lit(")"));
+const auto fieldsSlash_def = apiIdentifier > -(x3::lit("/") > fieldsSlash);
 const auto fieldsExpr_def = fieldsSemi;
 BOOST_SPIRIT_DEFINE(fieldsParen, fieldsExpr, fieldsSlash, fieldsSemi);
 
-// early sanity check, this timestamp will be parsed by libyang::fromYangTimeFormat anyways
-const auto dateAndTime = x3::rule<class dateAndTime, std::string>{"dateAndTime"} =
-    x3::repeat(4)[x3::digit] >> x3::char_('-') >> x3::repeat(2)[x3::digit] >> x3::char_('-') >> x3::repeat(2)[x3::digit] >> x3::char_('T') >>
-    x3::repeat(2)[x3::digit] >> x3::char_(':') >> x3::repeat(2)[x3::digit] >> x3::char_(':') >> x3::repeat(2)[x3::digit] >> -(x3::char_('.') >> +x3::digit) >>
-    (x3::char_('Z') | (-(x3::char_('+')|x3::char_('-')) >> x3::repeat(2)[x3::digit] >> x3::char_(':') >> x3::repeat(2)[x3::digit]));
+// early sanity check, the timestamp will be parsed by libyang::fromYangTimeFormat anyways
+const auto twoDigits = x3::rule<class twoDigits, std::string>{"twoDigits"} = x3::digit > x3::digit;
+const auto minute = x3::rule<class minute, std::string>{"minute"} = twoDigits;
+const auto hour = x3::rule<class hour, std::string>{"hour"} = twoDigits;
+const auto second = x3::rule<class second, std::string>{"second"} = twoDigits;
+const auto day = x3::rule<class day, std::string>{"day"} = twoDigits;
+const auto month = x3::rule<class month, std::string>{"month"} = twoDigits;
+const auto year = x3::rule<class year, std::string>{"year"} = x3::digit > x3::digit > x3::digit > x3::digit;
+const auto date = x3::rule<class date, std::string>{"YYYY-MM-DD"} = year > x3::char_('-') > month > x3::char_('-') > day;
+const auto timeHHMM = x3::rule<class timeHHMM, std::string>{"HH:mm"} = hour > x3::char_(':') > minute;
+const auto time = x3::rule<class time, std::string>{"HH:mm:SS"} = timeHHMM > x3::char_(':') > second;
+const auto timeMs = x3::rule<class timeMs, std::string>{"timeMs"} = x3::char_('.') > +x3::digit;
+const auto tzZulu = x3::rule<class tzZulu, std::string>{"tzZulu"} = x3::string("Z");
+const auto tzOffset = x3::rule<class tzOffset, std::string>{"tzOffset"} = (x3::char_('+') | x3::char_('-')) > timeHHMM;
+const auto timezone = x3::rule<class timezone, std::string>{"timezone"} = tzZulu | tzOffset;
+const auto dateAndTime = x3::rule<class dateAndTime, std::string>{"dateAndTime"} = date > x3::char_('T') > time >> -timeMs > timezone;
 const auto filter = x3::rule<class filter, std::string>{"filter"} = +(percentEncodedChar | (x3::char_ - '&'));
-const auto depthParam = x3::rule<class depthParam, queryParams::QueryParamValue>{"depthParam"} = x3::uint_[validDepthValues] | (x3::string("unbounded") >> x3::attr(queryParams::UnboundedDepth{}));
-const auto queryParamPair = x3::rule<class queryParamPair, std::pair<std::string, queryParams::QueryParamValue>>{"queryParamPair"} =
-        (x3::string("depth") >> "=" >> depthParam) |
-        (x3::string("with-defaults") >> "=" >> withDefaultsParam) |
-        (x3::string("content") >> "=" >> contentParam) |
-        (x3::string("insert") >> "=" >> insertParam) |
-        (x3::string("point") >> "=" >> uriPath) |
-        (x3::string("filter") >> "=" >> filter) |
-        (x3::string("start-time") >> "=" >> dateAndTime) |
-        (x3::string("stop-time") >> "=" >> dateAndTime) |
-        (x3::string("fields") >> "=" >> fieldsExpr);
+const auto depthParam = x3::rule<class depthParam, queryParams::QueryParamValue>{"1-65535 or 'unbounded'"} = x3::uint_[validDepthValues] | (x3::string("unbounded") > x3::attr(queryParams::UnboundedDepth{}));
+const auto insertParam = x3::rule<class insertParam, queryParams::QueryParamValue>{"'first', 'last', 'after' or 'before'"} = insertTable_;
+const auto contentParam = x3::rule<class insertParam, queryParams::QueryParamValue>{"'all', 'nonconfig' or 'config'"} = contentTable_;
+const auto withDefaultsParam = x3::rule<class withDefaultsParam, queryParams::QueryParamValue>{"'trim', 'explicit', 'report-all' or 'report-all-tagged'"} = withDefaultsTable_;
+const auto queryParamPair = x3::rule<class queryParamPair, std::pair<std::string, queryParams::QueryParamValue>>{"query parameter"} =
+        (x3::string("depth") > "=" > depthParam) |
+        (x3::string("with-defaults") > "=" > withDefaultsParam) |
+        (x3::string("content") > "=" > contentParam) |
+        (x3::string("insert") > "=" > insertParam) |
+        (x3::string("point") > "=" > uriPath) |
+        (x3::string("filter") > "=" > filter) |
+        (x3::string("start-time") > "=" > dateAndTime) |
+        (x3::string("stop-time") > "=" > dateAndTime) |
+        (x3::string("fields") > "=" > fieldsExpr);
 
-const auto queryParamGrammar = x3::rule<class queryParamGrammar, queryParams::QueryParams>{"queryParamGrammar"} = queryParamPair % "&" | x3::eps;
+const auto queryParamEmpty = x3::rule<class queryParamEmpty, queryParams::QueryParams>{"empty"} = &x3::eoi > x3::attr(queryParams::QueryParams{});
+const auto queryParamList = x3::rule<class queryParamList, queryParams::QueryParams>{"query parameter list"} = queryParamPair >> *("&" > queryParamPair);
+const auto queryParamMaybeEmpty = x3::rule<class queryParamMaybeEmpty, queryParams::QueryParams>{"query parameter"} = queryParamEmpty | queryParamList;
+const auto queryParamGrammar = x3::rule<class queryParamGrammar, queryParams::QueryParams>{"query parameters"} = x3::eps > queryParamMaybeEmpty;
 
 // clang-format on
 }
 
 namespace {
-template <class Attribute, class Grammar>
+template <class Attribute, class SyntaxErrorException, class Grammar>
 Attribute parse(const std::string& input, const Grammar& g)
 {
+    namespace x3 = boost::spirit::x3;
+
     Attribute out;
     auto iter = std::begin(input);
     auto end = std::end(input);
 
-    if (!x3::parse(iter, end, g >> x3::eoi, out)) {
-        throw ErrorResponse(400, "protocol", "invalid-value", "Syntax error");
+    std::ostringstream oss;
+    try {
+        x3::error_handler<decltype(iter)> error_handler(iter, end, oss);
+
+        auto parser = x3::with<x3::error_handler_tag>(std::ref(error_handler))[g > x3::eoi];
+        if (!x3::parse(iter, end, parser, out)) {
+            throw SyntaxErrorException();
+        }
+    } catch (const boost::spirit::x3::expectation_failure<decltype(iter)>& e) {
+        auto offset = std::distance(std::begin(input), e.where());
+        throw SyntaxErrorException(offset, e.which());
     }
 
     return out;
@@ -208,22 +241,22 @@ Attribute parse(const std::string& input, const Grammar& g)
 
 URIPath parseUriPath(const std::string& input)
 {
-    return parse<URIPath>(input, restconfGrammar);
+    return parse<URIPath, UriPathSyntaxError>(input, restconfGrammar);
 }
 
 impl::YangModule parseModuleWithRevision(const std::string& input)
 {
-    return parse<impl::YangModule>(input, yangSchemaGrammar);
+    return parse<impl::YangModule, UriPathSyntaxError>(input, yangSchemaGrammar);
 }
 
 queryParams::QueryParams parseQueryParams(const std::string& input)
 {
-    return parse<queryParams::QueryParams>(input, queryParamGrammar);
+    return parse<queryParams::QueryParams, UriQueryStringSyntaxError>(input, queryParamGrammar);
 }
 
 std::variant<NotificationStreamRequest, SubscribedStreamRequest> parseStreamUri(const std::string& input)
 {
-    return parse<std::variant<NotificationStreamRequest, SubscribedStreamRequest>>(input, streamGrammar);
+    return parse<std::variant<NotificationStreamRequest, SubscribedStreamRequest>, UriPathSyntaxError>(input, streamGrammar);
 }
 
 URIPrefix::URIPrefix()
