@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "3ba26390_7e99d846",
+        "filename": "src/restconf/Exceptions.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-02-24T10:29:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2f439f91_bb4083ce",
+      "range": {
+        "startLine": 15,
+        "startChar": 0,
+        "endLine": 16,
+        "endChar": 136
+      },
+      "revId": "7180fac287ea33094f55f11f72886d169490cb85",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f43b28b8_08e94478",
@@ -47,6 +71,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "7132d815_30313f7f",
+        "filename": "src/restconf/Exceptions.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-02-24T10:29:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f43b28b8_08e94478",
+      "range": {
+        "startLine": 26,
+        "startChar": 39,
+        "endLine": 26,
+        "endChar": 51
+      },
+      "revId": "7180fac287ea33094f55f11f72886d169490cb85",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "a9bcc3c8_c12d8d69",
@@ -60,6 +108,30 @@
       "writtenOn": "2026-02-23T22:25:51Z",
       "side": 1,
       "message": "I would prefer hiding the `7` here completely, and instead just reporting the \"absolute\" position `28` in this context. At least if we can find a name which describes the path-and-whatever-goes-afterwards part of an URL. Personally, I\u0027m OK with something like:\n```\nSyntax error in URI (querystring) at position 28: expected filter\n```",
+      "range": {
+        "startLine": 174,
+        "startChar": 91,
+        "endLine": 174,
+        "endChar": 183
+      },
+      "revId": "7180fac287ea33094f55f11f72886d169490cb85",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "86d20240_5c925002",
+        "filename": "tests/restconf-notifications.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 174,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-02-24T10:29:41Z",
+      "side": 1,
+      "message": "Done.\n\nI also renamed querystring to query (in types and errors messages), it is a small change but it actually reflects the URI structure.",
+      "parentUuid": "a9bcc3c8_c12d8d69",
       "range": {
         "startLine": 174,
         "startChar": 91,
