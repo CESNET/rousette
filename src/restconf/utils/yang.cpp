@@ -98,10 +98,10 @@ std::string as_restconf_notification(const libyang::Context& ctx, libyang::DataF
     /* The namespaces for XML and JSON envelopes are different. See https://datatracker.ietf.org/doc/html/rfc8040#section-6.4 */
     if (dataFormat == libyang::DataFormat::JSON) {
         envelope = ctx.newOpaqueJSON({jsonNamespace, jsonNamespace, "notification"}, std::nullopt);
-        eventTime = ctx.newOpaqueJSON({jsonNamespace, jsonNamespace, "eventTime"}, libyang::JSON{timeStr});
+        eventTime = ctx.newOpaqueJSON({jsonNamespace, jsonNamespace, "eventTime"}, timeStr);
     } else {
         envelope = ctx.newOpaqueXML({xmlNamespace, xmlPrefix, "notification"}, std::nullopt);
-        eventTime = ctx.newOpaqueXML({xmlNamespace, xmlPrefix, "eventTime"}, libyang::XML{timeStr});
+        eventTime = ctx.newOpaqueXML({xmlNamespace, xmlPrefix, "eventTime"}, timeStr);
     }
 
     // the notification data node holds only the notification data tree but for nested notification we should print the whole YANG data tree
