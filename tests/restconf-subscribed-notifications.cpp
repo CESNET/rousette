@@ -35,7 +35,7 @@ EstablishSubscriptionResult establishSubscription(
     const libyang::DataFormat rpcEncoding,
     const std::optional<std::pair<std::string, std::string>>& rpcRequestAuthHeader,
     const std::optional<std::string>& encodingLeafValue,
-    const std::variant<std::monostate, std::string, libyang::XML>& filter,
+    const std::variant<std::monostate, std::string, libyang::DataNode>& filter,
     const std::optional<sysrepo::NotificationTimeStamp>& replayStartTime)
 {
     constexpr auto jsonPrefix = "ietf-subscribed-notifications";
@@ -67,8 +67,10 @@ EstablishSubscriptionResult establishSubscription(
         rpcTree.newPath("stream-xpath-filter", std::get<std::string>(filter));
     }
 
-    if (std::holds_alternative<libyang::XML>(filter)) {
-        rpcTree.newPath2("stream-subtree-filter", std::get<libyang::XML>(filter));
+    if (std::holds_alternative<libyang::DataNode>(filter)) {
+        // FIXME: this needs libyang-cpp's support for lyd_new_path2 with LYD_NEW_PATH_ANY_DATATREE
+        throw 42;
+        rpcTree.newPath2("stream-subtree-filter", std::get<libyang::DataNode>(filter));
     }
 
     if (replayStartTime) {
@@ -162,7 +164,7 @@ TEST_CASE("RESTCONF subscribed notifications")
 
     libyang::DataFormat rpcRequestEncoding = libyang::DataFormat::JSON;
     std::optional<std::string> rpcSubscriptionEncoding;
-    std::variant<std::monostate, std::string, libyang::XML> rpcFilter;
+    std::variant<std::monostate, std::string, libyang::DataNode> rpcFilter;
     std::optional<sysrepo::NotificationTimeStamp> rpcReplayStart;
     std::optional<std::pair<std::string, std::string>> rpcRequestAuthHeader;
     std::pair<sysrepo::NotificationTimeStamp, sysrepo::NotificationTimeStamp> replayedNotificationSendInterval; // bounds for replayed notification event time
@@ -435,7 +437,7 @@ TEST_CASE("RESTCONF subscribed notifications")
                 rpcRequestAuthHeader = AUTH_ROOT;
                 rpcRequestEncoding = libyang::DataFormat::JSON;
                 // Constructing the filter as XML is only an implementation detail. The tree is then constructed as JSON in establishSubscription
-                rpcFilter = libyang::XML{"<eventA xmlns='http://example.tld/example' />"};
+                rpcFilter = *srSess.getContext().parseOp("<eventA xmlns='http://example.tld/example' />"s, libyang::DataFormat::XML, libyang::OperationType::NotificationYang).tree;
                 rpcSubscriptionEncoding = "encode-json";
                 EXPECT_NOTIFICATION(notificationsJSON[0], seq1);
                 EXPECT_NOTIFICATION(notificationsJSON[3], seq1);
