@@ -116,8 +116,7 @@ void rejectWithErrorImpl(libyang::Context ctx, const libyang::DataFormat& dataFo
 
 void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath)
 {
-    auto ext = ctx.getModuleImplemented("ietf-restconf")->extensionInstance("yang-errors");
-    auto errors = *ctx.newExtPath(ext, "/ietf-restconf:errors", std::nullopt);
+    auto errors = ctx.newPath("/ietf-restconf:errors", std::nullopt);
     rejectWithErrorImpl(ctx, dataFormat, errors, errors, req, res, code, errorType, errorTag, errorMessage, errorPath);
 }
 
@@ -133,8 +132,7 @@ auto rejectYangPatch(const std::string& patchId)
                      const std::string& errorTag,
                      const std::string& errorMessage,
                      const std::optional<std::string>& errorPath) {
-        auto ext = ctx.getModuleImplemented("ietf-yang-patch")->extensionInstance("yang-patch-status");
-        auto errorsTree = *ctx.newExtPath(ext, "/ietf-yang-patch:yang-patch-status/errors", std::nullopt);
+        auto errorsTree = ctx.newPath("/ietf-yang-patch:yang-patch-status/errors", std::nullopt);
         auto errorsContainer = *errorsTree.findXPath("/ietf-yang-patch:yang-patch-status/errors").begin();
         errorsTree.newPath("patch-id", patchId);
         rejectWithErrorImpl(ctx, dataFormat, errorsTree, errorsContainer, req, res, code, errorType, errorTag, errorMessage, errorPath);
@@ -154,8 +152,7 @@ auto rejectYangPatch(const std::string& patchId, const std::string& editId)
                              const std::string& errorMessage,
                              const std::optional<std::string>& errorPath) {
         const auto errorContainerXPath = "/ietf-yang-patch:yang-patch-status/edit-status/edit[edit-id='" + editId + "']/errors";
-        auto ext = ctx.getModuleImplemented("ietf-yang-patch")->extensionInstance("yang-patch-status");
-        auto errorsTree = *ctx.newExtPath(ext, errorContainerXPath, std::nullopt);
+        auto errorsTree = ctx.newPath(errorContainerXPath, std::nullopt);
         auto errorsContainer = *errorsTree.findXPath(errorContainerXPath).begin();
         errorsTree.newPath("patch-id", patchId);
         rejectWithErrorImpl(ctx, dataFormat, errorsTree, errorsContainer, req, res, code, errorType, errorTag, errorMessage, errorPath);
@@ -616,11 +613,9 @@ void processPost(std::shared_ptr<RequestContext> requestCtx, const std::chrono::
 std::optional<std::string> yangPatchValueAsJSON(const libyang::DataNode& editContainer)
 {
     if (auto valueAnyNode = editContainer.findPath("value")) {
-        try {
-            // if the value is present, we expect it to be a DataNode, not JSON/XML or any other stuff
-            auto valueDataNode = std::get<libyang::DataNode>(valueAnyNode->asAny().releaseValue().value());
-            return *valueDataNode.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink);
-        } catch (const std::bad_variant_access&) {
+        if (auto valueDataNode = valueAnyNode->asAny().node()) {
+            return *valueDataNode->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink);
+        } else {
             throw ErrorResponse(400, "protocol", "invalid-value", "Not a data node", valueAnyNode->path());
         }
     }
@@ -694,11 +689,7 @@ void processYangPatchImpl(const std::shared_ptr<RequestContext>& requestCtx, con
 void processYangPatch(std::shared_ptr<RequestContext> requestCtx, const std::chrono::milliseconds timeout)
 {
     auto ctx = requestCtx->sess.getContext();
-    auto yangPatchMod = *ctx.getModule("ietf-yang-patch", "2017-02-22");
-    auto yangPatchExt = yangPatchMod.extensionInstance("yang-patch");
-    auto yangPatchStatusExt = yangPatchMod.extensionInstance("yang-patch-status");
-
-    auto patch = ctx.parseExtData(yangPatchExt, requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
+    auto patch = ctx.parseData(requestCtx->payload, *requestCtx->dataFormat.request, libyang::ParseOptions::Strict | libyang::ParseOptions::NoState | libyang::ParseOptions::ParseOnly);
     if (!patch) {
         throw ErrorResponse(400, "protocol", "invalid-value", "Empty patch.");
     }
@@ -708,12 +699,12 @@ void processYangPatch(std::shared_ptr<RequestContext> requestCtx, const std::chr
     WITH_RESTCONF_EXCEPTIONS(processYangPatchImpl, rejectYangPatch(patchId))(requestCtx, *patch, patchId, timeout);
 
     // everything went well
-    auto yangPatchStatus = ctx.newExtPath(yangPatchStatusExt, "/ietf-yang-patch:yang-patch-status", std::nullopt);
-    yangPatchStatus->newExtPath(yangPatchStatusExt, "/ietf-yang-patch:yang-patch-status/patch-id", patchId);
-    yangPatchStatus->newExtPath(yangPatchStatusExt, "/ietf-yang-patch:yang-patch-status/ok", std::nullopt);
+    auto yangPatchStatus = ctx.newPath("/ietf-yang-patch:yang-patch-status", std::nullopt);
+    yangPatchStatus.newPath("/ietf-yang-patch:yang-patch-status/patch-id", patchId);
+    yangPatchStatus.newPath("/ietf-yang-patch:yang-patch-status/ok", std::nullopt);
 
     requestCtx->res.write_head(200, {contentType(requestCtx->dataFormat.response), CORS});
-    requestCtx->res.end(*yangPatchStatus->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::Siblings));
+    requestCtx->res.end(*yangPatchStatus.printStr(requestCtx->dataFormat.response, libyang::PrintFlags::Siblings));
 }
 
 void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx, const std::chrono::milliseconds timeout)
@@ -783,8 +774,7 @@ void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx, const st
 libyang::DataNode apiResource(const libyang::Context& ctx, const RestconfRequest::Type& type, libyang::DataFormat dataFormat)
 {
     const auto yangLib = *ctx.getModuleLatest("ietf-yang-library");
-    const auto yangApiExt = ctx.getModuleImplemented("ietf-restconf")->extensionInstance("yang-api");
-    auto parent = *ctx.newExtPath(yangApiExt, "/ietf-restconf:restconf", std::nullopt);
+    auto parent = ctx.newPath("/ietf-restconf:restconf", std::nullopt);
 
     if (type == RestconfRequest::Type::RestconfRoot || type == RestconfRequest::Type::YangLibraryVersion) {
         parent.newPath("yang-library-version", yangLib.revision());
@@ -806,7 +796,7 @@ libyang::DataNode apiResource(const libyang::Context& ctx, const RestconfRequest
             for (const auto& rpc : mod.actionRpcs()) {
                 switch (dataFormat) {
                 case libyang::DataFormat::JSON:
-                    operations.insertChild(*ctx.newOpaqueJSON({rpc.module().name(), rpc.module().name(), rpc.name()}, libyang::JSON{"[null]"}));
+                    operations.insertChild(*ctx.newOpaqueJSON({rpc.module().name(), rpc.module().name(), rpc.name()}, "[null]"));
                     break;
                 case libyang::DataFormat::XML:
                     operations.insertChild(*ctx.newOpaqueXML({rpc.module().ns(), rpc.module().name(), rpc.name()}, std::nullopt));
