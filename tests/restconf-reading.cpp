@@ -797,7 +797,7 @@ TEST_CASE("reading data")
       "c": {
         "enabled": true,
         "@enabled": {
-          "default:default": true
+          "ietf-netconf-with-defaults:default": true
         }
       }
     },
@@ -806,7 +806,7 @@ TEST_CASE("reading data")
       "c": {
         "enabled": true,
         "@enabled": {
-          "default:default": true
+          "ietf-netconf-with-defaults:default": true
         }
       }
     }
@@ -871,7 +871,7 @@ TEST_CASE("reading data")
       "c": {
         "enabled": true,
         "@enabled": {
-          "default:default": true
+          "ietf-netconf-with-defaults:default": true
         }
       }
     },
@@ -880,7 +880,7 @@ TEST_CASE("reading data")
       "c": {
         "enabled": true,
         "@enabled": {
-          "default:default": true
+          "ietf-netconf-with-defaults:default": true
         }
       }
     }
@@ -935,7 +935,7 @@ TEST_CASE("reading data")
       "c": {
         "enabled": true,
         "@enabled": {
-          "default:default": true
+          "ietf-netconf-with-defaults:default": true
         }
       }
     }
@@ -1213,16 +1213,14 @@ TEST_CASE("reading data")
 
         auto ctx = libyang::Context{std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "yang",
                                     libyang::ContextOptions::NoYangLibrary | libyang::ContextOptions::DisableSearchCwd};
-        auto ext = ctx.loadModule("ietf-restconf").extensionInstance("yang-errors");
-        auto root = ctx.parseExtData(ext, wrapped, libyang::DataFormat::XML);
+        ctx.loadModule("ietf-restconf");
+        auto root = ctx.parseData(wrapped, libyang::DataFormat::XML);
         REQUIRE(!!root);
         const auto payload = root->findXPath("/ietf-restconf:errors/error/error-info");
         REQUIRE(payload.size() == 1);
         auto any = payload.front().asAny();
-        const auto val = any.releaseValue();
-        REQUIRE(!!val);
-        REQUIRE(std::holds_alternative<libyang::DataNode>(*val));
-        const auto xrd = std::get<libyang::DataNode>(*val);
+        REQUIRE(!!any.node());
+        const auto xrd = *any.node();
         REQUIRE(xrd.isOpaque());
         REQUIRE(xrd.asOpaque().name().name == "XRD");
         REQUIRE(xrd.asOpaque().name().moduleOrNamespace == "http://docs.oasis-open.org/ns/xri/xrd-1.0");

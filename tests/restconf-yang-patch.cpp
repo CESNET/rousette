@@ -134,6 +134,7 @@ TEST_CASE("YANG patch")
 }
 )"});
 
+    // FIXME: this won't parse, https://github.com/CESNET/libyang/issues/2503
     EXPECT_CHANGE(
         MODIFIED("/example:two-leafs/a", "aaa"),
         MODIFIED("/example:two-leafs/b", "bbb"));
