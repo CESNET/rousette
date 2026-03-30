@@ -16,6 +16,23 @@
       "message": "recheck cross-module notification order",
       "revId": "e22938479e39b212204de11f127f142bdc3a0b8c",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f648fde8_a79cfd70",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-03-30T22:58:39Z",
+      "side": 1,
+      "message": "recheck",
+      "revId": "e22938479e39b212204de11f127f142bdc3a0b8c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
