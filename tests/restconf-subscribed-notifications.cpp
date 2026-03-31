@@ -396,11 +396,11 @@ TEST_CASE("RESTCONF subscribed notifications")
                 }
             }
 
-            EXPECT_NOTIFICATION(notificationsJSON[0], seq1);
-            EXPECT_NOTIFICATION(notificationsJSON[1], seq1);
+            EXPECT_NOTIFICATION(notificationsJSON[0], seq1, seq2);
+            EXPECT_NOTIFICATION(notificationsJSON[1], seq1, seq2);
             EXPECT_NOTIFICATION(notificationsJSON[2], seq2);
             EXPECT_NOTIFICATION(notificationsJSON[3], seq1);
-            EXPECT_NOTIFICATION(notificationsJSON[4], seq1);
+            EXPECT_NOTIFICATION(notificationsJSON[4], seq1, seq2);
         }
 
         SECTION("JSON stream")
@@ -489,11 +489,11 @@ TEST_CASE("RESTCONF subscribed notifications")
                     EXPECT_NOTIFICATION(REPLAY_COMPLETED, seq1);
                 }
 
-                EXPECT_NOTIFICATION(notificationsJSON[0], seq1);
-                EXPECT_NOTIFICATION(notificationsJSON[1], seq1);
-                EXPECT_NOTIFICATION(notificationsJSON[2], seq1);
+                EXPECT_NOTIFICATION(notificationsJSON[0], seq1, seq2);
+                EXPECT_NOTIFICATION(notificationsJSON[1], seq1, seq2);
+                EXPECT_NOTIFICATION(notificationsJSON[2], seq2);
                 EXPECT_NOTIFICATION(notificationsJSON[3], seq1);
-                EXPECT_NOTIFICATION(notificationsJSON[4], seq1);
+                EXPECT_NOTIFICATION(notificationsJSON[4], seq1, seq2);
             }
 
             SECTION("Content-type with set encode leaf")
@@ -519,11 +519,11 @@ TEST_CASE("RESTCONF subscribed notifications")
                     }
                 }
 
-                EXPECT_NOTIFICATION(notificationsJSON[0], seq1);
-                EXPECT_NOTIFICATION(notificationsJSON[1], seq1);
+                EXPECT_NOTIFICATION(notificationsJSON[0], seq1, seq2);
+                EXPECT_NOTIFICATION(notificationsJSON[1], seq1, seq2);
                 EXPECT_NOTIFICATION(notificationsJSON[2], seq2);
                 EXPECT_NOTIFICATION(notificationsJSON[3], seq1);
-                EXPECT_NOTIFICATION(notificationsJSON[4], seq1);
+                EXPECT_NOTIFICATION(notificationsJSON[4], seq1, seq2);
             }
         }
 

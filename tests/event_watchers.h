@@ -46,4 +46,4 @@ struct RestconfNotificationWatcher {
     MAKE_CONST_MOCK1(data, void(const std::string&));
 };
 
-#define EXPECT_NOTIFICATION(DATA, SEQ) expectations.emplace_back(NAMED_REQUIRE_CALL(netconfWatcher, data(DATA)).IN_SEQUENCE(SEQ));
+#define EXPECT_NOTIFICATION(DATA, SEQ,...) expectations.emplace_back(NAMED_REQUIRE_CALL(netconfWatcher, data(DATA)).IN_SEQUENCE(SEQ __VA_OPT__(,) __VA_ARGS__));
