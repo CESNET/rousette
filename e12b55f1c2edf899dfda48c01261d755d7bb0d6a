@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e0ef34b6_d244ba23",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 403,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-04-02T06:38:20Z",
+      "side": 1,
+      "message": "Hmm I guess I understand. The notification w.r.t. to modules are AABAA, so it would make sense to map all A notification to `seq1` and all B notifications to `seq2`. \nHowever you are counting that those long sleeps are there and they will not break the order.\n\nQuestions is if this is worth it. Maybe (just thinking loud) it would be better to redesign the test so that the notifications are, lets say, AABAABA and check only that A\u0027s notifications and B\u0027s notifications are ordered correctly?",
+      "range": {
+        "startLine": 399,
+        "startChar": 0,
+        "endLine": 403,
+        "endChar": 66
+      },
+      "revId": "e12b55f1c2edf899dfda48c01261d755d7bb0d6a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
