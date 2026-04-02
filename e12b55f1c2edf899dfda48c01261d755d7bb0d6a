@@ -1,6 +1,29 @@
 {
   "comments": [
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "b84d9e6c_2b83c478",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-04-02T09:27:25Z",
+      "side": 1,
+      "message": "nit: but only due to the time constraints probably, see my other comment.",
+      "range": {
+        "startLine": 15,
+        "startChar": 29,
+        "endLine": 15,
+        "endChar": 31
+      },
+      "revId": "e12b55f1c2edf899dfda48c01261d755d7bb0d6a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e0ef34b6_d244ba23",
@@ -38,6 +61,30 @@
       "side": 1,
       "message": "(nice catch btw)",
       "parentUuid": "e0ef34b6_d244ba23",
+      "range": {
+        "startLine": 399,
+        "startChar": 0,
+        "endLine": 403,
+        "endChar": 66
+      },
+      "revId": "e12b55f1c2edf899dfda48c01261d755d7bb0d6a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d6d020e1_4d130353",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 403,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-04-02T09:27:25Z",
+      "side": 1,
+      "message": "We agreed that we will not change this patch, maybe lets wait for a fail.",
+      "parentUuid": "0be2bedf_5bd4fd54",
       "range": {
         "startLine": 399,
         "startChar": 0,
