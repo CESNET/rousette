@@ -92,7 +92,7 @@ auto contentType(const libyang::DataFormat dataFormat)
 /** @brief Rejects the request with an error response and sends the HTTP response. Recommend to use rejectWithError which has more convenient API.
  * @pre The error errorContainer must be a node from ietf-restconf module, grouping "errors", container "errors".
  * */
-void rejectWithErrorImpl(libyang::Context ctx, const libyang::DataFormat& dataFormat, const libyang::DataNode& parent, libyang::DataNode& errorContainer, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath)
+void rejectWithErrorImpl(libyang::Context ctx, const libyang::DataFormat& dataFormat, const libyang::DataNode& parent, libyang::DataNode& errorContainer, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath, const std::optional<ErrorResponse::ErrorInfo>& errorInfo = std::nullopt)
 {
     spdlog::debug("{}: Rejected with {}: {}", http::peer_from_request(req), errorTag, errorMessage);
 
@@ -102,6 +102,14 @@ void rejectWithErrorImpl(libyang::Context ctx, const libyang::DataFormat& dataFo
 
     if (errorPath) {
         errorContainer.newPath("error[1]/error-path", *errorPath);
+    }
+
+    if (errorInfo) {
+        auto container = ctx.newPath("/rousette:" + errorInfo->containerName, std::nullopt);
+        for (const auto& [name, value] : errorInfo->leafs) {
+            container.newPath(name, value);
+        }
+        errorContainer.newPath2("error[1]/error-info", container);
     }
 
     nghttp2::asio_http2::header_map headers = {contentType(dataFormat), CORS};
@@ -114,10 +122,10 @@ void rejectWithErrorImpl(libyang::Context ctx, const libyang::DataFormat& dataFo
     res.end(*parent.printStr(dataFormat, libyang::PrintFlags::Siblings));
 }
 
-void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath)
+void rejectWithError(libyang::Context ctx, const libyang::DataFormat& dataFormat, const request& req, const response& res, const int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath, const std::optional<ErrorResponse::ErrorInfo>& errorInfo = std::nullopt)
 {
     auto errors = ctx.newPath("/ietf-restconf:errors", std::nullopt);
-    rejectWithErrorImpl(ctx, dataFormat, errors, errors, req, res, code, errorType, errorTag, errorMessage, errorPath);
+    rejectWithErrorImpl(ctx, dataFormat, errors, errors, req, res, code, errorType, errorTag, errorMessage, errorPath, errorInfo);
 }
 
 /** @short RFC 8072, the request was complete enough to read the patch-id, but there's no known edit-id */
@@ -131,11 +139,12 @@ auto rejectYangPatch(const std::string& patchId)
                      const std::string errorType,
                      const std::string& errorTag,
                      const std::string& errorMessage,
-                     const std::optional<std::string>& errorPath) {
+                     const std::optional<std::string>& errorPath,
+                     const std::optional<ErrorResponse::ErrorInfo>& errorInfo) {
         auto errorsTree = ctx.newPath("/ietf-yang-patch:yang-patch-status/errors", std::nullopt);
         auto errorsContainer = *errorsTree.findXPath("/ietf-yang-patch:yang-patch-status/errors").begin();
         errorsTree.newPath("patch-id", patchId);
-        rejectWithErrorImpl(ctx, dataFormat, errorsTree, errorsContainer, req, res, code, errorType, errorTag, errorMessage, errorPath);
+        rejectWithErrorImpl(ctx, dataFormat, errorsTree, errorsContainer, req, res, code, errorType, errorTag, errorMessage, errorPath, errorInfo);
     };
 }
 
@@ -150,12 +159,13 @@ auto rejectYangPatch(const std::string& patchId, const std::string& editId)
                              const std::string errorType,
                              const std::string& errorTag,
                              const std::string& errorMessage,
-                             const std::optional<std::string>& errorPath) {
+                             const std::optional<std::string>& errorPath,
+                             const std::optional<ErrorResponse::ErrorInfo>& errorInfo) {
         const auto errorContainerXPath = "/ietf-yang-patch:yang-patch-status/edit-status/edit[edit-id='" + editId + "']/errors";
         auto errorsTree = ctx.newPath(errorContainerXPath, std::nullopt);
         auto errorsContainer = *errorsTree.findXPath(errorContainerXPath).begin();
         errorsTree.newPath("patch-id", patchId);
-        rejectWithErrorImpl(ctx, dataFormat, errorsTree, errorsContainer, req, res, code, errorType, errorTag, errorMessage, errorPath);
+        rejectWithErrorImpl(ctx, dataFormat, errorsTree, errorsContainer, req, res, code, errorType, errorTag, errorMessage, errorPath, errorInfo);
     };
 }
 
@@ -332,20 +342,20 @@ constexpr auto withRestconfExceptions(T func, U rejectWithError)
         try {
             func(requestCtx, std::forward<decltype(args)>(args)...);
         } catch (const ErrorResponse& e) {
-            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath);
+            rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath, e.errorInfo);
         } catch (const libyang::ErrorWithCode& e) {
             if (e.code() == libyang::ErrorCode::ValidationFailure) {
-                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", "Validation failure: "s + e.what(), std::nullopt);
+                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", "Validation failure: "s + e.what(), std::nullopt, std::nullopt);
             } else {
-                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to libyang exception: "s + e.what(), std::nullopt);
+                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed", "Internal server error due to libyang exception: "s + e.what(), std::nullopt, std::nullopt);
             }
         } catch (const sysrepo::ErrorWithCode& e) {
             if (e.code() == sysrepo::ErrorCode::Unauthorized) {
-                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 403, "application", "access-denied", "Access denied.", std::nullopt);
+                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 403, "application", "access-denied", "Access denied.", std::nullopt, std::nullopt);
             } else if (e.code() == sysrepo::ErrorCode::NotFound) {
-                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", e.what(), std::nullopt);
+                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", e.what(), std::nullopt, std::nullopt);
             } else if (e.code() == sysrepo::ErrorCode::ItemAlreadyExists) {
-                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 409, "application", "resource-denied", "Resource already exists.", std::nullopt);
+                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 409, "application", "resource-denied", "Resource already exists.", std::nullopt, std::nullopt);
             } else if (e.code() == sysrepo::ErrorCode::ValidationFailed) {
                 bool isAction = requestCtx->restconfRequest.path != "/" && requestCtx->sess.getContext().findPath(requestCtx->restconfRequest.path).nodeType() == libyang::NodeType::Action;
                 /*
@@ -356,10 +366,10 @@ constexpr auto withRestconfExceptions(T func, U rejectWithError)
                  * operational DS cannot be locked.
                  */
                 rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "application", "operation-failed",
-                        "Validation failed. Invalid input data"s + (isAction ? " or the action node is not present" : "") + ".", std::nullopt);
+                        "Validation failed. Invalid input data"s + (isAction ? " or the action node is not present" : "") + ".", std::nullopt, std::nullopt);
             } else {
                 rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 500, "application", "operation-failed",
-                        "Internal server error due to sysrepo exception: "s + e.what(), std::nullopt);
+                        "Internal server error due to sysrepo exception: "s + e.what(), std::nullopt, std::nullopt);
             }
         }
     };
@@ -928,6 +938,7 @@ Server::Server(
              {"ietf-yang-patch", "2017-02-22", {}},
              {"ietf-subscribed-notifications", "2019-09-09", {"encode-xml", "encode-json", "xpath", "subtree", "replay"}},
              {"ietf-restconf-subscribed-notifications", "2019-11-17", {}},
+             {"rousette", "2026-04-20", {}},
          }) {
         if (auto mod = m_monitoringSession.getContext().getModuleImplemented(module)) {
             for (const auto& feature : features) {
@@ -1283,7 +1294,7 @@ Server::Server(
                     rejectWithError(sess.getContext(), dataFormat.response, req, res, 401, "protocol", "access-denied", "Access denied.", std::nullopt);
                 });
             } catch (const ErrorResponse& e) {
-                rejectWithError(sess.getContext(), dataFormat.response, req, res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath);
+                rejectWithError(sess.getContext(), dataFormat.response, req, res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath, e.errorInfo);
             } catch (const sysrepo::ErrorWithCode& e) {
                 spdlog::error("Sysrepo exception: {}", e.what());
                 rejectWithError(sess.getContext(), dataFormat.response, req, res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception.", std::nullopt);
