@@ -54,6 +54,10 @@ UriSyntaxError::UriSyntaxError(const std::string& uriSegment,
                                const std::string& expectedToken)
     : ErrorResponse(400, "protocol", "invalid-value", constructErrorMessage(uriSegment, position, expectedToken))
 {
+    errorInfo = ErrorInfo{"uri-error", {
+                                           {"offset", std::to_string(position)},
+                                           {"expected-token", expectedToken},
+                                       }};
 }
 
 UriPathSyntaxError::UriPathSyntaxError()
