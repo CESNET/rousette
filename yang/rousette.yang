@@ -1,0 +1,20 @@
+module rousette {
+  namespace "urn:cesnet:params:xml:ns:yang:czechlight:rousette";
+  prefix rousette;
+
+  revision 2026-04-20 {
+    description "Initial version.";
+  }
+
+  container uri-error {
+    description "Structured error information for URI syntax errors, for use in RESTCONF error-info.";
+    leaf offset {
+      type uint32;
+      description "Byte offset in the URI where the syntax error was detected.";
+    }
+    leaf expected-token {
+      type string;
+      description "The token expected at the error position.";
+    }
+  }
+}

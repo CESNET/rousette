@@ -1241,4 +1241,41 @@ TEST_CASE("reading data")
         REQUIRE(it->name().name == "href");
         REQUIRE(it->valueStr() == "/restconf/");
     }
+
+    DOCTEST_SUBCASE("URI syntax errors propagate as error-info")
+    {
+        REQUIRE(get("/restconf/bla:bla", {}) == Response{400, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "invalid-value",
+        "error-message": "Syntax error in URI (path) at position 10: expected RESTCONF resource",
+        "error-info": {
+          "rousette:uri-error": {
+            "offset": 10,
+            "expected-token": "RESTCONF resource"
+          }
+        }
+      }
+    ]
+  }
+}
+)"});
+
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=blabla?fields=;", {CONTENT_TYPE_XML}) == Response{400, xmlHeaders, R"(<errors xmlns="urn:ietf:params:xml:ns:yang:ietf-restconf">
+  <error>
+    <error-type>protocol</error-type>
+    <error-tag>invalid-value</error-tag>
+    <error-message>Syntax error in URI (query) at position 46: expected identifier</error-message>
+    <error-info>
+      <uri-error xmlns="urn:cesnet:params:xml:ns:yang:czechlight:rousette">
+        <offset>46</offset>
+        <expected-token>identifier</expected-token>
+      </uri-error>
+    </error-info>
+  </error>
+</errors>
+)"});
+    }
 }
