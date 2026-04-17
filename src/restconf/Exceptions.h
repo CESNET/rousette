@@ -8,6 +8,7 @@
 
 #include <string>
 #include <optional>
+#include <vector>
 
 namespace rousette::restconf {
 
@@ -18,6 +19,13 @@ struct ErrorResponse : public std::exception {
     std::string errorType;
     std::string errorMessage;
     std::optional<std::string> errorPath;
+
+    /** @brief Optional structured payload for the error-info anydata leaf. */
+    struct ErrorInfo {
+        std::string containerName;
+        std::vector<std::pair<std::string, std::string>> leafs;
+    };
+    std::optional<ErrorInfo> errorInfo;
 
     ErrorResponse(int code, const std::string errorType, const std::string& errorTag, const std::string& errorMessage, const std::optional<std::string>& errorPath = std::nullopt);
     const char* what() const noexcept override;
