@@ -16,6 +16,24 @@
       "message": "Can you please define this `error-info` extension in the YANG model?",
       "revId": "212087117552542482fe921a411add461edfdce2",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "95f6378f_bb88d907",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-04-20T11:44:19Z",
+      "side": 1,
+      "message": "Good idea. Done.",
+      "parentUuid": "60e1d9ec_9b3e9cf9",
+      "revId": "212087117552542482fe921a411add461edfdce2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
