@@ -1427,13 +1427,13 @@ TEST_CASE("writing data")
 
                 EXPECT_CHANGE(CREATED("/example:tlc/list[name='libyang']/collection[.='4']", "4"));
                 REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc/list=libyang", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:collection": [4]})") == Response{201, jsonHeaders, ""});
-                REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc/list=libyang", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:collection": 4})") == Response{400, jsonHeaders, R"({
+                REQUIRE(post(RESTCONF_DATA_ROOT "/example:tlc/list=libyang", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:collection": 4})") == Response{409, jsonHeaders, R"({
   "ietf-restconf:errors": {
     "error": [
       {
-        "error-type": "protocol",
-        "error-tag": "invalid-value",
-        "error-message": "Validation failure: DataNode::parseSubtree: lyd_parse_data failed: LY_EVALID"
+        "error-type": "application",
+        "error-tag": "resource-denied",
+        "error-message": "Resource already exists."
       }
     ]
   }
