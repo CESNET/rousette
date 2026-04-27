@@ -1211,8 +1211,9 @@ TEST_CASE("reading data")
         </error>
         </errors>)";
 
-        auto ctx = libyang::Context{std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "yang",
+        auto ctx = libyang::Context{libyang::internalModuleDirectory(),
                                     libyang::ContextOptions::NoYangLibrary | libyang::ContextOptions::DisableSearchCwd};
+        ctx.setSearchDir(std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "yang");
         ctx.loadModule("ietf-restconf");
         auto root = ctx.parseData(wrapped, libyang::DataFormat::XML);
         REQUIRE(!!root);

@@ -70,7 +70,8 @@ TEST_CASE("URI path parser")
     using rousette::restconf::impl::URIPath;
     using rousette::restconf::impl::URIPrefix;
 
-    auto ctx = libyang::Context{std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "tests" / "yang"};
+    auto ctx = libyang::Context{libyang::internalModuleDirectory(), libyang::ContextOptions::DisableSearchCwd};
+    ctx.setSearchDir(std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "tests" / "yang");
     ctx.loadModule("example", std::nullopt, {"f1"});
     ctx.loadModule("example-augment");
     ctx.setSearchDir(std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "yang");
@@ -713,7 +714,8 @@ TEST_CASE("URI path parser")
 
         SECTION("Get modules")
         {
-            auto ctx = libyang::Context{std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "tests" / "yang"};
+            auto ctx = libyang::Context{libyang::internalModuleDirectory(), libyang::ContextOptions::DisableSearchCwd};
+            ctx.setSearchDir(std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "tests" / "yang");
             auto mod = ctx.loadModule("example", std::nullopt, {"f1"});
             ctx.loadModule("ietf-netconf-acm", "2018-02-14");
             ctx.loadModule("root-mod", std::nullopt);
@@ -917,7 +919,8 @@ TEST_CASE("URI path parser")
 
         SECTION("Full requests with validation")
         {
-            auto ctx = libyang::Context{std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "tests" / "yang"};
+            auto ctx = libyang::Context{libyang::internalModuleDirectory(), libyang::ContextOptions::DisableSearchCwd};
+            ctx.setSearchDir(std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "tests" / "yang");
             ctx.loadModule("example", std::nullopt, {"f1"});
             ctx.loadModule("example-augment");
 
