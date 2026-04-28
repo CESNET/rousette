@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b6437180_955a10ee",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-04-28T11:31:52Z",
+      "side": 1,
+      "message": "recheck\n\nOh wow -- this CI run failed on a test because it took the test 9.5s to actually POST the subscription request after the time that request was created (and the stop-time stored). That\u0027s... not great.",
+      "revId": "d0ff01c3e3b9ea8c8563d0f0b6083f0b9634979a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
