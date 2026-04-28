@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "a35fec57_88fd43b4",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-04-28T09:11:48Z",
+      "side": 1,
+      "message": "I think I asked for that patch to get back the previous behavior that was related to anydata/anyxml. The commit message says that it\u0027s about opaque (i.e., schema-less) nodes.\n\nCould you please check with the RESTCONF RFC that the new behavior for \"properly types\" leaf-list is standard-conformant?",
+      "parentUuid": "9ef271ce_81cf1998",
+      "range": {
+        "startLine": 9,
+        "startChar": 52,
+        "endLine": 11,
+        "endChar": 34
+      },
+      "revId": "23ae2e88f66a27933953283563537e914802e963",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "09d8388f_9ee4bca3",
