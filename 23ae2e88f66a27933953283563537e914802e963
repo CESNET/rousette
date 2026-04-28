@@ -1,6 +1,29 @@
 {
   "comments": [
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "9ef271ce_81cf1998",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-04-28T08:38:55Z",
+      "side": 1,
+      "message": "Maybe this? https://github.com/CESNET/libyang/commit/975e5bb689d998f9133c79c8a536f3d98772f184",
+      "range": {
+        "startLine": 9,
+        "startChar": 52,
+        "endLine": 11,
+        "endChar": 34
+      },
+      "revId": "23ae2e88f66a27933953283563537e914802e963",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "09d8388f_9ee4bca3",
