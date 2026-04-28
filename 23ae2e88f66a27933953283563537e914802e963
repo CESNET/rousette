@@ -48,6 +48,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "a6defa1b_5acae703",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-04-28T14:31:06Z",
+      "side": 1,
+      "message": "filed upstream (with a reproducer) at https://github.com/CESNET/libyang/issues/2512, let\u0027s wait for a fix",
+      "parentUuid": "a35fec57_88fd43b4",
+      "range": {
+        "startLine": 9,
+        "startChar": 52,
+        "endLine": 11,
+        "endChar": 34
+      },
+      "revId": "23ae2e88f66a27933953283563537e914802e963",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "09d8388f_9ee4bca3",
