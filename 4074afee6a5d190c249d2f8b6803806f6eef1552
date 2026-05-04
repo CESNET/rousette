@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a69fa80a_926a2357",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 2
+      },
+      "lineNbr": 234,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-05-04T09:55:28Z",
+      "side": 1,
+      "message": "Please also adjust a check in main() which verifies that all required modules are available in sysrepo, and upload a change for br2-external which installs this module.",
+      "revId": "4074afee6a5d190c249d2f8b6803806f6eef1552",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5ee7feb7_2ffaba40",
+        "filename": "src/restconf/Exceptions.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-05-04T09:55:28Z",
+      "side": 1,
+      "message": "nit: consider creating a simple struct which uses better names than `first` and `second` for these (such as `key`, `value` or something like that). Or feel free to reject this suggestion.",
+      "range": {
+        "startLine": 26,
+        "startChar": 20,
+        "endLine": 26,
+        "endChar": 29
+      },
+      "revId": "4074afee6a5d190c249d2f8b6803806f6eef1552",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
