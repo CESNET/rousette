@@ -20,6 +20,24 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "5e9825e2_ba53c829",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 2
+      },
+      "lineNbr": 234,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-05-04T13:35:37Z",
+      "side": 1,
+      "message": "Done\n\nhttps://gerrit.cesnet.cz/c/CzechLight/br2-external/+/9212",
+      "parentUuid": "a69fa80a_926a2357",
+      "revId": "4074afee6a5d190c249d2f8b6803806f6eef1552",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "5ee7feb7_2ffaba40",
         "filename": "src/restconf/Exceptions.h",
         "patchSetId": 2
