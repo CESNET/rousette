@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0d92213c_51e6df66",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-05-06T17:30:18Z",
+      "side": 1,
+      "message": "I removed this because it only adds a type alias, it does not create a new type, and therefore it might lead to code which uses `XPath` on some pleaces and `std::string` at other places.\n\n\nAnd I see that my concern is addressed by https://gerrit.cesnet.cz/c/CzechLight/rousette/+/9050 , thanks!",
+      "revId": "7415e9e6f068098f59913598ac0cede2e82e3079",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
