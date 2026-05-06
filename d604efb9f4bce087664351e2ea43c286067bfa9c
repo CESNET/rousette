@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "78f005b7_01e89771",
+        "filename": "tests/event_watchers.h",
+        "patchSetId": 6
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-05-06T17:30:18Z",
+      "side": 1,
+      "message": "is this change relevant here?",
+      "revId": "d604efb9f4bce087664351e2ea43c286067bfa9c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
