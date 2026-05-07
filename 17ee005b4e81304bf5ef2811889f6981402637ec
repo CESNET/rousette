@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9ddb12c7_ae43de15",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 103,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-05-07T08:24:51Z",
+      "side": 1,
+      "message": "use `escapeListKey` for this (`src/restconf/utils/yang.h`)",
+      "range": {
+        "startLine": 103,
+        "startChar": 46,
+        "endLine": 103,
+        "endChar": 50
+      },
+      "revId": "17ee005b4e81304bf5ef2811889f6981402637ec",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "11b111b9_68e526a1",
+        "filename": "tests/restconf-subscribed-notifications.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-05-07T08:24:51Z",
+      "side": 1,
+      "message": "shouldn\u0027t this target the `running` DS?",
+      "range": {
+        "startLine": 49,
+        "startChar": 48,
+        "endLine": 49,
+        "endChar": 59
+      },
+      "revId": "17ee005b4e81304bf5ef2811889f6981402637ec",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
