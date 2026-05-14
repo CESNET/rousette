@@ -16,6 +16,24 @@
       "message": "is this change relevant here?",
       "revId": "d604efb9f4bce087664351e2ea43c286067bfa9c",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a09eab89_3497a7f2",
+        "filename": "tests/event_watchers.h",
+        "patchSetId": 6
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-05-14T10:59:35Z",
+      "side": 1,
+      "message": "Fixed in parent commit, thus this hunk is no longer here",
+      "parentUuid": "78f005b7_01e89771",
+      "revId": "d604efb9f4bce087664351e2ea43c286067bfa9c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
