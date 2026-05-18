@@ -50,6 +50,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "adc20612_f8d382ac",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 103,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-05-18T07:46:53Z",
+      "side": 1,
+      "message": "not done yet, actually",
+      "parentUuid": "b09ea9b8_6088a239",
+      "range": {
+        "startLine": 103,
+        "startChar": 46,
+        "endLine": 103,
+        "endChar": 50
+      },
+      "revId": "17ee005b4e81304bf5ef2811889f6981402637ec",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "11b111b9_68e526a1",
         "filename": "tests/restconf-subscribed-notifications.cpp",
         "patchSetId": 5
