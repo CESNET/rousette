@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8ab1e283_b2bc7d0e",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 10
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-05-19T17:47:23Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c0ca456e_36e695c6",
+      "revId": "da435ba883b0e7d7f9edff632cdf130686e4a32f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "26ebcd52_177850d3",
@@ -31,6 +49,30 @@
       "writtenOn": "2026-05-19T14:13:13Z",
       "side": 1,
       "message": "Do we want to add that to the default config in br2-external?",
+      "range": {
+        "startLine": 163,
+        "startChar": 0,
+        "endLine": 166,
+        "endChar": 137
+      },
+      "revId": "da435ba883b0e7d7f9edff632cdf130686e4a32f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5a004b88_08bdf4cb",
+        "filename": "tests/restconf_utils.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 166,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-05-19T17:47:23Z",
+      "side": 1,
+      "message": "Yes, we should. Anonymous must be able to read this too.",
+      "parentUuid": "26ebcd52_177850d3",
       "range": {
         "startLine": 163,
         "startChar": 0,
