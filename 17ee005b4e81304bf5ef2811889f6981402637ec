@@ -72,6 +72,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "57fdaba1_9ebab463",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 103,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-05-19T09:50:01Z",
+      "side": 1,
+      "message": "Sorry about that, my git skill is very limited. Now it should be fine.",
+      "parentUuid": "adc20612_f8d382ac",
+      "range": {
+        "startLine": 103,
+        "startChar": 46,
+        "endLine": 103,
+        "endChar": 50
+      },
+      "revId": "17ee005b4e81304bf5ef2811889f6981402637ec",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "11b111b9_68e526a1",
