@@ -11,6 +11,7 @@
 #include <sysrepo-cpp/utils/utils.hpp>
 #include "restconf/Server.h"
 #include "tests/aux-utils.h"
+#include "tests/restconf-http-calls.h"
 #include "tests/event_watchers.h"
 
 TEST_CASE("default handling")

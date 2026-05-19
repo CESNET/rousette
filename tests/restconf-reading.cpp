@@ -6,13 +6,14 @@
  *
  */
 
-#include "tests/aux-utils.h"
 #include <nghttp2/asio_http2.h>
 #include <spdlog/spdlog.h>
 #include <sysrepo-cpp/utils/utils.hpp>
 #include "restconf/Server.h"
+#include "tests/aux-utils.h"
 #include "tests/configure.cmake.h"
 #include "tests/event_watchers.h"
+#include "tests/restconf-http-calls.h"
 
 using namespace std::string_literals;
 
