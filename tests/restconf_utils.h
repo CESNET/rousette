@@ -137,3 +137,56 @@ inline auto wrap_exceptions_and_asio(std::promise<void>& bg, boost::asio::io_ser
         io.stop();
     };
 }
+
+struct EstablishSubscriptionResult {
+    uint32_t id;
+    std::string url;
+    std::optional<sysrepo::NotificationTimeStamp> replayStartTimeRevision;
+};
+
+struct FilterXPath {
+    std::string xpath;
+};
+struct FilterName {
+    std::string name;
+};
+using Filter = std::variant<std::monostate, FilterXPath, libyang::DataNode, FilterName>;
+
+struct SubscribedNotifications {
+    std::string stream;
+    Filter filter;
+    std::optional<sysrepo::NotificationTimeStamp> replayStartTime;
+};
+
+struct YangPushBase {
+    sysrepo::Datastore datastore;
+    Filter filter;
+};
+
+struct YangPushOnChange : public YangPushBase {
+    std::optional<std::chrono::milliseconds> dampeningPeriod;
+    std::optional<sysrepo::SyncOnStart> syncOnStart;
+    std::vector<std::string> excludedChangeTypes;
+};
+
+struct YangPushPeriodic : public YangPushBase {
+    std::chrono::milliseconds period;
+    std::optional<sysrepo::NotificationTimeStamp> anchorTime;
+};
+
+/** @brief Calls establish-subscription rpc, returns the url of the stream associated with the created subscription */
+EstablishSubscriptionResult establishSubscription(
+    const std::string& serverAddress,
+    const std::string& serverPort,
+    const libyang::Context& ctx,
+    const libyang::DataFormat rpcEncoding,
+    const std::optional<std::pair<std::string, std::string>>& rpcRequestAuthHeader,
+    const std::optional<std::string>& encodingLeafValue,
+    const std::variant<SubscribedNotifications, YangPushOnChange, YangPushPeriodic>& params);
+
+void createNamedSubtreeFilter(sysrepo::Session& session, const std::string& path, const std::string& xmlContent);
+
+#define CREATE_SUBTREE_STREAM_FILTER(SESS, NAME, XML) \
+    createNamedSubtreeFilter(SESS, "/ietf-subscribed-notifications:filters/stream-filter[name='" NAME "']/stream-subtree-filter", XML)
+#define CREATE_SUBTREE_SELECTION_FILTER(SESS, NAME, XML) \
+    createNamedSubtreeFilter(SESS, "/ietf-subscribed-notifications:filters/ietf-yang-push:selection-filter[filter-id='" NAME "']/datastore-subtree-filter", XML)
