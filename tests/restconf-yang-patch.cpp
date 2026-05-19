@@ -11,6 +11,7 @@
 #include "restconf/Server.h"
 #include "tests/aux-utils.h"
 #include "tests/event_watchers.h"
+#include "tests/restconf-http-calls.h"
 #include "tests/pretty_printers.h"
 
 TEST_CASE("YANG patch")
