@@ -245,6 +245,7 @@ if(BUILD_TESTING)
     rousette_test(NAME restconf-yang-patch LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)
     rousette_test(NAME restconf-eventstream LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)
     rousette_test(NAME restconf-subscribed-notifications LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)
+    rousette_test(NAME restconf-yangpush LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)
     set(nested-models
         ${common-models}
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/root-mod.yang)
