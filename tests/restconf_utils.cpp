@@ -6,6 +6,9 @@
  *
  */
 
+#include <libyang-cpp/Time.hpp>
+#include "aux-utils.h"
+#include "restconf/utils/sysrepo.h"
 #include "restconf_utils.h"
 #include "sysrepo-cpp/Session.hpp"
 
@@ -261,3 +264,181 @@ void SSEClient::parseEvents(const RestconfNotificationWatcher& eventWatcher, con
         }
     }
 }
+
+
+std::string datastoreToString(sysrepo::Datastore ds)
+{
+    switch (ds) {
+    case sysrepo::Datastore::Startup:
+        return "ietf-datastores:startup";
+    case sysrepo::Datastore::Running:
+        return "ietf-datastores:running";
+    case sysrepo::Datastore::Candidate:
+        return "ietf-datastores:candidate";
+    case sysrepo::Datastore::Operational:
+        return "ietf-datastores:operational";
+    case sysrepo::Datastore::FactoryDefault:
+        return "ietf-datastores:factory-default";
+    default:
+        FAIL("Unhandled sysrepo::Datastore");
+        __builtin_unreachable(); // To make GCC 13.2.1 happy
+    }
+}
+
+void createNamedSubtreeFilter(sysrepo::Session& session, const std::string& path, const std::string& xmlContent)
+{
+    rousette::restconf::ScopedDatastoreSwitch dsSwitch(session, sysrepo::Datastore::Running);
+    auto createdNodes = session.getContext().newPath2(path, xmlContent);
+    session.editBatch(*createdNodes.createdParent, sysrepo::DefaultOperation::Merge);
+    session.applyChanges();
+}
+
+EstablishSubscriptionResult establishSubscription(
+    const std::string& serverAddress,
+    const std::string& serverPort,
+    const libyang::Context& ctx,
+    const libyang::DataFormat rpcEncoding,
+    const std::optional<std::pair<std::string, std::string>>& rpcRequestAuthHeader,
+    const std::optional<std::string>& encodingLeafValue,
+    const std::variant<SubscribedNotifications, YangPushOnChange, YangPushPeriodic>& params)
+{
+    using namespace std::chrono_literals;
+
+    constexpr auto jsonPrefix = "ietf-subscribed-notifications";
+    constexpr auto xmlNamespace = "urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications";
+
+    auto stopTime = libyang::yangTimeFormat(std::chrono::system_clock::now() + 5s, libyang::TimezoneInterpretation::Local);
+    std::map<std::string, std::string> requestHeaders;
+    ng::header_map expectedHeaders;
+
+    if (rpcRequestAuthHeader) {
+        requestHeaders.insert(*rpcRequestAuthHeader);
+    }
+
+    // add the forwarded header
+    static const auto FORWARD_PROTO = "http";
+    static const auto FORWARD_HOST = "["s + serverAddress + "]:" + serverPort;
+    requestHeaders.emplace("forward", "proto="s + FORWARD_PROTO + ";host="s + FORWARD_HOST);
+
+    std::optional<libyang::DataNode> envelope;
+    auto rpcTree = ctx.newPath("/ietf-subscribed-notifications:establish-subscription");
+    rpcTree.newPath("stop-time", stopTime);
+
+    if (encodingLeafValue) {
+        rpcTree.newPath("encoding", *encodingLeafValue);
+    }
+
+    if (std::holds_alternative<SubscribedNotifications>(params)) {
+        const auto& sn = std::get<SubscribedNotifications>(params);
+        rpcTree.newPath("stream", sn.stream);
+
+        if (std::holds_alternative<FilterXPath>(sn.filter)) {
+            rpcTree.newPath("stream-xpath-filter", std::get<FilterXPath>(sn.filter).xpath);
+        } else if (std::holds_alternative<libyang::DataNode>(sn.filter)) {
+            rpcTree.newPath2("stream-subtree-filter", std::get<libyang::DataNode>(sn.filter));
+        } else if (std::holds_alternative<FilterName>(sn.filter)) {
+            rpcTree.newPath("stream-filter-name", std::get<FilterName>(sn.filter).name);
+        }
+
+        if (sn.replayStartTime) {
+            rpcTree.newPath("replay-start-time", libyang::yangTimeFormat(*sn.replayStartTime, libyang::TimezoneInterpretation::Local));
+        }
+    } else if (std::holds_alternative<YangPushOnChange>(params)) {
+        const auto& yp = std::get<YangPushOnChange>(params);
+
+        rpcTree.newPath("ietf-yang-push:datastore", datastoreToString(yp.datastore));
+        rpcTree.newPath("ietf-yang-push:on-change", std::nullopt);
+
+        if (std::holds_alternative<FilterXPath>(yp.filter)) {
+            rpcTree.newPath("ietf-yang-push:datastore-xpath-filter", std::get<FilterXPath>(yp.filter).xpath);
+        } else if (std::holds_alternative<libyang::DataNode>(yp.filter)) {
+            rpcTree.newPath2("ietf-yang-push:datastore-subtree-filter", std::get<libyang::DataNode>(yp.filter));
+        } else if (std::holds_alternative<FilterName>(yp.filter)) {
+            rpcTree.newPath("ietf-yang-push:selection-filter-ref", std::get<FilterName>(yp.filter).name);
+        }
+
+        if (yp.syncOnStart) {
+            rpcTree.newPath("ietf-yang-push:on-change/sync-on-start", *yp.syncOnStart == sysrepo::SyncOnStart::Yes ? "true" : "false");
+        }
+
+        if (yp.dampeningPeriod) {
+            const auto dampeningCentiseconds = std::chrono::duration_cast<std::chrono::duration<std::chrono::milliseconds::rep, std::centi>>(*yp.dampeningPeriod);
+            rpcTree.newPath("ietf-yang-push:on-change/dampening-period", std::to_string(dampeningCentiseconds.count()));
+        }
+
+        for (const auto& changeType : yp.excludedChangeTypes) {
+            rpcTree.newPath("ietf-yang-push:on-change/excluded-change[.='" + changeType + "']");
+        }
+    } else if (std::holds_alternative<YangPushPeriodic>(params)) {
+        const auto& yp = std::get<YangPushPeriodic>(params);
+        const auto periodCentiseconds = std::chrono::duration_cast<std::chrono::duration<std::chrono::milliseconds::rep, std::centi>>(yp.period);
+
+        rpcTree.newPath("ietf-yang-push:datastore", datastoreToString(yp.datastore));
+        rpcTree.newPath("ietf-yang-push:periodic/period", std::to_string(periodCentiseconds.count()));
+
+        if (std::holds_alternative<FilterXPath>(yp.filter)) {
+            rpcTree.newPath("ietf-yang-push:datastore-xpath-filter", std::get<FilterXPath>(yp.filter).xpath);
+        } else if (std::holds_alternative<libyang::DataNode>(yp.filter)) {
+            rpcTree.newPath2("ietf-yang-push:datastore-subtree-filter", std::get<libyang::DataNode>(yp.filter));
+        } else if (std::holds_alternative<FilterName>(yp.filter)) {
+            rpcTree.newPath("ietf-yang-push:selection-filter-ref", std::get<FilterName>(yp.filter).name);
+        }
+
+        if (yp.anchorTime) {
+            rpcTree.newPath("ietf-yang-push:periodic/period", libyang::yangTimeFormat(*yp.anchorTime, libyang::TimezoneInterpretation::Local));
+        }
+    }
+
+    switch (rpcEncoding) {
+    case libyang::DataFormat::JSON:
+        requestHeaders.insert(CONTENT_TYPE_JSON);
+        expectedHeaders = jsonHeaders;
+        envelope = ctx.newOpaqueJSON({jsonPrefix, jsonPrefix, "input"}, std::nullopt);
+        break;
+    case libyang::DataFormat::XML:
+        requestHeaders.insert(CONTENT_TYPE_XML);
+        expectedHeaders = xmlHeaders;
+        envelope = ctx.newOpaqueXML({xmlNamespace, jsonPrefix, "input"}, std::nullopt);
+        break;
+    default:
+        FAIL("Unhandled libyang DataFormat");
+        break;
+    }
+
+    // reconnect everything
+    auto data = rpcTree.child();
+    data->unlinkWithSiblings();
+    envelope->insertChild(*data);
+
+    auto body = *envelope->printStr(rpcEncoding, libyang::PrintFlags::Siblings);
+    auto resp = clientRequest(serverAddress, serverPort, "POST", RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription", body, requestHeaders, CLIENT_TIMEOUT);
+    REQUIRE(resp.equalStatusCodeAndHeaders(Response{200, expectedHeaders, ""}));
+
+    auto reply = ctx.newPath("/ietf-subscribed-notifications:establish-subscription");
+    REQUIRE(reply.parseOp(resp.data, rpcEncoding, libyang::OperationType::ReplyRestconf).tree);
+
+    auto idNode = reply.findPath("id", libyang::InputOutputNodes::Output);
+    REQUIRE(idNode);
+
+    auto urlNode = reply.findPath("ietf-restconf-subscribed-notifications:uri", libyang::InputOutputNodes::Output);
+    REQUIRE(urlNode);
+
+    // We are sending forwarded header with proto=FORWARD_PROTO and host=FORWARD_HOST
+    // but the client expects only the URI path
+    auto prefix = FORWARD_PROTO + "://"s + FORWARD_HOST;
+    auto url = urlNode->asTerm().valueStr();
+    REQUIRE(url.starts_with(prefix));
+    url = url.erase(0, prefix.length());
+
+    std::optional<sysrepo::NotificationTimeStamp> replayStartTimeRevision;
+    if (auto node = reply.findPath("ietf-subscribed-notifications:replay-start-time-revision", libyang::InputOutputNodes::Output)) {
+        replayStartTimeRevision = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(node->asTerm().valueStr());
+    }
+
+    return {
+        std::get<uint32_t>(idNode->asTerm().value()),
+        url,
+        replayStartTimeRevision
+    };
+}
+
