@@ -14,6 +14,7 @@
 #include "restconf/Server.h"
 #include "tests/aux-utils.h"
 #include "tests/event_watchers.h"
+#include "tests/restconf-http-calls.h"
 #include "tests/pretty_printers.h"
 
 #define SEND_NOTIFICATION(DATA) notifSession.sendNotification(*ctx.parseOp(DATA, libyang::DataFormat::JSON, libyang::OperationType::NotificationYang).op, sysrepo::Wait::No);

@@ -11,6 +11,7 @@
 #include <sysrepo-cpp/utils/utils.hpp>
 #include "restconf/Server.h"
 #include "tests/aux-utils.h"
+#include "tests/restconf-http-calls.h"
 
 TEST_CASE("obtaining YANG schemas")
 {
