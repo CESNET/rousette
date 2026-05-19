@@ -12,11 +12,11 @@
 #include <spdlog/spdlog.h>
 #include <sysrepo-cpp/utils/utils.hpp>
 #include "restconf/Server.h"
-#include "restconf/utils/sysrepo.h"
 #include "tests/aux-utils.h"
 #include "tests/event_watchers.h"
 #include "tests/restconf-http-calls.h"
 #include "tests/pretty_printers.h"
+#include "tests/restconf_utils.h"
 
 #define SEND_NOTIFICATION(DATA) notifSession.sendNotification(*ctx.parseOp(DATA, libyang::DataFormat::JSON, libyang::OperationType::NotificationYang).op, sysrepo::Wait::No);
 #define REPLAY_COMPLETED trompeloeil::re(R"(^\{"ietf-subscribed-notifications:replay-completed":\{"id":[0-9]+\}\}$)")
@@ -25,220 +25,8 @@ constexpr auto uuidV4Regex = "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89a
 using namespace std::chrono_literals;
 using namespace std::string_literals;
 
-std::string datastoreToString(sysrepo::Datastore ds)
-{
-    switch (ds) {
-    case sysrepo::Datastore::Startup:
-        return "ietf-datastores:startup";
-    case sysrepo::Datastore::Running:
-        return "ietf-datastores:running";
-    case sysrepo::Datastore::Candidate:
-        return "ietf-datastores:candidate";
-    case sysrepo::Datastore::Operational:
-        return "ietf-datastores:operational";
-    case sysrepo::Datastore::FactoryDefault:
-        return "ietf-datastores:factory-default";
-    default:
-        FAIL("Unhandled sysrepo::Datastore");
-        __builtin_unreachable(); // To make GCC 13.2.1 happy
-    }
-}
-
-void createNamedSubtreeFilter(sysrepo::Session& session, const std::string& path, const std::string& xmlContent)
-{
-    rousette::restconf::ScopedDatastoreSwitch dsSwitch(session, sysrepo::Datastore::Running);
-    auto createdNodes = session.getContext().newPath2(path, xmlContent);
-    session.editBatch(*createdNodes.createdParent, sysrepo::DefaultOperation::Merge);
-    session.applyChanges();
-}
-#define CREATE_SUBTREE_STREAM_FILTER(SESS, NAME, XML) \
-    createNamedSubtreeFilter(SESS, "/ietf-subscribed-notifications:filters/stream-filter[name='" NAME "']/stream-subtree-filter", XML)
-#define CREATE_SUBTREE_SELECTION_FILTER(SESS, NAME, XML) \
-    createNamedSubtreeFilter(SESS, "/ietf-subscribed-notifications:filters/ietf-yang-push:selection-filter[filter-id='" NAME "']/datastore-subtree-filter", XML)
-
-struct EstablishSubscriptionResult {
-    uint32_t id;
-    std::string url;
-    std::optional<sysrepo::NotificationTimeStamp> replayStartTimeRevision;
-};
-
-struct FilterXPath {
-    std::string xpath;
-};
-struct FilterName {
-    std::string name;
-};
-using Filter = std::variant<std::monostate, FilterXPath, libyang::DataNode, FilterName>;
-
-struct SubscribedNotifications {
-    std::string stream;
-    Filter filter;
-    std::optional<sysrepo::NotificationTimeStamp> replayStartTime;
-};
 
 constexpr auto netconfSubscribedNotif = SubscribedNotifications{.stream = "NETCONF", .filter = {}, .replayStartTime = std::nullopt};
-
-struct YangPushBase {
-    sysrepo::Datastore datastore;
-    Filter filter;
-};
-
-struct YangPushOnChange : public YangPushBase {
-    std::optional<std::chrono::milliseconds> dampeningPeriod;
-    std::optional<sysrepo::SyncOnStart> syncOnStart;
-    std::vector<std::string> excludedChangeTypes;
-};
-
-struct YangPushPeriodic : public YangPushBase {
-    std::chrono::milliseconds period;
-    std::optional<sysrepo::NotificationTimeStamp> anchorTime;
-};
-
-/** @brief Calls establish-subscription rpc, returns the url of the stream associated with the created subscription */
-EstablishSubscriptionResult establishSubscription(
-    const libyang::Context& ctx,
-    const libyang::DataFormat rpcEncoding,
-    const std::optional<std::pair<std::string, std::string>>& rpcRequestAuthHeader,
-    const std::optional<std::string>& encodingLeafValue,
-    const std::variant<SubscribedNotifications, YangPushOnChange, YangPushPeriodic>& params)
-{
-    constexpr auto jsonPrefix = "ietf-subscribed-notifications";
-    constexpr auto xmlNamespace = "urn:ietf:params:xml:ns:yang:ietf-subscribed-notifications";
-
-    auto stopTime = libyang::yangTimeFormat(std::chrono::system_clock::now() + 5s, libyang::TimezoneInterpretation::Local);
-    std::map<std::string, std::string> requestHeaders;
-    ng::header_map expectedHeaders;
-
-    if (rpcRequestAuthHeader) {
-        requestHeaders.insert(*rpcRequestAuthHeader);
-    }
-
-    // add the forwarded header
-    static const auto FORWARD_PROTO = "http";
-    static const auto FORWARD_HOST = "["s + SERVER_ADDRESS + "]:" + SERVER_PORT;
-    requestHeaders.emplace("forward", "proto="s + FORWARD_PROTO + ";host="s + FORWARD_HOST);
-
-    std::optional<libyang::DataNode> envelope;
-    auto rpcTree = ctx.newPath("/ietf-subscribed-notifications:establish-subscription");
-    rpcTree.newPath("stop-time", stopTime);
-
-    if (encodingLeafValue) {
-        rpcTree.newPath("encoding", *encodingLeafValue);
-    }
-
-    if (std::holds_alternative<SubscribedNotifications>(params)) {
-        const auto& sn = std::get<SubscribedNotifications>(params);
-        rpcTree.newPath("stream", sn.stream);
-
-        if (std::holds_alternative<FilterXPath>(sn.filter)) {
-            rpcTree.newPath("stream-xpath-filter", std::get<FilterXPath>(sn.filter).xpath);
-        } else if (std::holds_alternative<libyang::DataNode>(sn.filter)) {
-            rpcTree.newPath2("stream-subtree-filter", std::get<libyang::DataNode>(sn.filter));
-        } else if (std::holds_alternative<FilterName>(sn.filter)) {
-            rpcTree.newPath("stream-filter-name", std::get<FilterName>(sn.filter).name);
-        }
-
-        if (sn.replayStartTime) {
-            rpcTree.newPath("replay-start-time", libyang::yangTimeFormat(*sn.replayStartTime, libyang::TimezoneInterpretation::Local));
-        }
-    } else if (std::holds_alternative<YangPushOnChange>(params)) {
-        const auto& yp = std::get<YangPushOnChange>(params);
-
-        rpcTree.newPath("ietf-yang-push:datastore", datastoreToString(yp.datastore));
-        rpcTree.newPath("ietf-yang-push:on-change", std::nullopt);
-
-        if (std::holds_alternative<FilterXPath>(yp.filter)) {
-            rpcTree.newPath("ietf-yang-push:datastore-xpath-filter", std::get<FilterXPath>(yp.filter).xpath);
-        } else if (std::holds_alternative<libyang::DataNode>(yp.filter)) {
-            rpcTree.newPath2("ietf-yang-push:datastore-subtree-filter", std::get<libyang::DataNode>(yp.filter));
-        } else if (std::holds_alternative<FilterName>(yp.filter)) {
-            rpcTree.newPath("ietf-yang-push:selection-filter-ref", std::get<FilterName>(yp.filter).name);
-        }
-
-        if (yp.syncOnStart) {
-            rpcTree.newPath("ietf-yang-push:on-change/sync-on-start", *yp.syncOnStart == sysrepo::SyncOnStart::Yes ? "true" : "false");
-        }
-
-        if (yp.dampeningPeriod) {
-            const auto dampeningCentiseconds = std::chrono::duration_cast<std::chrono::duration<std::chrono::milliseconds::rep, std::centi>>(*yp.dampeningPeriod);
-            rpcTree.newPath("ietf-yang-push:on-change/dampening-period", std::to_string(dampeningCentiseconds.count()));
-        }
-
-        for (const auto& changeType : yp.excludedChangeTypes) {
-            rpcTree.newPath("ietf-yang-push:on-change/excluded-change[.='" + changeType + "']");
-        }
-    } else if (std::holds_alternative<YangPushPeriodic>(params)) {
-        const auto& yp = std::get<YangPushPeriodic>(params);
-        const auto periodCentiseconds = std::chrono::duration_cast<std::chrono::duration<std::chrono::milliseconds::rep, std::centi>>(yp.period);
-
-        rpcTree.newPath("ietf-yang-push:datastore", datastoreToString(yp.datastore));
-        rpcTree.newPath("ietf-yang-push:periodic/period", std::to_string(periodCentiseconds.count()));
-
-        if (std::holds_alternative<FilterXPath>(yp.filter)) {
-            rpcTree.newPath("ietf-yang-push:datastore-xpath-filter", std::get<FilterXPath>(yp.filter).xpath);
-        } else if (std::holds_alternative<libyang::DataNode>(yp.filter)) {
-            rpcTree.newPath2("ietf-yang-push:datastore-subtree-filter", std::get<libyang::DataNode>(yp.filter));
-        } else if (std::holds_alternative<FilterName>(yp.filter)) {
-            rpcTree.newPath("ietf-yang-push:selection-filter-ref", std::get<FilterName>(yp.filter).name);
-        }
-
-        if (yp.anchorTime) {
-            rpcTree.newPath("ietf-yang-push:periodic/period", libyang::yangTimeFormat(*yp.anchorTime, libyang::TimezoneInterpretation::Local));
-        }
-    }
-
-    switch (rpcEncoding) {
-    case libyang::DataFormat::JSON:
-        requestHeaders.insert(CONTENT_TYPE_JSON);
-        expectedHeaders = jsonHeaders;
-        envelope = ctx.newOpaqueJSON({jsonPrefix, jsonPrefix, "input"}, std::nullopt);
-        break;
-    case libyang::DataFormat::XML:
-        requestHeaders.insert(CONTENT_TYPE_XML);
-        expectedHeaders = xmlHeaders;
-        envelope = ctx.newOpaqueXML({xmlNamespace, jsonPrefix, "input"}, std::nullopt);
-        break;
-    default:
-        FAIL("Unhandled libyang DataFormat");
-        break;
-    }
-
-    // reconnect everything
-    auto data = rpcTree.child();
-    data->unlinkWithSiblings();
-    envelope->insertChild(*data);
-
-    auto body = *envelope->printStr(rpcEncoding, libyang::PrintFlags::Siblings);
-    auto resp = post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:establish-subscription", requestHeaders, body);
-    REQUIRE(resp.equalStatusCodeAndHeaders(Response{200, expectedHeaders, ""}));
-
-    auto reply = ctx.newPath("/ietf-subscribed-notifications:establish-subscription");
-    REQUIRE(reply.parseOp(resp.data, rpcEncoding, libyang::OperationType::ReplyRestconf).tree);
-
-    auto idNode = reply.findPath("id", libyang::InputOutputNodes::Output);
-    REQUIRE(idNode);
-
-    auto urlNode = reply.findPath("ietf-restconf-subscribed-notifications:uri", libyang::InputOutputNodes::Output);
-    REQUIRE(urlNode);
-
-    // We are sending forwarded header with proto=FORWARD_PROTO and host=FORWARD_HOST
-    // but the client expects only the URI path
-    auto prefix = FORWARD_PROTO + "://"s + FORWARD_HOST;
-    auto url = urlNode->asTerm().valueStr();
-    REQUIRE(url.starts_with(prefix));
-    url = url.erase(0, prefix.length());
-
-    std::optional<sysrepo::NotificationTimeStamp> replayStartTimeRevision;
-    if (auto node = reply.findPath("ietf-subscribed-notifications:replay-start-time-revision", libyang::InputOutputNodes::Output)) {
-        replayStartTimeRevision = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(node->asTerm().valueStr());
-    }
-
-    return {
-        std::get<uint32_t>(idNode->asTerm().value()),
-        url,
-        replayStartTimeRevision
-    };
-}
 
 TEST_CASE("RESTCONF subscribed notifications")
 {
@@ -317,7 +105,7 @@ TEST_CASE("RESTCONF subscribed notifications")
         SECTION("User DWDM establishes subscription")
         {
             std::pair<std::string, std::string> user = AUTH_DWDM;
-            auto [id, uri, replayStartTimeRevision] = establishSubscription(srSess.getContext(), libyang::DataFormat::JSON, user, std::nullopt, netconfSubscribedNotif);
+            auto [id, uri, replayStartTimeRevision] = establishSubscription(SERVER_ADDRESS, SERVER_PORT, srSess.getContext(), libyang::DataFormat::JSON, user, std::nullopt, netconfSubscribedNotif);
             std::map<std::string, std::string> headers;
             RestconfNotificationWatcher netconfWatcher(srConn.sessionStart().getContext());
 
@@ -665,7 +453,7 @@ TEST_CASE("RESTCONF subscribed notifications")
             }
         }
 
-        auto [id, uri, replayStartTimeRevision] = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, subNotif);
+        auto [id, uri, replayStartTimeRevision] = establishSubscription(SERVER_ADDRESS, SERVER_PORT, srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, subNotif);
         REQUIRE(std::regex_match(uri, std::regex("/streams/subscribed/"s + uuidV4Regex)));
 
         if (shouldReviseStartTime) {
@@ -786,7 +574,7 @@ TEST_CASE("RESTCONF subscribed notifications")
 )"};
             }
 
-            auto [id, uri, replayStartTimeRevision] = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, netconfSubscribedNotif);
+            auto [id, uri, replayStartTimeRevision] = establishSubscription(SERVER_ADDRESS, SERVER_PORT, srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, netconfSubscribedNotif);
             auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + "}}";
             REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:delete-subscription", headers, body) == expectedResponse);
         }
@@ -794,7 +582,7 @@ TEST_CASE("RESTCONF subscribed notifications")
         SECTION("Anonymous user cannot delete subscription craeted by anonymous user")
         {
             rpcRequestAuthHeader = std::nullopt;
-            auto [id, uri, replayStartTimeRevision] = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, netconfSubscribedNotif);
+            auto [id, uri, replayStartTimeRevision] = establishSubscription(SERVER_ADDRESS, SERVER_PORT, srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, netconfSubscribedNotif);
             auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + "}}";
             REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:delete-subscription", headers, body) == Response{403, jsonHeaders, R"({
   "ietf-restconf:errors": {
@@ -850,7 +638,7 @@ TEST_CASE("RESTCONF subscribed notifications")
             expectedResponse = Response{204, noContentTypeHeaders, ""};
         }
 
-        auto [id, uri, replayStartTimeRevision] = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, netconfSubscribedNotif);
+        auto [id, uri, replayStartTimeRevision] = establishSubscription(SERVER_ADDRESS, SERVER_PORT, srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, netconfSubscribedNotif);
         auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + "}}";
         REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:kill-subscription", headers, body) == expectedResponse);
     }
@@ -968,7 +756,7 @@ TEST_CASE("RESTCONF subscribed notifications")
             EXPECT_YP_UPDATE(R"({"ietf-yang-push:push-change-update":{"datastore-changes":{"yang-patch":{"edit":[{"edit-id":"edit-1","operation":"create","target":"/example:top-level-leaf","value":{"example:top-level-leaf":"43"}}]}}}})");
         }
 
-        auto uri = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, yp).url;
+        auto uri = establishSubscription(SERVER_ADDRESS, SERVER_PORT, srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, yp).url;
 
         // The thread cooperation is described in the subscribed notification subcase
 
@@ -1075,7 +863,7 @@ TEST_CASE("RESTCONF subscribed notifications")
             EXPECT_YP_PERIODIC_UPDATE(R"({"ietf-yang-push:push-update":{"datastore-contents":{}}})");
         }
 
-        auto uri = establishSubscription(srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, yp).url;
+        auto uri = establishSubscription(SERVER_ADDRESS, SERVER_PORT, srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, yp).url;
 
         // The thread cooperation is described in the subscribed notification subcase
 
@@ -1134,7 +922,7 @@ TEST_CASE("Terminating server under notification load")
     std::optional<std::pair<std::string, std::string>> rpcRequestAuthHeader;
 
     std::pair<std::string, std::string> auth = AUTH_ROOT;
-    auto [id, uri, replayStartTimeRevision] = establishSubscription(srSess.getContext(), libyang::DataFormat::JSON, auth, std::nullopt, netconfSubscribedNotif);
+    auto [id, uri, replayStartTimeRevision] = establishSubscription(SERVER_ADDRESS, SERVER_PORT, srSess.getContext(), libyang::DataFormat::JSON, auth, std::nullopt, netconfSubscribedNotif);
 
     PREPARE_LOOP_WITH_EXCEPTIONS;
 
@@ -1185,7 +973,7 @@ TEST_CASE("Cleaning up inactive subscriptions")
     constexpr auto inactivityTimeout = 2s;
     auto server = rousette::restconf::Server{srConn, SERVER_ADDRESS, SERVER_PORT, 0ms, 55s, inactivityTimeout};
 
-    auto [id, uri, replayStartTimeRevision] = establishSubscription(srSess.getContext(), libyang::DataFormat::JSON, {AUTH_ROOT}, std::nullopt, netconfSubscribedNotif);
+    auto [id, uri, replayStartTimeRevision] = establishSubscription(SERVER_ADDRESS, SERVER_PORT, srSess.getContext(), libyang::DataFormat::JSON, {AUTH_ROOT}, std::nullopt, netconfSubscribedNotif);
 
     SECTION("Client connects and disconnects")
     {
