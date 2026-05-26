@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "68aeadeb_bb4dc38e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-05-26T17:02:35Z",
+      "side": 1,
+      "message": "This actually causes a conflict with netopeer2:\n\n\u003e Operational get subscription for XPath \"/ietf-subscribed-notifications:streams\" already exists and SR_SUBSCR_OPER_MERGE not used. (SR_ERR_INVAL_ARG)\n\n...and indeed, netopeer2 registers a callback for this:\n\n```\nsrc/main.c-1304-        ERR(\"Subscribing for \\\"%s\\\" data changes failed (%s).\", mod_name, sr_strerror(rc));\nsrc/main.c-1305-        goto error;\nsrc/main.c-1306-    }\nsrc/main.c-1307-\nsrc/main.c-1308-    /* operational data */\nsrc/main.c:1309:    SR_OPER_SUBSCR(mod_name, \"/ietf-subscribed-notifications:streams\", srsn_oper_data_streams_cb);\nsrc/main.c-1310-    rc \u003d sr_oper_get_subscribe(np2srv.sr_sess, mod_name, \"/ietf-subscribed-notifications:subscriptions\",\nsrc/main.c-1311-            np2srv_oper_sub_ntf_subscriptions_cb, NULL, SR_SUBSCR_OPER_MERGE, \u0026np2srv.sr_data_sub);\nsrc/main.c-1312-    if (rc !\u003d SR_ERR_OK) {\nsrc/main.c-1313-        ERR(\"Subscribing for providing \\\"%s\\\" state data failed (%s).\", mod_name, sr_strerror(rc));\nsrc/main.c-1314-        goto error;\n```\n\nThe actual code which produces the content that\u0027s returned is [a part of sysrepo](https://netopeer.liberouter.org/doc/sysrepo/devel/html/d3/da9/subscribed__notifications_8h.html#a7c8c7d40deadc77f17b544320fad5173), and the data which they return are slightly different from what this code in rousette is doing (`replay-log-creation-time` is missing from the upstream one for tha `NETCONF` stream, it seems).\n\nWe could simply change this code (and the one in netopeer2) so that it uses the `SR_SUBSCR_OPER_MERGE` flag, *but* unless we also call out to sysrepo\u0027s `srsn_oper_data_streams_cb`, we risk returning different data (and then the user-facing state would depend on the order of startup of netopeer2/rousette). Not good.\n\nOr we could lobby for inclusion of this thing into https://github.com/sysrepo/sysrepo/pull/3762.\n\nOr we could simply skip this container and assume (and document) that we expect netopeer2 to be running?",
+      "revId": "cd346a0720a7188f6aba6f908e94db7ea93feeba",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
