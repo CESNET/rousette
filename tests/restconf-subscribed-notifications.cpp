@@ -546,12 +546,12 @@ TEST_CASE("RESTCONF subscribed notifications")
             SECTION("Replays")
             {
                 // Announce replay support and send one notification before the client connects
+                replayedNotificationSendInterval.first = std::chrono::system_clock::now();
                 srConn.setModuleReplaySupport("example", true);
 
                 {
                     auto notifSession = sysrepo::Connection{}.sessionStart();
                     auto ctx = notifSession.getContext();
-                    replayedNotificationSendInterval.first = std::chrono::system_clock::now();
                     SEND_NOTIFICATION(notificationForReplayJSON);
                     replayedNotificationSendInterval.second = std::chrono::system_clock::now();
                 }
