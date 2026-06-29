@@ -74,6 +74,7 @@ public:
     void establishSubscription(sysrepo::Session& session, const std::optional<std::string>& requestSchemeAndHost, const libyang::DataFormat requestEncoding, const libyang::DataNode& rpcInput, libyang::DataNode& rpcOutput);
     void stop();
     void deleteSubscription(sysrepo::Session& session, const std::optional<std::string>& requestSchemeAndHost, libyang::DataFormat, const libyang::DataNode& rpcInput, libyang::DataNode&);
+    void modifySubscription(sysrepo::Session& session, const std::optional<std::string>& requestSchemeAndHost, libyang::DataFormat, const libyang::DataNode& rpcInput, libyang::DataNode&);
 
 private:
     std::mutex m_mutex; ///< Lock for shared data (subscriptions storage and uuid generator)
