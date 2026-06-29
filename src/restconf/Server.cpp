@@ -449,15 +449,15 @@ std::optional<libyang::DataNode> processInternalRPC(sysrepo::Session& sess, liby
 {
     struct InternalRPCHandler {
         std::optional<std::string> validationDataXPath; ///< XPath to data used for RPC input validation
-        std::function<void(sysrepo::Session&, const std::optional<std::string>&, const libyang::DataFormat, const libyang::DataNode&, libyang::DataNode&)> rpcHandler; // The function that processes the RPC
+        void (DynamicSubscriptions::*rpcHandler)(sysrepo::Session&, const std::optional<std::string>&, const libyang::DataFormat, const libyang::DataNode&, libyang::DataNode&); // The member function that processes the RPC
     };
     const std::map<std::string, InternalRPCHandler> handlers{
         {"/ietf-subscribed-notifications:establish-subscription",
-         {"/ietf-subscribed-notifications:filters", [&dynamicSubscriptions](auto&&... args) { return dynamicSubscriptions.establishSubscription(std::forward<decltype(args)>(args)...); }}},
+         {"/ietf-subscribed-notifications:filters", &DynamicSubscriptions::establishSubscription}},
         {"/ietf-subscribed-notifications:kill-subscription",
-         {std::nullopt, [&dynamicSubscriptions](auto&&... args) { return dynamicSubscriptions.deleteSubscription(std::forward<decltype(args)>(args)...); }}},
+         {std::nullopt, &DynamicSubscriptions::deleteSubscription}},
         {"/ietf-subscribed-notifications:delete-subscription",
-         {std::nullopt, [&dynamicSubscriptions](auto&&... args) { return dynamicSubscriptions.deleteSubscription(std::forward<decltype(args)>(args)...); }}},
+         {std::nullopt, &DynamicSubscriptions::deleteSubscription}},
     };
 
     const auto rpcPath = rpcInput.path();
@@ -492,7 +492,7 @@ std::optional<libyang::DataNode> processInternalRPC(sysrepo::Session& sess, liby
     }
 
     auto [parent, rpcOutput] = sess.getContext().newPath2(rpcPath, std::nullopt);
-    handlerIt->second.rpcHandler(sess, schemeAndHost, requestEncoding, rpcInput, *rpcOutput);
+    (dynamicSubscriptions.*handlerIt->second.rpcHandler)(sess, schemeAndHost, requestEncoding, rpcInput, *rpcOutput);
     return *parent;
 }
 
