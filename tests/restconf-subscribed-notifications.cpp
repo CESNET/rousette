@@ -601,6 +601,154 @@ TEST_CASE("RESTCONF subscribed notifications")
         }
     }
 
+    SECTION("modify-subscription")
+    {
+        // The subscription is created by dwdm. establishSubscription sets stop-time to now()+5s, so all the
+        // modify requests below must run within that window (they do, the POST happens right away).
+        rpcRequestAuthHeader = AUTH_DWDM;
+        auto [id, uri, replayStartTimeRevision] = establishSubscription(SERVER_ADDRESS, SERVER_PORT, srSess.getContext(), rpcRequestEncoding, rpcRequestAuthHeader, rpcSubscriptionEncoding, netconfSubscribedNotif);
+
+        std::map<std::string, std::string> headers;
+        headers.insert(CONTENT_TYPE_JSON);
+
+        SECTION("author (dwdm) can modify the subscription")
+        {
+            headers.insert(AUTH_DWDM);
+
+            SECTION("set an XPath filter")
+            {
+                auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + R"(, "stream-xpath-filter": "/example:eventA" }})";
+                REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:modify-subscription", headers, body) == Response{204, noContentTypeHeaders, ""});
+            }
+
+            SECTION("set an XPath filter and a stop-time")
+            {
+                // 'target' (the stream filter) is a mandatory choice in modify-subscription, so a stop-time cannot be modified on its own
+                auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + R"(, "stream-xpath-filter": "/example:eventA", "stop-time": "2099-12-31T23:59:59Z" }})";
+                REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:modify-subscription", headers, body) == Response{204, noContentTypeHeaders, ""});
+            }
+        }
+
+        SECTION("root (recovery user) can modify a subscription created by another user")
+        {
+            headers.insert(AUTH_ROOT);
+            auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + R"(, "stream-xpath-filter": "/example:eventA" }})";
+            REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:modify-subscription", headers, body) == Response{204, noContentTypeHeaders, ""});
+        }
+
+        SECTION("anonymous user cannot modify because of NACM")
+        {
+            auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + R"( }})";
+            REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:modify-subscription", headers, body) == Response{403, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "access-denied",
+        "error-path": "/ietf-subscribed-notifications:modify-subscription",
+        "error-message": "Access denied."
+      }
+    ]
+  }
+}
+)"});
+        }
+
+        SECTION("user without access to the subscription gets not found")
+        {
+            headers.insert(AUTH_NORULES);
+            auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + R"(, "stream-xpath-filter": "/example:eventA" }})";
+            REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:modify-subscription", headers, body) == Response{404, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-path": "/ietf-subscribed-notifications:modify-subscription",
+        "error-message": "Subscription not found."
+      }
+    ]
+  }
+}
+)"});
+        }
+
+        SECTION("modifying a non-existent subscription")
+        {
+            headers.insert(AUTH_DWDM);
+            auto body = R"({"ietf-subscribed-notifications:input": { "id": 99999, "stream-xpath-filter": "/example:eventA" }})";
+            REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:modify-subscription", headers, body) == Response{404, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-path": "/ietf-subscribed-notifications:modify-subscription",
+        "error-message": "Subscription not found."
+      }
+    ]
+  }
+}
+)"});
+        }
+
+        SECTION("subtree filters are converted to XPath, just like in establish-subscription")
+        {
+            headers.insert(AUTH_DWDM);
+            auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + R"(, "stream-subtree-filter": {"example:eventA": {}} }})";
+            REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:modify-subscription", headers, body) == Response{204, noContentTypeHeaders, ""});
+        }
+    }
+
+    SECTION("modify-subscription actually changes the delivered notifications")
+    {
+        // Establish a subscription filtered to eventA, then while a client is connected, modify the filter to eventB.
+        // The stream of delivered notifications must follow the new filter: eventA before the modify, eventB after it.
+        RestconfNotificationWatcher netconfWatcher(srConn.sessionStart().getContext());
+        netconfWatcher.setDataFormat(libyang::DataFormat::JSON);
+
+        const std::string eventA = R"({"example:eventA":{"message":"blabla","progress":11}})";
+        const std::string eventB = R"({"example:eventB":{}})";
+
+        SubscribedNotifications subNotif;
+        subNotif.stream = "NETCONF";
+        subNotif.filter = FilterXPath{"/example:eventA"};
+        auto [id, uri, replayStartTimeRevision] = establishSubscription(SERVER_ADDRESS, SERVER_PORT, srSess.getContext(), libyang::DataFormat::JSON, {AUTH_ROOT}, "encode-json", subNotif);
+
+        // Used to make sure the original (eventA) filter is in effect before we modify it
+        std::binary_semaphore eventADelivered{0};
+        expectations.emplace_back(NAMED_REQUIRE_CALL(netconfWatcher, data(eventA)).IN_SEQUENCE(seq1).LR_SIDE_EFFECT(eventADelivered.release()));
+        expectations.emplace_back(NAMED_REQUIRE_CALL(netconfWatcher, data(eventB)).IN_SEQUENCE(seq1));
+
+        PREPARE_LOOP_WITH_EXCEPTIONS
+
+        std::jthread notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
+            auto notifSession = sysrepo::Connection{}.sessionStart();
+            auto ctx = notifSession.getContext();
+
+            WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+
+            // the original filter selects eventA, so this is delivered
+            SEND_NOTIFICATION(eventA);
+            REQUIRE(eventADelivered.try_acquire_for(3s));
+
+            // swap the filter to eventB
+            auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + R"(, "stream-xpath-filter": "/example:eventB" }})";
+            REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:modify-subscription", {AUTH_ROOT, CONTENT_TYPE_JSON}, body) == Response{204, noContentTypeHeaders, ""});
+
+            // eventA is now filtered out (it has no expectation, so delivering it would fail the test); only eventB passes
+            SEND_NOTIFICATION(eventA);
+            SEND_NOTIFICATION(eventB);
+
+            waitForCompletionAndBitMore(seq1);
+        }));
+
+        std::map<std::string, std::string> streamHeaders;
+        streamHeaders.insert(AUTH_ROOT);
+        SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, streamHeaders, 5s);
+        RUN_LOOP_WITH_EXCEPTIONS;
+    }
+
     SECTION("kill-subscription")
     {
         std::optional<Response> expectedResponse;

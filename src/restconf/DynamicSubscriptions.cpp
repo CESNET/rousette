@@ -335,6 +335,29 @@ void DynamicSubscriptions::deleteSubscription(sysrepo::Session& session, [[maybe
     m_subscriptions.erase(subscriptionData->uuid);
 }
 
+void DynamicSubscriptions::modifySubscription(sysrepo::Session& session, [[maybe_unused]] const std::optional<std::string>& requestSchemeAndHost, const libyang::DataFormat, const libyang::DataNode& rpcInput, libyang::DataNode&)
+{
+    const auto subId = std::get<uint32_t>(rpcInput.findPath("id")->asTerm().value());
+
+    // The RPC is already NACM-checked. Now, retrieve the subscription, if the current user has permission for it
+    auto subscriptionData = getSubscriptionForUser(subId, session.getNacmUser());
+    if (!subscriptionData) {
+        throw ErrorResponse(404, "application", "invalid-value", "Subscription not found.", rpcInput.path());
+    }
+
+    auto filter = createFilter(session, rpcInput, streamFilter, streamFilterKey, "stream-xpath-filter", "stream-subtree-filter", "stream-filter-name");
+
+    std::lock_guard lock(subscriptionData->mutex);
+    try {
+        /* TODO: This is not atomic. If modifying the stop-time fails after the filter was already modified, the subscription
+         * is left in a partially modified state and that probably violates the semantics required by RFC 8639, 2.7. */
+        subscriptionData->subscription.modifyFilter(filter);
+        subscriptionData->subscription.modifyStopTime(optionalTime(rpcInput, "stop-time"));
+    } catch (const sysrepo::ErrorWithCode& e) {
+        throw ErrorResponse(400, "application", "invalid-attribute", e.what());
+    }
+}
+
 void DynamicSubscriptions::terminateSubscription(const uint32_t subId)
 {
     std::lock_guard lock(m_mutex);
