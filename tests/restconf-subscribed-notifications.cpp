@@ -749,6 +749,123 @@ TEST_CASE("RESTCONF subscribed notifications")
         RUN_LOOP_WITH_EXCEPTIONS;
     }
 
+    SECTION("changing a configured filter updates subscriptions that use it")
+    {
+        RestconfNotificationWatcher netconfWatcher(srConn.sessionStart().getContext());
+        netconfWatcher.setDataFormat(libyang::DataFormat::JSON);
+
+        const std::string eventA = R"({"example:eventA":{"message":"blabla","progress":11}})";
+        const std::string eventB = R"({"example:eventB":{}})";
+
+        srSess.switchDatastore(sysrepo::Datastore::Running);
+        srSess.setItem("/ietf-subscribed-notifications:filters/stream-filter[name='flt']/stream-xpath-filter", "/example:eventA");
+        srSess.applyChanges();
+        srSess.switchDatastore(sysrepo::Datastore::Operational);
+
+        SubscribedNotifications subNotif;
+        subNotif.stream = "NETCONF";
+        subNotif.filter = FilterName{"flt"};
+        auto [id, uri, replayStartTimeRevision] = establishSubscription(SERVER_ADDRESS, SERVER_PORT, srSess.getContext(), libyang::DataFormat::JSON, {AUTH_ROOT}, "encode-json", subNotif);
+
+        // Used to make sure the original (eventA) filter is in effect before we reconfigure it
+        std::binary_semaphore eventADelivered{0};
+        expectations.emplace_back(NAMED_REQUIRE_CALL(netconfWatcher, data(eventA)).IN_SEQUENCE(seq1).LR_SIDE_EFFECT(eventADelivered.release()));
+        expectations.emplace_back(NAMED_REQUIRE_CALL(netconfWatcher, data(eventB)).IN_SEQUENCE(seq1));
+
+        PREPARE_LOOP_WITH_EXCEPTIONS
+
+        std::jthread notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
+            auto notifSession = sysrepo::Connection{}.sessionStart();
+            auto ctx = notifSession.getContext();
+
+            WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+
+            // the configured filter selects eventA, so this is delivered
+            SEND_NOTIFICATION(eventA);
+            REQUIRE(eventADelivered.try_acquire_for(3s));
+
+            // reconfigure the filter to select eventB instead. applyChanges() is synchronous and waits for our
+            // configuration-change subscriber, so the subscription's filter is already updated once it returns.
+            auto cfgSession = sysrepo::Connection{}.sessionStart(sysrepo::Datastore::Running);
+            cfgSession.setItem("/ietf-subscribed-notifications:filters/stream-filter[name='flt']/stream-xpath-filter", "/example:eventB");
+            cfgSession.applyChanges();
+
+            // no expectation for eventA -> delivering fails the test
+            SEND_NOTIFICATION(eventA);
+            SEND_NOTIFICATION(eventB);
+
+            waitForCompletionAndBitMore(seq1);
+        }));
+
+        std::map<std::string, std::string> streamHeaders;
+        streamHeaders.insert(AUTH_ROOT);
+        SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, streamHeaders, 5s);
+        RUN_LOOP_WITH_EXCEPTIONS;
+    }
+
+    SECTION("deleting a configured filter terminates subscriptions that use it")
+    {
+        RestconfNotificationWatcher netconfWatcher(srConn.sessionStart().getContext());
+        netconfWatcher.setDataFormat(libyang::DataFormat::JSON);
+
+        const std::string eventA = R"({"example:eventA":{"message":"blabla","progress":11}})";
+
+        srSess.switchDatastore(sysrepo::Datastore::Running);
+        srSess.setItem("/ietf-subscribed-notifications:filters/stream-filter[name='flt']/stream-xpath-filter", "/example:eventA");
+        srSess.applyChanges();
+        srSess.switchDatastore(sysrepo::Datastore::Operational);
+
+        SubscribedNotifications subNotif;
+        subNotif.stream = "NETCONF";
+        subNotif.filter = FilterName{"flt"};
+        auto [id, uri, replayStartTimeRevision] = establishSubscription(SERVER_ADDRESS, SERVER_PORT, srSess.getContext(), libyang::DataFormat::JSON, {AUTH_ROOT}, "encode-json", subNotif);
+
+        // make sure the configured filter is actually in effect before we delete it
+        std::binary_semaphore eventADelivered{0};
+        expectations.emplace_back(NAMED_REQUIRE_CALL(netconfWatcher, data(eventA)).IN_SEQUENCE(seq1).LR_SIDE_EFFECT(eventADelivered.release()));
+        expectations.emplace_back(NAMED_REQUIRE_CALL(netconfWatcher, data(trompeloeil::re(R"(^\{"ietf-subscribed-notifications:subscription-terminated":\{"id":)" + std::to_string(id) + R"(,"reason":"filter-unavailable"\}\}$)"))).IN_SEQUENCE(seq1));
+
+        PREPARE_LOOP_WITH_EXCEPTIONS
+
+        std::jthread notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
+            auto notifSession = sysrepo::Connection{}.sessionStart();
+            auto ctx = notifSession.getContext();
+
+            WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+
+            SEND_NOTIFICATION(eventA);
+            REQUIRE(eventADelivered.try_acquire_for(3s));
+
+            // remove the referenced filter
+            auto cfgSession = sysrepo::Connection{}.sessionStart(sysrepo::Datastore::Running);
+            cfgSession.deleteItem("/ietf-subscribed-notifications:filters/stream-filter[name='flt']");
+            cfgSession.applyChanges();
+
+            waitForCompletionAndBitMore(seq1);
+        }));
+
+        std::map<std::string, std::string> streamHeaders;
+        streamHeaders.insert(AUTH_ROOT);
+        SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, streamHeaders, 5s);
+        RUN_LOOP_WITH_EXCEPTIONS;
+
+        // the subscription is forgotten as well
+        auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + R"(, "stream-xpath-filter": "/example:eventA" }})";
+        REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:modify-subscription", {AUTH_ROOT, CONTENT_TYPE_JSON}, body) == Response{404, jsonHeaders, R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "application",
+        "error-tag": "invalid-value",
+        "error-path": "/ietf-subscribed-notifications:modify-subscription",
+        "error-message": "Subscription not found."
+      }
+    ]
+  }
+}
+)"});
+    }
+
     SECTION("kill-subscription")
     {
         std::optional<Response> expectedResponse;

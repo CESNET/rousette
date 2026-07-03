@@ -11,6 +11,8 @@
 #include <boost/uuid/random_generator.hpp>
 #include <map>
 #include <memory>
+#include <optional>
+#include <string>
 #include <sysrepo-cpp/Subscription.hpp>
 #include "http/EventStream.h"
 
@@ -36,6 +38,7 @@ public:
         libyang::DataFormat dataFormat; ///< Encoding of the notification stream
         boost::uuids::uuid uuid; ///< UUID is part of the GET URI, it identifies subscriptions for clients
         std::string user; ///< User who initiated the establish-subscription RPC
+        std::optional<std::string> configuredFilterXPath; ///< Instance xpath of the configured filter this subscription refers to, if any
 
         enum class State {
             Start, ///< Subscription is ready to be consumed by a client
@@ -52,6 +55,7 @@ public:
             libyang::DataFormat format,
             boost::uuids::uuid uuid,
             const std::string& user,
+            const std::optional<std::string>& configuredFilterXPath,
             boost::asio::io_context& io,
             std::chrono::seconds inactivityTimeout,
             std::function<void()> onClientInactiveCallback);
@@ -84,8 +88,10 @@ private:
     boost::uuids::random_generator m_uuidGenerator;
     std::chrono::seconds m_inactivityTimeout;
     std::optional<sysrepo::Subscription> m_notificationStreamListSub;
+    std::optional<sysrepo::Subscription> m_filtersChangeSub;
 
     void terminateSubscription(const uint32_t subId);
+    sysrepo::ErrorCode onConfiguredFilterChange(sysrepo::Session session);
 
     boost::uuids::uuid makeUUID();
 };
