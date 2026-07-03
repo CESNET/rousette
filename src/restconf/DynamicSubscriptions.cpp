@@ -8,8 +8,11 @@
 #include <fmt/ostream.h>
 #include <libyang-cpp/Time.hpp>
 #include <nghttp2/asio_http2_server.h>
+#include <set>
 #include <spdlog/spdlog.h>
+#include <sysrepo-cpp/Changes.hpp>
 #include <sysrepo-cpp/utils/exception.hpp>
+#include <vector>
 #include "restconf/DynamicSubscriptions.h"
 #include "restconf/Exceptions.h"
 #include "restconf/utils/io.h"
@@ -118,6 +121,72 @@ std::optional<std::variant<std::string, libyang::DataNodeAny>> createFilter(
         if (auto node = filterNode->findPath(subtreeFilterPath)) {
             return node->asAny();
         }
+    }
+
+    return std::nullopt;
+}
+
+/** @brief Builds the instance xpath of the configured filter list entry that the RPC input refers to (by name), if any.
+ *
+ * Works for both subscribed-notification stream-filters and YANG-push selection-filters. The returned xpath is used to
+ * track which configured filter a subscription depends on, so that the subscription can be updated when that filter changes.
+ * */
+std::optional<std::string> referencedConfiguredFilter(const libyang::DataNode& rpcInput)
+{
+    if (auto node = rpcInput.findPath("stream-filter-name")) {
+        return fmt::format("{}[{}={}]", streamFilter, streamFilterKey, rousette::restconf::escapeListKey(node->asTerm().valueStr()));
+    }
+    if (auto node = rpcInput.findPath("ietf-yang-push:selection-filter-ref")) {
+        return fmt::format("{}[{}={}]", selectionFilter, selectionFilterKey, rousette::restconf::escapeListKey(node->asTerm().valueStr()));
+    }
+
+    return std::nullopt;
+}
+
+/** @brief Walks up from a changed node to the enclosing configured filter list entry (stream-filter or selection-filter).
+ *
+ * We match on the absolute schema path, not the bare node name: the *-subtree-filter nodes are anydata and can hold
+ * arbitrary user data with look-alike node names, which a name-only compare would falsely match, or one can even filter
+ * on the current filter node, e.g.:
+ * `/ietf-subscribed-notifications:filters/stream-filter[name=...]/stream-subtree-filter/ietf-subscribed-notifications:filters/stream-filter`
+ * */
+std::optional<libyang::DataNode> configuredFilterEntry(const libyang::DataNode& changeNode)
+{
+    for (auto node = std::optional<libyang::DataNode>{changeNode}; node; node = node->parent()) {
+        if (const auto path = node->schema().path(); path == streamFilter || path == selectionFilter) {
+            return node;
+        }
+    }
+
+    return std::nullopt;
+}
+
+/** @brief Reads a configured filter entry (by its instance xpath) and returns its filter-spec, if any.
+ *
+ * Returns std::nullopt if the entry no longer exists or carries no filter-spec.
+ * The node names differ between stream-filter and selection-filter, so we pick the right pair based on the entryXPath.
+ * */
+std::optional<std::variant<std::string, libyang::DataNodeAny>> resolveConfiguredFilter(sysrepo::Session& session, const std::string& entryXPath)
+{
+    auto data = session.getData(entryXPath);
+    if (!data) {
+        return std::nullopt;
+    }
+
+    auto entry = data->findPath(entryXPath);
+    if (!entry) {
+        return std::nullopt;
+    }
+
+    const auto [xpathFilter, subtreeFilter] = entry->schema().name() == "stream-filter"
+        ? std::pair{"stream-xpath-filter", "stream-subtree-filter"}
+        : std::pair{"ietf-yang-push:datastore-xpath-filter", "ietf-yang-push:datastore-subtree-filter"};
+
+    if (auto node = entry->findPath(xpathFilter)) {
+        return node->asTerm().valueStr();
+    }
+    if (auto node = entry->findPath(subtreeFilter)) {
+        return node->asAny();
     }
 
     return std::nullopt;
@@ -255,6 +324,15 @@ DynamicSubscriptions::DynamicSubscriptions(sysrepo::Session& session, const std:
         sysrepo::subscribedNotificationsStreams,
         "/ietf-subscribed-notifications:streams",
         sysrepo::SubscribeOptions::OperMerge);
+
+    // Watch for changes of the configured filters so that subscriptions referring to them can be updated.
+    ScopedDatastoreSwitch dsSwitch(session, sysrepo::Datastore::Running);
+    m_filtersChangeSub = session.onModuleChange(
+        "ietf-subscribed-notifications",
+        [this](sysrepo::Session changeSession, auto, auto, auto, auto, auto) { return onConfiguredFilterChange(changeSession); },
+        "/ietf-subscribed-notifications:filters",
+        0,
+        sysrepo::SubscribeOptions::DoneOnly);
 }
 
 DynamicSubscriptions::~DynamicSubscriptions() = default;
@@ -294,13 +372,13 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
         rpcOutput.newPath("id", std::to_string(sub->subscriptionId()), libyang::CreationOptions::Output);
         rpcOutput.newPath("ietf-restconf-subscribed-notifications:uri", *requestSchemeAndHost + m_restconfStreamUri + "subscribed/" + boost::uuids::to_string(uuid), libyang::CreationOptions::Output);
 
-
         std::lock_guard lock(m_mutex);
         m_subscriptions[uuid] = std::make_shared<SubscriptionData>(
             std::move(*sub),
             dataFormat,
             uuid,
             *session.getNacmUser(),
+            referencedConfiguredFilter(rpcInput),
             *m_server.io_services().at(0),
             m_inactivityTimeout,
             [this, subId = sub->subscriptionId()]() { terminateSubscription(subId); });
@@ -353,9 +431,64 @@ void DynamicSubscriptions::modifySubscription(sysrepo::Session& session, [[maybe
          * is left in a partially modified state and that probably violates the semantics required by RFC 8639, 2.7. */
         subscriptionData->subscription.modifyFilter(filter);
         subscriptionData->subscription.modifyStopTime(optionalTime(rpcInput, "stop-time"));
+        subscriptionData->configuredFilterXPath = referencedConfiguredFilter(rpcInput);
     } catch (const sysrepo::ErrorWithCode& e) {
         throw ErrorResponse(400, "application", "invalid-attribute", e.what());
     }
+}
+
+sysrepo::ErrorCode DynamicSubscriptions::onConfiguredFilterChange(sysrepo::Session session)
+{
+    // Collect the configured filters (their instance xpaths) that changed, and which of them were removed entirely.
+    std::set<std::string> changedFilters;
+    std::set<std::string> deletedFilters;
+    for (const auto& change : session.getChanges()) {
+        auto entry = configuredFilterEntry(change.node);
+        if (!entry) {
+            continue;
+        }
+
+        const auto xpath = entry->path();
+        changedFilters.insert(xpath);
+        if (change.operation == sysrepo::ChangeOperation::Deleted && change.node.schema().nodeType() == libyang::NodeType::List) {
+            // the whole list entry was removed, not just one of its children
+            deletedFilters.insert(xpath);
+        }
+    }
+
+    std::lock_guard lock(m_mutex);
+    std::vector<boost::uuids::uuid> toErase;
+
+    for (const auto& [uuid, subscriptionData] : m_subscriptions) {
+        std::lock_guard subLock(subscriptionData->mutex);
+        if (!subscriptionData->configuredFilterXPath || !changedFilters.contains(*subscriptionData->configuredFilterXPath)) {
+            continue;
+        }
+
+        if (deletedFilters.contains(*subscriptionData->configuredFilterXPath)) {
+            // RFC 8639, 2.7.3: the referenced filter no longer exists, so the subscription has to be terminated.
+            spdlog::debug("{}: referenced filter was removed, terminating", fmt::streamed(*subscriptionData));
+            subscriptionData->terminate("ietf-subscribed-notifications:filter-unavailable");
+            toErase.emplace_back(uuid);
+            continue;
+        }
+
+        /* Re-resolve the filter from the (now updated) configuration and apply it.
+         * RFC 8639, 2.7.2: a change of a referenced filter must be reflected in all subscriptions using it.
+         */
+        try {
+            subscriptionData->subscription.modifyFilter(resolveConfiguredFilter(session, *subscriptionData->configuredFilterXPath));
+            spdlog::debug("{}: filter updated after configuration change", fmt::streamed(*subscriptionData));
+        } catch (const sysrepo::ErrorWithCode& e) {
+            spdlog::warn("{}: failed to update filter after configuration change: {}", fmt::streamed(*subscriptionData), e.what());
+        }
+    }
+
+    for (const auto& uuid : toErase) {
+        m_subscriptions.erase(uuid);
+    }
+
+    return sysrepo::ErrorCode::Ok;
 }
 
 void DynamicSubscriptions::terminateSubscription(const uint32_t subId)
@@ -422,6 +555,7 @@ DynamicSubscriptions::SubscriptionData::SubscriptionData(
     libyang::DataFormat format,
     boost::uuids::uuid uuid,
     const std::string& user,
+    const std::optional<std::string>& configuredFilterXPath,
     boost::asio::io_context& io,
     std::chrono::seconds inactivityTimeout,
     std::function<void()> onClientInactiveCallback)
@@ -429,6 +563,7 @@ DynamicSubscriptions::SubscriptionData::SubscriptionData(
     , dataFormat(format)
     , uuid(uuid)
     , user(user)
+    , configuredFilterXPath(configuredFilterXPath)
     , state(State::Start)
     , inactivityTimeout(inactivityTimeout)
     , clientInactiveTimer(io)

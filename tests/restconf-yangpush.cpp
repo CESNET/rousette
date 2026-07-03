@@ -6,6 +6,7 @@
  */
 
 #include "trompeloeil_doctest.h"
+#include <atomic>
 #include <libyang-cpp/Time.hpp>
 #include <nghttp2/asio_http2.h>
 #include <spdlog/spdlog.h>
@@ -286,6 +287,57 @@ TEST_CASE("RESTCONF subscribed notifications")
         if (rpcRequestAuthHeader) {
             streamHeaders.insert(*rpcRequestAuthHeader);
         }
+        SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, ypWatcher, uri, streamHeaders);
+        RUN_LOOP_WITH_EXCEPTIONS;
+    }
+
+    SECTION("changing a configured selection-filter updates YANG push subscriptions that use it")
+    {
+        RestconfYangPushWatcher ypWatcher(srConn.sessionStart().getContext());
+        ypWatcher.setDataFormat(libyang::DataFormat::JSON);
+
+        // minimal data in the startup datastore; the configured filter decides which node is pushed
+        srSess.switchDatastore(sysrepo::Datastore::Startup);
+        srSess.setItem("/example:top-level-leaf", "42");
+        srSess.setItem("/example:top-level-list[name='key1']", std::nullopt);
+        srSess.applyChanges();
+
+        // the configured selection-filter initially selects top-level-leaf
+        srSess.switchDatastore(sysrepo::Datastore::Running);
+        srSess.setItem("/ietf-subscribed-notifications:filters/ietf-yang-push:selection-filter[filter-id='flt']/datastore-xpath-filter", "/example:top-level-leaf");
+        srSess.applyChanges();
+        srSess.switchDatastore(sysrepo::Datastore::Operational);
+
+        YangPushPeriodic yp;
+        yp.period = 50ms;
+        yp.datastore = sysrepo::Datastore::Startup;
+        yp.filter = FilterName{"flt"};
+
+        std::atomic<bool> leafDelivered = false;
+        expectations.emplace_back(NAMED_REQUIRE_CALL(ypWatcher, data(R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:top-level-leaf":"42"}}})")).IN_SEQUENCE(seq1).TIMES(AT_LEAST(1)).LR_SIDE_EFFECT(leafDelivered = true));
+        expectations.emplace_back(NAMED_REQUIRE_CALL(ypWatcher, data(R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:top-level-list":[{"name":"key1"}]}}})")).IN_SEQUENCE(seq1).TIMES(AT_LEAST(1)));
+
+        auto uri = establishSubscription(SERVER_ADDRESS, SERVER_PORT, srSess.getContext(), libyang::DataFormat::JSON, {AUTH_ROOT}, "encode-json", yp).url;
+
+        PREPARE_LOOP_WITH_EXCEPTIONS;
+        std::jthread notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
+            WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+
+            // make sure the original filter is in effect (at least one message with old filter was delivered)
+            while (!leafDelivered) {
+                std::this_thread::sleep_for(10ms);
+            }
+
+            // re-point the configured filter to the list; applyChanges() is synchronous and waits for our
+            auto cfg = sysrepo::Connection{}.sessionStart(sysrepo::Datastore::Running);
+            cfg.setItem("/ietf-subscribed-notifications:filters/ietf-yang-push:selection-filter[filter-id='flt']/datastore-xpath-filter", "/example:top-level-list");
+            cfg.applyChanges();
+
+            waitForCompletionAndBitMore(seq1);
+        }));
+
+        std::map<std::string, std::string> streamHeaders;
+        streamHeaders.insert(AUTH_ROOT);
         SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, ypWatcher, uri, streamHeaders);
         RUN_LOOP_WITH_EXCEPTIONS;
     }
