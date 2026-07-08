@@ -385,7 +385,7 @@ EstablishSubscriptionResult establishSubscription(
         }
 
         if (yp.anchorTime) {
-            rpcTree.newPath("ietf-yang-push:periodic/period", libyang::yangTimeFormat(*yp.anchorTime, libyang::TimezoneInterpretation::Local));
+            rpcTree.newPath("ietf-yang-push:periodic/anchor-time", libyang::yangTimeFormat(*yp.anchorTime, libyang::TimezoneInterpretation::Local));
         }
     }
 
