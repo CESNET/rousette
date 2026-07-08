@@ -423,13 +423,33 @@ void DynamicSubscriptions::modifySubscription(sysrepo::Session& session, [[maybe
         throw ErrorResponse(404, "application", "invalid-value", "Subscription not found.", rpcInput.path());
     }
 
-    auto filter = createFilter(session, rpcInput, streamFilter, streamFilterKey, "stream-xpath-filter", "stream-subtree-filter", "stream-filter-name");
+    // The set of modifiable parameters and the YANG nodes that carry the filter depend on the subscription type.
+    const auto filter = subscriptionData->subscription.type() == sysrepo::DynamicSubscriptionType::SubscribedNotifications
+        ? createFilter(session, rpcInput, streamFilter, streamFilterKey, "stream-xpath-filter", "stream-subtree-filter", "stream-filter-name")
+        : createFilter(session, rpcInput, selectionFilter, selectionFilterKey, "ietf-yang-push:datastore-xpath-filter", "ietf-yang-push:datastore-subtree-filter", "ietf-yang-push:selection-filter-ref");
 
     std::lock_guard lock(subscriptionData->mutex);
     try {
-        /* TODO: This is not atomic. If modifying the stop-time fails after the filter was already modified, the subscription
+        /* TODO: This is not atomic. If modifying one parameter fails after another was already modified, the subscription
          * is left in a partially modified state and that probably violates the semantics required by RFC 8639, 2.7. */
         subscriptionData->subscription.modifyFilter(filter);
+
+        switch (subscriptionData->subscription.type()) {
+        case sysrepo::DynamicSubscriptionType::SubscribedNotifications:
+            break;
+        case sysrepo::DynamicSubscriptionType::YangPushPeriodic:
+            // The 'period' leaf is mandatory inside the 'periodic' container, so it is present whenever the container is.
+            if (auto period = createInterval<std::centi>(rpcInput, "ietf-yang-push:periodic/period")) {
+                subscriptionData->subscription.modifyPeriod(*period, optionalTime(rpcInput, "ietf-yang-push:periodic/anchor-time"));
+            }
+            break;
+        case sysrepo::DynamicSubscriptionType::YangPushOnChange:
+            if (rpcInput.findPath("ietf-yang-push:on-change")) {
+                subscriptionData->subscription.modifyDampeningPeriod(createInterval<std::centi>(rpcInput, "ietf-yang-push:on-change/dampening-period"));
+            }
+            break;
+        }
+
         subscriptionData->subscription.modifyStopTime(optionalTime(rpcInput, "stop-time"));
         subscriptionData->configuredFilterXPath = referencedConfiguredFilter(rpcInput);
     } catch (const sysrepo::ErrorWithCode& e) {
