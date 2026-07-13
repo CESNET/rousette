@@ -53,6 +53,7 @@ public:
         boost::uuids::uuid uuid; ///< UUID is part of the GET URI, it identifies subscriptions for clients
         std::string user; ///< User who initiated the establish-subscription RPC
         std::optional<ReferencedFilter> configuredFilter; ///< The configured filter this subscription refers to, if any
+        std::weak_ptr<http::EventStream::EventSignal> notificationSink; ///< Event signal of the connected client's stream
 
         enum class State {
             Start, ///< Subscription is ready to be consumed by a client
@@ -75,7 +76,7 @@ public:
             std::function<void()> onClientInactiveCallback);
         ~SubscriptionData();
         void clientDisconnected();
-        void clientConnected();
+        void clientConnected(const std::shared_ptr<http::EventStream::EventSignal>& notificationSink);
         void terminate(const std::optional<std::string>& reason = std::nullopt);
         bool isReadyToAcceptClient() const;
         void stop();

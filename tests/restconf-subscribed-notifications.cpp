@@ -715,9 +715,24 @@ TEST_CASE("RESTCONF subscribed notifications")
         subNotif.filter = FilterXPath{"/example:eventA"};
         auto [id, uri, replayStartTimeRevision] = establishSubscription(SERVER_ADDRESS, SERVER_PORT, srSess.getContext(), libyang::DataFormat::JSON, {AUTH_ROOT}, "encode-json", subNotif);
 
+        std::string filterNode;
+        SECTION("inline XPath filter")
+        {
+            filterNode = R"("stream-xpath-filter":"/example:eventB")";
+        }
+        SECTION("by reference to a configured filter")
+        {
+            srSess.switchDatastore(sysrepo::Datastore::Running);
+            srSess.setItem("/ietf-subscribed-notifications:filters/stream-filter[name='flt']/stream-xpath-filter", "/example:eventB");
+            srSess.applyChanges();
+            srSess.switchDatastore(sysrepo::Datastore::Operational);
+            filterNode = R"("stream-filter-name":"flt")";
+        }
+
         // Used to make sure the original (eventA) filter is in effect before we modify it
         std::binary_semaphore eventADelivered{0};
         expectations.emplace_back(NAMED_REQUIRE_CALL(netconfWatcher, data(eventA)).IN_SEQUENCE(seq1).LR_SIDE_EFFECT(eventADelivered.release()));
+        expectations.emplace_back(NAMED_REQUIRE_CALL(netconfWatcher, data(R"({"ietf-subscribed-notifications:subscription-modified":{"id":)" + std::to_string(id) + R"(,)" + filterNode + R"(,"stream":"NETCONF"}})")).IN_SEQUENCE(seq1));
         expectations.emplace_back(NAMED_REQUIRE_CALL(netconfWatcher, data(eventB)).IN_SEQUENCE(seq1));
 
         PREPARE_LOOP_WITH_EXCEPTIONS
@@ -733,7 +748,7 @@ TEST_CASE("RESTCONF subscribed notifications")
             REQUIRE(eventADelivered.try_acquire_for(3s));
 
             // swap the filter to eventB
-            auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + R"(, "stream-xpath-filter": "/example:eventB" }})";
+            auto body = R"({"ietf-subscribed-notifications:input": { "id": )" + std::to_string(id) + R"(, )" + filterNode + R"( }})";
             REQUIRE(post(RESTCONF_OPER_ROOT "/ietf-subscribed-notifications:modify-subscription", {AUTH_ROOT, CONTENT_TYPE_JSON}, body) == Response{204, noContentTypeHeaders, ""});
 
             // eventA is now filtered out (it has no expectation, so delivering it would fail the test); only eventB passes

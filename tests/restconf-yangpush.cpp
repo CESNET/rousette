@@ -361,6 +361,8 @@ TEST_CASE("RESTCONF subscribed notifications")
 
         auto [id, uri, replayStartTimeRevision] = establishSubscription(SERVER_ADDRESS, SERVER_PORT, srSess.getContext(), libyang::DataFormat::JSON, {AUTH_ROOT}, "encode-json", yp);
 
+        expectations.emplace_back(NAMED_REQUIRE_CALL(ypWatcher, data(R"({"ietf-subscribed-notifications:subscription-modified":{"id":)" + std::to_string(id) + R"(,"ietf-yang-push:datastore":"ietf-datastores:startup","ietf-yang-push:periodic":{"period":5}}})")));
+
         PREPARE_LOOP_WITH_EXCEPTIONS;
         std::jthread notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
             WAIT_UNTIL_SSE_CLIENT_REQUESTS;
@@ -419,6 +421,8 @@ TEST_CASE("RESTCONF subscribed notifications")
         }
 
         auto [id, uri, replayStartTimeRevision] = establishSubscription(SERVER_ADDRESS, SERVER_PORT, srSess.getContext(), libyang::DataFormat::JSON, {AUTH_ROOT}, "encode-json", yp);
+
+        expectations.emplace_back(NAMED_REQUIRE_CALL(ypWatcher, data(R"({"ietf-subscribed-notifications:subscription-modified":{"id":)" + std::to_string(id) + R"(,"ietf-yang-push:datastore":"ietf-datastores:running","ietf-yang-push:on-change":{"dampening-period":0}}})")));
 
         PREPARE_LOOP_WITH_EXCEPTIONS;
         std::jthread notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
