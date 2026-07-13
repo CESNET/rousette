@@ -106,6 +106,8 @@ void RestconfYangPushWatcher::dataEvent(const std::string& msg) const
         if (auto node = notifDataNode.op->findPath("id")) {
             node->unlink();
         }
+    } else if (notifDataNode.op->path().starts_with("/ietf-subscribed-notifications:subscription-")) {
+        // subscription state-change notifications (e.g. subscription-modified) are passed through unchanged
     } else {
         throw std::invalid_argument("Unexpected notification: " + notifDataNode.op->path());
     }

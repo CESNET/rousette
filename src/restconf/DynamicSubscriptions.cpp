@@ -307,6 +307,55 @@ sysrepo::DynamicSubscription makeYangPushPeriodicSubscription(sysrepo::Session& 
         anchorTime,
         stopTime);
 }
+
+/** @brief Converts a duration to the centisecond units used by the ietf-yang-push period/dampening-period leaves. */
+std::string yangPushCentiseconds(const std::chrono::milliseconds ms)
+{
+    return std::to_string(std::chrono::duration_cast<std::chrono::duration<uint64_t, std::centi>>(ms).count());
+}
+
+/** @brief Builds the 'ietf-subscribed-notifications:subscription-modified' notification. */
+libyang::DataNode subscriptionModifiedNotification(const libyang::Context& ctx, const sysrepo::SubscriptionState& state, const std::optional<rousette::restconf::ReferencedFilter>& configuredFilter)
+{
+    const auto referencedFilterName = configuredFilter ? std::make_optional(configuredFilter->name) : std::nullopt;
+
+    auto notification = ctx.newPath("/ietf-subscribed-notifications:subscription-modified");
+    notification.newPath("id", std::to_string(state.subscriptionId));
+
+    if (state.stopTime) {
+        notification.newPath("stop-time", libyang::yangTimeFormat(*state.stopTime, libyang::TimezoneInterpretation::Local));
+    }
+
+    if (const auto* sn = std::get_if<sysrepo::SubscribedNotifications>(&state.params)) {
+        notification.newPath("stream", sn->stream);
+        if (referencedFilterName) {
+            notification.newPath("stream-filter-name", *referencedFilterName);
+        } else if (state.xpathFilter) {
+            notification.newPath("stream-xpath-filter", *state.xpathFilter);
+        }
+    } else if (const auto* periodic = std::get_if<sysrepo::YangPushPeriodic>(&state.params)) {
+        notification.newPath("ietf-yang-push:datastore", rousette::restconf::datastoreToString(periodic->datastore));
+        if (referencedFilterName) {
+            notification.newPath("ietf-yang-push:selection-filter-ref", *referencedFilterName);
+        } else if (state.xpathFilter) {
+            notification.newPath("ietf-yang-push:datastore-xpath-filter", *state.xpathFilter);
+        }
+        notification.newPath("ietf-yang-push:periodic/period", yangPushCentiseconds(periodic->period));
+        if (periodic->anchorTime) {
+            notification.newPath("ietf-yang-push:periodic/anchor-time", libyang::yangTimeFormat(*periodic->anchorTime, libyang::TimezoneInterpretation::Local));
+        }
+    } else if (const auto* onChange = std::get_if<sysrepo::YangPushOnChange>(&state.params)) {
+        notification.newPath("ietf-yang-push:datastore", rousette::restconf::datastoreToString(onChange->datastore));
+        if (referencedFilterName) {
+            notification.newPath("ietf-yang-push:selection-filter-ref", *referencedFilterName);
+        } else if (state.xpathFilter) {
+            notification.newPath("ietf-yang-push:datastore-xpath-filter", *state.xpathFilter);
+        }
+        notification.newPath("ietf-yang-push:on-change/dampening-period", yangPushCentiseconds(onChange->dampeningPeriod));
+    }
+
+    return notification;
+}
 }
 
 namespace rousette::restconf {
@@ -452,6 +501,24 @@ void DynamicSubscriptions::modifySubscription(sysrepo::Session& session, [[maybe
         subscriptionData->configuredFilter = referencedFilter(rpcInput);
     } catch (const sysrepo::ErrorWithCode& e) {
         throw ErrorResponse(400, "application", "invalid-attribute", e.what());
+    }
+
+    /* Notify the connected receiver (if any) with subscription-modified.
+     * FIXME: Only best-effort ordering (RFC 8639, 2.7.2): new-params records come after the marker (produced only after modify_*()),
+     * but old-params records still buffered unread in sysrepo's pipe may also land after it.
+     * There is (probably) no way of stopping sysrepo producing new events temporarily?
+     */
+    if (auto sink = subscriptionData->notificationSink.lock()) {
+        try {
+            auto notification = subscriptionModifiedNotification(session.getContext(), subscriptionData->subscription.subscriptionState(), subscriptionData->configuredFilter);
+            (*sink)(as_restconf_notification(
+                session.getContext(),
+                subscriptionData->dataFormat,
+                notification,
+                std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now())));
+        } catch (const std::exception& e) {
+            spdlog::warn("{}: failed to send subscription-modified notification: {}", fmt::streamed(*subscriptionData), e.what());
+        }
     }
 }
 
@@ -619,13 +686,15 @@ void DynamicSubscriptions::SubscriptionData::clientDisconnected()
     }
 
     state = State::Start;
+    notificationSink.reset();
     inactivityStart();
 }
 
-void DynamicSubscriptions::SubscriptionData::clientConnected()
+void DynamicSubscriptions::SubscriptionData::clientConnected(const std::shared_ptr<http::EventStream::EventSignal>& sink)
 {
     spdlog::debug("{}: client connected", fmt::streamed(*this));
     std::lock_guard lock(mutex);
+    notificationSink = sink;
     inactivityCancel();
     state = State::ReceiverActive;
 }
@@ -763,7 +832,7 @@ void DynamicSubscriptionHttpStream::awaitNextNotification()
 
 void DynamicSubscriptionHttpStream::activate()
 {
-    m_subscriptionData->clientConnected();
+    m_subscriptionData->clientConnected(m_signal);
     EventStream::activate();
     awaitNextNotification();
 }
