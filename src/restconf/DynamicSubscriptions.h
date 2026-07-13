@@ -26,6 +26,13 @@ class http2;
 
 namespace rousette::restconf {
 
+/** @brief A configured filter referenced by name from the RPC input (stream-filter-name / selection-filter-ref). */
+struct ReferencedFilter {
+    std::string name;
+    const char* configuredListPath;
+    const char* configuredListKey;
+};
+
 /** Dynamic subscriptions manager.
  *
  * Stores all dynamic subscriptions and provides a way to retrieve them by the UUID.
@@ -38,7 +45,7 @@ public:
         libyang::DataFormat dataFormat; ///< Encoding of the notification stream
         boost::uuids::uuid uuid; ///< UUID is part of the GET URI, it identifies subscriptions for clients
         std::string user; ///< User who initiated the establish-subscription RPC
-        std::optional<std::string> configuredFilterXPath; ///< Instance xpath of the configured filter this subscription refers to, if any
+        std::optional<ReferencedFilter> configuredFilter; ///< The configured filter this subscription refers to, if any
 
         enum class State {
             Start, ///< Subscription is ready to be consumed by a client
@@ -55,7 +62,7 @@ public:
             libyang::DataFormat format,
             boost::uuids::uuid uuid,
             const std::string& user,
-            const std::optional<std::string>& configuredFilterXPath,
+            const std::optional<ReferencedFilter>& configuredFilter,
             boost::asio::io_context& io,
             std::chrono::seconds inactivityTimeout,
             std::function<void()> onClientInactiveCallback);

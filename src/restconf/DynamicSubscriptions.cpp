@@ -126,21 +126,23 @@ std::optional<std::variant<std::string, libyang::DataNodeAny>> createFilter(
     return std::nullopt;
 }
 
-/** @brief Builds the instance xpath of the configured filter list entry that the RPC input refers to (by name), if any.
- *
- * Works for both subscribed-notification stream-filters and YANG-push selection-filters. The returned xpath is used to
- * track which configured filter a subscription depends on, so that the subscription can be updated when that filter changes.
- * */
-std::optional<std::string> referencedConfiguredFilter(const libyang::DataNode& rpcInput)
+/** @brief Returns the configured filter the RPC input refers to (by name), if any. */
+std::optional<rousette::restconf::ReferencedFilter> referencedFilter(const libyang::DataNode& rpcInput)
 {
     if (auto node = rpcInput.findPath("stream-filter-name")) {
-        return fmt::format("{}[{}={}]", streamFilter, streamFilterKey, rousette::restconf::escapeListKey(node->asTerm().valueStr()));
+        return rousette::restconf::ReferencedFilter{node->asTerm().valueStr(), streamFilter, streamFilterKey};
     }
     if (auto node = rpcInput.findPath("ietf-yang-push:selection-filter-ref")) {
-        return fmt::format("{}[{}={}]", selectionFilter, selectionFilterKey, rousette::restconf::escapeListKey(node->asTerm().valueStr()));
+        return rousette::restconf::ReferencedFilter{node->asTerm().valueStr(), selectionFilter, selectionFilterKey};
     }
 
     return std::nullopt;
+}
+
+/** @brief Builds the instance xpath of the configured filter list entry the subscription refers to. */
+std::string configuredFilterXPath(const rousette::restconf::ReferencedFilter& filter)
+{
+    return fmt::format("{}[{}={}]", filter.configuredListPath, filter.configuredListKey, rousette::restconf::escapeListKey(filter.name));
 }
 
 /** @brief Walks up from a changed node to the enclosing configured filter list entry (stream-filter or selection-filter). */
@@ -374,7 +376,7 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
             dataFormat,
             uuid,
             *session.getNacmUser(),
-            referencedConfiguredFilter(rpcInput),
+            referencedFilter(rpcInput),
             *m_server.io_services().at(0),
             m_inactivityTimeout,
             [this, subId = sub->subscriptionId()]() { terminateSubscription(subId); });
@@ -447,7 +449,7 @@ void DynamicSubscriptions::modifySubscription(sysrepo::Session& session, [[maybe
         }
 
         subscriptionData->subscription.modifyStopTime(optionalTime(rpcInput, "stop-time"));
-        subscriptionData->configuredFilterXPath = referencedConfiguredFilter(rpcInput);
+        subscriptionData->configuredFilter = referencedFilter(rpcInput);
     } catch (const sysrepo::ErrorWithCode& e) {
         throw ErrorResponse(400, "application", "invalid-attribute", e.what());
     }
@@ -481,11 +483,16 @@ sysrepo::ErrorCode DynamicSubscriptions::onConfiguredFilterChange(sysrepo::Sessi
 
     for (const auto& [uuid, subscriptionData] : m_subscriptions) {
         std::lock_guard subLock(subscriptionData->mutex);
-        if (!subscriptionData->configuredFilterXPath || !changedFilters.contains(*subscriptionData->configuredFilterXPath)) {
+        if (!subscriptionData->configuredFilter) {
             continue;
         }
 
-        if (deletedFilters.contains(*subscriptionData->configuredFilterXPath)) {
+        const auto filterXPath = configuredFilterXPath(*subscriptionData->configuredFilter);
+        if (!changedFilters.contains(filterXPath)) {
+            continue;
+        }
+
+        if (deletedFilters.contains(filterXPath)) {
             // RFC 8639, 2.7.3: the referenced filter no longer exists, so the subscription has to be terminated.
             spdlog::debug("{}: referenced filter was removed, terminating", fmt::streamed(*subscriptionData));
             subscriptionData->terminate("ietf-subscribed-notifications:filter-unavailable");
@@ -497,7 +504,7 @@ sysrepo::ErrorCode DynamicSubscriptions::onConfiguredFilterChange(sysrepo::Sessi
          * RFC 8639, 2.7.2: a change of a referenced filter must be reflected in all subscriptions using it.
          */
         try {
-            subscriptionData->subscription.modifyFilter(resolveConfiguredFilter(session, *subscriptionData->configuredFilterXPath));
+            subscriptionData->subscription.modifyFilter(resolveConfiguredFilter(session, filterXPath));
             spdlog::debug("{}: filter updated after configuration change", fmt::streamed(*subscriptionData));
         } catch (const sysrepo::ErrorWithCode& e) {
             spdlog::warn("{}: failed to update filter after configuration change: {}", fmt::streamed(*subscriptionData), e.what());
@@ -575,7 +582,7 @@ DynamicSubscriptions::SubscriptionData::SubscriptionData(
     libyang::DataFormat format,
     boost::uuids::uuid uuid,
     const std::string& user,
-    const std::optional<std::string>& configuredFilterXPath,
+    const std::optional<ReferencedFilter>& configuredFilter,
     boost::asio::io_context& io,
     std::chrono::seconds inactivityTimeout,
     std::function<void()> onClientInactiveCallback)
@@ -583,7 +590,7 @@ DynamicSubscriptions::SubscriptionData::SubscriptionData(
     , dataFormat(format)
     , uuid(uuid)
     , user(user)
-    , configuredFilterXPath(configuredFilterXPath)
+    , configuredFilter(configuredFilter)
     , state(State::Start)
     , inactivityTimeout(inactivityTimeout)
     , clientInactiveTimer(io)
