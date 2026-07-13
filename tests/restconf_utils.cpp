@@ -265,26 +265,6 @@ void SSEClient::parseEvents(const RestconfNotificationWatcher& eventWatcher, con
     }
 }
 
-
-std::string datastoreToString(sysrepo::Datastore ds)
-{
-    switch (ds) {
-    case sysrepo::Datastore::Startup:
-        return "ietf-datastores:startup";
-    case sysrepo::Datastore::Running:
-        return "ietf-datastores:running";
-    case sysrepo::Datastore::Candidate:
-        return "ietf-datastores:candidate";
-    case sysrepo::Datastore::Operational:
-        return "ietf-datastores:operational";
-    case sysrepo::Datastore::FactoryDefault:
-        return "ietf-datastores:factory-default";
-    default:
-        FAIL("Unhandled sysrepo::Datastore");
-        __builtin_unreachable(); // To make GCC 13.2.1 happy
-    }
-}
-
 void createNamedSubtreeFilter(sysrepo::Session& session, const std::string& path, const std::string& xmlContent)
 {
     rousette::restconf::ScopedDatastoreSwitch dsSwitch(session, sysrepo::Datastore::Running);
@@ -346,7 +326,7 @@ EstablishSubscriptionResult establishSubscription(
     } else if (std::holds_alternative<YangPushOnChange>(params)) {
         const auto& yp = std::get<YangPushOnChange>(params);
 
-        rpcTree.newPath("ietf-yang-push:datastore", datastoreToString(yp.datastore));
+        rpcTree.newPath("ietf-yang-push:datastore", rousette::restconf::datastoreToString(yp.datastore));
         rpcTree.newPath("ietf-yang-push:on-change", std::nullopt);
 
         if (std::holds_alternative<FilterXPath>(yp.filter)) {
@@ -373,7 +353,7 @@ EstablishSubscriptionResult establishSubscription(
         const auto& yp = std::get<YangPushPeriodic>(params);
         const auto periodCentiseconds = std::chrono::duration_cast<std::chrono::duration<std::chrono::milliseconds::rep, std::centi>>(yp.period);
 
-        rpcTree.newPath("ietf-yang-push:datastore", datastoreToString(yp.datastore));
+        rpcTree.newPath("ietf-yang-push:datastore", rousette::restconf::datastoreToString(yp.datastore));
         rpcTree.newPath("ietf-yang-push:periodic/period", std::to_string(periodCentiseconds.count()));
 
         if (std::holds_alternative<FilterXPath>(yp.filter)) {

@@ -39,6 +39,24 @@ sysrepo::Datastore datastoreFromString(const std::string& datastore)
     throw std::runtime_error("Unknown datastore '" + datastore + "'");
 }
 
+std::string datastoreToString(sysrepo::Datastore datastore)
+{
+    switch (datastore) {
+    case sysrepo::Datastore::Running:
+        return "ietf-datastores:running";
+    case sysrepo::Datastore::Operational:
+        return "ietf-datastores:operational";
+    case sysrepo::Datastore::Candidate:
+        return "ietf-datastores:candidate";
+    case sysrepo::Datastore::Startup:
+        return "ietf-datastores:startup";
+    case sysrepo::Datastore::FactoryDefault:
+        return "ietf-datastores:factory-default";
+    }
+
+    __builtin_unreachable();
+}
+
 /** @brief Early filter for modules that can be subscribed to. This returns true for module without any notification node, but sysrepo will throw when subscribing */
 bool canBeSubscribed(const libyang::Module& mod)
 {
