@@ -32,6 +32,7 @@ struct SysrepoReplayInfo {
 };
 
 sysrepo::Datastore datastoreFromString(const std::string& datastore);
+std::string datastoreToString(sysrepo::Datastore datastore);
 bool canBeSubscribed(const libyang::Module& mod);
 SysrepoReplayInfo sysrepoReplayInfo(sysrepo::Session& session);
 }
