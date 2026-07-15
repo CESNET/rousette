@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f5e0b3fa_31e4207d",
+        "filename": "src/restconf/DynamicSubscriptions.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-07-15T09:37:10Z",
+      "side": 1,
+      "message": "I was wondering why this is a `const char *` instead of an `std::string`, and that\u0027s because it\u0027s being always initialized by a string literal.\n\nWould you mind encapsulating this by adding a simple enum class for this in the `ReferencedFilter`, and change `configuredXPathFilter` to be a method of this struct?",
+      "range": {
+        "startLine": 32,
+        "startChar": 4,
+        "endLine": 32,
+        "endChar": 15
+      },
+      "revId": "e95d01218816b51b7d313b32e0e108199e0c474c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
