@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "fc9d22f8_a5dfcf30",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-07-16T19:02:27Z",
+      "side": 1,
+      "message": "It was needed in this revision, without it, we would return on the first node.\nIt is not present in the new version.",
+      "parentUuid": "05f11ffb_bdfa8756",
+      "range": {
+        "startLine": 150,
+        "startChar": 0,
+        "endLine": 152,
+        "endChar": 9
+      },
+      "revId": "827c29d8d08c3fea617532393174e6292bc4abde",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "bf10febe_edf5412d",
@@ -41,6 +65,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "b141313f_a958c7d9",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 154,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-07-16T19:02:27Z",
+      "side": 1,
+      "message": "Yeah, I compare against schema path now.",
+      "parentUuid": "bf10febe_edf5412d",
+      "revId": "827c29d8d08c3fea617532393174e6292bc4abde",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "9c3e1884_c5ab5bd2",
@@ -54,6 +96,30 @@
       "writtenOn": "2026-07-15T09:27:27Z",
       "side": 1,
       "message": "nit: is this early return actually needed? Without it, the code would iterate through an empty sequence, which sounds OK to me.",
+      "range": {
+        "startLine": 455,
+        "startChar": 0,
+        "endLine": 457,
+        "endChar": 5
+      },
+      "revId": "827c29d8d08c3fea617532393174e6292bc4abde",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9b19bdaf_089f5a04",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 457,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-07-16T19:02:27Z",
+      "side": 1,
+      "message": "I like to avoid mutex locking if possible. Removed though...",
+      "parentUuid": "9c3e1884_c5ab5bd2",
       "range": {
         "startLine": 455,
         "startChar": 0,
