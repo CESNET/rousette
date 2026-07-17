@@ -22,6 +22,30 @@
       },
       "revId": "e95d01218816b51b7d313b32e0e108199e0c474c",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "60dd6b9e_f9f14760",
+        "filename": "src/restconf/DynamicSubscriptions.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-07-17T10:35:56Z",
+      "side": 1,
+      "message": "Done. I hope I understood it correctly.",
+      "parentUuid": "f5e0b3fa_31e4207d",
+      "range": {
+        "startLine": 32,
+        "startChar": 4,
+        "endLine": 32,
+        "endChar": 15
+      },
+      "revId": "e95d01218816b51b7d313b32e0e108199e0c474c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
