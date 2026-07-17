@@ -16,6 +16,24 @@
       "message": "I think that this should also [call `srsn_notif_sent()`](https://netopeer.liberouter.org/doc/sysrepo/devel/html/d3/da9/subscribed__notifications_8h.html#a132f6c314feeb42bc1175c274fbb8020).",
       "revId": "1c15ccbcf4b014673b74e8a439f2b3e2492ab1ab",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ea08323a_bc19bfa2",
+        "filename": "src/restconf/DynamicSubscriptions.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 511,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-07-17T10:35:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fa2ff921_d56341a2",
+      "revId": "1c15ccbcf4b014673b74e8a439f2b3e2492ab1ab",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
