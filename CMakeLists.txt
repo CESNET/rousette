@@ -147,7 +147,7 @@ install(FILES
     ${CMAKE_SOURCE_DIR}/yang/ietf-subscribed-notifications@2019-09-09.yang
     ${CMAKE_SOURCE_DIR}/yang/ietf-restconf-subscribed-notifications@2019-11-17.yang
     ${CMAKE_SOURCE_DIR}/yang/ietf-yang-push@2019-09-09.yang
-    ${CMAKE_SOURCE_DIR}/yang/rousette@2026-04-20.yang
+    ${CMAKE_SOURCE_DIR}/yang/rousette@2026-07-21.yang
     DESTINATION ${CMAKE_INSTALL_PREFIX}/share/yang/modules/rousette)
 
 include(CTest)
@@ -233,7 +233,7 @@ if(BUILD_TESTING)
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-augment.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-notif.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-types.yang
-        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/rousette@2026-04-20.yang)
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/rousette@2026-07-21.yang)
     rousette_test(NAME restconf-reading LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)
     rousette_test(NAME restconf-writing LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)
     rousette_test(NAME restconf-delete LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)
