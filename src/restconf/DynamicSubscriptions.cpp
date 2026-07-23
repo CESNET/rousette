@@ -15,7 +15,6 @@
 #include <vector>
 #include "restconf/DynamicSubscriptions.h"
 #include "restconf/Exceptions.h"
-#include "restconf/utils/io.h"
 #include "restconf/utils/sysrepo.h"
 #include "restconf/utils/yang.h"
 
@@ -794,54 +793,15 @@ DynamicSubscriptionHttpStream::DynamicSubscriptionHttpStream(
           [this]() { m_subscriptionData->clientDisconnected(); })
     , m_subscriptionData(subscriptionData)
     , m_signal(signal)
-    , m_stream(res.io_service(), m_subscriptionData->subscription.fd())
+    , m_io(res.io_service())
 {
-}
-
-DynamicSubscriptionHttpStream::~DynamicSubscriptionHttpStream()
-{
-    // The stream does not own the file descriptor, sysrepo does. It will be closed when the subscription terminates.
-    m_stream.release();
-}
-
-/** @brief Waits for the next notifications and process them */
-void DynamicSubscriptionHttpStream::awaitNextNotification()
-{
-    constexpr auto MAX_EVENTS = 50;
-
-    m_stream.async_wait(boost::asio::posix::stream_descriptor::wait_read, [this](const boost::system::error_code& err) {
-        // Unfortunately wait_read does not return operation_aborted when the file descriptor is closed and poll results in POLLHUP
-        if (err == boost::asio::error::operation_aborted || utils::pipeIsClosedAndNoData(m_subscriptionData->subscription.fd())) {
-            return;
-        }
-
-        size_t eventsProcessed = 0;
-        /* Process all the available notifications, but at most N
-         * In case sysrepo is providing the events fast enough, this loop would still run inside the event loop
-         * and the event responsible for sending the data to the client would not get to be processed.
-         * TODO: Is this enough? What if this async_wait keeps getting called and nothing gets sent?
-         */
-        while (++eventsProcessed < MAX_EVENTS && utils::pipeHasData(m_subscriptionData->subscription.fd())) {
-            std::lock_guard lock(m_subscriptionData->mutex); // sysrepo-cpp's processEvent and terminate is not thread safe
-            m_subscriptionData->subscription.processEvent([&](const std::optional<libyang::DataNode>& notificationTree, const sysrepo::NotificationTimeStamp& time) {
-                (*m_signal)(rousette::restconf::as_restconf_notification(
-                    m_subscriptionData->subscription.getSession().getContext(),
-                    m_subscriptionData->dataFormat,
-                    *notificationTree,
-                    time));
-            });
-        }
-
-        // and wait for more
-        awaitNextNotification();
-    });
 }
 
 void DynamicSubscriptionHttpStream::activate()
 {
     m_subscriptionData->clientConnected(m_signal);
     EventStream::activate();
-    awaitNextNotification();
+    m_broadcaster = std::make_unique<SubscriptionBroadcaster>(m_io, m_subscriptionData->subscription, m_subscriptionData->dataFormat, m_signal, m_subscriptionData->mutex);
 }
 
 std::shared_ptr<DynamicSubscriptionHttpStream> DynamicSubscriptionHttpStream::create(

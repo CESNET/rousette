@@ -15,6 +15,7 @@
 #include <string>
 #include <sysrepo-cpp/Subscription.hpp>
 #include "http/EventStream.h"
+#include "restconf/SubscriptionBroadcaster.h"
 
 namespace libyang {
 enum class DataFormat;
@@ -118,8 +119,6 @@ private:
  * */
 class DynamicSubscriptionHttpStream : public http::EventStream {
 public:
-    ~DynamicSubscriptionHttpStream();
-
     static std::shared_ptr<DynamicSubscriptionHttpStream> create(
         const nghttp2::asio_http2::server::request& req,
         const nghttp2::asio_http2::server::response& res,
@@ -130,9 +129,8 @@ public:
 private:
     std::shared_ptr<DynamicSubscriptions::SubscriptionData> m_subscriptionData;
     std::shared_ptr<rousette::http::EventStream::EventSignal> m_signal;
-    boost::asio::posix::stream_descriptor m_stream;
-
-    void awaitNextNotification();
+    boost::asio::io_context& m_io;
+    std::unique_ptr<SubscriptionBroadcaster> m_broadcaster;
 
 protected:
     DynamicSubscriptionHttpStream(
