@@ -1107,6 +1107,7 @@ TEST_CASE("URI path parser")
     {
         using rousette::restconf::asRestconfStreamRequest;
         using rousette::restconf::NotificationStreamRequest;
+        using rousette::restconf::ConfiguredStreamRequest;
         using rousette::restconf::SubscribedStreamRequest;
 
         {
@@ -1138,6 +1139,22 @@ TEST_CASE("URI path parser")
             REQUIRE(std::holds_alternative<SubscribedStreamRequest>(req));
             REQUIRE(std::get<SubscribedStreamRequest>(req).uuid == boost::uuids::string_generator()("a40f0a50-061a-4832-a6ac-c4db7df81a10"));
         }
+
+        {
+            auto req = asRestconfStreamRequest("GET", "/streams/configured/example", "");
+            REQUIRE(std::holds_alternative<ConfiguredStreamRequest>(req));
+            REQUIRE(std::get<ConfiguredStreamRequest>(req).name == "example");
+        }
+
+        {
+            auto req = asRestconfStreamRequest("GET", "/streams/configured/example-xml", "");
+            REQUIRE(std::holds_alternative<ConfiguredStreamRequest>(req));
+            REQUIRE(std::get<ConfiguredStreamRequest>(req).name == "example-xml");
+        }
+
+        REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/configured", ""),
+                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI (path) at position 19: expected \"/\"").c_str(),
+                               rousette::restconf::ErrorResponse);
 
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF", ""),
                                serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI (path) at position 16: expected \"/\"").c_str(),

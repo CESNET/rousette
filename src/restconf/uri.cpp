@@ -84,13 +84,14 @@ const auto uuid_impl = x3::rule<class uuid_impl, std::string>{"UUID (xxxxxxxx-xx
     x3::repeat(12)[x3::xdigit];
 const auto uuid = x3::rule<class uuid, boost::uuids::uuid>{"UUID"} = uuid_impl[string_to_uuid];
 const auto subscribedStream = x3::rule<class subscribedStream, SubscribedStreamRequest>{"subscribed stream"} = x3::lit("subscribed") > x3::lit("/") > uuid;
+const auto configuredStream = x3::rule<class configuredStream, ConfiguredStreamRequest>{"configured stream"} = x3::lit("configured") > x3::lit("/") > identifier;
 
 const auto xmlStream = x3::rule<class xmlStream, libyang::DataFormat>{"'XML'"} = x3::lit("XML") > x3::attr(libyang::DataFormat::XML);
 const auto jsonStream = x3::rule<class jsonStream, libyang::DataFormat>{"'JSON'"} = x3::lit("JSON") > x3::attr(libyang::DataFormat::JSON);
 const auto streamFormat = x3::rule<class streamFormat, libyang::DataFormat>{"stream format ('XML' or 'JSON')"} = (xmlStream | jsonStream);
 const auto notificationStream = x3::rule<class notificationStream, NotificationStreamRequest>{"notification stream"} = identifier > x3::lit("/") > streamFormat;
-const auto streamGrammar = x3::rule<class streamGrammar, std::variant<NotificationStreamRequest, SubscribedStreamRequest>>{"stream URI"} =
-    x3::lit("/") > x3::lit("streams") > x3::lit("/") > (subscribedStream | notificationStream);
+const auto streamGrammar = x3::rule<class streamGrammar, std::variant<NotificationStreamRequest, SubscribedStreamRequest, ConfiguredStreamRequest>>{"stream URI"} =
+    x3::lit("/") > x3::lit("streams") > x3::lit("/") > (subscribedStream | configuredStream | notificationStream);
 
 // clang-format on
 }
@@ -262,9 +263,9 @@ queryParams::QueryParams parseQueryParams(const std::string& querystring, const 
     return parse<queryParams::QueryParams, UriQuerySyntaxError>(querystring, queryParamGrammar, pathLength);
 }
 
-std::variant<NotificationStreamRequest, SubscribedStreamRequest> parseStreamUri(const std::string& input)
+std::variant<NotificationStreamRequest, SubscribedStreamRequest, ConfiguredStreamRequest> parseStreamUri(const std::string& input)
 {
-    return parse<std::variant<NotificationStreamRequest, SubscribedStreamRequest>, UriPathSyntaxError>(input, streamGrammar);
+    return parse<std::variant<NotificationStreamRequest, SubscribedStreamRequest, ConfiguredStreamRequest>, UriPathSyntaxError>(input, streamGrammar);
 }
 
 URIPrefix::URIPrefix()
@@ -707,6 +708,13 @@ SubscribedStreamRequest::SubscribedStreamRequest()
 
 SubscribedStreamRequest::SubscribedStreamRequest(const boost::uuids::uuid& uuid)
     : uuid(uuid)
+{
+}
+
+ConfiguredStreamRequest::ConfiguredStreamRequest() = default;
+
+ConfiguredStreamRequest::ConfiguredStreamRequest(const std::string& name)
+    : name(name)
 {
 }
 
