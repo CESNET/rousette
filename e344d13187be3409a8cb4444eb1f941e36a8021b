@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2cb8f1e2_1ee2e081",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-07-27T11:05:56Z",
+      "side": 1,
+      "message": "overriding the CI (this would otherwise require an extra commit)",
+      "revId": "e344d13187be3409a8cb4444eb1f941e36a8021b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
