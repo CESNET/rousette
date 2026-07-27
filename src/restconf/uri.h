@@ -214,7 +214,15 @@ struct SubscribedStreamRequest {
     SubscribedStreamRequest(const boost::uuids::uuid& uuid);
 };
 
-using RestconfStreamRequest = std::variant<NotificationStreamRequest, SubscribedStreamRequest>;
+/** @brief A request for a server-configured stream served under /streams/configured/<name>. */
+struct ConfiguredStreamRequest {
+    std::string name;
+
+    ConfiguredStreamRequest();
+    ConfiguredStreamRequest(const std::string& name);
+};
+
+using RestconfStreamRequest = std::variant<NotificationStreamRequest, SubscribedStreamRequest, ConfiguredStreamRequest>;
 
 RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString = "");
 std::optional<libyang::SchemaNode> asLibyangSchemaNode(const libyang::Context& ctx, const std::vector<PathSegment>& pathSegments);
