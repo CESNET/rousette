@@ -203,7 +203,7 @@ std::optional<std::chrono::milliseconds> createInterval(const libyang::DataNode&
     return std::nullopt;
 }
 
-sysrepo::DynamicSubscription makeStreamSubscription(sysrepo::Session& session, const libyang::DataNode& rpcInput, libyang::DataNode& rpcOutput)
+sysrepo::DynamicSubscription makeStreamSubscription(sysrepo::Session& session, const libyang::DataNode& rpcInput)
 {
     auto streamNode = rpcInput.findPath("stream");
 
@@ -222,25 +222,14 @@ sysrepo::DynamicSubscription makeStreamSubscription(sysrepo::Session& session, c
      * This is not implemented yet, but we should at least check that the provided filter name exists and is valid.
      * see for instance https://datatracker.ietf.org/doc/html/rfc8639.html#section-2.7.2 */
 
-    auto sub = session.subscribeNotifications(
+    return session.subscribeNotifications(
         createFilter(session, rpcInput, streamFilter, streamFilterKey, "stream-xpath-filter", "stream-subtree-filter", "stream-filter-name"),
         streamNode->asTerm().valueStr(),
         stopTime,
         replayStartTime);
-
-    /* Node replay-start-time-revision should be set only if time was revised to be different than the requested start time,
-     * i.e. when the "replay-start-time" contains a value that is earlier than what a publisher's retained history.
-     * Then the actual publisher's revised start time MUST be set in the returned "replay-start-time-revision" object.
-     * (RFC 8639, 2.4.2.1)
-     * */
-    if (auto replayStartTimeRevision = sub.replayStartTime(); replayStartTimeRevision && replayStartTime) {
-        rpcOutput.newPath("replay-start-time-revision", libyang::yangTimeFormat(*replayStartTimeRevision, libyang::TimezoneInterpretation::Local), libyang::CreationOptions::Output);
-    }
-
-    return sub;
 }
 
-sysrepo::DynamicSubscription makeYangPushOnChangeSubscription(sysrepo::Session& session, const libyang::DataNode& rpcInput, libyang::DataNode&)
+sysrepo::DynamicSubscription makeYangPushOnChangeSubscription(sysrepo::Session& session, const libyang::DataNode& rpcInput)
 {
     sysrepo::Datastore datastore = sysrepo::Datastore::Running;
     if (auto node = rpcInput.findPath("ietf-yang-push:datastore")) {
@@ -273,7 +262,7 @@ sysrepo::DynamicSubscription makeYangPushOnChangeSubscription(sysrepo::Session& 
         stopTime);
 }
 
-sysrepo::DynamicSubscription makeYangPushPeriodicSubscription(sysrepo::Session& session, const libyang::DataNode& rpcInput, libyang::DataNode&)
+sysrepo::DynamicSubscription makeYangPushPeriodicSubscription(sysrepo::Session& session, const libyang::DataNode& rpcInput)
 {
     sysrepo::Datastore datastore = sysrepo::Datastore::Running;
     if (auto node = rpcInput.findPath("ietf-yang-push:datastore")) {
@@ -416,13 +405,22 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
         std::optional<sysrepo::DynamicSubscription> sub;
 
         if (rpcInput.findPath("stream")) {
-            sub = makeStreamSubscription(session, rpcInput, rpcOutput);
+            sub = makeStreamSubscription(session, rpcInput);
         } else if (rpcInput.findPath("ietf-yang-push:on-change")) {
-            sub = makeYangPushOnChangeSubscription(session, rpcInput, rpcOutput);
+            sub = makeYangPushOnChangeSubscription(session, rpcInput);
         } else if (rpcInput.findPath("ietf-yang-push:periodic")) {
-            sub = makeYangPushPeriodicSubscription(session, rpcInput, rpcOutput);
+            sub = makeYangPushPeriodicSubscription(session, rpcInput);
         } else {
             throw ErrorResponse(400, "application", "invalid-attribute", "Could not deduce if YANG push on-change, YANG push periodic or subscribed notification");
+        }
+
+        /* Node replay-start-time-revision should be set only if time was revised to be different than the requested start time,
+         * i.e. when the "replay-start-time" contains a value that is earlier than what a publisher's retained history.
+         * Then the actual publisher's revised start time MUST be set in the returned "replay-start-time-revision" object.
+         * (RFC 8639, 2.4.2.1)
+         * */
+        if (auto replayStartTimeRevision = sub->replayStartTime(); replayStartTimeRevision && rpcInput.findPath("replay-start-time")) {
+            rpcOutput.newPath("replay-start-time-revision", libyang::yangTimeFormat(*replayStartTimeRevision, libyang::TimezoneInterpretation::Local), libyang::CreationOptions::Output);
         }
 
         // read the id before sub gets moved from; function arguments are indeterminately sequenced
