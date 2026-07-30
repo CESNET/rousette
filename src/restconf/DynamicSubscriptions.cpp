@@ -40,23 +40,23 @@ std::optional<sysrepo::NotificationTimeStamp> optionalTime(const libyang::DataNo
     return std::nullopt;
 }
 
-libyang::DataFormat getEncoding(const libyang::DataNode& rpcInput, const libyang::DataFormat requestEncoding)
+libyang::DataFormat subscriptionEncoding(const libyang::DataNode& subscription, const libyang::DataFormat fallback)
 {
     /* FIXME: So far we allow only encode-json or encode-xml encoding values and not their derived values.
      * We do not know what those derived values might mean and how do they change the meaning of the encoding leaf.
      */
-    if (auto encodingNode = rpcInput.findPath("encoding")) {
+    if (auto encodingNode = subscription.findPath("encoding")) {
         const auto encodingStr = encodingNode->asTerm().valueStr();
         if (encodingStr == "ietf-subscribed-notifications:encode-json") {
             return libyang::DataFormat::JSON;
         } else if (encodingStr == "ietf-subscribed-notifications:encode-xml") {
             return libyang::DataFormat::XML;
         } else {
-            throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Unsupported encoding in establish-subscription: '" + encodingStr + "'. Currently we support only 'encode-xml' and 'encode-json' identities.");
+            throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Unsupported subscription encoding '" + encodingStr + "'. Currently we support only 'encode-xml' and 'encode-json' identities.");
         }
     }
 
-    return requestEncoding;
+    return fallback;
 }
 
 sysrepo::YangPushChange yangPushChange(const std::string& str)
@@ -412,7 +412,7 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
     // Generate a new UUID associated with the subscription. The UUID will be used as a part of the URI so that the URI is not predictable (RFC 8650, section 5)
     auto uuid = makeUUID();
 
-    auto dataFormat = getEncoding(rpcInput, requestEncoding);
+    auto dataFormat = subscriptionEncoding(rpcInput, requestEncoding);
 
     try {
         auto sub = makeSubscription(session, rpcInput);
