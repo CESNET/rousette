@@ -294,6 +294,19 @@ sysrepo::DynamicSubscription makeYangPushPeriodicSubscription(sysrepo::Session& 
         stopTime);
 }
 
+/** @brief Builds a subscription from an establish-subscription RPC input, dispatching on the target. */
+sysrepo::DynamicSubscription makeSubscription(sysrepo::Session& session, const libyang::DataNode& rpcInput)
+{
+    if (rpcInput.findPath("stream")) {
+        return makeStreamSubscription(session, rpcInput);
+    } else if (rpcInput.findPath("ietf-yang-push:on-change")) {
+        return makeYangPushOnChangeSubscription(session, rpcInput);
+    } else if (rpcInput.findPath("ietf-yang-push:periodic")) {
+        return makeYangPushPeriodicSubscription(session, rpcInput);
+    }
+    throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Could not deduce if YANG push on-change, YANG push periodic or subscribed notification");
+}
+
 /** @brief Converts a duration to the centisecond units used by the ietf-yang-push period/dampening-period leaves. */
 std::string yangPushCentiseconds(const std::chrono::milliseconds ms)
 {
@@ -402,36 +415,26 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
     auto dataFormat = getEncoding(rpcInput, requestEncoding);
 
     try {
-        std::optional<sysrepo::DynamicSubscription> sub;
-
-        if (rpcInput.findPath("stream")) {
-            sub = makeStreamSubscription(session, rpcInput);
-        } else if (rpcInput.findPath("ietf-yang-push:on-change")) {
-            sub = makeYangPushOnChangeSubscription(session, rpcInput);
-        } else if (rpcInput.findPath("ietf-yang-push:periodic")) {
-            sub = makeYangPushPeriodicSubscription(session, rpcInput);
-        } else {
-            throw ErrorResponse(400, "application", "invalid-attribute", "Could not deduce if YANG push on-change, YANG push periodic or subscribed notification");
-        }
+        auto sub = makeSubscription(session, rpcInput);
 
         /* Node replay-start-time-revision should be set only if time was revised to be different than the requested start time,
          * i.e. when the "replay-start-time" contains a value that is earlier than what a publisher's retained history.
          * Then the actual publisher's revised start time MUST be set in the returned "replay-start-time-revision" object.
          * (RFC 8639, 2.4.2.1)
          * */
-        if (auto replayStartTimeRevision = sub->replayStartTime(); replayStartTimeRevision && rpcInput.findPath("replay-start-time")) {
+        if (auto replayStartTimeRevision = sub.replayStartTime(); replayStartTimeRevision && rpcInput.findPath("replay-start-time")) {
             rpcOutput.newPath("replay-start-time-revision", libyang::yangTimeFormat(*replayStartTimeRevision, libyang::TimezoneInterpretation::Local), libyang::CreationOptions::Output);
         }
 
         // read the id before sub gets moved from; function arguments are indeterminately sequenced
-        auto subId = sub->subscriptionId();
+        auto subId = sub.subscriptionId();
 
         rpcOutput.newPath("id", std::to_string(subId), libyang::CreationOptions::Output);
         rpcOutput.newPath("ietf-restconf-subscribed-notifications:uri", *requestSchemeAndHost + m_restconfStreamUri + "subscribed/" + boost::uuids::to_string(uuid), libyang::CreationOptions::Output);
 
         std::lock_guard lock(m_mutex);
         m_subscriptions[uuid] = std::make_shared<SubscriptionData>(
-            std::move(*sub),
+            std::move(sub),
             dataFormat,
             uuid,
             *session.getNacmUser(),
