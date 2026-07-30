@@ -425,7 +425,10 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
             throw ErrorResponse(400, "application", "invalid-attribute", "Could not deduce if YANG push on-change, YANG push periodic or subscribed notification");
         }
 
-        rpcOutput.newPath("id", std::to_string(sub->subscriptionId()), libyang::CreationOptions::Output);
+        // read the id before sub gets moved from; function arguments are indeterminately sequenced
+        auto subId = sub->subscriptionId();
+
+        rpcOutput.newPath("id", std::to_string(subId), libyang::CreationOptions::Output);
         rpcOutput.newPath("ietf-restconf-subscribed-notifications:uri", *requestSchemeAndHost + m_restconfStreamUri + "subscribed/" + boost::uuids::to_string(uuid), libyang::CreationOptions::Output);
 
         std::lock_guard lock(m_mutex);
@@ -437,7 +440,7 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
             referencedFilter(rpcInput),
             *m_server.io_services().at(0),
             m_inactivityTimeout,
-            [this, subId = sub->subscriptionId()]() { terminateSubscription(subId); });
+            [this, subId]() { terminateSubscription(subId); });
     } catch (const sysrepo::ErrorWithCode& e) {
         throw ErrorResponse(400, "application", "invalid-attribute", e.what());
     }
