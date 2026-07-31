@@ -15,6 +15,7 @@
 #include <string>
 #include <sysrepo-cpp/Subscription.hpp>
 #include "http/EventStream.h"
+#include "restconf/SubscribedNotifications.h"
 #include "restconf/SubscriptionBroadcaster.h"
 
 namespace libyang {
@@ -26,20 +27,6 @@ class http2;
 }
 
 namespace rousette::restconf {
-
-/** @brief A configured filter referenced by name from the RPC input (stream-filter-name / selection-filter-ref). */
-struct ReferencedFilter {
-    /** @brief Which configured filter list the subscription refers to. */
-    enum class Kind {
-        StreamFilter, ///< ietf-subscribed-notifications stream-filter
-        SelectionFilter, ///< ietf-yang-push selection-filter
-    };
-
-    std::string name;
-    Kind kind;
-
-    std::string configuredXPath() const;
-};
 
 /** Dynamic subscriptions manager.
  *

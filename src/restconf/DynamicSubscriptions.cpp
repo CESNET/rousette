@@ -22,68 +22,6 @@
 namespace {
 
 
-/** @brief Returns the configured filter the RPC input refers to (by name), if any. */
-std::optional<rousette::restconf::ReferencedFilter> referencedFilter(const libyang::DataNode& rpcInput)
-{
-    if (auto node = rpcInput.findPath("stream-filter-name")) {
-        return rousette::restconf::ReferencedFilter{node->asTerm().valueStr(), rousette::restconf::ReferencedFilter::Kind::StreamFilter};
-    }
-    if (auto node = rpcInput.findPath("ietf-yang-push:selection-filter-ref")) {
-        return rousette::restconf::ReferencedFilter{node->asTerm().valueStr(), rousette::restconf::ReferencedFilter::Kind::SelectionFilter};
-    }
-
-    return std::nullopt;
-}
-
-/** @brief Walks up from a changed node to the enclosing configured filter list entry (stream-filter or selection-filter).
- *
- * We match on the absolute schema path, not the bare node name: the *-subtree-filter nodes are anydata and can hold
- * arbitrary user data with look-alike node names, which a name-only compare would falsely match, or one can even filter
- * on the current filter node, e.g.:
- * `/ietf-subscribed-notifications:filters/stream-filter[name=...]/stream-subtree-filter/ietf-subscribed-notifications:filters/stream-filter`
- * */
-std::optional<libyang::DataNode> configuredFilterEntry(const libyang::DataNode& changeNode)
-{
-    for (auto node = std::optional<libyang::DataNode>{changeNode}; node; node = node->parent()) {
-        if (const auto path = node->schema().path(); path == rousette::restconf::streamFilter || path == rousette::restconf::selectionFilter) {
-            return node;
-        }
-    }
-
-    return std::nullopt;
-}
-
-/** @brief Reads a configured filter entry (by its instance xpath) and returns its filter-spec, if any.
- *
- * Returns std::nullopt if the entry no longer exists or carries no filter-spec.
- * The node names differ between stream-filter and selection-filter, so we pick the right pair based on the entryXPath.
- * */
-std::optional<std::variant<std::string, libyang::DataNodeAny>> resolveConfiguredFilter(sysrepo::Session& session, const std::string& entryXPath)
-{
-    auto data = session.getData(entryXPath);
-    if (!data) {
-        return std::nullopt;
-    }
-
-    auto entry = data->findPath(entryXPath);
-    if (!entry) {
-        return std::nullopt;
-    }
-
-    const auto [xpathFilter, subtreeFilter] = entry->schema().name() == "stream-filter"
-        ? std::pair{"stream-xpath-filter", "stream-subtree-filter"}
-        : std::pair{"ietf-yang-push:datastore-xpath-filter", "ietf-yang-push:datastore-subtree-filter"};
-
-    if (auto node = entry->findPath(xpathFilter)) {
-        return node->asTerm().valueStr();
-    }
-    if (auto node = entry->findPath(subtreeFilter)) {
-        return node->asAny();
-    }
-
-    return std::nullopt;
-}
-
 /** @brief Converts a duration to the centisecond units used by the ietf-yang-push period/dampening-period leaves. */
 std::string yangPushCentiseconds(const std::chrono::milliseconds ms)
 {
@@ -135,18 +73,6 @@ libyang::DataNode subscriptionModifiedNotification(const libyang::Context& ctx, 
 }
 
 namespace rousette::restconf {
-
-/** @brief Builds the instance xpath of the configured filter list entry this filter refers to. */
-std::string ReferencedFilter::configuredXPath() const
-{
-    switch (kind) {
-    case Kind::StreamFilter:
-        return fmt::format("{}[{}={}]", streamFilter, streamFilterKey, escapeListKey(name));
-    case Kind::SelectionFilter:
-        return fmt::format("{}[{}={}]", selectionFilter, selectionFilterKey, escapeListKey(name));
-    }
-    __builtin_unreachable();
-}
 
 DynamicSubscriptions::DynamicSubscriptions(sysrepo::Session& session, const std::string& streamRootUri, const nghttp2::asio_http2::server::http2& server, const std::chrono::seconds inactivityTimeout)
     : m_restconfStreamUri(streamRootUri)

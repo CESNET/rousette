@@ -178,6 +178,66 @@ libyang::DataFormat subscriptionEncoding(const libyang::DataNode& subscription, 
     return fallback;
 }
 
+std::string ReferencedFilter::configuredXPath() const
+{
+    switch (kind) {
+    case Kind::StreamFilter:
+        return fmt::format("{}[{}={}]", streamFilter, streamFilterKey, escapeListKey(name));
+    case Kind::SelectionFilter:
+        return fmt::format("{}[{}={}]", selectionFilter, selectionFilterKey, escapeListKey(name));
+    }
+    __builtin_unreachable();
+}
+
+std::optional<ReferencedFilter> referencedFilter(const libyang::DataNode& subscription)
+{
+    if (auto node = subscription.findPath("stream-filter-name")) {
+        return ReferencedFilter{node->asTerm().valueStr(), ReferencedFilter::Kind::StreamFilter};
+    }
+    if (auto node = subscription.findPath("ietf-yang-push:selection-filter-ref")) {
+        return ReferencedFilter{node->asTerm().valueStr(), ReferencedFilter::Kind::SelectionFilter};
+    }
+
+    return std::nullopt;
+}
+
+std::optional<libyang::DataNode> configuredFilterEntry(const libyang::DataNode& changeNode)
+{
+    for (auto node = std::optional<libyang::DataNode>{changeNode}; node; node = node->parent()) {
+        if (const auto path = node->schema().path(); path == streamFilter || path == selectionFilter) {
+            return node;
+        }
+    }
+
+    return std::nullopt;
+}
+
+std::optional<std::variant<std::string, libyang::DataNodeAny>> resolveConfiguredFilter(sysrepo::Session& session, const std::string& entryXPath)
+{
+    auto data = session.getData(entryXPath);
+    if (!data) {
+        return std::nullopt;
+    }
+
+    auto entry = data->findPath(entryXPath);
+    if (!entry) {
+        return std::nullopt;
+    }
+
+    const auto [xpathFilter, subtreeFilter] = entry->schema().name() == "stream-filter"
+        ? std::pair{"stream-xpath-filter", "stream-subtree-filter"}
+        : std::pair{"ietf-yang-push:datastore-xpath-filter", "ietf-yang-push:datastore-subtree-filter"};
+
+    if (auto node = entry->findPath(xpathFilter)) {
+        return node->asTerm().valueStr();
+    }
+    if (auto node = entry->findPath(subtreeFilter)) {
+        return node->asAny();
+    }
+
+    return std::nullopt;
+}
+
 sysrepo::DynamicSubscription makeSubscription(sysrepo::Session& session, const libyang::DataNode& subscription)
 {
     if (subscription.findPath("stream")) {
