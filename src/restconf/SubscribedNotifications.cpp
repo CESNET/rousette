@@ -42,11 +42,7 @@ sysrepo::DynamicSubscription makeStreamSubscription(sysrepo::Session& session, c
     }
 
     auto stopTime = optionalTime(subscription, "stop-time");
-
-    std::optional<sysrepo::NotificationTimeStamp> replayStartTime;
-    if (auto node = subscription.findPath("replay-start-time")) {
-        replayStartTime = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(node->asTerm().valueStr());
-    }
+    auto replayStartTime = optionalTime(subscription, "replay-start-time");
 
     /* TODO: A change of entry in filters container must change all subscriptions that refer to that filter.
      * This is not implemented yet, but we should at least check that the provided filter name exists and is valid.
