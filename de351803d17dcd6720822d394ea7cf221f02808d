@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f1ffbaec_f5daea4b",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-07-31T15:17:08Z",
+      "side": 1,
+      "message": "I think that there was no harm in how the methods were implemented before, but I see that you probably want to get rid of that extra arg because you do not really have any value for that in that upcoming configured-subs-as-http-endpoint. This is not clear from the commit message, though.",
+      "revId": "de351803d17dcd6720822d394ea7cf221f02808d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
