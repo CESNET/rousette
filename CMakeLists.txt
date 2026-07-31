@@ -114,6 +114,7 @@ add_library(rousette-restconf STATIC
     src/restconf/Exceptions.cpp
     src/restconf/NotificationStream.cpp
     src/restconf/Server.cpp
+    src/restconf/SubscribedNotifications.cpp
     src/restconf/SubscriptionBroadcaster.cpp
     src/restconf/YangSchemaLocations.cpp
     src/restconf/uri.cpp
