@@ -119,4 +119,13 @@ std::string as_restconf_notification(const libyang::Context& ctx, libyang::DataF
 
     return res;
 }
+
+std::optional<sysrepo::NotificationTimeStamp> optionalTime(const libyang::DataNode& node, const std::string& path)
+{
+    if (auto timeNode = node.findPath(path)) {
+        return libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(timeNode->asTerm().valueStr());
+    }
+
+    return std::nullopt;
+}
 }
