@@ -15,6 +15,8 @@
 #include <string>
 #include <sysrepo-cpp/Subscription.hpp>
 #include "http/EventStream.h"
+#include "restconf/SubscribedNotifications.h"
+#include "restconf/SubscriptionBroadcaster.h"
 
 namespace libyang {
 enum class DataFormat;
@@ -25,20 +27,6 @@ class http2;
 }
 
 namespace rousette::restconf {
-
-/** @brief A configured filter referenced by name from the RPC input (stream-filter-name / selection-filter-ref). */
-struct ReferencedFilter {
-    /** @brief Which configured filter list the subscription refers to. */
-    enum class Kind {
-        StreamFilter, ///< ietf-subscribed-notifications stream-filter
-        SelectionFilter, ///< ietf-yang-push selection-filter
-    };
-
-    std::string name;
-    Kind kind;
-
-    std::string configuredXPath() const;
-};
 
 /** Dynamic subscriptions manager.
  *
@@ -118,8 +106,6 @@ private:
  * */
 class DynamicSubscriptionHttpStream : public http::EventStream {
 public:
-    ~DynamicSubscriptionHttpStream();
-
     static std::shared_ptr<DynamicSubscriptionHttpStream> create(
         const nghttp2::asio_http2::server::request& req,
         const nghttp2::asio_http2::server::response& res,
@@ -130,9 +116,8 @@ public:
 private:
     std::shared_ptr<DynamicSubscriptions::SubscriptionData> m_subscriptionData;
     std::shared_ptr<rousette::http::EventStream::EventSignal> m_signal;
-    boost::asio::posix::stream_descriptor m_stream;
-
-    void awaitNextNotification();
+    boost::asio::io_context& m_io;
+    std::unique_ptr<SubscriptionBroadcaster> m_broadcaster;
 
 protected:
     DynamicSubscriptionHttpStream(

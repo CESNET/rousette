@@ -15,296 +15,12 @@
 #include <vector>
 #include "restconf/DynamicSubscriptions.h"
 #include "restconf/Exceptions.h"
-#include "restconf/utils/io.h"
+#include "restconf/SubscribedNotifications.h"
 #include "restconf/utils/sysrepo.h"
 #include "restconf/utils/yang.h"
 
 namespace {
 
-
-constexpr auto streamFilter = "/ietf-subscribed-notifications:filters/stream-filter";
-constexpr auto streamFilterKey = "name";
-constexpr auto selectionFilter = "/ietf-subscribed-notifications:filters/ietf-yang-push:selection-filter";
-constexpr auto selectionFilterKey = "filter-id";
-
-/** @brief Parses the YANG date-and-time attribute from the RPC input, if present
- *
- * @param rpcInput The RPC input node.
- * @param path The path to the YANG leaf.
- */
-std::optional<sysrepo::NotificationTimeStamp> optionalTime(const libyang::DataNode& rpcInput, const std::string& path)
-{
-    if (auto stopTimeNode = rpcInput.findPath(path)) {
-        return libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(stopTimeNode->asTerm().valueStr());
-    }
-
-    return std::nullopt;
-}
-
-libyang::DataFormat getEncoding(const libyang::DataNode& rpcInput, const libyang::DataFormat requestEncoding)
-{
-    /* FIXME: So far we allow only encode-json or encode-xml encoding values and not their derived values.
-     * We do not know what those derived values might mean and how do they change the meaning of the encoding leaf.
-     */
-    if (auto encodingNode = rpcInput.findPath("encoding")) {
-        const auto encodingStr = encodingNode->asTerm().valueStr();
-        if (encodingStr == "ietf-subscribed-notifications:encode-json") {
-            return libyang::DataFormat::JSON;
-        } else if (encodingStr == "ietf-subscribed-notifications:encode-xml") {
-            return libyang::DataFormat::XML;
-        } else {
-            throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Unsupported encoding in establish-subscription: '" + encodingStr + "'. Currently we support only 'encode-xml' and 'encode-json' identities.");
-        }
-    }
-
-    return requestEncoding;
-}
-
-sysrepo::YangPushChange yangPushChange(const std::string& str)
-{
-    if (str == "create") {
-        return sysrepo::YangPushChange::Create;
-    } else if (str == "delete") {
-        return sysrepo::YangPushChange::Delete;
-    } else if (str == "insert") {
-        return sysrepo::YangPushChange::Insert;
-    } else if (str == "move") {
-        return sysrepo::YangPushChange::Move;
-    } else if (str == "replace") {
-        return sysrepo::YangPushChange::Replace;
-    }
-
-    throw std::invalid_argument("Unknown YangPushChange: " + str);
-}
-
-/** @brief Creates a filter for the subscription.
- *
- * Filters for YANG Push and for subscribed notifications are specified in the same way,
- * only in a different YANG node. The same holds for filter resolution.
- * */
-std::optional<std::variant<std::string, libyang::DataNodeAny>> createFilter(
-    sysrepo::Session& session,
-    const libyang::DataNode& rpcInput,
-    const std::string& filterListPath,
-    const std::string& filterListKey,
-    const std::string& xpathFilterPath,
-    const std::string& subtreeFilterPath,
-    const std::string& filterNamePath)
-{
-    if (auto node = rpcInput.findPath(xpathFilterPath)) {
-        return node->asTerm().valueStr();
-    }
-
-    if (auto node = rpcInput.findPath(subtreeFilterPath)) {
-        return node->asAny();
-    }
-
-    // resolve filter from ietf-subscribed-notifications:filters
-    if (auto node = rpcInput.findPath(filterNamePath)) {
-        rousette::restconf::ScopedDatastoreSwitch dsSwitch(session, sysrepo::Datastore::Operational);
-
-        const auto xpath = fmt::format("{}[{}={}]", filterListPath, filterListKey, rousette::restconf::escapeListKey(node->asTerm().valueStr()));
-        auto data = session.getData(xpath);
-        if (!data) {
-            throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Name '" + node->asTerm().valueStr() + "' does not refer to an existing filter/selection.");
-        }
-
-        auto filterNode = data->findPath(xpath);
-        if (!filterNode) {
-            throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Name '" + node->asTerm().valueStr() + "' does not refer to an existing filter/selection.");
-        }
-
-        if (auto node = filterNode->findPath(xpathFilterPath)) {
-            return node->asTerm().valueStr();
-        }
-
-        if (auto node = filterNode->findPath(subtreeFilterPath)) {
-            return node->asAny();
-        }
-    }
-
-    return std::nullopt;
-}
-
-/** @brief Returns the configured filter the RPC input refers to (by name), if any. */
-std::optional<rousette::restconf::ReferencedFilter> referencedFilter(const libyang::DataNode& rpcInput)
-{
-    if (auto node = rpcInput.findPath("stream-filter-name")) {
-        return rousette::restconf::ReferencedFilter{node->asTerm().valueStr(), rousette::restconf::ReferencedFilter::Kind::StreamFilter};
-    }
-    if (auto node = rpcInput.findPath("ietf-yang-push:selection-filter-ref")) {
-        return rousette::restconf::ReferencedFilter{node->asTerm().valueStr(), rousette::restconf::ReferencedFilter::Kind::SelectionFilter};
-    }
-
-    return std::nullopt;
-}
-
-/** @brief Walks up from a changed node to the enclosing configured filter list entry (stream-filter or selection-filter).
- *
- * We match on the absolute schema path, not the bare node name: the *-subtree-filter nodes are anydata and can hold
- * arbitrary user data with look-alike node names, which a name-only compare would falsely match, or one can even filter
- * on the current filter node, e.g.:
- * `/ietf-subscribed-notifications:filters/stream-filter[name=...]/stream-subtree-filter/ietf-subscribed-notifications:filters/stream-filter`
- * */
-std::optional<libyang::DataNode> configuredFilterEntry(const libyang::DataNode& changeNode)
-{
-    for (auto node = std::optional<libyang::DataNode>{changeNode}; node; node = node->parent()) {
-        if (const auto path = node->schema().path(); path == streamFilter || path == selectionFilter) {
-            return node;
-        }
-    }
-
-    return std::nullopt;
-}
-
-/** @brief Reads a configured filter entry (by its instance xpath) and returns its filter-spec, if any.
- *
- * Returns std::nullopt if the entry no longer exists or carries no filter-spec.
- * The node names differ between stream-filter and selection-filter, so we pick the right pair based on the entryXPath.
- * */
-std::optional<std::variant<std::string, libyang::DataNodeAny>> resolveConfiguredFilter(sysrepo::Session& session, const std::string& entryXPath)
-{
-    auto data = session.getData(entryXPath);
-    if (!data) {
-        return std::nullopt;
-    }
-
-    auto entry = data->findPath(entryXPath);
-    if (!entry) {
-        return std::nullopt;
-    }
-
-    const auto [xpathFilter, subtreeFilter] = entry->schema().name() == "stream-filter"
-        ? std::pair{"stream-xpath-filter", "stream-subtree-filter"}
-        : std::pair{"ietf-yang-push:datastore-xpath-filter", "ietf-yang-push:datastore-subtree-filter"};
-
-    if (auto node = entry->findPath(xpathFilter)) {
-        return node->asTerm().valueStr();
-    }
-    if (auto node = entry->findPath(subtreeFilter)) {
-        return node->asAny();
-    }
-
-    return std::nullopt;
-}
-
-/** @brief Reads interval from the YANG node and converts it to std::milliseconds.
- *
- *  @tparam SourceRatio Ratio of the interval from the YANG node (e.g. centiseconds, seconds, ...)
- * */
-template <class SourceRatio>
-std::optional<std::chrono::milliseconds> createInterval(const libyang::DataNode& rpcInput, const std::string& path)
-{
-    if (auto node = rpcInput.findPath(path)) {
-        auto value = std::get<uint32_t>(node->asTerm().value());
-        std::chrono::duration<std::chrono::milliseconds::rep, SourceRatio> duration(value);
-        return std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-    }
-
-    return std::nullopt;
-}
-
-sysrepo::DynamicSubscription makeStreamSubscription(sysrepo::Session& session, const libyang::DataNode& rpcInput, libyang::DataNode& rpcOutput)
-{
-    auto streamNode = rpcInput.findPath("stream");
-
-    if (!streamNode) {
-        throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Stream is required");
-    }
-
-    auto stopTime = optionalTime(rpcInput, "stop-time");
-
-    std::optional<sysrepo::NotificationTimeStamp> replayStartTime;
-    if (auto node = rpcInput.findPath("replay-start-time")) {
-        replayStartTime = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(node->asTerm().valueStr());
-    }
-
-    /* TODO: A change of entry in filters container must change all subscriptions that refer to that filter.
-     * This is not implemented yet, but we should at least check that the provided filter name exists and is valid.
-     * see for instance https://datatracker.ietf.org/doc/html/rfc8639.html#section-2.7.2 */
-
-    auto sub = session.subscribeNotifications(
-        createFilter(session, rpcInput, streamFilter, streamFilterKey, "stream-xpath-filter", "stream-subtree-filter", "stream-filter-name"),
-        streamNode->asTerm().valueStr(),
-        stopTime,
-        replayStartTime);
-
-    /* Node replay-start-time-revision should be set only if time was revised to be different than the requested start time,
-     * i.e. when the "replay-start-time" contains a value that is earlier than what a publisher's retained history.
-     * Then the actual publisher's revised start time MUST be set in the returned "replay-start-time-revision" object.
-     * (RFC 8639, 2.4.2.1)
-     * */
-    if (auto replayStartTimeRevision = sub.replayStartTime(); replayStartTimeRevision && replayStartTime) {
-        rpcOutput.newPath("replay-start-time-revision", libyang::yangTimeFormat(*replayStartTimeRevision, libyang::TimezoneInterpretation::Local), libyang::CreationOptions::Output);
-    }
-
-    return sub;
-}
-
-sysrepo::DynamicSubscription makeYangPushOnChangeSubscription(sysrepo::Session& session, const libyang::DataNode& rpcInput, libyang::DataNode&)
-{
-    sysrepo::Datastore datastore = sysrepo::Datastore::Running;
-    if (auto node = rpcInput.findPath("ietf-yang-push:datastore")) {
-        datastore = rousette::restconf::datastoreFromString(node->asTerm().valueStr());
-    } else {
-        throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Datastore is required for ietf-yang-push:on-change");
-    }
-
-    std::optional<sysrepo::NotificationTimeStamp> stopTime;
-    if (auto node = rpcInput.findPath("stop-time")) {
-        stopTime = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(node->asTerm().valueStr());
-    }
-
-    sysrepo::SyncOnStart syncOnStart = sysrepo::SyncOnStart::No;
-    if (auto node = rpcInput.findPath("ietf-yang-push:on-change/sync-on-start")) {
-        syncOnStart = std::get<bool>(node->asTerm().value()) ? sysrepo::SyncOnStart::Yes : sysrepo::SyncOnStart::No;
-    }
-
-    std::set<sysrepo::YangPushChange> excludedChanges;
-    for (const auto& node : rpcInput.findXPath("ietf-yang-push:on-change/excluded-change")) {
-        excludedChanges.emplace(yangPushChange(node.asTerm().valueStr()));
-    }
-
-    rousette::restconf::ScopedDatastoreSwitch dsSwitch(session, datastore);
-    return session.yangPushOnChange(
-        createFilter(session, rpcInput, selectionFilter, selectionFilterKey, "ietf-yang-push:datastore-xpath-filter", "ietf-yang-push:datastore-subtree-filter", "ietf-yang-push:selection-filter-ref"),
-        createInterval<std::centi>(rpcInput, "ietf-yang-push:on-change/dampening-period"),
-        syncOnStart,
-        excludedChanges,
-        stopTime);
-}
-
-sysrepo::DynamicSubscription makeYangPushPeriodicSubscription(sysrepo::Session& session, const libyang::DataNode& rpcInput, libyang::DataNode&)
-{
-    sysrepo::Datastore datastore = sysrepo::Datastore::Running;
-    if (auto node = rpcInput.findPath("ietf-yang-push:datastore")) {
-        datastore = rousette::restconf::datastoreFromString(node->asTerm().valueStr());
-    } else {
-        throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "Datastore is required for ietf-yang-push:periodic");
-    }
-
-    auto period = createInterval<std::centi>(rpcInput, "ietf-yang-push:periodic/period");
-    if (!period) {
-        throw rousette::restconf::ErrorResponse(400, "application", "invalid-attribute", "period is required for ietf-yang-push:periodic");
-    }
-
-    std::optional<sysrepo::NotificationTimeStamp> stopTime;
-    if (auto node = rpcInput.findPath("stop-time")) {
-        stopTime = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(node->asTerm().valueStr());
-    }
-
-    std::optional<sysrepo::NotificationTimeStamp> anchorTime;
-    if (auto node = rpcInput.findPath("ietf-yang-push:periodic/anchor-time")) {
-        anchorTime = libyang::fromYangTimeFormat<sysrepo::NotificationTimeStamp::clock>(node->asTerm().valueStr());
-    }
-
-    rousette::restconf::ScopedDatastoreSwitch dsSwitch(session, datastore);
-    return session.yangPushPeriodic(
-        createFilter(session, rpcInput, selectionFilter, selectionFilterKey, "ietf-yang-push:datastore-xpath-filter", "ietf-yang-push:datastore-subtree-filter", "ietf-yang-push:selection-filter-ref"),
-        *period,
-        anchorTime,
-        stopTime);
-}
 
 /** @brief Converts a duration to the centisecond units used by the ietf-yang-push period/dampening-period leaves. */
 std::string yangPushCentiseconds(const std::chrono::milliseconds ms)
@@ -358,18 +74,6 @@ libyang::DataNode subscriptionModifiedNotification(const libyang::Context& ctx, 
 
 namespace rousette::restconf {
 
-/** @brief Builds the instance xpath of the configured filter list entry this filter refers to. */
-std::string ReferencedFilter::configuredXPath() const
-{
-    switch (kind) {
-    case Kind::StreamFilter:
-        return fmt::format("{}[{}={}]", streamFilter, streamFilterKey, escapeListKey(name));
-    case Kind::SelectionFilter:
-        return fmt::format("{}[{}={}]", selectionFilter, selectionFilterKey, escapeListKey(name));
-    }
-    __builtin_unreachable();
-}
-
 DynamicSubscriptions::DynamicSubscriptions(sysrepo::Session& session, const std::string& streamRootUri, const nghttp2::asio_http2::server::http2& server, const std::chrono::seconds inactivityTimeout)
     : m_restconfStreamUri(streamRootUri)
     , m_server(server)
@@ -411,34 +115,36 @@ void DynamicSubscriptions::establishSubscription(sysrepo::Session& session, cons
     // Generate a new UUID associated with the subscription. The UUID will be used as a part of the URI so that the URI is not predictable (RFC 8650, section 5)
     auto uuid = makeUUID();
 
-    auto dataFormat = getEncoding(rpcInput, requestEncoding);
+    auto dataFormat = subscriptionEncoding(rpcInput, requestEncoding);
 
     try {
-        std::optional<sysrepo::DynamicSubscription> sub;
+        auto sub = makeSubscription(session, rpcInput);
 
-        if (rpcInput.findPath("stream")) {
-            sub = makeStreamSubscription(session, rpcInput, rpcOutput);
-        } else if (rpcInput.findPath("ietf-yang-push:on-change")) {
-            sub = makeYangPushOnChangeSubscription(session, rpcInput, rpcOutput);
-        } else if (rpcInput.findPath("ietf-yang-push:periodic")) {
-            sub = makeYangPushPeriodicSubscription(session, rpcInput, rpcOutput);
-        } else {
-            throw ErrorResponse(400, "application", "invalid-attribute", "Could not deduce if YANG push on-change, YANG push periodic or subscribed notification");
+        /* Node replay-start-time-revision should be set only if time was revised to be different than the requested start time,
+         * i.e. when the "replay-start-time" contains a value that is earlier than what a publisher's retained history.
+         * Then the actual publisher's revised start time MUST be set in the returned "replay-start-time-revision" object.
+         * (RFC 8639, 2.4.2.1)
+         * */
+        if (auto replayStartTimeRevision = sub.replayStartTime(); replayStartTimeRevision && rpcInput.findPath("replay-start-time")) {
+            rpcOutput.newPath("replay-start-time-revision", libyang::yangTimeFormat(*replayStartTimeRevision, libyang::TimezoneInterpretation::Local), libyang::CreationOptions::Output);
         }
 
-        rpcOutput.newPath("id", std::to_string(sub->subscriptionId()), libyang::CreationOptions::Output);
+        // read the id before sub gets moved from; function arguments are indeterminately sequenced
+        auto subId = sub.subscriptionId();
+
+        rpcOutput.newPath("id", std::to_string(subId), libyang::CreationOptions::Output);
         rpcOutput.newPath("ietf-restconf-subscribed-notifications:uri", *requestSchemeAndHost + m_restconfStreamUri + "subscribed/" + boost::uuids::to_string(uuid), libyang::CreationOptions::Output);
 
         std::lock_guard lock(m_mutex);
         m_subscriptions[uuid] = std::make_shared<SubscriptionData>(
-            std::move(*sub),
+            std::move(sub),
             dataFormat,
             uuid,
             *session.getNacmUser(),
             referencedFilter(rpcInput),
             *m_server.io_services().at(0),
             m_inactivityTimeout,
-            [this, subId = sub->subscriptionId()]() { terminateSubscription(subId); });
+            [this, subId]() { terminateSubscription(subId); });
     } catch (const sysrepo::ErrorWithCode& e) {
         throw ErrorResponse(400, "application", "invalid-attribute", e.what());
     }
@@ -794,54 +500,15 @@ DynamicSubscriptionHttpStream::DynamicSubscriptionHttpStream(
           [this]() { m_subscriptionData->clientDisconnected(); })
     , m_subscriptionData(subscriptionData)
     , m_signal(signal)
-    , m_stream(res.io_service(), m_subscriptionData->subscription.fd())
+    , m_io(res.io_service())
 {
-}
-
-DynamicSubscriptionHttpStream::~DynamicSubscriptionHttpStream()
-{
-    // The stream does not own the file descriptor, sysrepo does. It will be closed when the subscription terminates.
-    m_stream.release();
-}
-
-/** @brief Waits for the next notifications and process them */
-void DynamicSubscriptionHttpStream::awaitNextNotification()
-{
-    constexpr auto MAX_EVENTS = 50;
-
-    m_stream.async_wait(boost::asio::posix::stream_descriptor::wait_read, [this](const boost::system::error_code& err) {
-        // Unfortunately wait_read does not return operation_aborted when the file descriptor is closed and poll results in POLLHUP
-        if (err == boost::asio::error::operation_aborted || utils::pipeIsClosedAndNoData(m_subscriptionData->subscription.fd())) {
-            return;
-        }
-
-        size_t eventsProcessed = 0;
-        /* Process all the available notifications, but at most N
-         * In case sysrepo is providing the events fast enough, this loop would still run inside the event loop
-         * and the event responsible for sending the data to the client would not get to be processed.
-         * TODO: Is this enough? What if this async_wait keeps getting called and nothing gets sent?
-         */
-        while (++eventsProcessed < MAX_EVENTS && utils::pipeHasData(m_subscriptionData->subscription.fd())) {
-            std::lock_guard lock(m_subscriptionData->mutex); // sysrepo-cpp's processEvent and terminate is not thread safe
-            m_subscriptionData->subscription.processEvent([&](const std::optional<libyang::DataNode>& notificationTree, const sysrepo::NotificationTimeStamp& time) {
-                (*m_signal)(rousette::restconf::as_restconf_notification(
-                    m_subscriptionData->subscription.getSession().getContext(),
-                    m_subscriptionData->dataFormat,
-                    *notificationTree,
-                    time));
-            });
-        }
-
-        // and wait for more
-        awaitNextNotification();
-    });
 }
 
 void DynamicSubscriptionHttpStream::activate()
 {
     m_subscriptionData->clientConnected(m_signal);
     EventStream::activate();
-    awaitNextNotification();
+    m_broadcaster = std::make_unique<SubscriptionBroadcaster>(m_io, m_subscriptionData->subscription, m_subscriptionData->dataFormat, m_signal, m_subscriptionData->mutex);
 }
 
 std::shared_ptr<DynamicSubscriptionHttpStream> DynamicSubscriptionHttpStream::create(
