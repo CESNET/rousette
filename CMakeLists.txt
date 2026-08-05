@@ -134,22 +134,26 @@ if(SYSTEMD_FOUND)
   target_link_libraries(rousette PUBLIC PkgConfig::SYSTEMD)
 endif()
 
+set(YANG_SRCS
+    yang/ietf-restconf@2017-01-26.yang
+    yang/ietf-restconf-monitoring@2017-01-26.yang
+    yang/ietf-yang-patch@2017-02-22.yang
+    yang/iana-if-type@2014-05-08.yang
+    yang/ietf-interfaces@2018-02-20.yang
+    yang/ietf-ip@2018-02-22.yang
+    yang/ietf-network-instance@2019-01-21.yang
+    yang/ietf-subscribed-notifications@2019-09-09.yang
+    yang/ietf-restconf-subscribed-notifications@2019-11-17.yang
+    yang/ietf-yang-push@2019-09-09.yang
+    yang/rousette@2026-07-21.yang
+)
+
 install(TARGETS
     # watch-operational-ds
     rousette
     RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/)
 install(FILES
-    ${CMAKE_SOURCE_DIR}/yang/ietf-restconf@2017-01-26.yang
-    ${CMAKE_SOURCE_DIR}/yang/ietf-restconf-monitoring@2017-01-26.yang
-    ${CMAKE_SOURCE_DIR}/yang/ietf-yang-patch@2017-02-22.yang
-    ${CMAKE_SOURCE_DIR}/yang/iana-if-type@2014-05-08.yang
-    ${CMAKE_SOURCE_DIR}/yang/ietf-interfaces@2018-02-20.yang
-    ${CMAKE_SOURCE_DIR}/yang/ietf-ip@2018-02-22.yang
-    ${CMAKE_SOURCE_DIR}/yang/ietf-network-instance@2019-01-21.yang
-    ${CMAKE_SOURCE_DIR}/yang/ietf-subscribed-notifications@2019-09-09.yang
-    ${CMAKE_SOURCE_DIR}/yang/ietf-restconf-subscribed-notifications@2019-11-17.yang
-    ${CMAKE_SOURCE_DIR}/yang/ietf-yang-push@2019-09-09.yang
-    ${CMAKE_SOURCE_DIR}/yang/rousette@2026-07-21.yang
+    ${YANG_SRCS}
     DESTINATION ${CMAKE_INSTALL_PREFIX}/share/yang/modules/rousette)
 
 include(CTest)
@@ -177,6 +181,11 @@ if(BUILD_TESTING)
     pkg_get_variable(PAM_WRAPPER_MODULES_DIR pam_wrapper modules)
     set(TEST_PAM_WRAPPER_DB ${CMAKE_CURRENT_SOURCE_DIR}/tests/pam/users)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/pam/other.in ${CMAKE_CURRENT_BINARY_DIR}/tests/pam/other @ONLY)
+
+    find_program(YANGLINT_PATH yanglint REQUIRED)
+    foreach(yang_file ${YANG_SRCS})
+        add_test(NAME yang-tree:${yang_file} COMMAND ${YANGLINT_PATH} -f tree ${CMAKE_CURRENT_SOURCE_DIR}/${yang_file})
+    endforeach()
 
     function(rousette_test)
         cmake_parse_arguments(TEST "WRAP_PAM;ASSIGN_SERVER_PORT" "NAME" "COMMAND" ${ARGN})

@@ -715,9 +715,10 @@ TEST_CASE("URI path parser")
         SECTION("Get modules")
         {
             auto ctx = libyang::Context{libyang::internalModuleDirectory(), libyang::ContextOptions::DisableSearchCwd};
+            ctx.setSearchDir(std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "yang");
+            ctx.loadModule("ietf-netconf-acm", "2018-02-14");
             ctx.setSearchDir(std::filesystem::path{CMAKE_CURRENT_SOURCE_DIR} / "tests" / "yang");
             auto mod = ctx.loadModule("example", std::nullopt, {"f1"});
-            ctx.loadModule("ietf-netconf-acm", "2018-02-14");
             ctx.loadModule("root-mod", std::nullopt);
 
             auto modName = [](auto&& mod) { return std::visit([](auto&& arg) { return arg.name(); }, mod); };
