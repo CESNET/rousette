@@ -6,12 +6,12 @@ module rousette {
     prefix rc;
   }
 
-  revision 2026-04-20 {
-    description "Initial version.";
-  }
-
   revision 2026-07-21 {
     description "Refactored to use rc:yang-data.";
+  }
+
+  revision 2026-04-20 {
+    description "Initial version.";
   }
 
   rc:yang-data "uri-error" {
