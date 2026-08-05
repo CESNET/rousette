@@ -82,6 +82,21 @@ In practical terms, this means that the NACM access rules for the following XPat
 - `/ietf-yang-library:yang-library/module-set[name='complete']/module/submodule/location`
 - `/ietf-yang-library:yang-library/module-set[name='complete']/import-only-module/submodule/location`
 
+### SSE proxy for configured subscriptions
+
+If the `configured-subscriptions-sse-proxy` YANG feature is enabled, then configured subscriptions are available via the `/streams/rousette:sse-proxy/` HTTP endpoint.
+This is an extension of the RESTCONF protocol.
+If an appropriate [notification receiver](https://datatracker.ietf.org/doc/html/draft-ietf-netconf-https-notif-16#section-6.1) is configured with the `rousette:sse-proxy` transport, then all notification events created by the referring configured subscription will be transformed to HTTP-level SSE events and passed to HTTP clients.
+The notification events themselves are subject to NACM access control as configured for the internal subscription between a datastore and the SSE proxy.
+Furthermore, only clients which are granted read access to the `/sn:subscriptions/snr:receiver-instances/snr:receiver-instance/snr:transport-type/rousette:sse-proxy/nacm-access-check` are allowed to connect to the SSE endpoint.
+The NACM user of the internal subscription and the NACM access check to the SSE endpoint are independent on each other.
+
+In YANG push, the data nodes which might become visible over this SSE channel also depend on a subscription filter.
+With default YANG-push ACLs, setting the filter for configured subscribed notifications is an unprivileged operation.
+This has security implications.
+When using the SSE proxy, do *not* rely on subscription filters as a security mechanism.
+Instead, use the `rousette:sse-proxy/nacm-username` to force the internal subscription to use an unprivileged user who does not have access to sensitive data.
+
 ## Dependencies
 
 - [nghttp2-asio](https://github.com/CESNET/nghttp2-asio) - asynchronous C++ library for HTTP/2

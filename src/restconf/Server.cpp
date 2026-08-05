@@ -941,7 +941,7 @@ Server::Server(
              {"ietf-subscribed-notifications", "2019-09-09", {"encode-xml", "encode-json", "xpath", "subtree", "replay"}},
              {"ietf-restconf-subscribed-notifications", "2019-11-17", {}},
              {"ietf-yang-push", "2019-09-09", {"on-change"}},
-             {"rousette", "2026-07-21", {}},
+             {"rousette", "2026-08-07", {}},
          }) {
         if (auto mod = m_monitoringSession.getContext().getModuleImplemented(module)) {
             if (auto actual = mod->revision().value_or(""); actual != version && version != "") {
