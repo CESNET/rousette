@@ -145,7 +145,8 @@ set(YANG_SRCS
     yang/ietf-subscribed-notifications@2019-09-09.yang
     yang/ietf-restconf-subscribed-notifications@2019-11-17.yang
     yang/ietf-yang-push@2019-09-09.yang
-    yang/rousette@2026-07-21.yang
+    yang/ietf-subscribed-notif-receivers@2024-02-01.yang
+    yang/rousette@2026-08-07.yang
 )
 
 install(TARGETS
@@ -244,7 +245,7 @@ if(BUILD_TESTING)
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-augment.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-notif.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-types.yang
-        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/rousette@2026-07-21.yang)
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/rousette@2026-08-07.yang)
     rousette_test(NAME restconf-reading LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)
     rousette_test(NAME restconf-writing LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)
     rousette_test(NAME restconf-delete LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)

@@ -1,0 +1,111 @@
+module rousette {
+  namespace "urn:cesnet:params:xml:ns:yang:czechlight:rousette";
+  prefix rousette;
+
+  import ietf-restconf {
+    prefix rc;
+  }
+
+  import ietf-netconf-acm {
+    prefix nacm;
+  }
+
+  import ietf-subscribed-notifications {
+    prefix sn;
+  }
+
+  import ietf-subscribed-notif-receivers {
+    prefix snr;
+  }
+
+  revision 2026-08-07 {
+    description "Added support for server-side proxying of notifications
+    from configured subscriptions to SSE.";
+  }
+
+  revision 2026-07-21 {
+    description "Refactored to use rc:yang-data.";
+  }
+
+  revision 2026-04-20 {
+    description "Initial version.";
+  }
+
+  feature configured-subscriptions-sse-proxy {
+    description "Enable support for making notifications to configured subscriptions
+    available via HTTP Server-Sent-Events (SSE), aka the `text/event-stream`.
+    This feature has security implications.";
+  }
+
+  rc:yang-data "uri-error" {
+    container uri-error {
+      description "Structured error information for URI syntax errors, for use in RESTCONF error-info.";
+      leaf offset {
+        type uint32;
+        description "Byte offset in the URI where the syntax error was detected.";
+      }
+      leaf expected-token {
+        type string;
+        description "The token expected at the error position.";
+      }
+    }
+  }
+
+  augment "/sn:subscriptions/snr:receiver-instances/snr:receiver-instance/snr:transport-type" {
+    if-feature configured-subscriptions-sse-proxy;
+
+    case sse-proxy {
+      container sse-proxy {
+        description "An SSE endpoint at this server to serve notifications
+
+        If present, this creates a server-side HTTP endpoint to which HTTP clients can connect.
+        This endpoint acts as an internally-connected notification receiver, which proxies all
+        notifications that it receives to each and every HTTP client. Any notifications which
+        match the configured subscription filter will be made available at this endpoint to all
+        authenticated HTTP clients.
+
+        The internal notification receiver uses the `nacm-username` as an NACM client username
+        when the notification subscription is made. I.e., this username determines the data nodes
+        in a datastore to which the notification subscription has access.
+
+        A second level of authorization controls which remote HTTP clients can actually connect
+        to the SSE endpoint. Any newly connected client works as-if it tried to read the
+        `nacm-access-check` data node from the operational DS which belongs to the current HTTP
+        endpoint. If the access is granted by the NACM rules, all events seen by the proxy will
+        be passed to the HTTP client. This constitutes a potential security bypass -- no matter
+        whether the NACM username that was used for authentication in the HTTP request to the SSE
+        endpoint has sufficient permissions to \"see\" the notification, as long as the proxy's
+        `nacm-username` has access, the notification will be forwarded to all connected clients.
+        ";
+
+        leaf nacm-username {
+          type nacm:user-name-type;
+          mandatory true;
+          nacm:default-deny-write;
+
+          description "An NACM username to use when setting the internal subscription.
+
+          The events which are \"seen\" by the internal subscription proxy are filtered
+          as if the subscription was made by this NACM user.
+
+          Do not rely on the configured subscription's own filter to limit the data that the SSE
+          proxy forwards because updating the subscription filter is an unprivileged operation.
+          Instead, set this `nacm-username` to a dedicated role, and set up NACM rules which limit
+          access of this role to the minimal scope of data nodes.
+          ";
+        }
+
+        leaf nacm-access-check {
+          type empty;
+          mandatory true;
+          nacm:default-deny-all;
+
+          description "Internal node used for access checks of HTTP clients
+
+          NACM users which are granted access to this node will be able to connect to the
+          SSE endpoint and consume the SSE-level events via HTTP.";
+        }
+      }
+    }
+  }
+}
