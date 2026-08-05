@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "705fd5c7_e0aba41c",
+        "filename": "yang/rousette@2026-08-07.yang",
+        "patchSetId": 1
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-08-05T12:15:34Z",
+      "side": 1,
+      "message": "The patch should also add this module.",
+      "range": {
+        "startLine": 17,
+        "startChar": 9,
+        "endLine": 17,
+        "endChar": 40
+      },
+      "revId": "67cf3d90f99274405db13243067287275f868e38",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ad5e083b_affa5a17",
+        "filename": "yang/rousette@2026-08-07.yang",
+        "patchSetId": 1
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-08-05T12:15:34Z",
+      "side": 1,
+      "message": "Shouldn\u0027t this say \"configured subscriptions\"? It is not YANG-Push specific, is it?",
+      "range": {
+        "startLine": 22,
+        "startChar": 47,
+        "endLine": 22,
+        "endChar": 56
+      },
+      "revId": "67cf3d90f99274405db13243067287275f868e38",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
