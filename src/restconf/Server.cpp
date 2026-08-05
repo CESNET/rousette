@@ -941,9 +941,13 @@ Server::Server(
              {"ietf-subscribed-notifications", "2019-09-09", {"encode-xml", "encode-json", "xpath", "subtree", "replay"}},
              {"ietf-restconf-subscribed-notifications", "2019-11-17", {}},
              {"ietf-yang-push", "2019-09-09", {"on-change"}},
-             {"rousette", "2026-04-20", {}},
+             {"rousette", "2026-07-21", {}},
          }) {
         if (auto mod = m_monitoringSession.getContext().getModuleImplemented(module)) {
+            if (auto actual = mod->revision().value_or(""); actual != version && version != "") {
+                throw std::runtime_error("Revision mismatch for module \"" + module + "\": installed " + actual
+                                         + ", expected " + version);
+            }
             for (const auto& feature : features) {
                 if (!mod->featureEnabled(feature)) {
                     throw std::runtime_error("Module "s + module + "@" + version + " does not implement feature " + feature);
