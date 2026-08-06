@@ -214,15 +214,15 @@ struct SubscribedStreamRequest {
     SubscribedStreamRequest(const boost::uuids::uuid& uuid);
 };
 
-/** @brief A request for a server-configured stream served under /streams/configured/<name>. */
-struct ConfiguredStreamRequest {
+/** @brief A request for a stream of a configured subscription, served under /streams/rousette:sse-proxy/<name>. */
+struct SseProxyRequest {
     std::string name;
 
-    ConfiguredStreamRequest();
-    ConfiguredStreamRequest(const std::string& name);
+    SseProxyRequest();
+    SseProxyRequest(const std::string& name);
 };
 
-using RestconfStreamRequest = std::variant<NotificationStreamRequest, SubscribedStreamRequest, ConfiguredStreamRequest>;
+using RestconfStreamRequest = std::variant<NotificationStreamRequest, SubscribedStreamRequest, SseProxyRequest>;
 
 RestconfRequest asRestconfRequest(const libyang::Context& ctx, const std::string& httpMethod, const std::string& uriPath, const std::string& uriQueryString = "");
 std::optional<libyang::SchemaNode> asLibyangSchemaNode(const libyang::Context& ctx, const std::vector<PathSegment>& pathSegments);
