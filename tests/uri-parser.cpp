@@ -1108,7 +1108,7 @@ TEST_CASE("URI path parser")
     {
         using rousette::restconf::asRestconfStreamRequest;
         using rousette::restconf::NotificationStreamRequest;
-        using rousette::restconf::ConfiguredStreamRequest;
+        using rousette::restconf::SseProxyRequest;
         using rousette::restconf::SubscribedStreamRequest;
 
         {
@@ -1142,19 +1142,19 @@ TEST_CASE("URI path parser")
         }
 
         {
-            auto req = asRestconfStreamRequest("GET", "/streams/configured/example", "");
-            REQUIRE(std::holds_alternative<ConfiguredStreamRequest>(req));
-            REQUIRE(std::get<ConfiguredStreamRequest>(req).name == "example");
+            auto req = asRestconfStreamRequest("GET", "/streams/rousette:sse-proxy/example", "");
+            REQUIRE(std::holds_alternative<SseProxyRequest>(req));
+            REQUIRE(std::get<SseProxyRequest>(req).name == "example");
         }
 
         {
-            auto req = asRestconfStreamRequest("GET", "/streams/configured/example-xml", "");
-            REQUIRE(std::holds_alternative<ConfiguredStreamRequest>(req));
-            REQUIRE(std::get<ConfiguredStreamRequest>(req).name == "example-xml");
+            auto req = asRestconfStreamRequest("GET", "/streams/rousette:sse-proxy/example-xml", "");
+            REQUIRE(std::holds_alternative<SseProxyRequest>(req));
+            REQUIRE(std::get<SseProxyRequest>(req).name == "example-xml");
         }
 
-        REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/configured", ""),
-                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI (path) at position 19: expected \"/\"").c_str(),
+        REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/rousette:sse-proxy", ""),
+                               serializeErrorResponse(400, "protocol", "invalid-value", "Syntax error in URI (path) at position 27: expected \"/\"").c_str(),
                                rousette::restconf::ErrorResponse);
 
         REQUIRE_THROWS_WITH_AS(asRestconfStreamRequest("GET", "/streams/NETCONF", ""),
