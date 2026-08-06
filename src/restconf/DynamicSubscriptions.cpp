@@ -508,7 +508,7 @@ void DynamicSubscriptionHttpStream::activate()
 {
     m_subscriptionData->clientConnected(m_signal);
     EventStream::activate();
-    m_broadcaster = std::make_unique<SubscriptionBroadcaster>(m_io, m_subscriptionData->subscription, m_subscriptionData->dataFormat, m_signal, m_subscriptionData->mutex);
+    m_broadcaster = std::make_unique<SubscriptionBroadcaster>(m_io, m_subscriptionData->subscription, m_subscriptionData->dataFormat, m_signal, &m_subscriptionData->mutex);
 }
 
 std::shared_ptr<DynamicSubscriptionHttpStream> DynamicSubscriptionHttpStream::create(

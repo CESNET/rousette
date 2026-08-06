@@ -17,7 +17,7 @@ SubscriptionBroadcaster::SubscriptionBroadcaster(
     const sysrepo::DynamicSubscription& subscription,
     libyang::DataFormat dataFormat,
     std::shared_ptr<http::EventStream::EventSignal> events,
-    std::mutex& processEventMutex)
+    std::mutex* processEventMutex)
     : m_subscription(subscription)
     , m_dataFormat(dataFormat)
     , m_events(std::move(events))
@@ -51,7 +51,12 @@ void SubscriptionBroadcaster::awaitNextNotification()
          * TODO: Is this enough? What if this async_wait keeps getting called and nothing gets sent?
          */
         while (++eventsProcessed < MAX_EVENTS && utils::pipeHasData(m_subscription.fd())) {
-            std::lock_guard lock(m_processEventMutex); // sysrepo-cpp's processEvent and terminate is not thread safe
+            // sysrepo-cpp's processEvent and terminate is not thread safe. No lock when nothing can mutate this subscription.
+            std::unique_lock<std::mutex> lock;
+            if (m_processEventMutex) {
+                lock = std::unique_lock{*m_processEventMutex};
+            }
+
             m_subscription.processEvent([this](const std::optional<libyang::DataNode>& notificationTree, const sysrepo::NotificationTimeStamp& time) {
                 (*m_events)(as_restconf_notification(m_subscription.getSession().getContext(), m_dataFormat, *notificationTree, time));
             });
