@@ -1062,6 +1062,16 @@ Server::Server(
                     xpathFilter,
                     startTime,
                     stopTime);
+            } else if (auto *request = std::get_if<SseProxyRequest>(&streamRequest)) {
+                if (!hasAccessToSseProxy(sess, request->name)) {
+                    throw ErrorResponse(403, "application", "access-denied", "Access denied.");
+                }
+
+                if (auto *endpoint = m_sseProxy.find(request->name)) {
+                    http::EventStream::create(req, res, endpoint->termination(), *endpoint->events(), keepAlivePingInterval);
+                } else {
+                    throw ErrorResponse(404, "application", "invalid-value", "Stream not found");
+                }
             } else {
                 throw ErrorResponse(500, "protocol", "invalid-value", "Invalid request."); // should not happen
             }
