@@ -5,12 +5,15 @@
  *
 */
 
+#include <fmt/core.h>
 #include <libyang-cpp/DataNode.hpp>
 #include <nghttp2/asio_http2_server.h>
 #include <spdlog/spdlog.h>
 #include <vector>
 #include "restconf/SseProxy.h"
 #include "restconf/SubscribedNotifications.h"
+#include "restconf/utils/sysrepo.h"
+#include "restconf/utils/yang.h"
 
 namespace rousette::restconf {
 
@@ -20,6 +23,11 @@ constexpr auto subscriptionListXPath = "/ietf-subscribed-notifications:subscript
 constexpr auto receiverInstanceListXPath = "/ietf-subscribed-notifications:subscriptions/ietf-subscribed-notif-receivers:receiver-instances/receiver-instance";
 constexpr auto sseProxy = "rousette:sse-proxy";
 constexpr auto sseProxyFeature = "configured-subscriptions-sse-proxy";
+
+std::string receiverInstanceXPath(const std::string& name)
+{
+    return fmt::format("{}[name={}]", receiverInstanceListXPath, escapeListKey(name));
+}
 
 /** @brief Is the YANG feature which brings in the rousette:sse-proxy transport enabled? */
 bool sseProxyEnabled(const libyang::Context& ctx)
@@ -120,4 +128,15 @@ void SseProxy::stop()
     m_endpoints.clear();
 }
 
+
+/** @brief May the NACM user of @p session consume the SSE proxy endpoint @p name? */
+bool hasAccessToSseProxy(sysrepo::Session session, const std::string& name)
+{
+    if (!sseProxyEnabled(session.getContext())) {
+        return false;
+    }
+
+    ScopedDatastoreSwitch dsSwitch(session, sysrepo::Datastore::Running);
+    return !!session.getData(receiverInstanceXPath(name) + "/" + sseProxy + "/nacm-access-check");
+}
 }
