@@ -1027,7 +1027,17 @@ Server::Server(
 
             auto streamRequest = asRestconfStreamRequest(req.method(), req.uri().path, req.uri().raw_query);
 
-            if (auto *request = std::get_if<SubscribedStreamRequest>(&streamRequest)) {
+            if (auto *request = std::get_if<SseProxyRequest>(&streamRequest)) {
+                if (!hasAccessToSseProxy(sess, request->name)) {
+                    throw ErrorResponse(403, "application", "access-denied", "Access denied.");
+                }
+
+                if (auto *endpoint = m_sseProxy.find(request->name)) {
+                    http::EventStream::create(req, res, endpoint->termination(), *endpoint->events(), keepAlivePingInterval);
+                } else {
+                    throw ErrorResponse(404, "application", "invalid-value", "Stream not found");
+                }
+            } else if (auto *request = std::get_if<SubscribedStreamRequest>(&streamRequest)) {
                 if (auto sub = m_dynamicSubscriptions.getSubscriptionForUser(request->uuid, sess.getNacmUser())) {
                     if (!sub->isReadyToAcceptClient()) {
                         throw ErrorResponse(409, "application", "resource-denied", "There is already another GET request on this subscription.");

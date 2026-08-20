@@ -40,4 +40,6 @@ private:
     nghttp2::asio_http2::server::http2& m_server;
     std::map<std::string, std::unique_ptr<SseProxyEndpoint>> m_endpoints;
 };
+
+bool hasAccessToSseProxy(sysrepo::Session session, const std::string& name);
 }
