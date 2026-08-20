@@ -887,6 +887,11 @@ Server::~Server()
 
 void Server::stop()
 {
+    // Tear down the SSE proxy endpoints (releasing their asio descriptors) on the io thread, before it is stopped.
+    boost::asio::post(*server->io_services().front(), [this]() {
+        m_sseProxy.stop();
+    });
+
     // notification to stop has to go through the asio io_context
     boost::asio::post(*server->io_services().front(), [server = this->server.get()]() {
         spdlog::trace("Stoping HTTP/2 server");
@@ -927,6 +932,7 @@ Server::Server(
     , nacm(conn)
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , m_dynamicSubscriptions(m_monitoringSession, netconfStreamRoot, *server, subNotifInactivityTimeout)
+    , m_sseProxy(conn, *server)
     , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
     server->num_threads(1); // we only use one thread for the server, so we can call join() right away
@@ -1313,5 +1319,11 @@ Server::Server(
         throw std::runtime_error{"Server error: " + ec.message()};
     }
     spdlog::debug("Listening at {} {}", address, port);
+
+    // Establish the SSE proxy endpoints on the io thread, once the server is listening: the io_context now exists and
+    // the running datastore holds the configured subscriptions.
+    boost::asio::post(*server->io_services().front(), [this]() {
+        m_sseProxy.start();
+    });
 }
 }

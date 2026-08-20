@@ -18,8 +18,17 @@ SseProxyEndpoint::Feed::Feed(SseProxyEndpoint::SourceSubscription source, boost:
 SseProxyEndpoint::SseProxyEndpoint(std::vector<SourceSubscription> sources, boost::asio::io_context& io)
     : m_events(std::make_shared<http::EventStream::EventSignal>())
 {
+    // Each feed's broadcaster drains from construction and fans into the shared signal. The signal has no receivers
+    // yet, which is intentional: this is a live stream, so notifications arriving before any client connects are
+    // dropped rather than buffered.
     for (auto& source : sources) {
         m_feeds.emplace_back(std::move(source), io, events());
     }
+}
+
+SseProxyEndpoint::~SseProxyEndpoint()
+{
+    // Close the attached clients before the feeds (and with them m_events) go away; see termination().
+    m_termination();
 }
 }

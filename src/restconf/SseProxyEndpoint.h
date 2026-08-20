@@ -27,8 +27,16 @@ public:
     };
 
     SseProxyEndpoint(std::vector<SourceSubscription> sources, boost::asio::io_context& io);
+    ~SseProxyEndpoint();
 
     const std::shared_ptr<http::EventStream::EventSignal>& events() const { return m_events; }
+
+    /** @brief Fired when this endpoint goes away, so that the clients attached to it are closed.
+     *
+     * Destroying the endpoint would otherwise only disconnect the slots of @ref m_events, leaving every attached client
+     * with a stream which never delivers anything and is never closed.
+     */
+    http::EventStream::Termination& termination() { return m_termination; }
 
 private:
     struct Feed {
@@ -39,6 +47,7 @@ private:
     };
 
     std::shared_ptr<http::EventStream::EventSignal> m_events;
+    http::EventStream::Termination m_termination;
 
     /* A node-based container, because a Feed must never be relocated: after a move, two things would still point at
      * the old storage. Its broadcaster references the subscription declared above it, and the pending async_wait
