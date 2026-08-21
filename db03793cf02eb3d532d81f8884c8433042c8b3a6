@@ -38,6 +38,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "15f2a56a_79b196dc",
+        "filename": "src/restconf/SseProxy.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-08-21T16:12:37Z",
+      "side": 1,
+      "message": "... implementing every case (sorry, hit send too soon)",
+      "parentUuid": "b4412d97_a6cd6a46",
+      "revId": "db03793cf02eb3d532d81f8884c8433042c8b3a6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "350703f1_5b186c06",
         "filename": "src/restconf/SseProxyEndpoint.cpp",
         "patchSetId": 1
