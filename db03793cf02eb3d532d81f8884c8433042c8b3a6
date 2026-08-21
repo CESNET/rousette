@@ -20,6 +20,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "b4412d97_a6cd6a46",
+        "filename": "src/restconf/SseProxy.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-08-21T16:12:09Z",
+      "side": 1,
+      "message": "No, problem is somebody may change the subscription only a little -- and we have to determine what was changed and modify the subcription appropriately. This requires listening to changes and implementing every\n\n... or we can just destroy everything and re-create everything from scratch, but this mean we can lose some notifications.",
+      "parentUuid": "a1d75add_27d64011",
+      "revId": "db03793cf02eb3d532d81f8884c8433042c8b3a6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "350703f1_5b186c06",
         "filename": "src/restconf/SseProxyEndpoint.cpp",
         "patchSetId": 1
