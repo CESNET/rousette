@@ -16,6 +16,24 @@
       "message": "I have a hunch that this patch will be reverted when https://gerrit.cesnet.cz/c/CzechLight/rousette/+/9305 is rewritten to use the module_change_cb mechanism. Am I missing something?",
       "revId": "cd7d70b0b3405aebb0f70a9f7f9e9a237a7caa3d",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "139e975d_a22bbb08",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-08-21T16:27:30Z",
+      "side": 1,
+      "message": "Well, I wanted to try running it on the IO thread (boost::asio::post), at least that is what I had locally",
+      "parentUuid": "b4acfc5b_701f83ef",
+      "revId": "cd7d70b0b3405aebb0f70a9f7f9e9a237a7caa3d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
