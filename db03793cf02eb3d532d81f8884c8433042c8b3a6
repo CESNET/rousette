@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a1d75add_27d64011",
+        "filename": "src/restconf/SseProxy.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-08-21T12:54:10Z",
+      "side": 1,
+      "message": "Is there a fundamental problem on why this is done once during startup, and not in response to the DS modification?",
+      "revId": "db03793cf02eb3d532d81f8884c8433042c8b3a6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "350703f1_5b186c06",
+        "filename": "src/restconf/SseProxyEndpoint.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-08-21T12:54:10Z",
+      "side": 1,
+      "message": "a typo?",
+      "range": {
+        "startLine": 21,
+        "startChar": 60,
+        "endLine": 21,
+        "endChar": 64
+      },
+      "revId": "db03793cf02eb3d532d81f8884c8433042c8b3a6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
