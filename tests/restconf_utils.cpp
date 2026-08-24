@@ -179,7 +179,7 @@ SSEClient::SSEClient(
     boost::asio::io_service& io,
     const std::string& server_address,
     const std::string& server_port,
-    std::binary_semaphore& requestSent,
+    std::counting_semaphore<>& requestSent,
     const RestconfNotificationWatcher& eventWatcher,
     const std::string& uri,
     const std::map<std::string, std::string>& headers,
