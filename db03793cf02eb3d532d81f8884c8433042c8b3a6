@@ -54,6 +54,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "dea7bf82_baddfbaa",
+        "filename": "src/restconf/SseProxy.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-08-24T14:38:47Z",
+      "side": 1,
+      "message": "will be implemented in the following commits by re-creating all",
+      "parentUuid": "15f2a56a_79b196dc",
+      "revId": "db03793cf02eb3d532d81f8884c8433042c8b3a6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "350703f1_5b186c06",
@@ -67,6 +85,30 @@
       "writtenOn": "2026-08-21T12:54:10Z",
       "side": 1,
       "message": "a typo?",
+      "range": {
+        "startLine": 21,
+        "startChar": 60,
+        "endLine": 21,
+        "endChar": 64
+      },
+      "revId": "db03793cf02eb3d532d81f8884c8433042c8b3a6",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c0579235_d546925a",
+        "filename": "src/restconf/SseProxyEndpoint.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-08-24T14:38:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "350703f1_5b186c06",
       "range": {
         "startLine": 21,
         "startChar": 60,
