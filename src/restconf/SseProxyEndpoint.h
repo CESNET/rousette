@@ -7,6 +7,7 @@
 #pragma once
 
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/post.hpp>
 #include <libyang-cpp/Enum.hpp>
 #include <list>
 #include <memory>
@@ -30,6 +31,8 @@ public:
     SseProxyEndpoint(std::vector<SourceSubscription> sources, boost::asio::io_context& io);
     ~SseProxyEndpoint();
 
+    void replaceFeeds(std::vector<SourceSubscription> sources);
+
     const std::shared_ptr<http::EventStream::EventSignal>& events() const { return m_events; }
 
     /** @brief Fired when this endpoint goes away, so that the clients attached to it are closed.
@@ -38,6 +41,15 @@ public:
      * with a stream which never delivers anything and is never closed.
      */
     http::EventStream::Termination& termination() { return m_termination; }
+
+    /** @brief Hands container over to the IO thread and lets it die there. */
+    template <typename Container>
+    static void deleteLater(boost::asio::io_context& io, Container container)
+    {
+        boost::asio::post(io, [container = std::move(container)]() {
+            // The lifetime has been extended until now, let it die at the scope end.
+        });
+    }
 
 private:
     struct Feed {
@@ -50,6 +62,7 @@ private:
              std::mutex& processEventMutex);
     };
 
+    boost::asio::io_context& m_io;
     std::shared_ptr<http::EventStream::EventSignal> m_events;
     http::EventStream::Termination m_termination;
 
