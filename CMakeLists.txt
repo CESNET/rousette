@@ -114,6 +114,8 @@ add_library(rousette-restconf STATIC
     src/restconf/Exceptions.cpp
     src/restconf/NotificationStream.cpp
     src/restconf/Server.cpp
+    src/restconf/SseProxy.cpp
+    src/restconf/SseProxyEndpoint.cpp
     src/restconf/SubscribedNotifications.cpp
     src/restconf/SubscriptionBroadcaster.cpp
     src/restconf/YangSchemaLocations.cpp
@@ -232,7 +234,7 @@ if(BUILD_TESTING)
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-interfaces@2018-02-20.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-ip@2018-02-22.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-network-instance@2019-01-21.yang
-        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-subscribed-notifications@2019-09-09.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-subscribed-notifications@2019-09-09.yang --enable-feature configured
             --enable-feature replay
             --enable-feature encode-xml
             --enable-feature encode-json
@@ -245,7 +247,7 @@ if(BUILD_TESTING)
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-augment.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-notif.yang
         --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/example-types.yang
-        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/rousette@2026-08-07.yang)
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/rousette@2026-08-07.yang --enable-feature configured-subscriptions-sse-proxy)
     rousette_test(NAME restconf-reading LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)
     rousette_test(NAME restconf-writing LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)
     rousette_test(NAME restconf-delete LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)
