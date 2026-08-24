@@ -30,6 +30,8 @@ public:
     SseProxyEndpoint(std::vector<SourceSubscription> sources, boost::asio::io_context& io);
     ~SseProxyEndpoint();
 
+    void replaceFeeds(std::vector<SourceSubscription> sources);
+
     const std::shared_ptr<http::EventStream::EventSignal>& events() const { return m_events; }
 
     /** @brief Fired when this endpoint goes away, so that the clients attached to it are closed.
@@ -50,6 +52,7 @@ private:
              std::mutex& processEventMutex);
     };
 
+    boost::asio::io_context& m_io;
     std::shared_ptr<http::EventStream::EventSignal> m_events;
     http::EventStream::Termination m_termination;
 
