@@ -165,11 +165,11 @@ TEST_CASE("RESTCONF subscribed notifications")
             {
                 boost::asio::io_service io;
                 {
-                    std::binary_semaphore requestSent(0); // SSEClient needs to notify when the request is sent, but we don't care about it here.
+                    std::counting_semaphore<> requestSent(0); // SSEClient needs to notify when the request is sent, but we don't care about it here.
                     SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, {AUTH_DWDM});
                 }
                 {
-                    std::binary_semaphore requestSent(0);
+                    std::counting_semaphore<> requestSent(0);
                     SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, {AUTH_DWDM});
                 }
             }
