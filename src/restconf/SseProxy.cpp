@@ -5,6 +5,7 @@
  *
 */
 
+#include <boost/asio/post.hpp>
 #include <fmt/core.h>
 #include <libyang-cpp/DataNode.hpp>
 #include <nghttp2/asio_http2_server.h>
@@ -94,6 +95,7 @@ SseProxy::SseProxy(sysrepo::Connection conn, nghttp2::asio_http2::server::http2&
 
 SseProxyEndpoint* SseProxy::find(const std::string& name) const
 {
+    std::lock_guard lock(m_endpointsMutex);
     if (auto it = m_endpoints.find(name); it != m_endpoints.end()) {
         return it->second.get();
     }
@@ -109,22 +111,61 @@ void SseProxy::start()
         return;
     }
 
-    // TODO: This does not react to changes now.
-    auto data = session.getData(subscriptionsXPath);
-    if (!data) {
-        return;
-    }
+    m_sub = session.onModuleChange(
+        "ietf-subscribed-notifications",
+        [this](sysrepo::Session changeSession, auto, auto, auto, auto, auto) {
+            reconfigure(changeSession);
+            return sysrepo::ErrorCode::Ok;
+        },
+        std::nullopt,
+        0,
+        sysrepo::SubscribeOptions::Enabled | sysrepo::SubscribeOptions::DoneOnly);
+}
+
+void SseProxy::reconfigure(sysrepo::Session session)
+{
+    SourcesByEndpoint byEndpoint;
+    if (auto data = session.getData(subscriptionsXPath)) {
+        byEndpoint = collectSources(m_conn, *data);
+    } // nothing configured at all leaves this empty, which then removes every endpoint we have
 
     auto& io = *m_server.io_services().front();
-    for (auto& [name, feeds] : collectSources(m_conn, *data)) {
-        const auto count = feeds.size();
-        m_endpoints.emplace(name, std::make_unique<SseProxyEndpoint>(std::move(feeds), io));
-        spdlog::info("SSE proxy '{}' established with {} subscription(s)", name, count);
+
+    // endpoints are destroyed on the IO thread.
+    std::map<std::string, std::unique_ptr<SseProxyEndpoint>> toDelete;
+
+    {
+        std::lock_guard lock(m_endpointsMutex);
+
+        for (auto it = m_endpoints.begin(); it != m_endpoints.end();) {
+            if (byEndpoint.contains(it->first)) {
+                ++it;
+                continue;
+            }
+            spdlog::info("Terminating SSE proxy endpoint '{}'", it->first);
+            toDelete.insert(m_endpoints.extract(it++));
+        }
+
+        for (auto& [name, feeds] : byEndpoint) {
+            const auto count = feeds.size();
+            if (auto it = m_endpoints.find(name); it != m_endpoints.end()) {
+                it->second->replaceFeeds(std::move(feeds));
+                spdlog::info("SSE proxy '{}' now fed by {} subscription(s)", name, count);
+            } else {
+                m_endpoints.emplace(name, std::make_unique<SseProxyEndpoint>(std::move(feeds), io));
+                spdlog::info("SSE proxy '{}' established with {} subscription(s)", name, count);
+            }
+        }
     }
+
+    boost::asio::post(io, [toDelete = std::move(toDelete)]() mutable { toDelete.clear(); });
 }
 
 void SseProxy::stop()
 {
+    // Unsubscribe first, so that nothing reconfigures the endpoints while they are going away.
+    m_sub.reset();
+    std::lock_guard lock(m_endpointsMutex);
     m_endpoints.clear();
 }
 

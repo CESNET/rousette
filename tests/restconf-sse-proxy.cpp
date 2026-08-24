@@ -107,6 +107,184 @@ TEST_CASE("SSE proxy for configured subscriptions")
         RUN_LOOP_WITH_EXCEPTIONS;
     }
 
+    SECTION("a new endpoint appears when it is configured")
+    {
+        REQUIRE(get("/streams/rousette:sse-proxy/later", {AUTH_ROOT}) == Response{403, plaintextHeaders, "Access denied."});
+
+        const auto later = "/ietf-subscribed-notifications:subscriptions/ietf-subscribed-notif-receivers:receiver-instances/receiver-instance[name='later']/rousette:sse-proxy"s;
+        srSess.setItem(later + "/nacm-username", "root");
+        srSess.setItem(later + "/nacm-access-check", std::nullopt);
+        const auto sub = subs + "/subscription[id='3']";
+        srSess.setItem(sub + "/encoding", "ietf-subscribed-notifications:encode-json");
+        srSess.setItem(sub + "/ietf-yang-push:datastore", "ietf-datastores:startup");
+        srSess.setItem(sub + "/ietf-yang-push:datastore-xpath-filter", "/example:top-level-leaf");
+        srSess.setItem(sub + "/ietf-yang-push:periodic/period", "5");
+        srSess.setItem(sub + "/receivers/receiver[name='r1']/ietf-subscribed-notif-receivers:receiver-instance-ref", "later");
+        srSess.applyChanges();
+
+        RestconfYangPushWatcher watcher(srSess.getContext());
+        watcher.setDataFormat(libyang::DataFormat::JSON);
+        const auto pushed = R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:top-level-leaf":"42"}}})"s;
+        expectations.emplace_back(NAMED_REQUIRE_CALL(watcher, data(pushed)).IN_SEQUENCE(seq1).TIMES(AT_LEAST(1)));
+
+        PREPARE_LOOP_WITH_EXCEPTIONS;
+        auto notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
+            WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+            waitForCompletionAndBitMore(seq1);
+        }));
+
+        SSEClient client(io, SERVER_ADDRESS, SERVER_PORT, requestSent, watcher, "/streams/rousette:sse-proxy/later", {AUTH_ROOT}, 200, 6s);
+        RUN_LOOP_WITH_EXCEPTIONS;
+    }
+
+    SECTION("a client is not disconnected by a configuration change elsewhere")
+    {
+        RestconfYangPushWatcher watcher(srSess.getContext());
+        watcher.setDataFormat(libyang::DataFormat::JSON);
+
+        const auto before = R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:top-level-leaf":"42"}}})"s;
+        const auto afterwards = R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:top-level-leaf":"666"}}})"s;
+        const auto theOtherSubscription = R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:top-level-list":[{"name":"hello"}]}}})"s;
+
+        ALLOW_CALL(watcher, data(theOtherSubscription)); // the endpoint's second feed, of no interest here
+        expectations.emplace_back(NAMED_REQUIRE_CALL(watcher, data(before)).IN_SEQUENCE(seq1).TIMES(AT_LEAST(1)));
+        expectations.emplace_back(NAMED_REQUIRE_CALL(watcher, data(afterwards)).IN_SEQUENCE(seq2).TIMES(AT_LEAST(1)));
+
+        PREPARE_LOOP_WITH_EXCEPTIONS;
+        auto notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
+            WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+            waitForCompletionAndBitMore(seq1);
+
+            // Configure an endpoint which our client has nothing to do with. Every subscription is re-established by
+            // this, but 'example' is still configured, so the stream our client holds has to survive.
+            const auto later = "/ietf-subscribed-notifications:subscriptions/ietf-subscribed-notif-receivers:receiver-instances/receiver-instance[name='later']/rousette:sse-proxy"s;
+            srSess.setItem(later + "/nacm-username", "root");
+            srSess.setItem(later + "/nacm-access-check", std::nullopt);
+            srSess.applyChanges();
+
+            // A disconnected client would never see this.
+            srSess.switchDatastore(sysrepo::Datastore::Startup);
+            srSess.setItem("/example:top-level-leaf", "666");
+            srSess.applyChanges();
+            srSess.switchDatastore(sysrepo::Datastore::Running);
+
+            waitForCompletionAndBitMore(seq2);
+        }));
+
+        SSEClient client(io, SERVER_ADDRESS, SERVER_PORT, requestSent, watcher, "/streams/rousette:sse-proxy/example", {AUTH_ROOT}, 200, 6s);
+        RUN_LOOP_WITH_EXCEPTIONS;
+    }
+
+    SECTION("a subscription added to an existing endpoint reaches the clients already attached to it")
+    {
+        RestconfYangPushWatcher watcher(srSess.getContext());
+        watcher.setDataFormat(libyang::DataFormat::JSON);
+
+        const auto fromLeaf = R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:top-level-leaf":"42"}}})"s;
+        const auto fromList = R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:top-level-list":[{"name":"hello"}]}}})"s;
+        const auto fromLeaf2 = R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:top-level-leaf2":"y"}}})"s;
+
+        ALLOW_CALL(watcher, data(fromList)); // the endpoint's other feed, of no interest here
+        expectations.emplace_back(NAMED_REQUIRE_CALL(watcher, data(fromLeaf)).IN_SEQUENCE(seq1).TIMES(AT_LEAST(1)));
+        expectations.emplace_back(NAMED_REQUIRE_CALL(watcher, data(fromLeaf2)).IN_SEQUENCE(seq2).TIMES(AT_LEAST(1)));
+
+        PREPARE_LOOP_WITH_EXCEPTIONS;
+        auto notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
+            WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+            waitForCompletionAndBitMore(seq1);
+
+            srSess.switchDatastore(sysrepo::Datastore::Startup);
+            srSess.setItem("/example:top-level-leaf2", "y");
+            srSess.applyChanges();
+            srSess.switchDatastore(sysrepo::Datastore::Running);
+
+            // A third subscription for the endpoint our client is already reading. It must reach that client without
+            // it reconnecting, i.e. the endpoint has to keep its identity and just gain a feed.
+            const auto sub = subs + "/subscription[id='3']";
+            srSess.setItem(sub + "/encoding", "ietf-subscribed-notifications:encode-json");
+            srSess.setItem(sub + "/ietf-yang-push:datastore", "ietf-datastores:startup");
+            srSess.setItem(sub + "/ietf-yang-push:datastore-xpath-filter", "/example:top-level-leaf2");
+            srSess.setItem(sub + "/ietf-yang-push:periodic/period", "5");
+            srSess.setItem(sub + "/receivers/receiver[name='r1']/ietf-subscribed-notif-receivers:receiver-instance-ref", "example");
+            srSess.applyChanges();
+
+            waitForCompletionAndBitMore(seq2);
+        }));
+
+        SSEClient client(io, SERVER_ADDRESS, SERVER_PORT, requestSent, watcher, "/streams/rousette:sse-proxy/example", {AUTH_ROOT}, 200, 6s);
+        RUN_LOOP_WITH_EXCEPTIONS;
+    }
+
+    SECTION("a subscription removed from an endpoint stops feeding it")
+    {
+        RestconfYangPushWatcher watcher(srSess.getContext());
+        watcher.setDataFormat(libyang::DataFormat::JSON);
+
+        const auto fromLeaf = R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:top-level-leaf":"42"}}})"s;
+        const auto fromLeafAfterwards = R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:top-level-leaf":"666"}}})"s;
+        const auto fromList = R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:top-level-list":[{"name":"hello"}]}}})"s;
+
+        ALLOW_CALL(watcher, data(fromList)); // whatever was in flight when the subscription went away
+        expectations.emplace_back(NAMED_REQUIRE_CALL(watcher, data(fromLeaf)).IN_SEQUENCE(seq1).TIMES(AT_LEAST(1)));
+        expectations.emplace_back(NAMED_REQUIRE_CALL(watcher, data(fromLeafAfterwards)).IN_SEQUENCE(seq2).TIMES(AT_LEAST(1)));
+
+        PREPARE_LOOP_WITH_EXCEPTIONS;
+        auto notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
+            WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+            waitForCompletionAndBitMore(seq1);
+
+            srSess.deleteItem(subs + "/subscription[id='2']");
+            srSess.applyChanges();
+
+            srSess.switchDatastore(sysrepo::Datastore::Startup);
+            srSess.setItem("/example:top-level-list[name='world']", std::nullopt); // sub2 is gone, no notification
+            srSess.setItem("/example:top-level-leaf", "666"); // still visible
+            srSess.applyChanges();
+            srSess.switchDatastore(sysrepo::Datastore::Running);
+
+            waitForCompletionAndBitMore(seq2);
+        }));
+
+        SSEClient client(io, SERVER_ADDRESS, SERVER_PORT, requestSent, watcher, "/streams/rousette:sse-proxy/example", {AUTH_ROOT}, 200, 6s);
+        RUN_LOOP_WITH_EXCEPTIONS;
+    }
+
+    SECTION("an endpoint removed from the configuration stops serving its clients")
+    {
+        RestconfYangPushWatcher watcher(srSess.getContext());
+        watcher.setDataFormat(libyang::DataFormat::JSON);
+
+        const auto fromLeaf = R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:top-level-leaf":"42"}}})"s;
+        const auto fromList = R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:top-level-list":[{"name":"hello"}]}}})"s;
+
+        ALLOW_CALL(watcher, data(fromList)); // the endpoint's other feed
+        expectations.emplace_back(NAMED_REQUIRE_CALL(watcher, data(fromLeaf)).IN_SEQUENCE(seq1).TIMES(AT_LEAST(1)));
+
+        PREPARE_LOOP_WITH_EXCEPTIONS;
+        auto notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
+            WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+            waitForCompletionAndBitMore(seq1);
+
+            // Delete endpoint and its subs
+            srSess.deleteItem(subs + "/subscription[id='1']");
+            srSess.deleteItem(subs + "/subscription[id='2']");
+            srSess.deleteItem("/ietf-subscribed-notifications:subscriptions/ietf-subscribed-notif-receivers:receiver-instances/receiver-instance[name='example']");
+            srSess.applyChanges();
+
+            // this should be silent
+            srSess.switchDatastore(sysrepo::Datastore::Startup);
+            srSess.setItem("/example:top-level-leaf", "666");
+            srSess.applyChanges();
+            srSess.switchDatastore(sysrepo::Datastore::Running);
+
+            // Give an endpoint which outlived its configuration the time to give itself away
+            std::this_thread::sleep_for(250ms);
+        }));
+
+        SSEClient client(io, SERVER_ADDRESS, SERVER_PORT, requestSent, watcher, "/streams/rousette:sse-proxy/example", {AUTH_ROOT}, 200, 2s);
+        RUN_LOOP_WITH_EXCEPTIONS;
+    }
+
     SECTION("access is guarded by NACM")
     {
         // no read access to the nacm-access-check node
