@@ -98,7 +98,7 @@ struct SSEClient {
         boost::asio::io_service& io,
         const std::string& server_address,
         const std::string& server_port,
-        std::binary_semaphore& requestSent,
+        std::counting_semaphore<>& requestSent,
         const RestconfNotificationWatcher& eventWatcher,
         const std::string& uri,
         const std::map<std::string, std::string>& headers,
@@ -111,7 +111,7 @@ struct SSEClient {
 #define PREPARE_LOOP_WITH_EXCEPTIONS \
     boost::asio::io_service io; \
     std::promise<void> bg; \
-    std::binary_semaphore requestSent(0);
+    std::counting_semaphore<> requestSent(0);
 
 #define RUN_LOOP_WITH_EXCEPTIONS \
     do { \
@@ -121,7 +121,7 @@ struct SSEClient {
         fut.get(); \
     } while (false)
 
-#define WAIT_UNTIL_SSE_CLIENT_REQUESTS requestSent.try_acquire_for(std::chrono::seconds(3))
+#define WAIT_UNTIL_SSE_CLIENT_REQUESTS REQUIRE(requestSent.try_acquire_for(std::chrono::seconds(3)))
 
 inline auto wrap_exceptions_and_asio(std::promise<void>& bg, boost::asio::io_service& io, std::function<void()> func)
 {
