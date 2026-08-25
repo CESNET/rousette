@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "dcb72a4c_119c9ebe",
+        "filename": "tests/restconf-sse-proxy.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-08-25T10:41:02Z",
+      "side": 1,
+      "message": "one more time:\n```suggestion\n        RestconfYangPushWatcher watcherDenied(srSess.getContext());\n```",
+      "range": {
+        "startLine": 81,
+        "startChar": 46,
+        "endLine": 81,
+        "endChar": 67
+      },
+      "revId": "ffbed356f406aa187483d8f801c21c1e2a17aa85",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
