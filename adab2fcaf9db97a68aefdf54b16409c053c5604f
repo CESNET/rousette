@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5702ac61_0d73f038",
+        "filename": "src/restconf/SseProxy.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-08-25T08:36:31Z",
+      "side": 1,
+      "message": "```suggestion\n            spdlog::info(\"Terminating SSE proxy endpoint \u0027{}\u0027\", it-\u003efirst);\n```\n\n...because I think that\u0027s more user-friendly.",
+      "revId": "adab2fcaf9db97a68aefdf54b16409c053c5604f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "26a7790a_f5518950",
+        "filename": "src/restconf/SseProxy.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 150,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-08-25T08:36:31Z",
+      "side": 1,
+      "message": "```suggestion\n                spdlog::info(\"SSE proxy \u0027{}\u0027 now fed by {} subscription(s)\", name, count);\n```\n\nI think it\u0027s a bit misleading to only log the starting event with the initial count, but not count updates.",
+      "range": {
+        "startLine": 150,
+        "startChar": 24,
+        "endLine": 150,
+        "endChar": 29
+      },
+      "revId": "adab2fcaf9db97a68aefdf54b16409c053c5604f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4db6a9a3_9f292377",
+        "filename": "src/restconf/SseProxyEndpoint.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-08-25T08:36:31Z",
+      "side": 1,
+      "message": "I\u0027m having troubles understanding this (not just the lambda, the comment as well).\n\nThe comment mentions that `~SubscriptionBroadcaster` find nothing to `release()`, but that destructor simply instructs the ASIO wrapper to *not* close the FD because that FD is owned by sysrepo. Why is that a problem?\n\nLooking at the code, I *think* that this is about extending the lifetime of the individual `Feed` entries, right? I\u0027ve got a few questions for this:\n\n- How come that we cannot destruct it at any time? Shouldn\u0027t the order of `Feed`\u0027s members (where the `sysrepo::DynamicSubscription` is freed after the `SubscriptionBroadcaster`) prevent any issues?\n\n- If I\u0027m missing something and the point is to \"only\" preserve the list entries until after this lambda runs in the IO thread, then the call to `toDelete.clear()` is probably redundant. That variable will go out of scope when the lambda returns. In this case I would prefer an inline comment in the lambda body, such as:\n\n```c++\n// The lifetime of the Feed entries has been extended until now,\n// let them die at the scope end.\n```\n\nThat way it will be obvious that this is not about \"not forgetting to clear\", it\u0027s about \"only clearing late enough\". Feel free to keep the delete in place as well to fix that warning about \"unused variable\" which you might otherwise get, I guess.",
+      "range": {
+        "startLine": 51,
+        "startChar": 77,
+        "endLine": 51,
+        "endChar": 94
+      },
+      "revId": "adab2fcaf9db97a68aefdf54b16409c053c5604f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
