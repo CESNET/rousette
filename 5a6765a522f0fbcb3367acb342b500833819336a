@@ -22,6 +22,30 @@
       },
       "revId": "5a6765a522f0fbcb3367acb342b500833819336a",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "bf559dfc_85142f7c",
+        "filename": "yang/rousette@2026-08-07.yang",
+        "patchSetId": 5
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-08-25T08:36:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "01174340_7cf87b14",
+      "range": {
+        "startLine": 84,
+        "startChar": 0,
+        "endLine": 84,
+        "endChar": 2
+      },
+      "revId": "5a6765a522f0fbcb3367acb342b500833819336a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
