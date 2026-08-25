@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "01174340_7cf87b14",
+        "filename": "yang/rousette@2026-08-07.yang",
+        "patchSetId": 5
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-08-25T08:11:25Z",
+      "side": 1,
+      "message": "Shouldnt this be also default-deny-all? Now we leak information about our users. For instance, ietf-netconf-acm:nacm is also default-deny-all",
+      "range": {
+        "startLine": 84,
+        "startChar": 0,
+        "endLine": 84,
+        "endChar": 2
+      },
+      "revId": "5a6765a522f0fbcb3367acb342b500833819336a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
