@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c3043528_d07d0ed8",
+        "filename": "tests/restconf-sse-proxy.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-08-25T10:16:41Z",
+      "side": 1,
+      "message": "I guess you mean `srSess`. Done.",
+      "parentUuid": "845ab2b3_eb1d6ece",
+      "revId": "0850fb9c414a85b5596b918c26d5f8f78bbab438",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "8ecc570d_9105935a",
@@ -31,6 +49,24 @@
       "writtenOn": "2026-08-25T08:00:14Z",
       "side": 1,
       "message": "It would be nice if SSEClient checked the HTTP status code.",
+      "revId": "0850fb9c414a85b5596b918c26d5f8f78bbab438",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "27010baf_f70b0e42",
+        "filename": "tests/restconf-sse-proxy.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-08-25T10:16:41Z",
+      "side": 1,
+      "message": "Done, see parent commit",
+      "parentUuid": "8ecc570d_9105935a",
       "revId": "0850fb9c414a85b5596b918c26d5f8f78bbab438",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
