@@ -22,6 +22,30 @@
       },
       "revId": "ffbed356f406aa187483d8f801c21c1e2a17aa85",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f1df3517_5b63bb44",
+        "filename": "tests/restconf-sse-proxy.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-08-25T15:30:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dcb72a4c_119c9ebe",
+      "range": {
+        "startLine": 81,
+        "startChar": 46,
+        "endLine": 81,
+        "endChar": 67
+      },
+      "revId": "ffbed356f406aa187483d8f801c21c1e2a17aa85",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
