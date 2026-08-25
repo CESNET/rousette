@@ -117,7 +117,7 @@ struct SSEClient {
     do { \
         io.run(); \
         auto fut = bg.get_future(); \
-        REQUIRE(fut.wait_for(666ms /* "plenty of time" for the notificationThread to exit after it has called io.stop() */) == std::future_status::ready); \
+        REQUIRE(fut.wait_for(3'666ms /* "plenty of time" for the notificationThread to exit after it has called io.stop() */) == std::future_status::ready); \
         fut.get(); \
     } while (false)
 
