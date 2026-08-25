@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "994da6ac_ea479171",
+        "filename": "src/restconf/SseProxy.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 97,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-08-25T09:58:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "27779a19_fabfa582",
+      "range": {
+        "startLine": 97,
+        "startChar": 16,
+        "endLine": 97,
+        "endChar": 21
+      },
+      "revId": "4ae92418810e3502b391d9aa7f2dc678f6af086e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "657d88be_a2d8c77a",
@@ -37,6 +61,24 @@
       "writtenOn": "2026-08-25T08:36:31Z",
       "side": 1,
       "message": "nit: this is only used by the implementation, so it could be moved outside of the public header",
+      "revId": "4ae92418810e3502b391d9aa7f2dc678f6af086e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a4199ba6_e865e3e0",
+        "filename": "src/restconf/SseProxy.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-08-25T09:58:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "657d88be_a2d8c77a",
       "revId": "4ae92418810e3502b391d9aa7f2dc678f6af086e",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
