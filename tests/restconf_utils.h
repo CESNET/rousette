@@ -102,6 +102,7 @@ struct SSEClient {
         const RestconfNotificationWatcher& eventWatcher,
         const std::string& uri,
         const std::map<std::string, std::string>& headers,
+        const int expectedHttpStatus = 200,
         const std::chrono::seconds silenceTimeout = std::chrono::seconds{1}, // test code; the server should respond "soon"
         const ReportIgnoredLines reportIgnoredLines = ReportIgnoredLines::No);
 

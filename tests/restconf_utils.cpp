@@ -183,6 +183,7 @@ SSEClient::SSEClient(
     const RestconfNotificationWatcher& eventWatcher,
     const std::string& uri,
     const std::map<std::string, std::string>& headers,
+    const int expectedHttpStatus,
     const std::chrono::seconds silenceTimeout,
     const ReportIgnoredLines reportIgnoredLines)
     : client(std::make_shared<ng_client::session>(io, server_address, server_port))
@@ -203,12 +204,13 @@ SSEClient::SSEClient(
         }
     });
 
-    client->on_connect([&, uri, reqHeaders, silenceTimeout, server_address, server_port, reportIgnoredLines](auto) {
+    client->on_connect([&, uri, reqHeaders, silenceTimeout, server_address, server_port, reportIgnoredLines, expectedHttpStatus](auto) {
         boost::system::error_code ec;
 
         auto req = client->submit(ec, "GET", serverAddressAndPort(server_address, server_port) + uri, "", reqHeaders);
-        req->on_response([&, silenceTimeout, reportIgnoredLines](const ng_client::response& res) {
+        req->on_response([&, silenceTimeout, reportIgnoredLines, expectedHttpStatus](const ng_client::response& res) {
             requestSent.release();
+            REQUIRE(res.status_code() == expectedHttpStatus);
             res.on_data([&, silenceTimeout, reportIgnoredLines](const uint8_t* data, std::size_t len) {
                 dataBuffer.append(std::string(reinterpret_cast<const char*>(data), len));
                 parseEvents(eventWatcher, reportIgnoredLines);

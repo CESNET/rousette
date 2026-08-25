@@ -760,7 +760,7 @@ TEST_CASE("RESTCONF subscribed notifications")
 
         std::map<std::string, std::string> streamHeaders;
         streamHeaders.insert(AUTH_ROOT);
-        SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, streamHeaders, 5s);
+        SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, streamHeaders, 200, 5s);
         RUN_LOOP_WITH_EXCEPTIONS;
     }
 
@@ -814,7 +814,7 @@ TEST_CASE("RESTCONF subscribed notifications")
 
         std::map<std::string, std::string> streamHeaders;
         streamHeaders.insert(AUTH_ROOT);
-        SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, streamHeaders, 5s);
+        SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, streamHeaders, 200, 5s);
         RUN_LOOP_WITH_EXCEPTIONS;
     }
 
@@ -861,7 +861,7 @@ TEST_CASE("RESTCONF subscribed notifications")
 
         std::map<std::string, std::string> streamHeaders;
         streamHeaders.insert(AUTH_ROOT);
-        SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, streamHeaders, 5s);
+        SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, streamHeaders, 200, 5s);
         RUN_LOOP_WITH_EXCEPTIONS;
 
         // the subscription is forgotten as well
