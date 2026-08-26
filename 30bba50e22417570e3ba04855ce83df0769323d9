@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ee430ce2_c3e0e6d1",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-08-26T10:15:01Z",
+      "side": 1,
+      "message": "The YANG model got renamed in the first commit, so you need to change `cfg-yang.sh` in `br2-external` (in a new change with a `Depends-on` on that first commit in this series), and then in the current commit add a `Depends-on` on that new change in `br2-external`. Otherwise it won\u0027t pass the CI.",
+      "revId": "30bba50e22417570e3ba04855ce83df0769323d9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
