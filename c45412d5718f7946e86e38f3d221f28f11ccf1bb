@@ -38,6 +38,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "40525956_fde50033",
+        "filename": "src/restconf/SseProxy.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 146,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-08-26T12:29:35Z",
+      "side": 1,
+      "message": "I did.\n\nAny reason for collecting the list and deleting everything later in one go as opposed to using a method (and not a static method) and posting N things to the event loop? I don\u0027t care too much, just wondering.",
+      "parentUuid": "8d0e1ea6_3393a85f",
+      "revId": "c45412d5718f7946e86e38f3d221f28f11ccf1bb",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "ae15be88_586fa1b0",
         "filename": "src/restconf/SseProxy.h",
         "patchSetId": 3
