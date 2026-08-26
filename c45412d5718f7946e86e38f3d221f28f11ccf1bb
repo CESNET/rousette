@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8d0e1ea6_3393a85f",
+        "filename": "src/restconf/SseProxy.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 146,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-08-26T12:25:18Z",
+      "side": 1,
+      "message": "I guess you mean `SseProxyEndpoint`, not `Event`.",
+      "parentUuid": "4ddc01ca_a0643dae",
+      "revId": "c45412d5718f7946e86e38f3d221f28f11ccf1bb",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "ae15be88_586fa1b0",
@@ -31,6 +49,30 @@
       "writtenOn": "2026-08-26T10:25:34Z",
       "side": 1,
       "message": "```suggestion\n    std::optional\u003csysrepo::Subscription\u003e m_confUpdates; ///\u003c last, so that no callback can run against endpoints which are gone\n```\n\nI suggest this new name to make it obvious that this subscription has nothing to do with dynamic subscriptions, etc -- it\u0027s \"just\" that thing for listening to config updates (which manage the dynamic subscriptions that are stored elsewhere).",
+      "range": {
+        "startLine": 42,
+        "startChar": 41,
+        "endLine": 42,
+        "endChar": 46
+      },
+      "revId": "c45412d5718f7946e86e38f3d221f28f11ccf1bb",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b006df49_1b9e7c6a",
+        "filename": "src/restconf/SseProxy.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-08-26T12:25:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ae15be88_586fa1b0",
       "range": {
         "startLine": 42,
         "startChar": 41,
