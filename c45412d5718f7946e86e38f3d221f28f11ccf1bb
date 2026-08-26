@@ -72,6 +72,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8e8666eb_336660fd",
+        "filename": "src/restconf/SseProxy.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 146,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-08-26T13:18:53Z",
+      "side": 1,
+      "message": "Ah, right, you\u0027re passing a `unique_ptr` to that lambda. Thanks.",
+      "parentUuid": "c4b2520d_d7333b16",
+      "revId": "c45412d5718f7946e86e38f3d221f28f11ccf1bb",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "ae15be88_586fa1b0",
