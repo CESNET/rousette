@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4ddc01ca_a0643dae",
+        "filename": "src/restconf/SseProxy.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 146,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-08-26T10:25:34Z",
+      "side": 1,
+      "message": "I would prefer to delegate this destruction to the `SseProxyEvent`, so that that \"tricky\" code which extends the lifetime towards the IO loop is in one file an in one class. In this file, I suggest to get rid of the `toDelete`, and instead call a new method like this:\n```\nm_endpoints.extract(it++).deleteLater();\n```\n\nThat new `deleteLater` will then simply post an empty lambda to the IO loop (with a capture which extends the life of itself). In `deleteLater`, please add a comment which cross-references the `replaceFeeds`.",
+      "revId": "c45412d5718f7946e86e38f3d221f28f11ccf1bb",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ae15be88_586fa1b0",
+        "filename": "src/restconf/SseProxy.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-08-26T10:25:34Z",
+      "side": 1,
+      "message": "```suggestion\n    std::optional\u003csysrepo::Subscription\u003e m_confUpdates; ///\u003c last, so that no callback can run against endpoints which are gone\n```\n\nI suggest this new name to make it obvious that this subscription has nothing to do with dynamic subscriptions, etc -- it\u0027s \"just\" that thing for listening to config updates (which manage the dynamic subscriptions that are stored elsewhere).",
+      "range": {
+        "startLine": 42,
+        "startChar": 41,
+        "endLine": 42,
+        "endChar": 46
+      },
+      "revId": "c45412d5718f7946e86e38f3d221f28f11ccf1bb",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
