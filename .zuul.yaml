@@ -30,6 +30,6 @@
             requires: CzechLight-deps-f38-gcc
             required-projects: *projects
             pre-run: ci/pre.yaml
-        # - czechlight-clearfog:
-        #     required-projects:
-        #       - CzechLight/br2-external
+        - czechlight-clearfog:
+            required-projects:
+              - CzechLight/br2-external
