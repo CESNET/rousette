@@ -56,6 +56,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "c4b2520d_d7333b16",
+        "filename": "src/restconf/SseProxy.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 146,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-08-26T13:15:44Z",
+      "side": 1,
+      "message": "I dont know how to make it a class method. I need the caller to give up the ownership. Plus Feed is not movable, I cannot just extract it as an object and pass forward. Maybe I can wrap Feed into `unique_ptr\u003cFeed\u003e`, which would allow such usages?\n\nRe posting N things: Yeah, it does not matter much, true.",
+      "parentUuid": "40525956_fde50033",
+      "revId": "c45412d5718f7946e86e38f3d221f28f11ccf1bb",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "ae15be88_586fa1b0",
         "filename": "src/restconf/SseProxy.h",
         "patchSetId": 3
