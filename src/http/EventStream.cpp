@@ -25,7 +25,6 @@ EventStream::EventStream(const server::request& req,
                          Termination& termination,
                          EventSignal& signal,
                          const std::chrono::seconds keepAlivePingInterval,
-                         const std::optional<std::string>& initialEvent,
                          const std::function<void()>& onTerminationCb,
                          const std::function<void()>& onClientDisconnectedCb)
     : res{res}
@@ -35,10 +34,6 @@ EventStream::EventStream(const server::request& req,
     , onTerminationCb(onTerminationCb)
     , onClientDisconnectedCb(onClientDisconnectedCb)
 {
-    if (initialEvent) {
-        enqueue(FIELD_DATA, *initialEvent);
-    }
-
     eventSub = signal.connect([this](const auto& msg) {
         enqueue(FIELD_DATA, msg);
     });
@@ -216,11 +211,10 @@ std::shared_ptr<EventStream> EventStream::create(const nghttp2::asio_http2::serv
                                                  Termination& terminate,
                                                  EventSignal& signal,
                                                  const std::chrono::seconds keepAlivePingInterval,
-                                                 const std::optional<std::string>& initialEvent,
                                                  const std::function<void()>& onTerminationCb,
                                                  const std::function<void()>& onClientDisconnectedCb)
 {
-    auto stream = std::shared_ptr<EventStream>(new EventStream(req, res, terminate, signal, keepAlivePingInterval, initialEvent, onTerminationCb, onClientDisconnectedCb));
+    auto stream = std::shared_ptr<EventStream>(new EventStream(req, res, terminate, signal, keepAlivePingInterval, onTerminationCb, onClientDisconnectedCb));
     stream->activate();
     return stream;
 }

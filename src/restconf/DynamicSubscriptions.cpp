@@ -492,7 +492,6 @@ DynamicSubscriptionHttpStream::DynamicSubscriptionHttpStream(
           termination,
           *signal,
           keepAlivePingInterval,
-          std::nullopt /* no initial event */,
           [this]() {
               std::lock_guard lock(m_subscriptionData->mutex);
               m_subscriptionData->terminate("ietf-subscribed-notifications:no-such-subscription");

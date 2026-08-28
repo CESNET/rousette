@@ -18,9 +18,6 @@ class http2;
 }
 
 namespace rousette {
-namespace sr {
-class OpticalEvents;
-}
 
 /** @short RESTCONF protocol */
 namespace restconf {
@@ -48,9 +45,6 @@ private:
     std::unique_ptr<nghttp2::asio_http2::server::http2> server;
     DynamicSubscriptions m_dynamicSubscriptions;
     SseProxy m_sseProxy;
-    std::unique_ptr<sr::OpticalEvents> dwdmEvents;
-    using JsonDiffSignal = boost::signals2::signal<void(const std::string& json)>;
-    JsonDiffSignal opticsChange;
     bool joined = false; // true if the server has been joined, join twice is an error
     boost::signals2::signal<void()> shutdownRequested;
 };

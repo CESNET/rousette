@@ -22,7 +22,6 @@
 #include "restconf/uri.h"
 #include "restconf/utils/dataformat.h"
 #include "restconf/utils/yang.h"
-#include "sr/OpticalEvents.h"
 
 using namespace std::literals;
 
@@ -36,10 +35,6 @@ using nghttp2::asio_http2::server::response;
 namespace rousette::restconf {
 
 namespace {
-constexpr auto notifPrefix = R"json({"ietf-restconf:notification":{"eventTime":")json";
-constexpr auto notifMid = R"json(","ietf-yang-push:push-update":{"datastore-contents":)json";
-constexpr auto notifSuffix = R"json(}}})json";
-
 void logRequest(const auto& request)
 {
     const auto& peer = http::peer_from_request(request);
@@ -47,12 +42,6 @@ void logRequest(const auto& request)
     for (const auto& hdr: request.header()) {
         spdlog::trace("{}: header: {}: {}", peer, hdr.first, hdr.second.sensitive ? "<sensitive>"s : hdr.second.value);
     }
-}
-
-template <typename T>
-auto as_restconf_push_update(const std::string& content, const T& time)
-{
-    return notifPrefix + libyang::yangTimeFormat(time, libyang::TimezoneInterpretation::Local) + notifMid + content + notifSuffix;
 }
 
 constexpr auto restconfRoot = "/restconf/";
@@ -933,7 +922,6 @@ Server::Server(
     , server{std::make_unique<nghttp2::asio_http2::server::http2>()}
     , m_dynamicSubscriptions(m_monitoringSession, netconfStreamRoot, *server, subNotifInactivityTimeout)
     , m_sseProxy(conn, *server)
-    , dwdmEvents{std::make_unique<sr::OpticalEvents>(conn.sessionStart())}
 {
     server->num_threads(1); // we only use one thread for the server, so we can call join() right away
     server->read_timeout(boost::posix_time::seconds{60}); // terminate connection after 60 seconds of inactivity (this is explicitly setting the default value)
@@ -979,10 +967,6 @@ Server::Server(
         },
         "/ietf-restconf-monitoring:restconf-state/streams/stream");
 
-    dwdmEvents->change.connect([this](const std::string& content) {
-        opticsChange(as_restconf_push_update(content, std::chrono::system_clock::now()));
-    });
-
     server->handle("/", [](const auto& req, const auto& res) {
         logRequest(req);
 
@@ -1000,12 +984,6 @@ Server::Server(
                        CORS,
                    });
         res.end("<XRD xmlns='http://docs.oasis-open.org/ns/xri/xrd-1.0'><Link rel='restconf' href='"s + restconfRoot + "'/></XRD>"s);
-    });
-
-    server->handle("/telemetry/optics", [this, keepAlivePingInterval](const auto& req, const auto& res) {
-        logRequest(req);
-
-        http::EventStream::create(req, res, shutdownRequested, opticsChange, keepAlivePingInterval, as_restconf_push_update(dwdmEvents->currentData(), std::chrono::system_clock::now()));
     });
 
     server->handle(netconfStreamRoot, [this, conn, keepAlivePingInterval](const auto& req, const auto& res) mutable {

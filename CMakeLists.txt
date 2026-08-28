@@ -74,7 +74,6 @@ find_package(PkgConfig)
 pkg_check_modules(nghttp2 REQUIRED IMPORTED_TARGET libnghttp2_asio>=0.0.90 libnghttp2) # To compile under boost 1.87 you have to patch nghttp2-asio using https://github.com/nghttp2/nghttp2-asio/issues/23
 find_package(Boost 1.66 REQUIRED CONFIG COMPONENTS system thread)
 
-pkg_check_modules(SYSREPO REQUIRED IMPORTED_TARGET sysrepo>=5.0.0)
 pkg_check_modules(SYSREPO-CPP REQUIRED IMPORTED_TARGET sysrepo-cpp>=8)
 pkg_check_modules(LIBYANG-CPP REQUIRED IMPORTED_TARGET libyang-cpp>=10)
 pkg_check_modules(SYSTEMD IMPORTED_TARGET libsystemd)
@@ -91,12 +90,6 @@ add_library(rousette-http STATIC
     src/http/utils.cpp
 )
 target_link_libraries(rousette-http PUBLIC spdlog::spdlog PkgConfig::nghttp2 ssl crypto)
-
-add_library(rousette-sysrepo STATIC
-    src/sr/AllEvents.cpp
-    src/sr/OpticalEvents.cpp
-)
-target_link_libraries(rousette-sysrepo PUBLIC spdlog::spdlog PkgConfig::SYSREPO-CPP PkgConfig::LIBYANG-CPP)
 
 add_library(rousette-auth-pam STATIC
     src/auth/PAM.cpp
@@ -125,7 +118,7 @@ add_library(rousette-restconf STATIC
     src/restconf/utils/sysrepo.cpp
     src/restconf/utils/yang.cpp
 )
-target_link_libraries(rousette-restconf PUBLIC rousette-http rousette-sysrepo rousette-auth Boost::system Threads::Threads PRIVATE date::date-tz)
+target_link_libraries(rousette-restconf PUBLIC rousette-http rousette-auth PkgConfig::SYSREPO-CPP PkgConfig::LIBYANG-CPP Boost::system Threads::Threads PRIVATE date::date-tz)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/auth/NacmIdentities.h.in ${CMAKE_CURRENT_BINARY_DIR}/NacmIdentities.h @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})

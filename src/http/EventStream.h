@@ -11,7 +11,6 @@
 #include <boost/signals2.hpp>
 #include <list>
 #include <memory>
-#include <optional>
 #include <spdlog/spdlog.h>
 
 namespace nghttp2::asio_http2::server {
@@ -36,7 +35,6 @@ public:
                                                Termination& terminate,
                                                EventSignal& signal,
                                                const std::chrono::seconds keepAlivePingInterval,
-                                               const std::optional<std::string>& initialEvent = std::nullopt,
                                                const std::function<void()>& onTerminationCb = std::function<void()>(),
                                                const std::function<void()>& onClientDisconnectedCb = std::function<void()>());
 
@@ -70,7 +68,6 @@ protected:
                 Termination& terminate,
                 EventSignal& signal,
                 const std::chrono::seconds keepAlivePingInterval,
-                const std::optional<std::string>& initialEvent = std::nullopt,
                 const std::function<void()>& onTerminationCb = std::function<void()>(),
                 const std::function<void()>& onClientDisconnectedCb = std::function<void()>());
     void activate();
