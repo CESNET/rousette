@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "192a8cbd_083df9a3",
+        "filename": "src/restconf/SseProxyEndpoint.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-08-28T10:34:42Z",
+      "side": 1,
+      "message": "I was wondering if it\u0027s wort it to also somehow propagate this error condition to all connected clients (or maybe terminate the subscription altogether). But maybe not, and there is no standard notification for \"hey, we made a small boo boo\" anyway...",
+      "revId": "7caaa79311722bc483b5f85bcbba4741c981ed8f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "00fa4d2b_dd47f299",
+        "filename": "tests/restconf-sse-proxy.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 334,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-08-28T10:34:42Z",
+      "side": 1,
+      "message": "nice.",
+      "revId": "7caaa79311722bc483b5f85bcbba4741c981ed8f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
