@@ -1069,6 +1069,9 @@ Server::Server(
 
                 if (auto* endpoint = m_sseProxy.find(request->name)) {
                     http::EventStream::create(req, res, endpoint->termination(), *endpoint->events(), keepAlivePingInterval);
+                    // on-change with sync-on-start synces when the sub starts, not when the client connects.
+                    // Workaround this by resyncing the on-change subs manually when new client connects.
+                    endpoint->resyncOnChangeFeeds();
                 } else {
                     throw ErrorResponse(404, "application", "invalid-value", "Stream not found");
                 }

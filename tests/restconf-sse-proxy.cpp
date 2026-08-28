@@ -285,6 +285,71 @@ TEST_CASE("SSE proxy for configured subscriptions")
         RUN_LOOP_WITH_EXCEPTIONS;
     }
 
+    SECTION("a connecting client resyncs the on-change subscriptions")
+    {
+        REQUIRE(get("/streams/rousette:sse-proxy/nonexistent", {AUTH_ROOT}) == Response{403, plaintextHeaders, "Access denied."});
+
+        // Use only two on-change subs
+        srSess.deleteItem(sub1);
+        srSess.deleteItem(sub2);
+
+        const auto sub3 = subs + "/subscription[id='3']";
+        srSess.setItem(sub3 + "/encoding", "ietf-subscribed-notifications:encode-json");
+        srSess.setItem(sub3 + "/ietf-yang-push:datastore", "ietf-datastores:startup");
+        srSess.setItem(sub3 + "/ietf-yang-push:datastore-xpath-filter", "/example:top-level-leaf");
+        srSess.setItem(sub3 + "/ietf-yang-push:on-change/sync-on-start", "false");
+        srSess.setItem(sub3 + "/receivers/receiver[name='r1']/ietf-subscribed-notif-receivers:receiver-instance-ref", "example");
+
+        const auto sub4 = subs + "/subscription[id='4']";
+        srSess.setItem(sub4 + "/encoding", "ietf-subscribed-notifications:encode-json");
+        srSess.setItem(sub4 + "/ietf-yang-push:datastore", "ietf-datastores:startup");
+        srSess.setItem(sub4 + "/ietf-yang-push:datastore-xpath-filter", "/example:top-level-list");
+        srSess.setItem(sub4 + "/ietf-yang-push:on-change/sync-on-start", "false");
+        srSess.setItem(sub4 + "/receivers/receiver[name='r1']/ietf-subscribed-notif-receivers:receiver-instance-ref", "example");
+
+        srSess.applyChanges();
+
+        RestconfYangPushWatcher watcher1(srSess.getContext());
+        RestconfYangPushWatcher watcher2(srSess.getContext());
+        watcher1.setDataFormat(libyang::DataFormat::JSON);
+        watcher2.setDataFormat(libyang::DataFormat::JSON);
+
+        const auto fromLeaf = R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:top-level-leaf":"42"}}})"s;
+        const auto fromList = R"({"ietf-yang-push:push-update":{"datastore-contents":{"example:top-level-list":[{"name":"hello"}]}}})"s;
+
+        // A resync covers both subscriptions, and this is a broadcast stream, so the second client's resync lands in
+        // the first client's stream as well.
+        expectations.emplace_back(NAMED_REQUIRE_CALL(watcher1, data(fromLeaf)).IN_SEQUENCE(seq1).TIMES(2));
+        expectations.emplace_back(NAMED_REQUIRE_CALL(watcher1, data(fromList)).IN_SEQUENCE(seq2).TIMES(2));
+        expectations.emplace_back(NAMED_REQUIRE_CALL(watcher2, data(fromLeaf)).IN_SEQUENCE(seq3).TIMES(1));
+        expectations.emplace_back(NAMED_REQUIRE_CALL(watcher2, data(fromList)).IN_SEQUENCE(seq4).TIMES(1));
+
+        PREPARE_LOOP_WITH_EXCEPTIONS;
+        std::optional<SSEClient> client2;
+        auto notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
+            WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+
+            // Let the second client in only now. The clients must not attach at the same time.
+            //
+            // Construct it *on* the IO thread. SSEClient's constructor first creates the nghttp2 session, which starts
+            // connecting right away, and only then installs the on_connect callback which submits the GET. On any other
+            // thread the IO thread could finish the connect in between, find no callback installed, and never send the
+            // request at all.
+            boost::asio::post(io, [&]() {
+                client2.emplace(io, SERVER_ADDRESS, SERVER_PORT, requestSent, watcher2, "/streams/rousette:sse-proxy/example", std::map<std::string, std::string>{AUTH_ROOT}, 200, 6s);
+            });
+
+            WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+            waitForCompletionAndBitMore(seq1);
+            waitForCompletionAndBitMore(seq2);
+            waitForCompletionAndBitMore(seq3);
+            waitForCompletionAndBitMore(seq4);
+        }));
+
+        SSEClient client1(io, SERVER_ADDRESS, SERVER_PORT, requestSent, watcher1, "/streams/rousette:sse-proxy/example", {AUTH_ROOT}, 200, 6s);
+        RUN_LOOP_WITH_EXCEPTIONS;
+    }
+
     SECTION("access is guarded by NACM")
     {
         // no read access to the nacm-access-check node

@@ -6,6 +6,7 @@
  */
 
 #include <boost/asio/post.hpp>
+#include <spdlog/spdlog.h>
 #include "restconf/SseProxyEndpoint.h"
 
 namespace rousette::restconf {
@@ -56,6 +57,24 @@ void SseProxyEndpoint::replaceFeeds(std::vector<SourceSubscription> sources)
     // before any client connects are dropped rather than buffered.
     for (auto& source : sources) {
         m_feeds.emplace_back(std::move(source), m_io, events(), m_processEventMutex);
+    }
+}
+
+/** @brief Asks every on-change feed to resync. */
+void SseProxyEndpoint::resyncOnChangeFeeds()
+{
+    std::lock_guard lock(m_processEventMutex);
+
+    for (const auto& feed : m_feeds) {
+        if (feed.subscription.type() != sysrepo::DynamicSubscriptionType::YangPushOnChange) {
+            continue;
+        }
+
+        try {
+            feed.subscription.resyncOnChange();
+        } catch (const std::exception& e) {
+            spdlog::error("Could not resync the on-change subscription {}: {}", feed.subscription.subscriptionId(), e.what());
+        }
     }
 }
 
