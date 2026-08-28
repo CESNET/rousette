@@ -32,6 +32,7 @@ public:
     ~SseProxyEndpoint();
 
     void replaceFeeds(std::vector<SourceSubscription> sources);
+    void resyncOnChangeFeeds();
 
     const std::shared_ptr<http::EventStream::EventSignal>& events() const { return m_events; }
 
