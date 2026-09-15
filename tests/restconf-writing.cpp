@@ -1861,4 +1861,49 @@ TEST_CASE("writing data")
 )"});
         }
     }
+
+    SECTION("datastore locked by somebody else")
+    {
+        // something to read back later on
+        srSess.setItem("/example:top-level-leaf", "moo");
+        srSess.applyChanges();
+
+        auto changesExample = datastoreChangesSubscription(srSess, dsChangesMock, "example");
+
+        // RFC 8040, sec. 3.4.1: the server MUST return an error if the datastore is locked by an external source
+        auto otherSession = srConn.sessionStart(sysrepo::Datastore::Running);
+        auto lock = sysrepo::Lock{otherSession, "example"};
+
+        const std::string expected = R"({
+  "ietf-restconf:errors": {
+    "error": [
+      {
+        "error-type": "protocol",
+        "error-tag": "lock-denied",
+        "error-message": "Lock failed; lock already held."
+      }
+    ]
+  }
+}
+)";
+
+        REQUIRE(put(RESTCONF_DATA_ROOT "/example:top-level-leaf", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:top-level-leaf":"str"})") == Response{409, jsonHeaders, expected});
+        REQUIRE(post(RESTCONF_DATA_ROOT, {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:top-level-leaf":"str"})") == Response{409, jsonHeaders, expected});
+        REQUIRE(patch(RESTCONF_DATA_ROOT "/example:top-level-leaf", {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"example:top-level-leaf":"str"})") == Response{409, jsonHeaders, expected});
+        REQUIRE(httpDelete(RESTCONF_DATA_ROOT "/example:top-level-leaf", {AUTH_ROOT}) == Response{409, jsonHeaders, expected});
+
+        // No need to keep readers out
+        REQUIRE(get(RESTCONF_DATA_ROOT "/example:top-level-leaf", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "example:top-level-leaf": "moo"
+}
+)"});
+        REQUIRE(get(RESTCONF_ROOT_DS("running") "/example:top-level-leaf", {AUTH_ROOT}) == Response{200, jsonHeaders, R"({
+  "example:top-level-leaf": "moo"
+}
+)"});
+        REQUIRE(head(RESTCONF_DATA_ROOT "/example:top-level-leaf", {AUTH_ROOT}) == Response{200, jsonHeaders, ""});
+
+        // The lock is per-module, so an edit of another module goes through
+        REQUIRE(post(RESTCONF_DATA_ROOT, {AUTH_ROOT, CONTENT_TYPE_JSON}, R"({"ietf-system:system":{"location":"prague"}})").statusCode == 201);
+    }
 }

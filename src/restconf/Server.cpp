@@ -356,6 +356,8 @@ constexpr auto withRestconfExceptions(T func, U rejectWithError)
                 rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 400, "protocol", "invalid-value", e.what(), std::nullopt, std::nullopt);
             } else if (e.code() == sysrepo::ErrorCode::ItemAlreadyExists) {
                 rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 409, "application", "resource-denied", "Resource already exists.", std::nullopt, std::nullopt);
+            } else if (e.code() == sysrepo::ErrorCode::Locked) {
+                rejectWithError(requestCtx->sess.getContext(), requestCtx->dataFormat.response, requestCtx->req, requestCtx->res, 409, "protocol", "lock-denied", "Lock failed; lock already held.", std::nullopt, std::nullopt);
             } else if (e.code() == sysrepo::ErrorCode::ValidationFailed) {
                 bool isAction = requestCtx->restconfRequest.path != "/" && requestCtx->sess.getContext().findPath(requestCtx->restconfRequest.path).nodeType() == libyang::NodeType::Action;
                 /*
@@ -1277,6 +1279,8 @@ Server::Server(
                              * This clashes with the data-missing tag below and we reveal it anyway :(
                              */
                             throw ErrorResponse(404, "application", "data-missing", "Data is missing.", restconfRequest.path);
+                        } else if (e.code() == sysrepo::ErrorCode::Locked) {
+                            throw ErrorResponse(409, "protocol", "lock-denied", "Lock failed; lock already held.");
                         }
 
                         throw;
@@ -1322,8 +1326,12 @@ Server::Server(
             } catch (const ErrorResponse& e) {
                 rejectWithError(sess.getContext(), dataFormat.response, req, res, e.code, e.errorType, e.errorTag, e.errorMessage, e.errorPath, e.errorInfo);
             } catch (const sysrepo::ErrorWithCode& e) {
-                spdlog::error("Sysrepo exception: {}", e.what());
-                rejectWithError(sess.getContext(), dataFormat.response, req, res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception.", std::nullopt);
+                if (e.code() == sysrepo::ErrorCode::Locked) {
+                    rejectWithError(sess.getContext(), dataFormat.response, req, res, 409, "protocol", "lock-denied", "Lock failed; lock already held.", std::nullopt);
+                } else {
+                    spdlog::error("Sysrepo exception: {}", e.what());
+                    rejectWithError(sess.getContext(), dataFormat.response, req, res, 500, "application", "operation-failed", "Internal server error due to sysrepo exception.", std::nullopt);
+                }
             }
         });
 
