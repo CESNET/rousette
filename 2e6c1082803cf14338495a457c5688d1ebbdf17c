@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2e584056_b568033d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-10-19T07:58:50Z",
+      "side": 1,
+      "message": "Why this depends on new yang stack?",
+      "revId": "2e6c1082803cf14338495a457c5688d1ebbdf17c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
