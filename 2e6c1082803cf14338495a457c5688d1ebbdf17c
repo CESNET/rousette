@@ -16,6 +16,24 @@
       "message": "Why this depends on new yang stack?",
       "revId": "2e6c1082803cf14338495a457c5688d1ebbdf17c",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5e59c67e_d882e354",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-10-19T09:17:35Z",
+      "side": 1,
+      "message": "Because I wanted to test whether this passes the CI. But you\u0027re right and I can do it another way.",
+      "parentUuid": "2e584056_b568033d",
+      "revId": "2e6c1082803cf14338495a457c5688d1ebbdf17c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
