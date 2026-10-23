@@ -36,11 +36,13 @@ Response::Response(int statusCode, const ng::header_map& headers, const std::str
 
 bool Response::equalStatusCodeAndHeaders(const Response& o) const
 {
-    // Skipping 'date' header. Its value will not be reproducible in simple tests
+    // Skipping 'date' and 'last-modified' headers. Their values will not be reproducible in simple tests
     ng::header_map myHeaders(headers);
     ng::header_map otherHeaders(o.headers);
-    myHeaders.erase("date");
-    otherHeaders.erase("date");
+    for (const auto& header : {"date", "last-modified"}) {
+        myHeaders.erase(header);
+        otherHeaders.erase(header);
+    }
 
     return statusCode == o.statusCode && std::equal(myHeaders.begin(), myHeaders.end(), otherHeaders.begin(), otherHeaders.end(), [](const auto& a, const auto& b) {
                return a.first == b.first && a.second.value == b.second.value; // Skipping 'sensitive' field from ng::header_value which does not seem important for us.

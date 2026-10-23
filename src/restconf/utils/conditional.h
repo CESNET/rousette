@@ -1,0 +1,28 @@
+/*
+ * Copyright (C) 2026 CESNET, https://photonics.cesnet.cz/
+ *
+ * Written by Tomáš Pecka <tomas.pecka@cesnet.cz>
+ */
+
+#pragma once
+
+#include <chrono>
+#include <libyang-cpp/DataNode.hpp>
+#include <optional>
+#include <string>
+#include <sysrepo-cpp/Enum.hpp>
+
+namespace rousette::restconf {
+
+/** @brief Datastores for which sysrepo maintains the last-modification timestamps
+ *
+ * The candidate datastore is not included. Until it is modified, sysrepo returns the data of the running datastore for it, but
+ * reports the Unix epoch as the timestamp. Moreover, the timestamp would go back in time whenever the candidate is reset.
+ */
+constexpr bool hasLastModified(sysrepo::Datastore datastore)
+{
+    return datastore == sysrepo::Datastore::Running || datastore == sysrepo::Datastore::Startup || datastore == sysrepo::Datastore::FactoryDefault;
+}
+
+std::optional<std::chrono::system_clock::time_point> takeLastModified(libyang::DataNode& tree);
+}

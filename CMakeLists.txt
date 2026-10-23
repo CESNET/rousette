@@ -74,8 +74,8 @@ find_package(PkgConfig)
 pkg_check_modules(nghttp2 REQUIRED IMPORTED_TARGET libnghttp2_asio>=0.0.90 libnghttp2) # To compile under boost 1.87 you have to patch nghttp2-asio using https://github.com/nghttp2/nghttp2-asio/issues/23
 find_package(Boost 1.66 REQUIRED CONFIG COMPONENTS system thread)
 
-pkg_check_modules(SYSREPO REQUIRED IMPORTED_TARGET sysrepo>=5.0.0)
-pkg_check_modules(SYSREPO-CPP REQUIRED IMPORTED_TARGET sysrepo-cpp>=8)
+pkg_check_modules(SYSREPO REQUIRED IMPORTED_TARGET sysrepo>=5.2.28)
+pkg_check_modules(SYSREPO-CPP REQUIRED IMPORTED_TARGET sysrepo-cpp>=11)
 pkg_check_modules(LIBYANG-CPP REQUIRED IMPORTED_TARGET libyang-cpp>=10)
 pkg_check_modules(SYSTEMD IMPORTED_TARGET libsystemd)
 pkg_check_modules(PAM REQUIRED IMPORTED_TARGET pam)
@@ -120,6 +120,7 @@ add_library(rousette-restconf STATIC
     src/restconf/SubscriptionBroadcaster.cpp
     src/restconf/YangSchemaLocations.cpp
     src/restconf/uri.cpp
+    src/restconf/utils/conditional.cpp
     src/restconf/utils/dataformat.cpp
     src/restconf/utils/io.cpp
     src/restconf/utils/sysrepo.cpp
@@ -254,6 +255,7 @@ if(BUILD_TESTING)
     rousette_test(NAME restconf-rpc LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)
     rousette_test(NAME restconf-nacm LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)
     rousette_test(NAME restconf-defaults LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)
+    rousette_test(NAME restconf-conditional-requests LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)
     rousette_test(NAME restconf-notifications LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)
     rousette_test(NAME restconf-plain-patch LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)
     rousette_test(NAME restconf-yang-patch LIBRARIES rousette-restconf FIXTURE common-models WRAP_PAM ASSIGN_SERVER_PORT)
