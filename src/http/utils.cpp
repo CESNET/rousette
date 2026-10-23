@@ -9,6 +9,7 @@
 #include <boost/fusion/adapted/struct/adapt_struct.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/spirit/home/x3.hpp>
+#include <format>
 #include "http/utils.hpp"
 
 namespace {
@@ -184,5 +185,11 @@ std::optional<std::string> parseUrlPrefix(const nghttp2::asio_http2::header_map&
     }
 
     return std::nullopt;
+}
+
+/** @brief Formats the time as the IMF-fixdate (RFC 9110, sec. 5.6.7), e.g., "Thu, 26 Jan 2017 16:00:14 GMT" */
+std::string httpDate(const std::chrono::system_clock::time_point& time)
+{
+    return std::format("{:%a, %d %b %Y %H:%M:%S} GMT", std::chrono::floor<std::chrono::seconds>(time));
 }
 }
