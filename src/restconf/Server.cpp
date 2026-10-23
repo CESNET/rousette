@@ -20,6 +20,7 @@
 #include "restconf/Server.h"
 #include "restconf/YangSchemaLocations.h"
 #include "restconf/uri.h"
+#include "restconf/utils/conditional.h"
 #include "restconf/utils/dataformat.h"
 #include "restconf/utils/yang.h"
 #include "sr/OpticalEvents.h"
@@ -1188,6 +1189,15 @@ Server::Server(
                         }
                     }
 
+                    /*
+                     * RFC 8040, sec. 3.4.1.1 and 3.5.1: The last-modified timestamp is only affected by configuration data.
+                     * Report it only for the configuration datastores from RFC 8527, not for the operational datastore.
+                     */
+                    const bool withLastModified = restconfRequest.datastore && hasLastModified(*restconfRequest.datastore);
+                    if (withLastModified) {
+                        getOptions = getOptions | sysrepo::GetOptions::WithLastModification;
+                    }
+
                     auto xpath = restconfRequest.path;
                     if (auto it = restconfRequest.queryParams.find("fields"); it != restconfRequest.queryParams.end()) {
                         auto fields = std::get<queryParams::fields::Expr>(it->second);
@@ -1195,12 +1205,13 @@ Server::Server(
                     }
 
                     if (auto data = sess.getData(xpath, maxDepth, getOptions, timeout); data) {
-                        res.write_head(
-                            200,
-                            {
-                                contentType(dataFormat.response),
-                                CORS,
-                            });
+                        nghttp2::asio_http2::header_map headers{contentType(dataFormat.response), CORS};
+
+                        if (auto lastModified = withLastModified ? takeLastModified(*data) : std::nullopt) {
+                            headers.emplace("last-modified", nghttp2::asio_http2::header_value{httpDate(*lastModified), false});
+                        }
+
+                        res.write_head(200, headers);
 
                         auto urlPrefix = http::parseUrlPrefix(req.header());
                         data = replaceYangLibraryLocations(urlPrefix, yangSchemaRoot, *data);
