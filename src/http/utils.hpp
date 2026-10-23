@@ -5,6 +5,7 @@
  *
  */
 
+#include <chrono>
 #include <nghttp2/asio_http2_server.h>
 #include <optional>
 
@@ -22,4 +23,5 @@ std::vector<std::string> parseAcceptHeader(const std::string& headerValue);
 ProtoAndHost parseForwardedHeader(const std::string& headerValue);
 std::optional<std::string> parseUrlPrefix(const nghttp2::asio_http2::header_map& headers);
 std::optional<std::string> getHeaderValue(const nghttp2::asio_http2::header_map& headers, const std::string& header);
+std::string httpDate(const std::chrono::system_clock::time_point& time);
 }

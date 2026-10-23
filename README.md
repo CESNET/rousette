@@ -20,9 +20,14 @@ This is a [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server 
     - Those features are currently *not* implemented:
         - TLS termination (use a reverse proxy for that)
         - TLS certificate authentication (see [Access control model](#access-control-model) below)
-        - the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1.1) and [`ETag`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1.2) headers for [edit collision prevention](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1) in the datastore resource
-        - the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.1) and [`ETag`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.2) headers in the data resource
+        - the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1.1) header in the `{+restconf}/data` resource
+        - the [`ETag`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1.2) header
+        - [edit collision prevention](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.4.1) via `If-Unmodified-Since` and `If-Match`
 - [NMDA](https://datatracker.ietf.org/doc/html/rfc8527.html) datastore access
+    - the [`Last-Modified`](https://datatracker.ietf.org/doc/html/rfc8040.html#section-3.5.1) header for the configuration datastores except for `candidate`, with a per-YANG-module granularity
+        - `candidate` is excluded because until it is modified, sysrepo returns the `running` data for it but no usable timestamp
+        - deleting all data of a YANG module which has no top-level default nodes (e.g., a non-presence container) is not reflected in the timestamp of the whole datastore, because sysrepo reports the timestamps only on the top-level nodes which exist
+        - changes of the NACM rules or of the YANG schema (e.g., new default values) are not reflected in the timestamp either, even though they might change the response
     - no [`with-operational-default`](https://datatracker.ietf.org/doc/html/rfc8527#section-3.2.1) capability
     - no [`with-origin`](https://datatracker.ietf.org/doc/html/rfc8527#section-3.2.2) capability
 - [YANG Patch](https://datatracker.ietf.org/doc/html/rfc8072) support for fine-grained edits, using both JSON and XML encodings
