@@ -87,3 +87,12 @@ TEST_CASE("Get Host from forwarded")
     REQUIRE(rousette::http::parseForwardedHeader("host=proto=https") == ProtoAndHost{});
     REQUIRE(rousette::http::parseForwardedHeader("") == ProtoAndHost{});
 }
+
+TEST_CASE("HTTP Dates")
+{
+    using namespace std::chrono;
+
+    const auto expected = sys_days{1994y / November / 6} + 8h + 49min + 37s;
+
+    REQUIRE(rousette::http::httpDate(expected) == "Sun, 06 Nov 1994 08:49:37 GMT");
+}
