@@ -90,7 +90,7 @@ add_library(rousette-http STATIC
     src/http/EventStream.cpp
     src/http/utils.cpp
 )
-target_link_libraries(rousette-http PUBLIC spdlog::spdlog PkgConfig::nghttp2 ssl crypto)
+target_link_libraries(rousette-http PUBLIC spdlog::spdlog PkgConfig::nghttp2 ssl crypto PRIVATE date::date)
 
 add_library(rousette-sysrepo STATIC
     src/sr/AllEvents.cpp

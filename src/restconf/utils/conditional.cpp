@@ -8,6 +8,7 @@
 #include <libyang-cpp/Module.hpp>
 #include <libyang-cpp/Time.hpp>
 #include "conditional.h"
+#include "http/utils.hpp"
 
 namespace rousette::restconf {
 
@@ -30,5 +31,26 @@ std::optional<std::chrono::system_clock::time_point> takeLastModified(libyang::D
     }
 
     return res;
+}
+
+/** @brief Evaluates the If-Modified-Since precondition (RFC 9110, sec. 13.1.3). Returns true if the response should be 304 Not Modified. */
+bool isNotModified(const nghttp2::asio_http2::header_map& headers, const std::chrono::system_clock::time_point& lastModified)
+{
+    // If-None-Match takes precedence. We do not support entity-tags yet, so there is nothing to evaluate.
+    if (headers.contains("if-none-match")) {
+        return false;
+    }
+
+    //  If-Modified-Since header is ignored if it does not contain valid date or the field value has more than one member
+    if (headers.count("if-modified-since") != 1) {
+        return false;
+    }
+
+    auto since = http::parseHttpDate(headers.find("if-modified-since")->second.value);
+    if (!since) {
+        return false;
+    }
+
+    return std::chrono::floor<std::chrono::seconds>(lastModified) <= *since;
 }
 }
