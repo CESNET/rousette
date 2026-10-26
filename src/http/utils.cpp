@@ -10,6 +10,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/spirit/home/x3.hpp>
 #include <format>
+#include <locale>
+#include <sstream>
 #include "http/utils.hpp"
 
 namespace {
@@ -191,5 +193,21 @@ std::optional<std::string> parseUrlPrefix(const nghttp2::asio_http2::header_map&
 std::string httpDate(const std::chrono::system_clock::time_point& time)
 {
     return std::format("{:%a, %d %b %Y %H:%M:%S} GMT", std::chrono::floor<std::chrono::seconds>(time));
+}
+
+/** @brief Parses the HTTP-date (RFC 9110, sec. 5.6.7) in any of the IMF-fixdate, obsolete RFC 850 or asctime formats */
+std::optional<std::chrono::sys_seconds> parseHttpDate(const std::string& str)
+{
+    for (const auto* format : {"%a, %d %b %Y %H:%M:%S GMT", "%A, %d-%b-%y %H:%M:%S GMT", "%a %b %d %H:%M:%S %Y"}) {
+        std::istringstream iss(str);
+        iss.imbue(std::locale::classic());
+        std::chrono::sys_seconds res;
+
+        if (iss >> std::chrono::parse(format, res) && (iss >> std::ws).eof()) {
+            return res;
+        }
+    }
+
+    return std::nullopt;
 }
 }

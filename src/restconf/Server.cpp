@@ -1205,12 +1205,21 @@ Server::Server(
                     }
 
                     if (auto data = sess.getData(xpath, maxDepth, getOptions, timeout); data) {
-                        nghttp2::asio_http2::header_map headers{contentType(dataFormat.response), CORS};
+                        nghttp2::asio_http2::header_map headers{CORS};
+                        auto lastModified = withLastModified ? takeLastModified(*data) : std::nullopt;
 
-                        if (auto lastModified = withLastModified ? takeLastModified(*data) : std::nullopt) {
+                        if (lastModified) {
                             headers.emplace("last-modified", nghttp2::asio_http2::header_value{http::httpDate(*lastModified), false});
                         }
 
+                        // RFC 9110, sec. 15.4.5: The 304 response carries no content and no representation metadata, except for Last-Modified which helps the caches when there is no ETag
+                        if (lastModified && isNotModified(req.header(), *lastModified)) {
+                            res.write_head(304, headers);
+                            res.end();
+                            break;
+                        }
+
+                        headers.emplace(contentType(dataFormat.response));
                         res.write_head(200, headers);
 
                         auto urlPrefix = http::parseUrlPrefix(req.header());

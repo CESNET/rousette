@@ -8,6 +8,7 @@
 
 #include <chrono>
 #include <libyang-cpp/DataNode.hpp>
+#include <nghttp2/asio_http2.h>
 #include <optional>
 #include <string>
 #include <sysrepo-cpp/Enum.hpp>
@@ -21,4 +22,5 @@ constexpr bool hasLastModified(sysrepo::Datastore datastore)
 }
 
 std::optional<std::chrono::system_clock::time_point> takeLastModified(libyang::DataNode& tree);
+bool isNotModified(const nghttp2::asio_http2::header_map& headers, const std::chrono::system_clock::time_point& lastModified);
 }
