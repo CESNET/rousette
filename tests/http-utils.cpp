@@ -90,9 +90,26 @@ TEST_CASE("Get Host from forwarded")
 
 TEST_CASE("HTTP Dates")
 {
+    using rousette::http::parseHttpDate;
     using namespace std::chrono;
 
     const auto expected = sys_days{1994y / November / 6} + 8h + 49min + 37s;
 
     REQUIRE(rousette::http::httpDate(expected) == "Sun, 06 Nov 1994 08:49:37 GMT");
+
+    REQUIRE(parseHttpDate("Sun, 06 Nov 1994 08:49:37 GMT") == expected);
+    REQUIRE(parseHttpDate("Sunday, 06-Nov-94 08:49:37 GMT") == expected);
+    REQUIRE(parseHttpDate("Sun Nov  6 08:49:37 1994") == expected);
+
+    REQUIRE(parseHttpDate("") == std::nullopt);
+    REQUIRE(parseHttpDate("garbage") == std::nullopt);
+    REQUIRE(parseHttpDate("Sun, 06 Nov 1994 08:49:37") == std::nullopt);
+    REQUIRE(parseHttpDate("Sun, 06 Nov 1994 08:49:37 GMT trailing") == std::nullopt);
+    REQUIRE(parseHttpDate("Sun, 06 Nov 1994 08:49:37 GMT, Sun, 06 Nov 1994 08:49:37 GMT") == std::nullopt);
+    REQUIRE(parseHttpDate("Sun, 06 Nov 1994 08:49:37 GMT; Sun, 06 Nov 1994 08:49:37 GMT") == std::nullopt);
+    REQUIRE(parseHttpDate("Sun, 06 Nov 1994 08:49:60 GMT") == std::nullopt);
+    REQUIRE(parseHttpDate("Sun, 06 Nov 1994 08:49") == std::nullopt);
+    REQUIRE(parseHttpDate("Sun, 31 Feb 1994 08:49:37 GMT") == std::nullopt);
+    REQUIRE(parseHttpDate("Sun Nov  6 08:49:37") == std::nullopt);
+    REQUIRE(parseHttpDate("1994-11-06T08:49:37Z") == std::nullopt);
 }
