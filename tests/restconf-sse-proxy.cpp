@@ -319,8 +319,9 @@ TEST_CASE("SSE proxy for configured subscriptions")
 
         // A resync covers both subscriptions, and this is a broadcast stream, so the second client's resync lands in
         // the first client's stream as well.
-        expectations.emplace_back(NAMED_REQUIRE_CALL(watcher1, data(fromLeaf)).IN_SEQUENCE(seq1).TIMES(2));
-        expectations.emplace_back(NAMED_REQUIRE_CALL(watcher1, data(fromList)).IN_SEQUENCE(seq2).TIMES(2));
+        std::atomic<int> watcher1Leafs = 0, watcher1Lists = 0;
+        expectations.emplace_back(NAMED_REQUIRE_CALL(watcher1, data(fromLeaf)).IN_SEQUENCE(seq1).TIMES(2).LR_SIDE_EFFECT(++watcher1Leafs));
+        expectations.emplace_back(NAMED_REQUIRE_CALL(watcher1, data(fromList)).IN_SEQUENCE(seq2).TIMES(2).LR_SIDE_EFFECT(++watcher1Lists));
         expectations.emplace_back(NAMED_REQUIRE_CALL(watcher2, data(fromLeaf)).IN_SEQUENCE(seq3).TIMES(1));
         expectations.emplace_back(NAMED_REQUIRE_CALL(watcher2, data(fromList)).IN_SEQUENCE(seq4).TIMES(1));
 
@@ -328,6 +329,12 @@ TEST_CASE("SSE proxy for configured subscriptions")
         std::optional<SSEClient> client2;
         auto notificationThread = std::jthread(wrap_exceptions_and_asio(bg, io, [&]() {
             WAIT_UNTIL_SSE_CLIENT_REQUESTS;
+
+            // The resync is asynchronous, so the first client's request being sent does not mean its resync is over.
+            // A second client attaching too early would get a part of that resync on top of its own.
+            while (watcher1Leafs < 1 || watcher1Lists < 1) {
+                std::this_thread::sleep_for(10ms);
+            }
 
             // Let the second client in only now. The clients must not attach at the same time.
             //
