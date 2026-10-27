@@ -40,6 +40,7 @@ struct MediaType {
 
 BOOST_FUSION_ADAPT_STRUCT(Mime, mediaType, mediaSubtype);
 BOOST_FUSION_ADAPT_STRUCT(MediaType, mime, parameters);
+BOOST_FUSION_ADAPT_STRUCT(rousette::http::EntityTag, weak, opaqueTag);
 
 namespace rousette::http {
 
@@ -210,5 +211,32 @@ std::optional<std::chrono::sys_seconds> parseHttpDate(const std::string& str)
     }
 
     return std::nullopt;
+}
+
+std::optional<std::vector<EntityTag>> parseEntityTags(const std::string& headerValue)
+{
+    namespace x3 = boost::spirit::x3;
+
+    // RFC 9110, sec. 8.8.3: etagc = %x21 / %x23-7E / obs-text
+    const auto etagc = x3::rule<class etagc, char>{"etagc"} = x3::char_('\x21') | x3::char_('\x23', '\x7e') | x3::char_('\x80', '\xff');
+    const auto opaqueTag = x3::rule<class opaqueTag, std::string>{"opaqueTag"} = x3::char_('"') >> *etagc >> x3::char_('"');
+    const auto entityTag = x3::rule<class entityTag, EntityTag>{"entityTag"} = x3::matches[x3::lit("W/")] >> opaqueTag;
+
+    // RFC 9110, sec. 5.6.1.2: empty list elements are allowed
+    const auto separator = x3::omit[*x3::space >> ',' >> *x3::space];
+    const auto grammar = x3::omit[*(x3::space | ',')] >> entityTag % +separator >> x3::omit[*(x3::space | ',')];
+
+    std::vector<EntityTag> res;
+    if (!x3::parse(std::begin(headerValue), std::end(headerValue), grammar >> x3::eoi, res)) {
+        return std::nullopt;
+    }
+
+    return res;
+}
+
+/** @brief Weak comparison of two entity-tags (RFC 9110, sec. 8.8.3.2) */
+bool weakMatch(const EntityTag& a, const EntityTag& b)
+{
+    return a.opaqueTag == b.opaqueTag;
 }
 }
