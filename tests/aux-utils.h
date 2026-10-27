@@ -40,32 +40,39 @@ static const auto SERVER_ADDRESS = "::1";
 
 const ng::header_map jsonHeaders{
     {"access-control-allow-origin", {"*", false}},
+    {"cache-control", {"no-cache", false}},
     {"content-type", {"application/yang-data+json", false}},
 };
 
 const ng::header_map xmlHeaders{
     {"access-control-allow-origin", {"*", false}},
+    {"cache-control", {"no-cache", false}},
     {"content-type", {"application/yang-data+xml", false}},
 };
 
 const ng::header_map noContentTypeHeaders{
     {"access-control-allow-origin", {"*", false}},
+    {"cache-control", {"no-cache", false}},
 };
 
 const ng::header_map yangHeaders{
     {"access-control-allow-origin", {"*", false}},
+    {"cache-control", {"no-cache", false}},
     {"content-type", {"application/yang", false}},
 };
 
 const ng::header_map plaintextHeaders{
     {"access-control-allow-origin", {"*", false}},
+    {"cache-control", {"no-cache", false}},
     {"content-type", {"text/plain", false}},
 };
 
 const ng::header_map eventStreamHeaders{
     {"access-control-allow-origin", {"*", false}},
+    {"cache-control", {"no-cache", false}},
     {"content-type", {"text/event-stream", false}},
 };
 
 #define ACCESS_CONTROL_ALLOW_ORIGIN {"access-control-allow-origin", "*"}
+#define CACHE_CONTROL {"cache-control", "no-cache"}
 #define ACCEPT_PATCH {"accept-patch", "application/yang-data+json, application/yang-data+xml, application/yang-patch+xml, application/yang-patch+json"}

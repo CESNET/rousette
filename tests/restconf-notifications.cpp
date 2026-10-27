@@ -143,10 +143,11 @@ TEST_CASE("NETCONF notification streams")
     SECTION("Other methods")
     {
         REQUIRE(head("/streams/NETCONF/XML",  {AUTH_ROOT}) == Response{200, eventStreamHeaders, ""});
-        REQUIRE(options("/streams/NETCONF/XML", {AUTH_ROOT}) == Response{200, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS"}}, ""});
+        REQUIRE(options("/streams/NETCONF/XML", {AUTH_ROOT}) == Response{200, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, {"allow", "GET, HEAD, OPTIONS"}}, ""});
 
         const std::multimap<std::string, std::string> headers = {
             {"access-control-allow-origin", "*"},
+            {"cache-control", "no-cache"},
             {"allow", "GET, HEAD, OPTIONS"},
             {"content-type", "text/plain"},
         };

@@ -945,7 +945,7 @@ TEST_CASE("writing data")
         {
             // empty allow header because the rpc is requested using /restconf/data and not /restconf/operations prefix
             REQUIRE(put(RESTCONF_DATA_ROOT "/ietf-system:system-restart", {AUTH_DWDM}, "") ==
-                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", ""}}, R"({
+                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_TYPE_JSON, {"allow", ""}}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -959,7 +959,7 @@ TEST_CASE("writing data")
 )"});
 
             REQUIRE(put(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action", {AUTH_DWDM}, "") ==
-                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", "OPTIONS, POST"}}, R"({
+                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_TYPE_JSON, {"allow", "OPTIONS, POST"}}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -1151,7 +1151,7 @@ TEST_CASE("writing data")
             }
 
             REQUIRE(put(uri + "/example:top-level-leaf", {CONTENT_TYPE_JSON, AUTH_ROOT}, R"({"example:top-level-leaf": "str"})") ==
-                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT"}, ACCEPT_PATCH}, R"({
+                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_TYPE_JSON, {"allow", "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT"}, ACCEPT_PATCH}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -1847,7 +1847,7 @@ TEST_CASE("writing data")
             }
 
             REQUIRE(post(uri + "/", {CONTENT_TYPE_JSON, AUTH_ROOT}, R"({"example:top-level-leaf": "str"})") ==
-                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE_JSON, {"allow", "GET, HEAD, OPTIONS, PATCH, POST, PUT"}, ACCEPT_PATCH}, R"({
+                    Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_TYPE_JSON, {"allow", "GET, HEAD, OPTIONS, PATCH, POST, PUT"}, ACCEPT_PATCH}, R"({
   "ietf-restconf:errors": {
     "error": [
       {

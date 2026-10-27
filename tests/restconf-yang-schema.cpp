@@ -159,16 +159,16 @@ TEST_CASE("obtaining YANG schemas")
         SECTION("unsupported methods")
         {
             REQUIRE(post(YANG_ROOT "/ietf-yang-library@2019-01-04", {AUTH_ROOT}, "")
-                    == Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS"}}, ""});
+                    == Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, {"allow", "GET, HEAD, OPTIONS"}}, ""});
             REQUIRE(put(YANG_ROOT "/ietf-yang-library@2019-01-04", {AUTH_ROOT}, "")
-                    == Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS"}}, ""});
+                    == Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, {"allow", "GET, HEAD, OPTIONS"}}, ""});
             REQUIRE(patch(YANG_ROOT "/ietf-yang-library@2019-01-04", {AUTH_ROOT}, "")
-                    == Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS"}}, ""});
+                    == Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, {"allow", "GET, HEAD, OPTIONS"}}, ""});
             REQUIRE(httpDelete(YANG_ROOT "/ietf-yang-library@2019-01-04", {AUTH_ROOT})
-                    == Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS"}}, ""});
+                    == Response{405, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, {"allow", "GET, HEAD, OPTIONS"}}, ""});
         }
 
-        REQUIRE(options(YANG_ROOT "/ietf-yang-library@2019-01-04", {}) == Response{200, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, {"allow", "GET, HEAD, OPTIONS"}}, ""});
+        REQUIRE(options(YANG_ROOT "/ietf-yang-library@2019-01-04", {}) == Response{200, Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, {"allow", "GET, HEAD, OPTIONS"}}, ""});
 
         SECTION("loaded modules")
         {

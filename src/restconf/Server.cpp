@@ -30,6 +30,7 @@ using nghttp2::asio_http2::server::request;
 using nghttp2::asio_http2::server::response;
 
 #define CORS {"access-control-allow-origin", {"*", false}}
+#define NO_CACHE {"cache-control", {"no-cache", false}}
 #define TEXT_PLAIN contentType("text/plain")
 #define ALLOW_GET_HEAD_OPTIONS {"allow", {"GET, HEAD, OPTIONS", false}}
 
@@ -112,7 +113,7 @@ void rejectWithErrorImpl(libyang::Context ctx, const libyang::DataFormat& dataFo
         errorContainer.newPath2("error[1]/error-info", container);
     }
 
-    nghttp2::asio_http2::header_map headers = {contentType(dataFormat), CORS};
+    nghttp2::asio_http2::header_map headers = {contentType(dataFormat), CORS, NO_CACHE};
 
     if (code == 405) {
         headers.merge(httpOptionsHeaders(allowedHttpMethodsForUri(ctx, req.uri().path)));
@@ -539,7 +540,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx, const std::c
     }
 
     if (!rpcReply || rpcReply->immediateChildren().empty()) {
-        requestCtx->res.write_head(204, {CORS});
+        requestCtx->res.write_head(204, {CORS, NO_CACHE});
         requestCtx->res.end();
         return;
     }
@@ -554,6 +555,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx, const std::c
     requestCtx->res.write_head(200, {
                                         contentType(requestCtx->dataFormat.response),
                                         CORS,
+                                        NO_CACHE,
                                     });
     requestCtx->res.end(*envelope->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::Siblings | libyang::PrintFlags::EmptyContainers));
 }
@@ -613,6 +615,7 @@ void processPost(std::shared_ptr<RequestContext> requestCtx, const std::chrono::
                                {
                                    contentType(requestCtx->dataFormat.response),
                                    CORS,
+                                   NO_CACHE,
                                    // FIXME: POST data operation MUST return Location header
                                });
     requestCtx->res.end();
@@ -717,7 +720,7 @@ void processYangPatch(std::shared_ptr<RequestContext> requestCtx, const std::chr
     yangPatchStatus.newPath("/ietf-yang-patch:yang-patch-status/patch-id", patchId);
     yangPatchStatus.newPath("/ietf-yang-patch:yang-patch-status/ok", std::nullopt);
 
-    requestCtx->res.write_head(200, {contentType(requestCtx->dataFormat.response), CORS});
+    requestCtx->res.write_head(200, {contentType(requestCtx->dataFormat.response), CORS, NO_CACHE});
     requestCtx->res.end(*yangPatchStatus.printStr(requestCtx->dataFormat.response, libyang::PrintFlags::Siblings));
 }
 
@@ -737,11 +740,11 @@ void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx, const st
         if (requestCtx->req.method() == "PUT") {
             requestCtx->sess.replaceConfig(edit, std::nullopt, timeout);
 
-            requestCtx->res.write_head(edit ? 201 : 204, {CORS});
+            requestCtx->res.write_head(edit ? 201 : 204, {CORS, NO_CACHE});
         } else {
             requestCtx->sess.editBatch(*edit, sysrepo::DefaultOperation::Merge);
             requestCtx->sess.applyChanges(timeout);
-            requestCtx->res.write_head(204, {CORS});
+            requestCtx->res.write_head(204, {CORS, NO_CACHE});
         }
         requestCtx->res.end();
         return;
@@ -776,9 +779,9 @@ void processPutOrPlainPatch(std::shared_ptr<RequestContext> requestCtx, const st
     requestCtx->sess.applyChanges(timeout);
 
     if (requestCtx->req.method() == "PUT") {
-        requestCtx->res.write_head(nodeExisted ? 204 : 201, {CORS});
+        requestCtx->res.write_head(nodeExisted ? 204 : 201, {CORS, NO_CACHE});
     } else {
-        requestCtx->res.write_head(204, {CORS});
+        requestCtx->res.write_head(204, {CORS, NO_CACHE});
     }
 
     requestCtx->res.end();
@@ -988,7 +991,7 @@ Server::Server(
     server->handle("/", [](const auto& req, const auto& res) {
         logRequest(req);
 
-        res.write_head(404, {TEXT_PLAIN, CORS});
+        res.write_head(404, {TEXT_PLAIN, CORS, NO_CACHE});
         res.end();
     });
 
@@ -1000,6 +1003,7 @@ Server::Server(
                    {
                        contentType("application/xrd+xml"),
                        CORS,
+                       NO_CACHE,
                    });
         res.end("<XRD xmlns='http://docs.oasis-open.org/ns/xri/xrd-1.0'><Link rel='restconf' href='"s + restconfRoot + "'/></XRD>"s);
     });
@@ -1018,7 +1022,7 @@ Server::Server(
         std::optional<sysrepo::NotificationTimeStamp> stopTime;
 
         if (req.method() == "OPTIONS") {
-            res.write_head(200, {CORS, ALLOW_GET_HEAD_OPTIONS});
+            res.write_head(200, {CORS, NO_CACHE, ALLOW_GET_HEAD_OPTIONS});
             res.end();
             return;
         }
@@ -1082,12 +1086,12 @@ Server::Server(
             }
         } catch (const auth::Error& e) {
             processAuthError(req, res, e, [&res]() {
-                res.write_head(401, {TEXT_PLAIN, CORS});
+                res.write_head(401, {TEXT_PLAIN, CORS, NO_CACHE});
                 res.end("Access denied.");
             });
         } catch (const ErrorResponse& e) {
             // RFC does not specify how the errors should look like so let's just report the HTTP code and print the error message
-            nghttp2::asio_http2::header_map headers = {TEXT_PLAIN, CORS};
+            nghttp2::asio_http2::header_map headers = {TEXT_PLAIN, CORS, NO_CACHE};
 
             if (e.code == 405) {
                 headers.emplace(decltype(headers)::value_type ALLOW_GET_HEAD_OPTIONS);
@@ -1102,7 +1106,7 @@ Server::Server(
         logRequest(req);
 
         if (req.method() == "OPTIONS" || (req.method() != "GET" && req.method() != "HEAD")) {
-            res.write_head(req.method() == "OPTIONS" ? 200 : 405, {CORS, ALLOW_GET_HEAD_OPTIONS});
+            res.write_head(req.method() == "OPTIONS" ? 200 : 405, {CORS, NO_CACHE, ALLOW_GET_HEAD_OPTIONS});
             res.end();
             return;
         }
@@ -1117,21 +1121,22 @@ Server::Server(
                     {
                         contentType("application/yang"),
                         CORS,
+                        NO_CACHE,
                     });
                 res.end(std::visit([](auto&& arg) { return arg.printStr(libyang::SchemaOutputFormat::Yang); }, *mod));
                 return;
             } else {
-                res.write_head(404, {TEXT_PLAIN, CORS});
+                res.write_head(404, {TEXT_PLAIN, CORS, NO_CACHE});
                 res.end("YANG schema not found");
             }
         } catch (const auth::Error& e) {
             processAuthError(req, res, e, [&res]() {
-                res.write_head(401, {TEXT_PLAIN, CORS});
+                res.write_head(401, {TEXT_PLAIN, CORS, NO_CACHE});
                 res.end("Access denied.");
             });
         } catch (const ErrorResponse& e) {
             // RFC does not specify how the errors should look like so let's just report the HTTP code and print the error message
-            nghttp2::asio_http2::header_map headers = {TEXT_PLAIN, CORS};
+            nghttp2::asio_http2::header_map headers = {TEXT_PLAIN, CORS, NO_CACHE};
 
             if (e.code == 405) {
                 headers.emplace(decltype(headers)::value_type ALLOW_GET_HEAD_OPTIONS);
@@ -1161,7 +1166,7 @@ Server::Server(
                 case RestconfRequest::Type::RestconfRoot:
                 case RestconfRequest::Type::YangLibraryVersion:
                 case RestconfRequest::Type::ListRPC:
-                    res.write_head(200, {contentType(dataFormat.response), CORS});
+                    res.write_head(200, {contentType(dataFormat.response), CORS, NO_CACHE});
                     res.end(*apiResource(sess.getContext(), restconfRequest.type, dataFormat.response)
                                  .printStr(dataFormat.response, libyang::PrintFlags::Siblings | libyang::PrintFlags::EmptyContainers));
                     break;
@@ -1200,6 +1205,7 @@ Server::Server(
                             {
                                 contentType(dataFormat.response),
                                 CORS,
+                                NO_CACHE,
                             });
 
                         auto urlPrefix = http::parseUrlPrefix(req.header());
@@ -1286,7 +1292,7 @@ Server::Server(
                         throw;
                     }
 
-                    res.write_head(204, {CORS});
+                    res.write_head(204, {CORS, NO_CACHE});
                     res.end();
                     break;
 
@@ -1306,7 +1312,7 @@ Server::Server(
                 }
 
                 case RestconfRequest::Type::OptionsQuery: {
-                    nghttp2::asio_http2::header_map headers{CORS};
+                    nghttp2::asio_http2::header_map headers{CORS, NO_CACHE};
 
                     /* Just try to call this function with all possible HTTP methods and return those which do not fail */
                     if (auto optionsHeaders = allowedHttpMethodsForUri(sess.getContext(), req.uri().path); !optionsHeaders.empty()) {

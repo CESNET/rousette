@@ -78,6 +78,7 @@ void EventStream::activate()
     res.write_head(200, {
         {"content-type", {"text/event-stream", false}},
         {"access-control-allow-origin", {"*", false}},
+        {"cache-control", {"no-cache", false}},
     });
 
     res.on_close([myself](const auto ec) {
