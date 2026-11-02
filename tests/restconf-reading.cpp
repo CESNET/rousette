@@ -442,7 +442,7 @@ TEST_CASE("reading data")
     {
         // empty allow header because the rpc is requested using /restconf/data and not /restconf/operations prefix
         REQUIRE(get(RESTCONF_DATA_ROOT "/ietf-system:system-restart", {AUTH_DWDM}) == Response{405,
-                Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_TYPE_JSON, {"allow", ""}}, R"({
+                Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_TYPE_JSON, VARY, {"allow", ""}}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
@@ -456,10 +456,10 @@ TEST_CASE("reading data")
 )"});
         // empty allow header because the rpc is requested using /restconf/data and not /restconf/operations prefix
         REQUIRE(head(RESTCONF_DATA_ROOT "/ietf-system:system-restart", {AUTH_DWDM}) == Response{405,
-                Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_TYPE_JSON, {"allow", ""}}, ""});
+                Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_TYPE_JSON, VARY, {"allow", ""}}, ""});
 
         REQUIRE(get(RESTCONF_DATA_ROOT "/example:tlc/list=eth0/example-action", {AUTH_DWDM}) == Response{405,
-                Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_TYPE_JSON, {"allow", "OPTIONS, POST"}}, R"({
+                Response::Headers{ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, CONTENT_TYPE_JSON, VARY, {"allow", "OPTIONS, POST"}}, R"({
   "ietf-restconf:errors": {
     "error": [
       {
