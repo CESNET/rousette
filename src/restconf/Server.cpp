@@ -31,6 +31,7 @@ using nghttp2::asio_http2::server::response;
 
 #define CORS {"access-control-allow-origin", {"*", false}}
 #define NO_CACHE {"cache-control", {"no-cache", false}}
+#define VARY {"vary", {"Accept, Content-Type", false}}
 #define TEXT_PLAIN contentType("text/plain")
 #define ALLOW_GET_HEAD_OPTIONS {"allow", {"GET, HEAD, OPTIONS", false}}
 
@@ -113,7 +114,7 @@ void rejectWithErrorImpl(libyang::Context ctx, const libyang::DataFormat& dataFo
         errorContainer.newPath2("error[1]/error-info", container);
     }
 
-    nghttp2::asio_http2::header_map headers = {contentType(dataFormat), CORS, NO_CACHE};
+    nghttp2::asio_http2::header_map headers = {contentType(dataFormat), CORS, NO_CACHE, VARY};
 
     if (code == 405) {
         headers.merge(httpOptionsHeaders(allowedHttpMethodsForUri(ctx, req.uri().path)));
@@ -556,6 +557,7 @@ void processActionOrRPC(std::shared_ptr<RequestContext> requestCtx, const std::c
                                         contentType(requestCtx->dataFormat.response),
                                         CORS,
                                         NO_CACHE,
+                                        VARY,
                                     });
     requestCtx->res.end(*envelope->printStr(requestCtx->dataFormat.response, libyang::PrintFlags::Siblings | libyang::PrintFlags::EmptyContainers));
 }
@@ -616,6 +618,7 @@ void processPost(std::shared_ptr<RequestContext> requestCtx, const std::chrono::
                                    contentType(requestCtx->dataFormat.response),
                                    CORS,
                                    NO_CACHE,
+                                   VARY,
                                    // FIXME: POST data operation MUST return Location header
                                });
     requestCtx->res.end();
@@ -720,7 +723,7 @@ void processYangPatch(std::shared_ptr<RequestContext> requestCtx, const std::chr
     yangPatchStatus.newPath("/ietf-yang-patch:yang-patch-status/patch-id", patchId);
     yangPatchStatus.newPath("/ietf-yang-patch:yang-patch-status/ok", std::nullopt);
 
-    requestCtx->res.write_head(200, {contentType(requestCtx->dataFormat.response), CORS, NO_CACHE});
+    requestCtx->res.write_head(200, {contentType(requestCtx->dataFormat.response), CORS, NO_CACHE, VARY});
     requestCtx->res.end(*yangPatchStatus.printStr(requestCtx->dataFormat.response, libyang::PrintFlags::Siblings));
 }
 
@@ -1166,7 +1169,7 @@ Server::Server(
                 case RestconfRequest::Type::RestconfRoot:
                 case RestconfRequest::Type::YangLibraryVersion:
                 case RestconfRequest::Type::ListRPC:
-                    res.write_head(200, {contentType(dataFormat.response), CORS, NO_CACHE});
+                    res.write_head(200, {contentType(dataFormat.response), CORS, NO_CACHE, VARY});
                     res.end(*apiResource(sess.getContext(), restconfRequest.type, dataFormat.response)
                                  .printStr(dataFormat.response, libyang::PrintFlags::Siblings | libyang::PrintFlags::EmptyContainers));
                     break;
@@ -1206,6 +1209,7 @@ Server::Server(
                                 contentType(dataFormat.response),
                                 CORS,
                                 NO_CACHE,
+                                VARY,
                             });
 
                         auto urlPrefix = http::parseUrlPrefix(req.header());
