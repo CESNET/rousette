@@ -42,12 +42,14 @@ const ng::header_map jsonHeaders{
     {"access-control-allow-origin", {"*", false}},
     {"cache-control", {"no-cache", false}},
     {"content-type", {"application/yang-data+json", false}},
+    {"vary", {"Accept, Content-Type", false}},
 };
 
 const ng::header_map xmlHeaders{
     {"access-control-allow-origin", {"*", false}},
     {"cache-control", {"no-cache", false}},
     {"content-type", {"application/yang-data+xml", false}},
+    {"vary", {"Accept, Content-Type", false}},
 };
 
 const ng::header_map noContentTypeHeaders{
@@ -75,4 +77,5 @@ const ng::header_map eventStreamHeaders{
 
 #define ACCESS_CONTROL_ALLOW_ORIGIN {"access-control-allow-origin", "*"}
 #define CACHE_CONTROL {"cache-control", "no-cache"}
+#define VARY {"vary", "Accept, Content-Type"}
 #define ACCEPT_PATCH {"accept-patch", "application/yang-data+json, application/yang-data+xml, application/yang-patch+xml, application/yang-patch+json"}
