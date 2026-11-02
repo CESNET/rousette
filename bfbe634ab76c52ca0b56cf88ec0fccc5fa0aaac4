@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3e88f037_5b48f8a4",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2026-11-02T19:09:57Z",
+      "side": 1,
+      "message": "I have a feeling that we\u0027re putting time into something with very little return of invested time. The unauthenticated access is our own extension (so we\u0027re outside of the RESTCONF scope at that time), and authenticated responses apparently *can* be cached, but it kinda escapes me *what for*.\n\nIf you feel like we need this header or that we should send it, why not use the big hammer and use `Vary: *`?",
+      "revId": "bfbe634ab76c52ca0b56cf88ec0fccc5fa0aaac4",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
