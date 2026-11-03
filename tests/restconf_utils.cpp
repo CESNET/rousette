@@ -187,22 +187,16 @@ SSEClient::SSEClient(
     const std::chrono::seconds silenceTimeout,
     const ReportIgnoredLines reportIgnoredLines)
     : client(std::make_shared<ng_client::session>(io, server_address, server_port))
-    , t(io, std::chrono::seconds(silenceTimeout))
+    , t(io)
 {
     ng::header_map reqHeaders;
     for (const auto& [name, value] : headers) {
         reqHeaders.insert({name, {value, false}});
     }
 
-    // shutdown the client after a period of no traffic
-    t.async_wait([maybeClient = std::weak_ptr<ng_client::session>{client}](const boost::system::error_code& ec) {
-        if (ec == boost::asio::error::operation_aborted) {
-            return;
-        }
-        if (auto client = maybeClient.lock()) {
-            client->shutdown();
-        }
-    });
+    // includes setting up the stream and the test's thread producing the first event; that can be slow on a loaded CI
+    constexpr auto firstDataTimeout = std::chrono::seconds{5};
+    shutdownAfter(std::max(silenceTimeout, firstDataTimeout));
 
     client->on_connect([&, uri, reqHeaders, silenceTimeout, server_address, server_port, reportIgnoredLines, expectedHttpStatus](auto) {
         boost::system::error_code ec;
@@ -214,7 +208,7 @@ SSEClient::SSEClient(
             res.on_data([&, silenceTimeout, reportIgnoredLines](const uint8_t* data, std::size_t len) {
                 dataBuffer.append(std::string(reinterpret_cast<const char*>(data), len));
                 parseEvents(eventWatcher, reportIgnoredLines);
-                t.expires_after(std::chrono::seconds(silenceTimeout));
+                shutdownAfter(silenceTimeout);
             });
         });
 
@@ -227,6 +221,19 @@ SSEClient::SSEClient(
 
     client->on_error([&](const boost::system::error_code& ec) {
         throw std::runtime_error{"HTTP client error: " + ec.message()};
+    });
+}
+
+void SSEClient::shutdownAfter(const std::chrono::seconds timeout)
+{
+    t.expires_after(timeout);
+    t.async_wait([maybeClient = std::weak_ptr<ng_client::session>{client}](const boost::system::error_code& ec) {
+        if (ec == boost::asio::error::operation_aborted) {
+            return;
+        }
+        if (auto client = maybeClient.lock()) {
+            client->shutdown();
+        }
     });
 }
 

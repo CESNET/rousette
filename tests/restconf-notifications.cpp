@@ -136,7 +136,8 @@ TEST_CASE("NETCONF notification streams")
             waitForCompletionAndBitMore(seqMod2);
         }));
 
-        SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, headers);
+        // when notificationsJSON[2] is filtered out, there are two 500ms delays without any event in between
+        SSEClient cli(io, SERVER_ADDRESS, SERVER_PORT, requestSent, netconfWatcher, uri, headers, 200, 2s);
         RUN_LOOP_WITH_EXCEPTIONS;
     }
 

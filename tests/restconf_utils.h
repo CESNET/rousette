@@ -107,6 +107,7 @@ struct SSEClient {
         const ReportIgnoredLines reportIgnoredLines = ReportIgnoredLines::No);
 
     void parseEvents(const RestconfNotificationWatcher& eventWatcher, const ReportIgnoredLines reportIgnoredLines);
+    void shutdownAfter(const std::chrono::seconds timeout);
 };
 
 #define PREPARE_LOOP_WITH_EXCEPTIONS \
