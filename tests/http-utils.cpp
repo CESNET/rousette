@@ -100,6 +100,9 @@ TEST_CASE("Get Host from forwarded")
     REQUIRE(rousette::http::parseForwardedHeader("for=192.0.2.60;host=10.0.0.134:8080;proto=http") == ProtoAndHost{});
     REQUIRE(rousette::http::parseForwardedHeader("for=192.0.2.60;host=\"10.0.0.134:8080\";proto=http") == ProtoAndHost{"http"s, "10.0.0.134:8080"s});
     REQUIRE(rousette::http::parseForwardedHeader("for=\"[2001:db8::1]\";host=[2001:db8::2]:8080;proto=http") == ProtoAndHost{});
+    REQUIRE(rousette::http::parseForwardedHeader("for=_21L3Efvs;host=\"10.0.0.134\";proto=http") == ProtoAndHost{"http"s, "10.0.0.134"s});
+    REQUIRE(rousette::http::parseForwardedHeader("by=_hidden;for=_21L3Efvs;host=\"10.0.0.134\";proto=http") == ProtoAndHost{"http"s, "10.0.0.134"s});
+    REQUIRE(rousette::http::parseForwardedHeader("for=_xyz;proto=https;host=example.net, for=_21L3Efvs;host=\"10.0.0.134\";proto=http") == ProtoAndHost{"https"s, "example.net"s});
     REQUIRE(rousette::http::parseForwardedHeader("host=proto=https") == ProtoAndHost{});
     REQUIRE(rousette::http::parseForwardedHeader("") == ProtoAndHost{});
 }
