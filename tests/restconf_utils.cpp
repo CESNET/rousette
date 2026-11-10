@@ -300,7 +300,7 @@ EstablishSubscriptionResult establishSubscription(
     // add the forwarded header
     static const auto FORWARD_PROTO = "http";
     static const auto FORWARD_HOST = "["s + serverAddress + "]:" + serverPort;
-    requestHeaders.emplace("forwarded", "proto="s + FORWARD_PROTO + ";host="s + FORWARD_HOST);
+    requestHeaders.emplace("forwarded", "proto="s + FORWARD_PROTO + ";host=\""s + FORWARD_HOST + "\"");
 
     std::optional<libyang::DataNode> envelope;
     auto rpcTree = ctx.newPath("/ietf-subscribed-notifications:establish-subscription");
