@@ -174,7 +174,7 @@ std::optional<std::string> getHeaderValue(const nghttp2::asio_http2::header_map&
 
 std::optional<std::string> parseUrlPrefix(const nghttp2::asio_http2::header_map& headers)
 {
-    if (auto forward = getHeaderValue(headers, "forward")) {
+    if (auto forward = getHeaderValue(headers, "forwarded")) {
         auto [proto, host] = http::parseForwardedHeader(*forward);
         if (!proto || !host) {
             return std::nullopt;

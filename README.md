@@ -34,7 +34,7 @@ This is a [RESTCONF](https://datatracker.ietf.org/doc/html/rfc8040.html) server 
 Since this service only talks cleartext HTTP/2, it's recommended to run it behind a reverse proxy.
 Here's an example with [nghttp2-apps](https://nghttp2.org/documentation/nghttpx-howto.html):
 ```
-nghttpx --accesslog-syslog --add-forwarded=for -f '*,80;no-tls' \
+nghttpx --accesslog-syslog --add-forwarded=for,proto,host -f '*,80;no-tls' \
     -b '::1,10080;/restconf/:/yang/:/streams/:/.well-known/;proto=h2' \
     -b '::1,81;;proto=h2' # for serving static files
 ```

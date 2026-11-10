@@ -24,7 +24,7 @@ static const auto SERVER_ADDRESS = "::1";
 #define AUTH_ROOT {"authorization", "Basic cm9vdDpzZWtyaXQ="}
 #define AUTH_WRONG_PASSWORD {"authorization", "Basic ZHdkbTpGQUlM"}
 
-#define FORWARDED {"forward", "proto=http;host=example.net"}
+#define FORWARDED {"forwarded", "proto=http;host=example.net"}
 
 #define CONTENT_TYPE_JSON {"content-type", "application/yang-data+json"}
 #define CONTENT_TYPE_XML {"content-type", "application/yang-data+xml"}
