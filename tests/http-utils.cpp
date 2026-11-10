@@ -83,7 +83,23 @@ TEST_CASE("Get Host from forwarded")
     REQUIRE(rousette::http::parseForwardedHeader("for=192.0.2.60;by=203.0.113.43;host=192.0.2.1") == ProtoAndHost{std::nullopt, "192.0.2.1"s});
     REQUIRE(rousette::http::parseForwardedHeader("for=192.0.2.60;proto=http;by=203.0.113.43;host=\"::1\"") == ProtoAndHost{"http", "::1"s});
     REQUIRE(rousette::http::parseForwardedHeader("for=192.0.2.60;proto=https;by=203.0.113.43;host=\"::1\", proto=http;host=192.0.2.1;for=192.0.2.61") == ProtoAndHost{"https"s, "::1"s});
-    REQUIRE(rousette::http::parseForwardedHeader("for=192.0.2.60;by=203.0.113.43;host=[2001:db8::666]") == ProtoAndHost{std::nullopt, "[2001:db8::666]"s});
+    REQUIRE(rousette::http::parseForwardedHeader("for=192.0.2.60;by=203.0.113.43;host=\"[2001:db8::666]\"") == ProtoAndHost{std::nullopt, "[2001:db8::666]"s});
+    REQUIRE(rousette::http::parseForwardedHeader("for=\"[2001:db8::1]:4711\";proto=https;host=\"example.net:8443\"") == ProtoAndHost{"https"s, "example.net:8443"s});
+    REQUIRE(rousette::http::parseForwardedHeader("for=192.0.2.60;by=203.0.113.43;host=[2001:db8::666]") == ProtoAndHost{});
+    REQUIRE(rousette::http::parseForwardedHeader("proto=https;host=example.net:8443") == ProtoAndHost{});
+    REQUIRE(rousette::http::parseForwardedHeader("for=192.0.2.60;host=\"10.0.0.134\";proto=http") == ProtoAndHost{"http"s, "10.0.0.134"s});
+    REQUIRE(rousette::http::parseForwardedHeader("for=\"192.0.2.60\";host=\"10.0.0.134\";proto=http") == ProtoAndHost{"http"s, "10.0.0.134"s});
+    REQUIRE(rousette::http::parseForwardedHeader("for=192.0.2.60:4711;host=\"10.0.0.134\";proto=http") == ProtoAndHost{});
+    REQUIRE(rousette::http::parseForwardedHeader("for=\"192.0.2.60:4711\";host=\"10.0.0.134\";proto=http") == ProtoAndHost{"http"s, "10.0.0.134"s});
+    REQUIRE(rousette::http::parseForwardedHeader("for=[2001:db8::1];host=\"[2001:db8::2]\";proto=http") == ProtoAndHost{});
+    REQUIRE(rousette::http::parseForwardedHeader("for=\"[2001:db8::1]\";host=\"[2001:db8::2]\";proto=http") == ProtoAndHost{"http"s, "[2001:db8::2]"s});
+    REQUIRE(rousette::http::parseForwardedHeader("for=[2001:db8::1]:4711;host=\"[2001:db8::2]\";proto=http") == ProtoAndHost{});
+    REQUIRE(rousette::http::parseForwardedHeader("for=\"[2001:db8::1]:4711\";host=\"[2001:db8::2]\";proto=http") == ProtoAndHost{"http"s, "[2001:db8::2]"s});
+    REQUIRE(rousette::http::parseForwardedHeader("for=\"[2001:db8::1]\";host=\"[2001:db8::2]:8080\";proto=http") == ProtoAndHost{"http"s, "[2001:db8::2]:8080"s});
+    REQUIRE(rousette::http::parseForwardedHeader("for=192.0.2.60;host=\"example.net\";proto=http") == ProtoAndHost{"http"s, "example.net"s});
+    REQUIRE(rousette::http::parseForwardedHeader("for=192.0.2.60;host=10.0.0.134:8080;proto=http") == ProtoAndHost{});
+    REQUIRE(rousette::http::parseForwardedHeader("for=192.0.2.60;host=\"10.0.0.134:8080\";proto=http") == ProtoAndHost{"http"s, "10.0.0.134:8080"s});
+    REQUIRE(rousette::http::parseForwardedHeader("for=\"[2001:db8::1]\";host=[2001:db8::2]:8080;proto=http") == ProtoAndHost{});
     REQUIRE(rousette::http::parseForwardedHeader("host=proto=https") == ProtoAndHost{});
     REQUIRE(rousette::http::parseForwardedHeader("") == ProtoAndHost{});
 }
