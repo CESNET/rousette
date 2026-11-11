@@ -138,12 +138,12 @@ ProtoAndHost parseForwardedHeader(const std::string& headerValue)
     const auto quotedString = x3::rule<class quotedString, std::string>{"quotedString"} = '"' >> *('\\' >> x3::char_ | ~x3::char_('"')) >> '"';
     const auto value = x3::rule<class value, std::string>{"value"} = token | quotedString;
 
-    const auto forwardedPair = x3::rule<class forwardedPair, std::pair<std::string, std::string>>{"forwardedPair"} = token >> '=' >> value;
+    const auto lowercase = [](auto& ctx) { std::transform(x3::_attr(ctx).begin(), x3::_attr(ctx).end(), x3::_attr(ctx).begin(), ::tolower); };
+    const auto lowerToken = x3::rule<class lowerToken, std::string>{"lowerToken"} %= token[lowercase];
+
+    const auto forwardedPair = x3::rule<class forwardedPair, std::pair<std::string, std::string>>{"forwardedPair"} = lowerToken >> '=' >> value;
     const auto forwarded = x3::rule<class singleForwarded, std::map<std::string, std::string>>{"forwarded"} = forwardedPair % ";";
     const auto forwardedList = x3::rule<class grammar, std::vector<std::map<std::string, std::string>>>{"forwardedList"} = forwarded % (x3::omit[*x3::space] >> ',' >> x3::omit[*x3::space]);
-
-    std::string str;
-    std::transform(headerValue.begin(), headerValue.end(), std::back_inserter(str), [](const auto& c) { return std::tolower(c); });
 
     std::vector<std::map<std::string, std::string>> forwardedKvPairs;
     if (!x3::parse(std::begin(headerValue), std::end(headerValue), forwardedList >> x3::eoi, forwardedKvPairs)) {
